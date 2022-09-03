@@ -1,9 +1,8 @@
 import { PaneDescriptor, PaneOptions } from '@/components/layout';
 import TimeAxis from '@/model/axis/TimeAxis';
-import PriceAxis from '@/model/axis/PriceAxis';
 import DataSource from '@/model/datasource/DataSource';
-import { computed, reactive, watch } from 'vue';
-import { merge } from '@/misc/strict-type-checks';
+import { computed, reactive, watch, WatchStopHandle } from 'vue';
+import { DeepPartial, merge } from '@/misc/strict-type-checks';
 import ChartState from '@/model/ChartState';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
 import { PaneId } from '@/components/layout/PaneDescriptor';
@@ -12,20 +11,29 @@ import Sketcher from '@/model/datasource/Sketcher';
 import { DrawingType } from '@/model/datasource/Drawing';
 import { ChartStyle } from '@/model/ChartStyle';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import AddNewPane from '@/model/incidents/AddNewPane';
+import RemovePane from '@/model/incidents/RemovePane';
+import SwapPanes from '@/model/incidents/SwapPanes';
+import UpdateChartStyle from '@/model/incidents/UpdateChartStyle';
+import TogglePane from '@/model/incidents/TogglePane';
 
 export default class ChartController {
   private static paneIdGen: number = 0;
 
   private readonly panes: PaneDescriptor<Viewport>[];
   private readonly sketchers: Map<DrawingType, Sketcher>;
+  private readonly tva: TimeVarianceAuthority;
+  private readonly state: ChartState;
+  private readonly unwatchers: Map<PaneId, WatchStopHandle[]> = new Map();
 
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
-  public readonly state: ChartState;
 
-  constructor(state: ChartState, chartOptions: ChartStyle, sketchers: Map<DrawingType, Sketcher>) {
+  constructor(state: ChartState, chartOptions: ChartStyle, tva: TimeVarianceAuthority, sketchers: Map<DrawingType, Sketcher>) {
     this.state = state;
     this.style = chartOptions;
+    this.tva = tva;
     this.sketchers = sketchers;
     this.panes = reactive([]);
     this.timeAxis = new TimeAxis(chartOptions.text);
@@ -34,6 +42,16 @@ export default class ChartController {
       (v) => {
         this.state.timeWidgetHeight = v + 16
       }, { immediate: true });
+  }
+
+  public updateStyle(options: DeepPartial<ChartStyle>): void {
+    this.tva
+      .getProtocol()
+      .addIncident(new UpdateChartStyle({
+        style: this.style,
+        update: options,
+      }))
+      .trySign();
   }
 
   public createPane(dataSource: DataSource, options?: Partial<PaneOptions<ViewportOptions>>): PaneId {
@@ -50,21 +68,104 @@ export default class ChartController {
       merge(paneOptions, options);
     }
 
-    return this.newPane(dataSource, paneOptions);
+    dataSource.tva = this.tva;
+
+    // todo: pane sizes
+    this.tva
+      .getProtocol()
+      .addIncident(new AddNewPane({
+        dataSource,
+        paneOptions,
+        panes: this.panes,
+        style: this.style,
+        timeAxis: this.timeAxis,
+        sketchers: this.sketchers,
+        afterApply: () => this.installWatchersForPane(paneOptions.id),
+        beforeInverse: () => this.uninstallWatchersForPane(paneOptions.id),
+      }))
+      .trySign();
+
+    return paneOptions.id;
   }
 
-  private newPane(dataSource: DataSource, options: PaneOptions<ViewportOptions>): PaneId {
-    const priceAxis: PriceAxis = new PriceAxis(this.style.text, options.priceScale, options.priceInverted);
-    const paneDescriptor: PaneDescriptor<Viewport> = {
-      model: new Viewport(dataSource, this.timeAxis, priceAxis),
-      ...options,
-    };
+  public removePane(paneId: PaneId): void {
+    // todo: pane sizes
+    this.tva
+      .getProtocol()
+      .addIncident(new RemovePane({
+        panes: this.panes,
+        paneIndex: this.indexByPaneId(paneId),
+        beforeApply: () => this.uninstallWatchersForPane(paneId),
+        afterInverse: () => this.installWatchersForPane(paneId),
+      }))
+      .trySign();
+  }
 
-    this.panes.push(paneDescriptor);
+  private installWatchersForPane(paneId: PaneId): void {
+    if (!this.unwatchers.has(paneId)) {
+      this.unwatchers.set(paneId, []);
+    }
 
-    watch(priceAxis.contentWidth, this.updatePriceAxisWidth.bind(this));
+    const pane = this.panes[this.indexByPaneId(paneId)];
+    const { priceAxis } = pane.model;
+    (this.unwatchers.get(paneId) as WatchStopHandle[]).push(
+      watch(priceAxis.contentWidth, this.updatePriceAxisWidth.bind(this), { immediate: true }),
+    )
+  }
 
-    return paneDescriptor.id;
+  private uninstallWatchersForPane(paneId: PaneId): void {
+    if (!this.unwatchers.has(paneId)) {
+      throw new Error('Oops: !this.unwatchers.has(paneId)')
+    }
+
+    for (const unwatch of (this.unwatchers.get(paneId) as WatchStopHandle[])) {
+      unwatch();
+    }
+  }
+
+  public swapPanes(paneId1: PaneId, paneId2: PaneId): void {
+    this.tva
+      .getProtocol()
+      .addIncident(new SwapPanes({
+        panes: this.panes,
+        pane1Index: this.indexByPaneId(paneId1),
+        pane2Index: this.indexByPaneId(paneId2),
+      }))
+      .trySign();
+  }
+
+  public togglePane(paneId: PaneId): void {
+    // todo: pane sizes
+    this.tva
+      .getProtocol()
+      .addIncident(new TogglePane({
+        paneDescriptor: this.panes[this.indexByPaneId(paneId)],
+      }))
+      .trySign();
+  }
+
+  public paneModel(paneId: PaneId): Viewport {
+    return this.panes[this.indexByPaneId(paneId)].model;
+  }
+
+  public clearHistory(): void {
+    this.tva.clear();
+  }
+
+  public canRedo(): boolean {
+    return this.tva.canRedo();
+  }
+
+  public redo(): void {
+    this.tva.redo();
+  }
+
+  public canUndo(): boolean {
+    return this.tva.canUndo();
+  }
+
+  public undo(): void {
+    this.tva.undo();
   }
 
   private updatePriceAxisWidth(): void {
@@ -77,34 +178,6 @@ export default class ChartController {
     }
 
     this.state.priceWidgetWidth = maxLabelWidth + 2 * PRICE_LABEL_PADDING;
-  }
-
-  public removePane(paneId: PaneId): void {
-    this.panes.splice(this.indexByPaneId(paneId), 1);
-  }
-
-  public swapPanes(paneId1: PaneId, paneId2: PaneId): void {
-    const id1 = this.indexByPaneId(paneId1);
-    const id2 = this.indexByPaneId(paneId2);
-
-    if (id1 >= this.panes.length || id2 >= this.panes.length) {
-      return;
-    }
-
-    const { panes } = this;
-    const tmp: PaneDescriptor<Viewport> = panes[id1];
-    panes[id1] = panes[id2];
-
-    // trigger change
-    panes.splice(id2, 1, tmp);
-  }
-
-  public paneDescriptor(paneId: PaneId): PaneDescriptor<Viewport> {
-    return this.panes[this.indexByPaneId(paneId)];
-  }
-
-  public paneModel(paneId: PaneId): Viewport {
-    return this.panes[this.indexByPaneId(paneId)].model;
   }
 
   private indexByPaneId(paneId: PaneId): number {

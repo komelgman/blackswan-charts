@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Point } from '@/model/type-defs';
 import { InvertedValue } from '@/model/axis/PriceAxis';
 

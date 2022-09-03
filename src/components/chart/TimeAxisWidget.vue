@@ -1,6 +1,13 @@
 <template>
   <div class="timeline pane">
-    <layered-canvas :options="canvasOptions" @drag-move="drag" @zoom="zoom" @resize="resize"/>
+    <layered-canvas
+      :options="canvasOptions"
+      @drag-start="onDragStart"
+      @drag-end="onDragEnd"
+      @drag-move="onDrag"
+      @zoom="zoom"
+      @resize="resize"
+    />
   </div>
 </template>
 
@@ -12,13 +19,15 @@ import LayeredCanvas, {
   ZoomEvent,
 } from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-
-import { Prop } from 'vue-property-decorator';
+import { InjectReactive, Prop } from 'vue-property-decorator';
 import { PropType } from 'vue';
 import TimeAxis from '@/model/axis/TimeAxis';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import TimeLabelsInvalidator from '@/model/axis/label/TimeLabelsInvalidator';
 import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
+import TVAProtocol from '@/model/history/TVAProtocol';
 
 @Options({
   components: { LayeredCanvas },
@@ -29,6 +38,9 @@ export default class TimeAxisWidget extends Vue {
   private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private labelsInvalidator!: TimeLabelsInvalidator;
 
+  @InjectReactive()
+  private tva!: TimeVarianceAuthority;
+
   created(): void {
     this.labelsInvalidator = new TimeLabelsInvalidator(this.timeAxis);
 
@@ -38,14 +50,6 @@ export default class TimeAxisWidget extends Vue {
       // priceline label renderer
       // tool/crosshair label renderer
     );
-  }
-
-  mounted(): void {
-    // todo install listeners
-  }
-
-  unmounted(): void {
-    // todo uninstall listeners
   }
 
   private createLabelsLayer(): TimeAxisLabelsLayer {
@@ -59,18 +63,56 @@ export default class TimeAxisWidget extends Vue {
     return result;
   }
 
-  private drag(e: DragMoveEvent): void {
-    this.timeAxis.zoom(this.$el.getBoundingClientRect().width / 2, -e.dx);
+  private onDragStart(): void {
+    const axis = this.timeAxis;
+    this.tva
+      .getProtocol({ incident: 'drag-in-time-axis' })
+      .addIncident(new UpdateAxisRange({
+        axis,
+        range: { ...axis.range },
+      }), false);
+  }
+
+  private onDrag(e: DragMoveEvent): void {
+    const axis = this.timeAxis;
+    axis.zoom(this.$el.getBoundingClientRect().width / 2, -e.dx);
+
+    this.tva
+      .getProtocol({ incident: 'drag-in-time-axis' })
+      .addIncident(new UpdateAxisRange({
+        axis,
+        range: { ...axis.range },
+      }), false);
+  }
+
+  private onDragEnd(): void {
+    this.tva
+      .getProtocol({ incident: 'drag-in-time-axis' })
+      .trySign();
   }
 
   private zoom(e: ZoomEvent): void {
-    this.timeAxis.zoom(e.pivot, e.delta);
+    const protocol: TVAProtocol = this.tva.getProtocol({ incident: 'zoom-time-axis', timeout: 1000 });
+    const { timeAxis: axis } = this;
+
+    if (protocol.isEmpty) {
+      // setup initial value
+      protocol.addIncident(new UpdateAxisRange({
+        axis,
+        range: { ...axis.range },
+      }));
+    }
+
+    axis.zoom(e.pivot, e.delta);
+
+    protocol.addIncident(new UpdateAxisRange({
+      axis,
+      range: { ...axis.range },
+    }));
   }
 
   private resize(e: ResizeEvent): void {
-    Object.assign(this.timeAxis.screenSize, {
-      main: e.width, second: e.height,
-    });
+    this.timeAxis.update({ screenSize: { main: e.width, second: e.height } });
   }
 }
 </script>

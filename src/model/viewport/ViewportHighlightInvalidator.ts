@@ -1,8 +1,9 @@
 import { Point } from '@/model/type-defs';
 import Viewport from '@/model/viewport/Viewport';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import DataSource, { DataSourceEntry } from '@/model/datasource/DataSource';
+import DataSource from '@/model/datasource/DataSource';
 import { toRaw } from 'vue';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 
 export default class ViewportHighlightInvalidator {
   public layerContext!: LayerContext;
@@ -22,7 +23,7 @@ export default class ViewportHighlightInvalidator {
     const currentHighlighted = this.viewportModel.highlighted;
     const inverted = this.viewportModel.priceAxis.inverted.value;
     this.viewportModel.highlighted = undefined;
-    this.viewportModel.handle = undefined;
+    this.viewportModel.highlightedHandleId = undefined;
     this.viewportModel.cursor = undefined;
     const screenPos: Point = { x: pos.x * dpr, y: pos.y * dpr };
 
@@ -45,7 +46,7 @@ export default class ViewportHighlightInvalidator {
         for (const [handleId, graphics] of Object.entries(entry[1].handles)) {
           if (graphics.hitTest(native, screenPos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;
-            this.viewportModel.handle = handleId;
+            this.viewportModel.highlightedHandleId = handleId;
             this.viewportModel.cursor = graphics.cursor || 'pointer';
             break;
           }

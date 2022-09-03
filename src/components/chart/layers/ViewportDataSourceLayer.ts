@@ -19,20 +19,22 @@ export default class ViewportDataSourceLayer extends Layer {
   }
 
   public installListeners(): void {
-    this.ds.addChangeEventListener(this.listener.bind(this));
+    this.ds.addChangeEventListener(this.dataSourceChangeEventListener);
   }
 
   public uninstallListeners(): void {
-    this.ds.removeChangeEventListener(this.listener.bind(this));
+    this.ds.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private listener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
     if (reasons.has(DataSourceChangeEventReason.CacheInvalidated)) {
       this.invalid = true;
     }
   };
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
+    // console.debug('datasource render');
+
     const inverted: InvertedValue = this.inverted.value;
     if (inverted < 0) {
       native.translate(width / 2, height / 2);

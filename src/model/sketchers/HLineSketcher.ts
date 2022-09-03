@@ -1,5 +1,4 @@
 import Sketcher from '@/model/datasource/Sketcher';
-import { DataSourceEntry } from '@/model/datasource/DataSource';
 import Viewport from '@/model/viewport/Viewport';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { LineFillStyle, RectStyle } from '@/model/datasource/line/type-defs';
@@ -9,6 +8,8 @@ import { toRaw } from 'vue';
 import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
 import HLine from '@/model/sketchers/graphics/HLine';
 import { invertColor } from '@/misc/color';
+import { HandleId } from '@/model/datasource/Drawing';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 
 export default class HLineSketcher implements Sketcher {
   // todo: extract to chartstyle
@@ -59,27 +60,25 @@ export default class HLineSketcher implements Sketcher {
     }
   }
 
-  public dragHandle(viewport: Viewport): DragHandle | undefined {
-    const { dataSource, highlighted, priceAxis } = viewport;
-    if (highlighted === undefined
-      || highlighted[0].type !== 'HLine'
-      || highlighted[0].locked
-      || highlighted[1] === undefined
+  public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
+    if (entry === undefined
+      || entry[0].type !== 'HLine'
+      || entry[0].locked
+      || entry[1] === undefined
     ) {
       console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
       return undefined;
     }
 
+    const { dataSource, priceAxis } = viewport;
     // only one handle and drag by body equals drag by handles.center
     return (e: DragMoveEvent) => {
       const rawDS = toRaw(dataSource);
-      rawDS.startTransaction();
-      const [options, drawing] = highlighted;
+      const [options, drawing] = entry;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const y = drawing?.handles.center.cy - priceAxis.inverted.value * e.dy;
-      rawDS.update(options.id, { data: { def: priceAxis.revert(y) } })
-      rawDS.endTransaction();
+      rawDS.update(options.id, { data: { def: priceAxis.revert(y) } });
     };
   }
 

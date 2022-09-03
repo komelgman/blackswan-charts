@@ -14,24 +14,65 @@ export interface Cloneable<T> {
   clone(): T
 }
 
-export function merge(dst: Record<string, any>, ...sources: Record<string, any>[]): Record<string, any> {
-  // eslint-disable-next-line no-restricted-syntax
+// todo: add test for merge
+declare type Item = [Record<string, any>, Record<string, any>, Record<string, any>, string];
+export function merge(dst: Record<string, any>, ...sources: Record<string, any>[]): [Record<string, any>, Record<string, any>] {
+  const items: Item[] = [];
+  const unmerge: Record<string, any> = {};
+
   for (const src of sources) {
-    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line guard-for-in
     for (const i in src) {
-      if (src[i] === undefined) {
-        continue;
+      items.push([dst, unmerge, src, i]);
+    }
+  }
+
+  while (items.length > 0) {
+    const [dstObj, oldObj, srcObj, property] = items.shift() as Item;
+    if (Array.isArray(srcObj[property]) || srcObj[property] === null || typeof srcObj[property] !== 'object' || dstObj[property] === undefined) {
+      if (oldObj !== undefined && dstObj[property] !== srcObj[property]) {
+        oldObj[property] = dstObj[property] === undefined ? null : dstObj[property];
       }
 
-      if (typeof src[i] !== 'object' || dst[i] === undefined) {
-        dst[i] = src[i];
-      } else {
-        merge(dst[i], src[i]);
+      dstObj[property] = srcObj[property] === null ? undefined : srcObj[property];
+    } else {
+      oldObj[property] = dstObj[property] === undefined ? null : {};
+
+      // eslint-disable-next-line guard-for-in
+      for (const i in srcObj[property]) {
+        items.push([dstObj[property], oldObj[property], srcObj[property], i]);
       }
     }
   }
 
-  return dst;
+  return [dst, unmerge];
+}
+
+export function isEmpty(obj: Record<string, unknown> | undefined): boolean {
+  if (obj === undefined) {
+    return true;
+  }
+
+  const items: [Record<string, unknown>, string][] = [];
+  // eslint-disable-next-line guard-for-in
+  for (const i in obj) {
+    items.push([obj, i]);
+  }
+
+  while (items.length > 0) {
+    const [testedObject, property] = items.shift() as [Record<string, unknown>, string];
+    const propertyValue = testedObject[property] as Record<string, unknown>;
+    if (Array.isArray(propertyValue) || typeof propertyValue !== 'object' || propertyValue === null) {
+      return false;
+    }
+
+    // eslint-disable-next-line guard-for-in
+    for (const i in propertyValue) {
+      items.push([propertyValue, i]);
+    }
+  }
+
+  return true;
 }
 
 export function isNumber(value: unknown): value is number {

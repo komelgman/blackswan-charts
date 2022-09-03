@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { reactive } from 'vue';
 
 export interface HasPostConstruct {

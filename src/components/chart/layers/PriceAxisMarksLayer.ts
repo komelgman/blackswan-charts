@@ -6,8 +6,8 @@ import Viewport from '@/model/viewport/Viewport';
 import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import { Predicate } from '@/model/type-defs';
-import { DataSourceEntry } from '@/model/datasource/DataSource';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 
 export default class PriceAxisMarksLayer extends Layer {
   private readonly viewport: Viewport;
@@ -23,14 +23,14 @@ export default class PriceAxisMarksLayer extends Layer {
   }
 
   public installListeners(): void {
-    this.viewport.dataSource.addChangeEventListener(this.listener.bind(this));
+    this.viewport.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
   }
 
   public uninstallListeners(): void {
-    this.viewport.dataSource.removeChangeEventListener(this.listener.bind(this));
+    this.viewport.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private listener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
     if (reasons.has(DataSourceChangeEventReason.CacheInvalidated)) {
       this.invalid = true;
     }

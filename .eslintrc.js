@@ -21,6 +21,7 @@ module.exports = {
     'class-methods-use-this': 0,
     'no-continue': 0,
     'no-restricted-globals': 0,
+    'no-unused-expressions': 0,
     'no-restricted-syntax': 0,
     'lines-between-class-members': 0,
     'object-curly-newline': 0,

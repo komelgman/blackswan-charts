@@ -1,13 +1,11 @@
-import { Point, UTCTimestamp } from '@/model/type-defs';
-import Axis from '@/model/axis/Axis';
+import { UTCTimestamp } from '@/model/type-defs';
+import Axis, { AxisOptions } from '@/model/axis/Axis';
 import Reactive, { HasPostConstruct } from '@/misc/reactive-decorator';
-import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
-import { computed, watch } from 'vue';
 import { TextStyle } from '@/model/ChartStyle';
 
 @Reactive
-export default class TimeAxis extends Axis<UTCTimestamp> implements HasPostConstruct {
+export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
 
   // eslint-disable-next-line no-useless-constructor
@@ -16,13 +14,20 @@ export default class TimeAxis extends Axis<UTCTimestamp> implements HasPostConst
   }
 
   public postConstruct(): void {
-    watch([
-      this.range,
-      computed(() => this.screenSize.main),
-    ], this.updateCache.bind(this), { immediate: true });
+    this.invalidateCache();
   }
 
-  private updateCache(): void {
+  public update(options: AxisOptions<UTCTimestamp>): void {
+    super.update(options);
+
+    if (options.range || options.screenSize?.main) {
+      this.invalidateCache();
+    }
+  }
+
+  private invalidateCache(): void {
+    // console.debug('time axis update cache');
+
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const size = to - from;
@@ -44,10 +49,6 @@ export default class TimeAxis extends Axis<UTCTimestamp> implements HasPostConst
     return (from + unscaleK * screenPos) as UTCTimestamp;
   }
 
-  public contextmenu(pos: Point): MenuItem[] {
-    return [];
-  }
-
   public zoom(screenPivot: number, screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
@@ -59,7 +60,12 @@ export default class TimeAxis extends Axis<UTCTimestamp> implements HasPostConst
     const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
     const delta = size * zoomType.valueOf();
 
-    this.range.from = from + delta as UTCTimestamp;
+    this.update({
+      range: {
+        from: from + delta as UTCTimestamp,
+        to,
+      },
+    });
   }
 
   public move(screenDelta: number): void {
@@ -71,10 +77,10 @@ export default class TimeAxis extends Axis<UTCTimestamp> implements HasPostConst
 
     const size = to - from;
     const unscaleK = size / screenSize;
-
     const revert = (screenPos: number): UTCTimestamp => (from + unscaleK * screenPos) as UTCTimestamp;
 
-    this.range.from = revert(screenDelta);
-    this.range.to = revert(screenSize + screenDelta);
+    this.update({
+      range: { from: revert(screenDelta), to: revert(screenSize + screenDelta) },
+    })
   }
 }

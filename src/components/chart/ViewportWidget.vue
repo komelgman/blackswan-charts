@@ -1,12 +1,17 @@
 <template>
-  <div class="viewport" :style="cssVars" @click.left="onClick">
+  <div
+    class="viewport"
+    :style="cssVars"
+  >
     <layered-canvas
       :options="canvasOptions"
       @drag-start="onDragStart"
       @drag-end="onDragEnd"
       @drag-move="onDrag"
       @mouse-move="onMouseMove"
-      @double-click="onDoubleClick"
+      @zoom="zoom"
+      @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
+      @left-mouse-btn-click="onLeftMouseBtnClick"
     />
   </div>
 </template>
@@ -17,21 +22,23 @@ import LayeredCanvas, {
   DragMoveEvent,
   MouseClickEvent,
   MouseMoveEvent,
+  ZoomEvent,
 } from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import { InjectReactive, Prop } from 'vue-property-decorator';
-import { PropType, unref } from 'vue';
+import { PropType } from 'vue';
 import Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
-import { DragHandle } from '@/model/viewport/DragHandle';
-
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import Sketcher from '@/model/datasource/Sketcher';
-import { DrawingType } from '@/model/datasource/Drawing';
 import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
 import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
 import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
+import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
+import TVAProtocol from '@/model/history/TVAProtocol';
 
 @Options({
   components: { LayeredCanvas },
@@ -44,15 +51,13 @@ export default class ViewportWidget extends Vue {
   private dataSourceInvalidator!: DataSourceInvalidator;
   private dataSourceLayer!: ViewportDataSourceLayer;
   private highlightingLayer!: ViewportHighlightingLayer;
-  private isDrag: boolean = false;
-  private dragHandle?: DragHandle = undefined;
 
   @InjectReactive()
-  private sketchers!: Map<DrawingType, Sketcher>;
+  private tva!: TimeVarianceAuthority;
 
   created(): void {
     this.highlightInvalidator = new ViewportHighlightInvalidator(this.viewportModel);
-    this.dataSourceInvalidator = new DataSourceInvalidator(this.viewportModel, this.sketchers);
+    this.dataSourceInvalidator = new DataSourceInvalidator(this.viewportModel);
     this.dataSourceLayer = this.createDataSourceLayer();
     this.highlightingLayer = this.createHighlightingLayer();
 
@@ -63,21 +68,38 @@ export default class ViewportWidget extends Vue {
       this.highlightingLayer,
       // tool/crosshair renderer ??? shared with other panes
     );
-
-    unref(this.viewportModel.dataSource);
   }
 
   mounted(): void {
     this.dataSourceInvalidator.installListeners();
     this.dataSourceLayer.installListeners();
     this.highlightingLayer.installListeners();
+    this.viewportModel.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
   }
 
   unmounted(): void {
     this.dataSourceInvalidator.uninstallListeners();
     this.dataSourceLayer.uninstallListeners();
     this.highlightingLayer.uninstallListeners();
+    this.viewportModel.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
+
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
+    if (reasons.has(DataSourceChangeEventReason.RemoveEntry)) {
+      const { dataSource, selected, highlighted } = this.viewportModel;
+      if (highlighted !== undefined && !dataSource.has(highlighted[0].id)) {
+        this.viewportModel.highlighted = undefined;
+        this.viewportModel.highlightedHandleId = undefined;
+        this.viewportModel.cursor = undefined;
+      }
+
+      selected.forEach((v) => {
+        if (!dataSource.has(v)) {
+          selected.delete(v);
+        }
+      });
+    }
+  };
 
   private createGridLayer(): ViewportGridLayer {
     const { timeAxis, priceAxis } = this.viewportModel;
@@ -100,19 +122,11 @@ export default class ViewportWidget extends Vue {
     return new ViewportHighlightingLayer(this.viewportModel);
   }
 
-  private onClick(e: MouseEvent): void {
-    if (!e.defaultPrevented) {
-      e.preventDefault();
-
-      console.log(`ctrl: ${e.ctrlKey}`);
-      console.log(`shift: ${e.shiftKey}`);
-      console.log(`button: ${e.button}`);
-
-      this.$emit('one-click', { x: e.x, y: e.y });
-    }
+  private onMouseMove(e: MouseMoveEvent): void {
+    this.highlightInvalidator.invalidate(e);
   }
 
-  private onDoubleClick(e: MouseClickEvent): void {
+  private onLeftMouseBtnDoubleClick(): void {
     const { highlighted } = this.viewportModel;
     if (highlighted !== undefined) {
       console.log(`double click on element: ${highlighted[0].id}`);
@@ -121,49 +135,90 @@ export default class ViewportWidget extends Vue {
     }
   }
 
-  private onDragStart(e: MouseMoveEvent): void {
-    this.isDrag = true;
-    const { highlighted } = this.viewportModel;
-    this.dragHandle = undefined;
-    if (highlighted !== undefined && !highlighted[0].locked) {
-      const sketcher: Sketcher | undefined = this.sketchers.get(highlighted[0].type);
-      if (sketcher === undefined) {
-        throw new Error(`OOPS, sketcher wasn't found for type ${highlighted[0].type}`);
-      }
+  private onLeftMouseBtnClick(e: MouseClickEvent): void {
+    this.viewportModel.updateSelection(e.isCtrl);
+  }
 
-      this.dragHandle = sketcher.dragHandle(this.viewportModel);
+  private onDragStart(e: MouseClickEvent): void {
+    this.viewportModel.dataSource.beginTransaction({ incident: 'drag-in-viewport' });
+    this.viewportModel.updateSelection(e.isCtrl, true);
+    this.viewportModel.updateDragHandle();
+
+    if (this.viewportModel.dragHandle === undefined) {
+      const { timeAxis, priceAxis } = this.viewportModel;
+
+      this.tva
+        .getProtocol({ incident: 'drag-in-viewport' })
+        .setLifeHooks({
+          // beforeApply: () => console.debug('protocol before apply'),
+          // afterApply: () => console.debug('protocol after apply'),
+        })
+        .addIncident(new UpdateAxisRange({
+          axis: timeAxis,
+          range: { ...timeAxis.range },
+          // beforeApply: () => console.debug('time axis before apply'),
+          // afterApply: () => console.debug('time axis after apply'),
+        }), false)
+        .addIncident(new UpdateAxisRange({
+          axis: priceAxis,
+          range: { ...priceAxis.range },
+          // beforeApply: () => console.debug('price axis before apply'),
+          // afterApply: () => console.debug('price axis after apply'),
+        }), false);
+    }
+  }
+
+  private onDrag(e: DragMoveEvent): void {
+    const { timeAxis, priceAxis, dataSource, dragHandle } = this.viewportModel;
+    if (dragHandle !== undefined) {
+      dragHandle(e);
+      dataSource.flush();
+    } else {
+      timeAxis.move(e.dx);
+      priceAxis.move(e.dy);
+
+      this.tva
+        .getProtocol({ incident: 'drag-in-viewport' })
+        .addIncident(new UpdateAxisRange({
+          axis: timeAxis,
+          range: { ...timeAxis.range },
+        }), false)
+        .addIncident(new UpdateAxisRange({
+          axis: priceAxis,
+          range: { ...priceAxis.range },
+        }), false);
     }
   }
 
   private onDragEnd(): void {
-    this.isDrag = false;
-    this.dragHandle = undefined;
-    this.dataSourceInvalidator.cleanDataSourceCache();
+    this.viewportModel.dataSource.endTransaction();
   }
 
-  private onDrag(e: DragMoveEvent): void {
-    if (this.dragHandle !== undefined) {
-      this.dragHandle(e);
-    } else {
-      this.viewportModel.timeAxis.move(e.dx);
-      this.viewportModel.priceAxis.move(e.dy);
+  private zoom(e: ZoomEvent): void {
+    const protocol: TVAProtocol = this.tva.getProtocol({ incident: 'zoom-time-axis', timeout: 1000 });
+    const { timeAxis: axis } = this.viewportModel;
+
+    if (protocol.isEmpty) {
+      // setup initial value
+      protocol.addIncident(new UpdateAxisRange({
+        axis,
+        range: { ...axis.range },
+      }));
     }
+
+    axis.zoom(e.pivot, e.delta);
+
+    protocol.addIncident(new UpdateAxisRange({
+      axis,
+      range: { ...axis.range },
+    }));
   }
 
-  private onMouseMove(e: MouseMoveEvent): void {
-    this.highlightInvalidator.invalidate(e);
-  }
-
-  get cssVars(): any {
-    const cursorValue = this.cursor();
-
+  get cssVars(): unknown {
+    const cursor: string = this.viewportModel.cursor || 'default';
     return {
-      cursor: cursorValue,
+      cursor: `${cursor} !important`,
     };
-  }
-
-  private cursor(): string {
-    return this.viewportModel.cursor || 'default';
   }
 }
 </script>

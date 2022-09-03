@@ -6,6 +6,9 @@ enum DataSourceChangeEventReason {
   CacheReset,
   CacheInvalidated,
   PriceMarkInvalidated,
+  TransactionStart,
+  TransactionEnd,
+  TransactionCancelled
 }
 
 export default DataSourceChangeEventReason;

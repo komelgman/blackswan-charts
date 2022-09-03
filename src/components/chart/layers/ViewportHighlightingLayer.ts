@@ -4,6 +4,7 @@ import { InvertedValue } from '@/model/axis/PriceAxis';
 import { computed, watch } from 'vue';
 import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 
 export default class ViewportHighlightingLayer extends Layer {
   private readonly viewport: Viewport;
@@ -16,26 +17,26 @@ export default class ViewportHighlightingLayer extends Layer {
     watch([
       computed(() => this.viewport.highlighted),
       computed(() => this.viewport.selected),
-    ], () => { this.invalid = true });
+    ], () => { this.invalid = true }, { deep: true });
   }
 
   public installListeners(): void {
-    this.viewport.dataSource.addChangeEventListener(this.listener.bind(this));
+    this.viewport.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
   }
 
   public uninstallListeners(): void {
-    this.viewport.dataSource.removeChangeEventListener(this.listener.bind(this));
+    this.viewport.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private listener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
     if (reasons.has(DataSourceChangeEventReason.CacheInvalidated)) {
       this.invalid = true;
     }
   };
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
-    const { highlighted, selected } = this.viewport;
-    if (highlighted === undefined && selected.length === 0) {
+    const { dataSource, highlighted, selected } = this.viewport;
+    if (highlighted === undefined && selected.size === 0) {
       return;
     }
 
@@ -47,19 +48,25 @@ export default class ViewportHighlightingLayer extends Layer {
       native.translate(-width / 2, -height / 2);
     }
 
-    // todo: viewport.selected elements
+    for (const entryId of selected) {
+      this.highlight(dataSource.get(entryId), native, inverted)
+    }
 
-    if (highlighted !== undefined) {
-      const [o, drawing] = highlighted;
+    if (highlighted !== undefined && !selected.has(highlighted[0].id)) {
+      this.highlight(highlighted, native, inverted);
+    }
+  }
 
-      if (drawing !== undefined) {
-        for (const part of drawing.parts) {
-          part.render(native, inverted);
-        }
+  private highlight(entry: DataSourceEntry, native: CanvasRenderingContext2D, inverted: InvertedValue): void {
+    const [o, drawing] = entry;
 
-        for (const [id, handle] of Object.entries(drawing.handles)) {
-          handle.render(native, inverted);
-        }
+    if (drawing !== undefined) {
+      for (const part of drawing.parts) {
+        part.render(native, inverted);
+      }
+
+      for (const [id, handle] of Object.entries(drawing.handles)) {
+        handle.render(native, inverted);
       }
     }
   }

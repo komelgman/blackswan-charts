@@ -1,45 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import { Predicate, Processor } from '@/model/type-defs';
-import { DeepPartial, merge } from '@/misc/strict-type-checks';
+import { Predicate } from '@/model/type-defs';
+import { clone, DeepPartial } from '@/misc/strict-type-checks';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import Drawing, { AxisMark, DrawingId, DrawingOptions } from '@/model/datasource/Drawing';
+import { DrawingId, DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
 import { isProxy } from 'vue';
-
-export declare type DataSourceEntry<DataType = any> = [DrawingOptions<DataType>, Drawing?, AxisMark?];
-export declare type DataSourceUpdateTask = {
-  predicate?: Predicate<DataSourceEntry>,
-  inverse?: boolean,
-  processor: Processor<DataSourceEntry>,
-}
+import DrawingIdHelper from '@/model/datasource/DrawingIdHelper';
+import type Sketcher from '@/model/datasource/Sketcher';
+import Viewport from '@/model/viewport/Viewport';
+import TimeVarianceAuthority, { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import TVAProtocol from '@/model/history/TVAProtocol';
+import UpdateDrawing from '@/model/datasource/incidents/UpdateDrawing';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import AddNewDrawing from '@/model/datasource/incidents/AddNewDrawing';
+import RemoveDrawing from '@/model/datasource/incidents/RemoveDrawing';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
-  public static readonly GENERIC_ALL_DRAWING_ID: string = '---generic---all';
   private readonly data: DataSourceEntry[];
   private readonly reasons: Set<DataSourceChangeEventReason> = new Set();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
-  private transaction: number = 0;
+  private drawingIdHelper: DrawingIdHelper;
+  private protocolOptions: TVAProtocolOptions | undefined = undefined;
+  public tva: TimeVarianceAuthority | undefined;
 
   public constructor(drawingOptions: DrawingOptions[]) {
     this.data = this.convertToDataArray(drawingOptions);
-  }
-
-  private convertToDataArray(drawingOptions: DrawingOptions[]): DataSourceEntry[] {
-    return drawingOptions.map((value) => [value]);
+    this.drawingIdHelper = new DrawingIdHelper(this);
   }
 
   * [Symbol.iterator](): IterableIterator<Readonly<DataSourceEntry>> {
-    if (isProxy(this)) {
-      throw new Error('Invalid state, dataSource shouldn\'t be reactive');
-    }
+    this.checkWeAreNotInProxy();
 
     for (const value of this.data) yield value;
   }
 
   * visible(inverse: boolean = false): IterableIterator<Readonly<DataSourceEntry>> {
-    if (isProxy(this)) {
-      throw new Error('Invalid state, dataSource shouldn\'t be reactive');
-    }
+    this.checkWeAreNotInProxy();
 
     if (inverse) {
       for (let i = this.data.length - 1; i >= 0; i -= 1) {
@@ -60,9 +56,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   * filtered(predicate: Predicate<DataSourceEntry>): IterableIterator<Readonly<DataSourceEntry>> {
-    if (isProxy(this)) {
-      throw new Error('Invalid state, dataSource shouldn\'t be reactive');
-    }
+    this.checkWeAreNotInProxy();
 
     for (const value of this.data) {
       if (predicate(value)) {
@@ -78,44 +72,79 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public removeChangeEventListener(listener: DataSourceChangeEventListener): void {
     const index = this.eventListeners.findIndex((v) => v === listener);
     if (index < 0) {
-      console.warn('Event listener not found');
+      console.error('Event listener not found');
       return;
     }
 
     this.eventListeners.splice(index, 1);
   }
 
-  // todo store state
-  public startTransaction(): void {
-    this.transaction += 1;
+  public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
+    if (this.tva === undefined) {
+      throw new Error('Illegal state: this.tva === undefined');
+    }
+
+    this.protocolOptions = options || { incident: this.getNewTransactionId() };
+    this.protocol.setLifeHooks({
+      afterInverse: () => this.flush(),
+      afterApply: () => this.flush(),
+    });
   }
 
-  public endTransaction(reason?: DataSourceChangeEventReason): void {
-    if (this.transaction === 0) {
-      throw new Error('this.transaction === 0');
+  private get protocol(): TVAProtocol {
+    if (this.tva === undefined) {
+      throw new Error('Illegal state: this.tva === undefined');
     }
 
-    if (reason !== undefined) {
-      this.addReason(reason);
+    return this.tva.getProtocol(this.protocolOptions);
+  }
+
+  public endTransaction(): void {
+    if (this.protocol === undefined) {
+      throw new Error('Illegal state: this.protocol === undefined');
     }
 
-    this.transaction -= 1;
+    this.protocol.trySign();
+    this.protocolOptions = undefined;
+  }
 
-    if (this.transaction === 0) {
-      const reasons: Set<DataSourceChangeEventReason> = new Set(this.reasons);
-      this.reasons.clear();
+  public flush(): void {
+    const reasons: Set<DataSourceChangeEventReason> = new Set(this.reasons);
+    this.reasons.clear();
+    this.fire(reasons);
+  }
 
-      for (const listener of this.eventListeners) {
-        listener.call(listener, reasons);
+  public resetCache(): void {
+    // console.debug('reset datasource cache');
+
+    for (const [options] of this.data) {
+      options.valid = false;
+    }
+
+    this.fire(DataSourceChangeEventReason.CacheReset);
+  }
+
+  public invalidateCache(viewport: Viewport): void {
+    // console.debug('invalidate datasource cache');
+
+    const invalidEntries = ([options]: DataSourceEntry): boolean => options.visible && !options.valid;
+    for (const entry of this.filtered(invalidEntries)) {
+      const drawingType: DrawingType = entry[0].type;
+      if (!viewport.hasSketcher(drawingType)) {
+        // console.warn(`unknown drawing type ${drawingType}`);
+        continue;
       }
+
+      const sketcher: Sketcher = viewport.getSketcher(drawingType) as Sketcher;
+      sketcher.draw(entry as DataSourceEntry, viewport);
     }
+
+    this.fire(DataSourceChangeEventReason.CacheInvalidated);
   }
 
-  // todo cancelTransaction
-  // todo undoTransaction
-  // todo redoTransaction
-
+  // todo: tva
   public bringToFront(id: DrawingId): void {
+    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     if (!this.has(id)) {
@@ -132,7 +161,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     data.push(tmp);
   }
 
+  // todo: tva
   public sendToBack(id: DrawingId): void {
+    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     if (!this.has(id)) {
@@ -154,7 +185,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     data.unshift(tmp);
   }
 
+  // todo: tva
   public bringForward(id: DrawingId): void {
+    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     if (!this.has(id)) {
@@ -176,7 +209,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     data.splice(index + 1, 1, tmp);
   }
 
+  // todo: tva
   public sendBackward(id: DrawingId): void {
+    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     if (!this.has(id)) {
@@ -198,44 +233,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     data.splice(index - 1, 1, tmp);
   }
 
-  public cleanCache(): void {
-    this.checkWeAreInTransaction();
-    this.addReason(DataSourceChangeEventReason.CacheReset);
-
-    for (const [options] of this.data) {
-      options.valid = false;
-    }
-  }
-
-  public remove(id: DrawingId): void {
-    this.checkWeAreInTransaction();
-
-    if (!this.has(id)) {
-      console.warn(`id not found: ${id}`)
-      return;
-    }
-
-    this.addReason(DataSourceChangeEventReason.RemoveEntry);
-
-    const { data } = this;
-    const index: number = this.indexById(id);
-    data.splice(index, 1);
-  }
-
-  public set<T>(id: DrawingId, value: DrawingOptions<T>): void {
-    this.checkWeAreInTransaction();
-
-    const index = this.indexById(id);
-    value.valid = false;
-    if (index < 0) {
-      this.addReason(DataSourceChangeEventReason.AddEntry);
-      this.data.push([value]);
-    } else {
-      this.addReason(DataSourceChangeEventReason.UpdateEntry);
-      this.data[index][0] = value;
-    }
-  }
-
   public get(id: DrawingId): DataSourceEntry {
     const index = this.indexById(id)
     if (index < 0) {
@@ -245,38 +242,108 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     return this.data[index];
   }
 
+  public add<T>(options: DrawingOptions<T>): void {
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
+    if (this.has(options.id)) {
+      throw new Error(`Entry with this Id already exists: ${options.id}`);
+    }
+
+    this.protocol.addIncident(new AddNewDrawing({
+      addReason: this.addReason.bind(this),
+      drawingOptions: options,
+      dataSourceEntries: this.data,
+    }));
+  }
+
   public update<T>(id: DrawingId, value: DeepPartial<DrawingOptions<T>>): void {
+    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     const index = this.indexById(id);
     if (index < 0) {
-      throw new Error('Illegal argument');
+      throw new Error(`try update: Entry with Id wasn't found: ${id}`);
     } else {
-      this.addReason(DataSourceChangeEventReason.UpdateEntry);
       const [options] = this.data[index];
-
-      merge(options, value, { valid: false });
+      this.protocol.addIncident(new UpdateDrawing({
+        addReason: this.addReason.bind(this),
+        drawingOptions: options,
+        update: value,
+      }));
     }
   }
 
-  // todo
-  public bulkUpdate(task: DataSourceUpdateTask): void {
+  public clone(id: DrawingId): DataSourceEntry {
+    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    console.log(task);
+    const entry = this.get(id);
+    if (entry === undefined) {
+      throw new Error(`Entry width Id wasn't found: ${id}`);
+    }
+
+    const options: DrawingOptions = clone(entry[0]);
+    options.id = this.getNewId(options.type);
+
+    this.protocol.addIncident(new AddNewDrawing({
+      addReason: this.addReason.bind(this),
+      drawingOptions: options,
+      dataSourceEntries: this.data,
+    }));
+
+    return this.get(options.id);
+  }
+
+  public remove(id: DrawingId): void {
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
+    if (!this.has(id)) {
+      console.warn(`id not found: ${id}`)
+      return;
+    }
+
+    this.addReason(DataSourceChangeEventReason.RemoveEntry);
+
+    this.protocol.addIncident(new RemoveDrawing({
+      index: this.indexById(id),
+      addReason: this.addReason.bind(this),
+      dataSourceEntries: this.data,
+    }));
   }
 
   public has(id: DrawingId): boolean {
-    return this.indexById(id) >= 0;
+    return this.data.findIndex((value) => value[0].id === id) >= 0;
+  }
+
+  public getNewId(type: string): DrawingId {
+    return this.drawingIdHelper.getNewId(type);
+  }
+
+  private fire(value: Set<DataSourceChangeEventReason> | DataSourceChangeEventReason): void {
+    const reasons: Set<DataSourceChangeEventReason> = (value as Set<DataSourceChangeEventReason>).forEach === undefined
+      ? new Set<DataSourceChangeEventReason>([value as DataSourceChangeEventReason])
+      : value as Set<DataSourceChangeEventReason>;
+
+    for (const listener of this.eventListeners) {
+      listener.call(listener, reasons);
+    }
+  }
+
+  private convertToDataArray(drawingOptions: DrawingOptions[]): DataSourceEntry[] {
+    return drawingOptions.map((value) => [value]);
+  }
+
+  private checkWeAreNotInProxy(): void {
+    if (isProxy(this)) {
+      throw new Error('Invalid state, dataSource shouldn\'t be reactive');
+    }
   }
 
   private checkWeAreInTransaction(): void {
-    if (this.transaction <= 0) {
-      throw new Error('Illegal state exception');
-    }
-
-    if (isProxy(this)) {
-      throw new Error('Invalid state, dataSource shouldn\'t be reactive');
+    if (!this.protocol) {
+      throw new Error('Invalid state, dataSource.beginTransaction() should be used before');
     }
   }
 
@@ -292,5 +359,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     }
 
     return result;
+  }
+
+  private getNewTransactionId(): string {
+    return `--dataSourceTransaction${Math.random()}`;
   }
 }

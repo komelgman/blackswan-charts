@@ -2,15 +2,16 @@
   <div
     class="layered-canvas"
     @mousedown.left="onDragStart"
-    @dblclick.left="onDoubleClick"
+    @dblclick.left="onMouseLeftBtnDoubleClick"
     @wheel.passive="onWheel"
     @mousemove="onMouseMove"
+    @click.left="onMouseLeftBtnClick"
   >
     <canvas
       ref="nativeLayers"
       v-for="(layer, index) in layers"
       :key="layer.id"
-      :style="'z-index:' + index"
+      :style="'user-select: none;-webkit-tap-highlight-color: transparent;z-index:' + index"
     />
   </div>
 </template>
@@ -38,6 +39,7 @@ export interface MouseMoveEvent {
 export interface MouseClickEvent {
   x: number;
   y: number;
+  isCtrl: boolean;
 }
 
 export interface ZoomEvent {
@@ -63,7 +65,8 @@ export default class LayeredCanvas extends Vue {
   private removeMoveListener!: any;
   private removeEndListener!: any;
   private isSkipMovementsDetection: boolean = false;
-  private isOnDrag: boolean = false;
+  private isDrag: boolean = false;
+  private isWasDrag: boolean = false;
 
   created(): void {
     this.resizeObserver = new ResizeObserver(this.setupLayers);
@@ -86,11 +89,18 @@ export default class LayeredCanvas extends Vue {
     return this.options.layers;
   }
 
-  private onDoubleClick(e: MouseEvent): void {
+  private onMouseLeftBtnClick(e: MouseEvent): void {
+    if (!e.defaultPrevented && !this.isWasDrag) {
+      e.preventDefault();
+      this.$emit('left-mouse-btn-click', { x: e.x, y: e.y, isCtrl: e.ctrlKey });
+    }
+  }
+
+  private onMouseLeftBtnDoubleClick(e: MouseEvent): void {
     if (!e.defaultPrevented) {
       e.preventDefault();
 
-      this.$emit('double-click', { x: e.x, y: e.y });
+      this.$emit('left-mouse-btn-double-click', { x: e.x, y: e.y });
     }
   }
 
@@ -105,21 +115,26 @@ export default class LayeredCanvas extends Vue {
 
   private onDragStart(e: MouseEvent): void {
     if (!e.defaultPrevented) {
-      e.preventDefault();
+      // e.preventDefault();
 
-      this.isOnDrag = true;
+      this.isDrag = true;
+      this.isWasDrag = false;
       this.prevPos = { x: e.x, y: e.y };
       this.removeMoveListener = onDocument('mousemove', this.onDragMove, true);
       this.removeEndListener = onceDocument('mouseup', this.onDragEnd);
-      this.$emit('drag-start', { x: e.x, y: e.y });
     }
   }
 
   private onDragMove(e: MouseEvent): void {
-    if (this.isSkipMovementsDetection) {
+    if (!this.isDrag || this.isSkipMovementsDetection) {
       return;
     }
     this.isSkipMovementsDetection = true;
+
+    if (!this.isWasDrag) {
+      this.$emit('drag-start', { x: e.x, y: e.y, isCtrl: e.ctrlKey });
+      this.isWasDrag = true;
+    }
 
     this.$emit('drag-move', { dx: this.prevPos.x - e.x, dy: this.prevPos.y - e.y });
     this.prevPos = { x: e.x, y: e.y };
@@ -129,7 +144,7 @@ export default class LayeredCanvas extends Vue {
   }
 
   private onMouseMove(e: MouseEvent): void {
-    if (this.isOnDrag || this.isSkipMovementsDetection) {
+    if (this.isDrag || this.isSkipMovementsDetection) {
       return;
     }
     this.isSkipMovementsDetection = true;
@@ -141,10 +156,10 @@ export default class LayeredCanvas extends Vue {
   }
 
   private onDragEnd(e?: DragEvent): void {
-    this.isOnDrag = false;
+    this.isDrag = false;
 
     if (e === undefined || !e.defaultPrevented) {
-      if (e !== undefined) {
+      if (e !== undefined && this.isWasDrag) {
         e.preventDefault();
         this.$emit('drag-end', { x: e.x, y: e.y });
       }

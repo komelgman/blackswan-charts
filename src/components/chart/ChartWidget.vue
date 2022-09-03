@@ -1,19 +1,33 @@
 <template>
-  <box-layout direction="vertical" @contextmenu.prevent :style="cssVars">
+  <box-layout
+    direction="vertical"
+    :style="cssVars"
+    @keydown="onKeyDown"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+    @contextmenu.prevent
+    tabindex="0"
+  >
     <ContextMenu ref="contextmenu"/>
     <multipane :items="controller.panes" direction="vertical" resizable>
       <template v-slot:default="props">
         <box-layout>
           <viewport-widget
             :viewport-model="props.model"
-            v-contextmenu="{ model: props.model, instance: $refs['contextmenu'] }"
+            v-contextmenu="{
+              model: createViewportContextMenu(props.model),
+              instance: $refs['contextmenu']
+            }"
           />
 
           <divider/>
 
           <price-axis-widget
             :viewport-model="props.model"
-            v-contextmenu="{ model: props.model.priceAxis, instance: $refs['contextmenu'] }"
+            v-contextmenu="{
+              model: createPriceAxisContextMenu(props.model.priceAxis),
+              instance: $refs['contextmenu']
+            }"
           />
         </box-layout>
       </template>
@@ -24,7 +38,10 @@
     <box-layout :style="timeLineStyle">
       <time-axis-widget
         :time-axis="controller.timeAxis"
-        v-contextmenu="{ model: controller.timeAxis, instance: $refs['contextmenu'] }"
+        v-contextmenu="{
+          model: createTimeAxisContextMenu(),
+          instance: $refs['contextmenu']
+        }"
       />
 
       <divider/>
@@ -52,6 +69,13 @@ import ContextMenu from '@/components/context-menu/ContextMenu.vue';
 import Sketcher from '@/model/datasource/Sketcher';
 import { DrawingType } from '@/model/datasource/Drawing';
 import { ChartStyle } from '@/model/ChartStyle';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import PriceAxis from '@/model/axis/PriceAxis';
+import { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
+import PriceAxisContextMenu from '@/model/context-menu/PriceAxisContextMenu';
+import TimeAxisContextMenu from '@/model/context-menu/TimeAxisContextMenu';
+import Viewport from '@/model/viewport/Viewport';
+import ViewportContextMenu from '@/model/context-menu/ViewportContextMenu';
 
 export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: Map<DrawingType, Sketcher> };
 
@@ -71,6 +95,8 @@ export default class ChartWidget extends Vue {
   private chartStyle!: ChartStyle;
   @ProvideReactive()
   private chartState!: ChartState;
+  @ProvideReactive()
+  private tva!: TimeVarianceAuthority;
 
   @ProvideReactive()
   private sketchers!: Map<DrawingType, Sketcher>;
@@ -78,21 +104,34 @@ export default class ChartWidget extends Vue {
   public created(): void {
     this.sketchers = this.createSketchersOptions();
     this.chartStyle = this.createChartStyleOptions();
+    this.tva = new TimeVarianceAuthority();
 
     this.chartState = reactive({
       priceWidgetWidth: -1,
       timeWidgetHeight: -1,
     });
 
-    this.controller = new ChartController(this.chartState, this.chartStyle, this.sketchers);
+    this.controller = new ChartController(this.chartState, this.chartStyle, this.tva, this.sketchers);
   }
 
   private createChartStyleOptions(): ChartStyle {
     if (this.options && this.options.style) {
-      return reactive(merge(clone(chartOptionsDefaults), this.options.style) as ChartStyle)
+      return reactive(merge(clone(chartOptionsDefaults), this.options.style)[0] as ChartStyle)
     }
 
     return reactive(clone(chartOptionsDefaults));
+  }
+
+  private createPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
+    return new PriceAxisContextMenu(this.tva, priceAxis);
+  }
+
+  private createTimeAxisContextMenu(): ContextMenuOptionsProvider {
+    return new TimeAxisContextMenu(this.tva, this.controller.timeAxis);
+  }
+
+  private createViewportContextMenu(viewport: Viewport): ContextMenuOptionsProvider {
+    return new ViewportContextMenu(this.tva, viewport);
   }
 
   private createSketchersOptions(): Map<DrawingType, Sketcher> {
@@ -107,20 +146,26 @@ export default class ChartWidget extends Vue {
     return result;
   }
 
-  mounted(): void {
-    // install listeners there
+  private onMouseEnter(): void {
+    this.$el.focus();
   }
 
-  unmounted(): void {
-    // uninstall listeners there
+  private onMouseLeave(): void {
+    this.$el.blur();
   }
 
-  public updateStyle(options: DeepPartial<ChartStyle>): void {
-    merge(this.chartStyle, options);
-  }
+  private onKeyDown(e: KeyboardEvent): void {
+    const isCommandKey: boolean = e.ctrlKey || e.metaKey;
+    const isZKeyPressed: boolean = e.key === 'z' || e.key === 'Z';
 
-  public updateState(options: DeepPartial<ChartState>): void {
-    merge(this.chartState, options);
+    if (isZKeyPressed && isCommandKey) {
+      e.preventDefault();
+      if (e.shiftKey) {
+        this.controller.redo();
+      } else {
+        this.controller.undo();
+      }
+    }
   }
 
   public getChartAPI(): ChartController {
