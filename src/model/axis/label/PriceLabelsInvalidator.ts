@@ -34,7 +34,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     const { main: screenSize } = this.axis.screenSize;
     const logicLabelSize: LogicSize = this.maxLabelSize;
     const labelSize = logicLabelSize.main;
-    const labelsCount = screenSize / (2 * labelSize);
+    const labelsCount = screenSize / (3 * labelSize);
     const step = screenSize / labelsCount;
     const zeroPos: number = this.axis.translate(0 as Price);
     const shift = Math.sign(zeroPos) * (zeroPos % step);

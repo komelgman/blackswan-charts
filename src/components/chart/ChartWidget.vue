@@ -15,7 +15,7 @@
           <viewport-widget
             :viewport-model="props.model"
             v-contextmenu="{
-              model: createViewportContextMenu(props.model),
+              model: getViewportContextMenu(props.model),
               instance: $refs['contextmenu']
             }"
           />
@@ -25,7 +25,7 @@
           <price-axis-widget
             :viewport-model="props.model"
             v-contextmenu="{
-              model: createPriceAxisContextMenu(props.model.priceAxis),
+              model: getPriceAxisContextMenu(props.model.priceAxis),
               instance: $refs['contextmenu']
             }"
           />
@@ -39,7 +39,7 @@
       <time-axis-widget
         :time-axis="controller.timeAxis"
         v-contextmenu="{
-          model: createTimeAxisContextMenu(),
+          model: getTimeAxisContextMenu(),
           instance: $refs['contextmenu']
         }"
       />
@@ -98,6 +98,9 @@ export default class ChartWidget extends Vue {
   @ProvideReactive()
   private tva!: TimeVarianceAuthority;
 
+  private contextMenuMap: WeakMap<any, ContextMenuOptionsProvider>
+    = new WeakMap<any, ContextMenuOptionsProvider>();
+
   @ProvideReactive()
   private sketchers!: Map<DrawingType, Sketcher>;
 
@@ -122,16 +125,29 @@ export default class ChartWidget extends Vue {
     return reactive(clone(chartOptionsDefaults));
   }
 
-  private createPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
-    return new PriceAxisContextMenu(this.tva, priceAxis);
+  private getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
+    if (!this.contextMenuMap.has(priceAxis)) {
+      this.contextMenuMap.set(priceAxis, new PriceAxisContextMenu(this.tva, priceAxis));
+    }
+
+    return this.contextMenuMap.get(priceAxis) as ContextMenuOptionsProvider;
   }
 
-  private createTimeAxisContextMenu(): ContextMenuOptionsProvider {
-    return new TimeAxisContextMenu(this.tva, this.controller.timeAxis);
+  private getTimeAxisContextMenu(): ContextMenuOptionsProvider {
+    const { timeAxis } = this.controller;
+    if (!this.contextMenuMap.has(timeAxis)) {
+      this.contextMenuMap.set(timeAxis, new TimeAxisContextMenu(this.tva, timeAxis));
+    }
+
+    return this.contextMenuMap.get(timeAxis) as ContextMenuOptionsProvider;
   }
 
-  private createViewportContextMenu(viewport: Viewport): ContextMenuOptionsProvider {
-    return new ViewportContextMenu(this.tva, viewport);
+  private getViewportContextMenu(viewport: Viewport): ContextMenuOptionsProvider {
+    if (!this.contextMenuMap.has(viewport)) {
+      this.contextMenuMap.set(viewport, new ViewportContextMenu(this.tva, viewport));
+    }
+
+    return this.contextMenuMap.get(viewport) as ContextMenuOptionsProvider;
   }
 
   private createSketchersOptions(): Map<DrawingType, Sketcher> {

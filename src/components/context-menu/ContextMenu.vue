@@ -4,7 +4,7 @@ import { InjectReactive } from 'vue-property-decorator';
 import { Point } from '@/model/type-defs';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { EventRemover, onceDocument } from '@/misc/document-listeners';
-import { CSSProperties, VNode } from 'vue';
+import { CSSProperties, reactive, VNode, watch } from 'vue';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
 import makeFont from '@/misc/make-font';
@@ -17,7 +17,7 @@ const HIDDEN_POS: Point = { x: -10000, y: 0 };
 })
 export default class ContextMenu extends Vue {
   private position: Point = HIDDEN_POS;
-  private items: MenuItem[] = [];
+  private items: MenuItem[] = reactive([]);
   private visible: boolean = false;
   private removeHideListener!: EventRemover;
 
@@ -31,7 +31,9 @@ export default class ContextMenu extends Vue {
   }
 
   public show(event: MouseEvent, items: MenuItem[]): void {
-    this.items = items;
+    // console.debug('context menu show');
+
+    this.items.splice(0, this.items.length, ...items);
     this.removeHideListener = onceDocument('mousedown', this.hide);
     this.visible = true;
 
@@ -41,6 +43,8 @@ export default class ContextMenu extends Vue {
   }
 
   private calcPosition(event: MouseEvent): Point {
+    // console.debug('context menu calcPosition');
+
     const width = this.$el.clientWidth;
     const height = this.$el.clientHeight;
     const result: Point = {
@@ -98,6 +102,8 @@ export default class ContextMenu extends Vue {
   }
 
   render(): any {
+    // console.debug('context menu render');
+
     return (
       <div class="context-menu" style={this.style}>
         <ul>
