@@ -1,3 +1,5 @@
+import { RectStyle } from '@/model/datasource/line/type-defs';
+
 export interface TextStyle {
   color: string;
   fontSize: number;
@@ -7,6 +9,7 @@ export interface TextStyle {
 
 export interface ChartStyle {
   text: TextStyle;
+  handleStyle: RectStyle;
   backgroundColor: string;
   menuBackgroundColor: string;
   menuBackgroundColorOnHover: string;

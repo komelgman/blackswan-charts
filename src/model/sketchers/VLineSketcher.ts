@@ -1,4 +1,3 @@
-import Sketcher from '@/model/datasource/Sketcher';
 import Viewport from '@/model/viewport/Viewport';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { LineFillStyle, LineStyle, RectStyle } from '@/model/datasource/line/type-defs';
@@ -11,17 +10,20 @@ import { HandleId } from '@/model/datasource/Drawing';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import VLine from '@/model/sketchers/graphics/VLine';
 import { UTCTimestamp } from '@/model/type-defs';
+import Sketcher from '@/model/sketchers/Sketcher';
+import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 
 export interface VLineOptions {
   def: UTCTimestamp;
   style: LineStyle;
 }
 
-export default class VLineSketcher implements Sketcher {
-  // todo: extract to chartstyle
-  private readonly handleStyle: RectStyle = { color: '#101010', border: { lineWidth: 2, color: '#1010BB', fill: LineFillStyle.Solid } };
-
+export default class VLineSketcher extends AbstractSketcher {
   public draw(entry: DataSourceEntry<VLineOptions>, viewport: Viewport): void {
+    if (this.chartStyle === undefined) {
+      throw new Error('Illegal state: this.chartStyle === undefined');
+    }
+
     const [options, drawing, timeMark] = entry;
     const { data: line, locked } = options;
     const { timeAxis } = viewport;
@@ -39,7 +41,7 @@ export default class VLineSketcher implements Sketcher {
     if (drawing === undefined) {
       entry[1] = {
         parts: [new VLine(x, 0, height, line.style)],
-        handles: { center: new SquareHandle(x, height / 2, locked, this.handleStyle, 'ew-resize') },
+        handles: { center: new SquareHandle(x, height / 2, locked, this.chartStyle.handleStyle, 'ew-resize') },
       };
     } else {
       (drawing.parts[0] as VLine).invalidate(x, 0, height, line.style);

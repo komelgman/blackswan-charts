@@ -66,7 +66,6 @@ import { CSSProperties, reactive } from 'vue';
 import ChartState from '@/model/ChartState';
 import contextMenuDirective from '@/components/context-menu/ContextMenuDirective';
 import ContextMenu from '@/components/context-menu/ContextMenu.vue';
-import Sketcher from '@/model/datasource/Sketcher';
 import { DrawingType } from '@/model/datasource/Drawing';
 import { ChartStyle } from '@/model/ChartStyle';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
@@ -76,6 +75,8 @@ import PriceAxisContextMenu from '@/model/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/context-menu/TimeAxisContextMenu';
 import Viewport from '@/model/viewport/Viewport';
 import ViewportContextMenu from '@/model/context-menu/ViewportContextMenu';
+import Sketcher from '@/model/sketchers/Sketcher';
+import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
 
 export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: Map<DrawingType, Sketcher> };
 
@@ -98,16 +99,16 @@ export default class ChartWidget extends Vue {
   @ProvideReactive()
   private tva!: TimeVarianceAuthority;
 
-  private contextMenuMap: WeakMap<any, ContextMenuOptionsProvider>
-    = new WeakMap<any, ContextMenuOptionsProvider>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private contextMenuMap: WeakMap<any, ContextMenuOptionsProvider> = new WeakMap<any, ContextMenuOptionsProvider>();
 
   @ProvideReactive()
   private sketchers!: Map<DrawingType, Sketcher>;
 
   public created(): void {
-    this.sketchers = this.createSketchersOptions();
-    this.chartStyle = this.createChartStyleOptions();
     this.tva = new TimeVarianceAuthority();
+    this.chartStyle = this.createChartStyleOptions();
+    this.sketchers = this.createSketchersOptions();
 
     this.chartState = reactive({
       priceWidgetWidth: -1,
@@ -117,12 +118,12 @@ export default class ChartWidget extends Vue {
     this.controller = new ChartController(this.chartState, this.chartStyle, this.tva, this.sketchers);
   }
 
-  mounted() {
+  mounted(): void {
     const htmlBodyElement: HTMLBodyElement = document.querySelector('body') as HTMLBodyElement;
     htmlBodyElement.style.backgroundColor = this.chartStyle.backgroundColor;
   }
 
-  unmounted() {
+  unmounted(): void {
     (document.querySelector('body') as HTMLBodyElement).style.backgroundColor = ''
   }
 
@@ -132,6 +133,18 @@ export default class ChartWidget extends Vue {
     }
 
     return reactive(clone(chartOptionsDefaults));
+  }
+
+  private createSketchersOptions(): Map<DrawingType, Sketcher> {
+    const result: Map<DrawingType, Sketcher> = new Map(sketcherDefaults);
+
+    if (this.options?.sketchers) {
+      this.options.sketchers.forEach((value, key) => result.set(key, value));
+    }
+
+    result.forEach((value) => value.setChartStyle(this.chartStyle));
+
+    return result;
   }
 
   private getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
@@ -157,18 +170,6 @@ export default class ChartWidget extends Vue {
     }
 
     return this.contextMenuMap.get(viewport) as ContextMenuOptionsProvider;
-  }
-
-  private createSketchersOptions(): Map<DrawingType, Sketcher> {
-    const result: Map<DrawingType, Sketcher> = new Map();
-
-    // todo set default
-
-    if (this.options && this.options.sketchers) {
-      this.options.sketchers.forEach((value, key) => result.set(key, value));
-    }
-
-    return result;
   }
 
   private onMouseEnter(): void {
@@ -197,6 +198,7 @@ export default class ChartWidget extends Vue {
     return this.controller;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get cssVars(): any {
     const {
       backgroundColor,

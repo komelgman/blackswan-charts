@@ -10,11 +10,9 @@ import DataSource from '@/model/datasource/DataSource';
 import { Ref } from 'vue-property-decorator';
 import { DeepPartial } from '@/misc/strict-type-checks';
 import ChartController from '@/model/ChartController';
-import Sketcher from '@/model/datasource/Sketcher';
+import Sketcher from '@/model/sketchers/Sketcher';
 import { DrawingType } from '@/model/datasource/Drawing';
-import HLineSketcher from '@/model/sketchers/HLineSketcher';
 import { ChartStyle } from '@/model/ChartStyle';
-import VLineSketcher from '@/model/sketchers/VLineSketcher';
 
 @Options({
   components: {
@@ -30,10 +28,7 @@ export default class App extends Vue {
 
   created(): void {
     this.chartStyle = {};
-    this.customSketchers = new Map<DrawingType, Sketcher>([
-      ['HLine', new HLineSketcher()],
-      ['VLine', new VLineSketcher()],
-    ]);
+    this.customSketchers = new Map<DrawingType, Sketcher>([]);
 
     this.mainDs = new DataSource([
       { id: 'hline1', title: 'hline1', type: 'HLine', data: { def: -0.5, style: { lineWidth: 1, fill: 0, color: '#AA0000' } }, locked: true, visible: true },

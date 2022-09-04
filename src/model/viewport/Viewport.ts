@@ -5,9 +5,9 @@ import PriceScale from '@/model/axis/scaling/PriceScale';
 import { DrawingId, DrawingType, HandleId } from '@/model/datasource/Drawing';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import { toRaw } from 'vue';
-import type Sketcher from '@/model/datasource/Sketcher';
 import { DragHandle } from '@/model/viewport/DragHandle';
 import { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
+import type Sketcher from '@/model/sketchers/Sketcher';
 
 export interface ViewportOptions {
   priceScale: PriceScale;

@@ -1,4 +1,3 @@
-import Sketcher from '@/model/datasource/Sketcher';
 import Viewport from '@/model/viewport/Viewport';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { LineFillStyle, LineStyle, RectStyle } from '@/model/datasource/line/type-defs';
@@ -11,17 +10,20 @@ import { invertColor } from '@/misc/color';
 import { HandleId } from '@/model/datasource/Drawing';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import { Price } from '@/model/type-defs';
+import Sketcher from '@/model/sketchers/Sketcher';
+import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 
 export interface HLineOptions {
   def: Price;
   style: LineStyle;
 }
 
-export default class HLineSketcher implements Sketcher {
-  // todo: extract to chartstyle
-  private readonly handleStyle: RectStyle = { color: '#101010', border: { lineWidth: 2, color: '#1010BB', fill: LineFillStyle.Solid } };
-
+export default class HLineSketcher extends AbstractSketcher {
   public draw(entry: DataSourceEntry<HLineOptions>, viewport: Viewport): void {
+    if (this.chartStyle === undefined) {
+      throw new Error('Illegal state: this.chartStyle === undefined');
+    }
+
     const [options, drawing, priceMark] = entry;
     const { data: line, locked } = options;
     const { priceAxis } = viewport;
@@ -39,7 +41,7 @@ export default class HLineSketcher implements Sketcher {
     if (drawing === undefined) {
       entry[1] = {
         parts: [new HLine(y, 0, width, line.style)],
-        handles: { center: new SquareHandle(width / 2, y, locked, this.handleStyle, 'ns-resize') },
+        handles: { center: new SquareHandle(width / 2, y, locked, this.chartStyle.handleStyle, 'ns-resize') },
       };
     } else {
       (drawing.parts[0] as HLine).invalidate(y, 0, width, line.style);

@@ -6,7 +6,7 @@ import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEven
 import { DrawingId, DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
 import { isProxy } from 'vue';
 import DrawingIdHelper from '@/model/datasource/DrawingIdHelper';
-import type Sketcher from '@/model/datasource/Sketcher';
+import Sketcher from '@/model/sketchers/Sketcher';
 import Viewport from '@/model/viewport/Viewport';
 import TimeVarianceAuthority, { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import TVAProtocol from '@/model/history/TVAProtocol';

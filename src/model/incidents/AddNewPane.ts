@@ -9,7 +9,7 @@ import DataSource from '@/model/datasource/DataSource';
 import { ChartStyle } from '@/model/ChartStyle';
 import TimeAxis from '@/model/axis/TimeAxis';
 import { DrawingType } from '@/model/datasource/Drawing';
-import Sketcher from '@/model/datasource/Sketcher';
+import Sketcher from '@/model/sketchers/Sketcher';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;

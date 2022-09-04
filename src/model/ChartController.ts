@@ -7,7 +7,7 @@ import ChartState from '@/model/ChartState';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
 import { PaneId } from '@/components/layout/PaneDescriptor';
 import Viewport, { ViewportOptions } from '@/model/viewport/Viewport';
-import Sketcher from '@/model/datasource/Sketcher';
+import Sketcher from '@/model/sketchers/Sketcher';
 import { DrawingType } from '@/model/datasource/Drawing';
 import { ChartStyle } from '@/model/ChartStyle';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';

@@ -1,4 +1,5 @@
 import { ChartStyle } from '@/model/ChartStyle';
+import { LineFillStyle, RectStyle } from '@/model/datasource/line/type-defs';
 
 export const defaultFontFamily = '"Trebuchet MS", Roboto, Ubuntu, sans-serif';
 
@@ -8,6 +9,15 @@ export default {
     fontFamily: defaultFontFamily,
     fontSize: 12,
     fontStyle: 'normal',
+  },
+  handleStyle: {
+    color: '#101010',
+    border: {
+      lineWidth: 2,
+      color: '#1010BB',
+      fill:
+      LineFillStyle.Solid,
+    },
   },
   backgroundColor: '#131722',
   menuBackgroundColor: '#1e222d',
