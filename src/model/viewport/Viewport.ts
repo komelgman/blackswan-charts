@@ -22,10 +22,10 @@ export default class Viewport {
   public readonly dataSource: DataSource;
 
   public readonly selected: Set<DrawingId> = new Set();
-  public highlighted?: DataSourceEntry = undefined;
-  public cursor?: string = undefined;
-  public highlightedHandleId?: HandleId = undefined;
-  public dragHandle: DragHandle | undefined = undefined;
+  public highlighted: DataSourceEntry | undefined;
+  public cursor: string | undefined;
+  public highlightedHandleId: HandleId | undefined;
+  public dragHandle: DragHandle | undefined;
 
   constructor(dataSource: DataSource, timeAxis: TimeAxis, priceAxis: PriceAxis, sketchers: Map<DrawingType, Sketcher>) {
     this.dataSource = dataSource;
@@ -35,7 +35,7 @@ export default class Viewport {
   }
 
   public updateSelection(isCtrlPressed: boolean, isInDrag: boolean = false): void {
-    const { dataSource, highlighted, selected } = this;
+    const { highlighted, selected } = this;
 
     if (this.selectionShouldBeCleared(isInDrag, isCtrlPressed)) {
       selected.clear();
@@ -49,20 +49,6 @@ export default class Viewport {
         selected.add(id);
       }
     }
-
-    if (isInDrag && isCtrlPressed) {
-      const rawDS = toRaw(dataSource);
-      const tmp: Set<DrawingId> = new Set();
-      for (const id of selected) {
-        const clonedEntry: DataSourceEntry = rawDS.clone(id);
-        const sketcher: Sketcher = this.getSketcher(clonedEntry[0].type);
-        sketcher.draw(clonedEntry, this);
-        selected.delete(id);
-        tmp.add(clonedEntry[0].id);
-      }
-      rawDS.flush();
-      tmp.forEach((value) => selected.add(value));
-    }
   }
 
   private selectionShouldBeCleared(isInDrag: boolean, isCtrlPressed: boolean): boolean {
@@ -74,15 +60,45 @@ export default class Viewport {
       || (!isInDrag && !isCtrlPressed); // click without ctrl
   }
 
+  public cloneSelected(): void {
+    const { dataSource, selected } = this;
+    const rawDS = toRaw(dataSource);
+    const tmp: Set<DrawingId> = new Set();
+
+    for (const id of selected) {
+      const clonedEntry: DataSourceEntry = rawDS.clone(id);
+      const sketcher: Sketcher = this.getSketcher(clonedEntry[0].type);
+      sketcher.draw(clonedEntry, this);
+      selected.delete(id);
+      tmp.add(clonedEntry[0].id);
+    }
+
+    rawDS.flush();
+    selected.clear();
+    tmp.forEach((value) => selected.add(value));
+  }
+
+  public moveSelected(e: DragMoveEvent): void {
+    const { dataSource, dragHandle } = this;
+    if (dragHandle === undefined) {
+      throw new Error('Illegal state: dragHandle === undefined');
+    }
+
+    dragHandle(e);
+    dataSource.flush();
+  }
+
   public updateDragHandle(): void {
+    this.dragHandle = this.getDragHandle();
+  }
+
+  private getDragHandle(): DragHandle | undefined {
     const { dataSource, highlighted, selected, highlightedHandleId } = this;
-    this.dragHandle = undefined;
 
     // case when we drag some handle
     if (highlighted !== undefined && !highlighted[0].locked && highlightedHandleId !== undefined) {
       const sketcher: Sketcher = this.getSketcher(highlighted[0].type);
-      this.dragHandle = sketcher.dragHandle(this, highlighted, highlightedHandleId);
-      return;
+      return sketcher.dragHandle(this, highlighted, highlightedHandleId);
     }
 
     // case when we drag several (mb one) element by body picking
@@ -98,11 +114,14 @@ export default class Viewport {
       }
     }
 
+    let result: DragHandle | undefined;
     if (dragHandles.length === 1) {
-      [this.dragHandle] = dragHandles;
+      [result] = dragHandles;
     } else if (dragHandles.length > 1) {
-      this.dragHandle = (dragEvent: DragMoveEvent): void => dragHandles.forEach((dh) => dh(dragEvent));
+      result = (dragEvent: DragMoveEvent): void => dragHandles.forEach((dh) => dh(dragEvent));
     }
+
+    return result;
   }
 
   public hasSketcher(type: DrawingType): boolean {

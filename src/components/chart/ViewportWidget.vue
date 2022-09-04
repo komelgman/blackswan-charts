@@ -21,12 +21,12 @@ import { Options, Vue } from 'vue-class-component';
 import LayeredCanvas, {
   DragMoveEvent,
   MouseClickEvent,
-  MouseMoveEvent,
+  MousePositionEvent,
   ZoomEvent,
 } from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import { InjectReactive, Prop } from 'vue-property-decorator';
-import { PropType } from 'vue';
+import { PropType, toRaw } from 'vue';
 import Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
@@ -39,6 +39,9 @@ import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEven
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
 import TVAProtocol from '@/model/history/TVAProtocol';
+import { DrawingId } from '@/model/datasource/Drawing';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import Sketcher from '@/model/datasource/Sketcher';
 
 @Options({
   components: { LayeredCanvas },
@@ -122,7 +125,7 @@ export default class ViewportWidget extends Vue {
     return new ViewportHighlightingLayer(this.viewportModel);
   }
 
-  private onMouseMove(e: MouseMoveEvent): void {
+  private onMouseMove(e: MousePositionEvent): void {
     this.highlightInvalidator.invalidate(e);
   }
 
@@ -140,78 +143,40 @@ export default class ViewportWidget extends Vue {
   }
 
   private onDragStart(e: MouseClickEvent): void {
-    this.viewportModel.dataSource.beginTransaction({ incident: 'drag-in-viewport' });
     this.viewportModel.updateSelection(e.isCtrl, true);
-    this.viewportModel.updateDragHandle();
 
-    if (this.viewportModel.dragHandle === undefined) {
-      const { timeAxis, priceAxis } = this.viewportModel;
+    if (this.viewportModel.selected.size > 0) {
+      this.viewportModel.dataSource.beginTransaction({ incident: 'drag-in-viewport' });
 
-      this.tva
-        .getProtocol({ incident: 'drag-in-viewport' })
-        .setLifeHooks({
-          // beforeApply: () => console.debug('protocol before apply'),
-          // afterApply: () => console.debug('protocol after apply'),
-        })
-        .addIncident(new UpdateAxisRange({
-          axis: timeAxis,
-          range: { ...timeAxis.range },
-          // beforeApply: () => console.debug('time axis before apply'),
-          // afterApply: () => console.debug('time axis after apply'),
-        }), false)
-        .addIncident(new UpdateAxisRange({
-          axis: priceAxis,
-          range: { ...priceAxis.range },
-          // beforeApply: () => console.debug('price axis before apply'),
-          // afterApply: () => console.debug('price axis after apply'),
-        }), false);
+      if (e.isCtrl) {
+        this.viewportModel.cloneSelected();
+      }
     }
+
+    this.viewportModel.updateDragHandle();
   }
 
   private onDrag(e: DragMoveEvent): void {
-    const { timeAxis, priceAxis, dataSource, dragHandle } = this.viewportModel;
-    if (dragHandle !== undefined) {
-      dragHandle(e);
-      dataSource.flush();
+    if (this.viewportModel.selected.size > 0) {
+      this.highlightInvalidator.invalidate(e);
+      this.viewportModel.moveSelected(e);
     } else {
+      const { timeAxis, priceAxis } = this.viewportModel;
       timeAxis.move(e.dx);
       priceAxis.move(e.dy);
-
-      this.tva
-        .getProtocol({ incident: 'drag-in-viewport' })
-        .addIncident(new UpdateAxisRange({
-          axis: timeAxis,
-          range: { ...timeAxis.range },
-        }), false)
-        .addIncident(new UpdateAxisRange({
-          axis: priceAxis,
-          range: { ...priceAxis.range },
-        }), false);
     }
   }
 
   private onDragEnd(): void {
-    this.viewportModel.dataSource.endTransaction();
+    if (this.viewportModel.selected.size > 0) {
+      this.viewportModel.dataSource.endTransaction();
+    } else {
+      this.tva.getProtocol({ incident: 'move-in-viewport' }).trySign();
+    }
   }
 
   private zoom(e: ZoomEvent): void {
-    const protocol: TVAProtocol = this.tva.getProtocol({ incident: 'zoom-time-axis', timeout: 1000 });
-    const { timeAxis: axis } = this.viewportModel;
-
-    if (protocol.isEmpty) {
-      // setup initial value
-      protocol.addIncident(new UpdateAxisRange({
-        axis,
-        range: { ...axis.range },
-      }));
-    }
-
-    axis.zoom(e.pivot, e.delta);
-
-    protocol.addIncident(new UpdateAxisRange({
-      axis,
-      range: { ...axis.range },
-    }));
+    this.viewportModel.timeAxis.zoom(e.pivot, e.delta);
   }
 
   get cssVars(): unknown {

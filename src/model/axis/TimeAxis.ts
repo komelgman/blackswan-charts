@@ -3,14 +3,17 @@ import Axis, { AxisOptions } from '@/model/axis/Axis';
 import Reactive, { HasPostConstruct } from '@/misc/reactive-decorator';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import { TextStyle } from '@/model/ChartStyle';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import TVAProtocol from '@/model/history/TVAProtocol';
+import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
 
 @Reactive
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
 
   // eslint-disable-next-line no-useless-constructor
-  public constructor(textOptions: TextStyle) {
-    super(textOptions);
+  public constructor(tva: TimeVarianceAuthority, textOptions: TextStyle) {
+    super(tva, textOptions);
   }
 
   public postConstruct(): void {
@@ -49,7 +52,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
     return (from + unscaleK * screenPos) as UTCTimestamp;
   }
 
-  public zoom(screenPivot: number, screenDelta: number): void {
+  protected updateZoom(screenPivot: number, screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     if (screenSize < 0) {
@@ -68,7 +71,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
     });
   }
 
-  public move(screenDelta: number): void {
+  protected updatePosition(screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     if (screenSize < 0) {

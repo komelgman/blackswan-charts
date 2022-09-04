@@ -2,8 +2,6 @@
   <div class="timeline pane">
     <layered-canvas
       :options="canvasOptions"
-      @drag-start="onDragStart"
-      @drag-end="onDragEnd"
       @drag-move="onDrag"
       @zoom="zoom"
       @resize="resize"
@@ -26,8 +24,6 @@ import LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import TimeLabelsInvalidator from '@/model/axis/label/TimeLabelsInvalidator';
 import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
-import TVAProtocol from '@/model/history/TVAProtocol';
 
 @Options({
   components: { LayeredCanvas },
@@ -63,52 +59,12 @@ export default class TimeAxisWidget extends Vue {
     return result;
   }
 
-  private onDragStart(): void {
-    const axis = this.timeAxis;
-    this.tva
-      .getProtocol({ incident: 'drag-in-time-axis' })
-      .addIncident(new UpdateAxisRange({
-        axis,
-        range: { ...axis.range },
-      }), false);
-  }
-
   private onDrag(e: DragMoveEvent): void {
-    const axis = this.timeAxis;
-    axis.zoom(this.$el.getBoundingClientRect().width / 2, -e.dx);
-
-    this.tva
-      .getProtocol({ incident: 'drag-in-time-axis' })
-      .addIncident(new UpdateAxisRange({
-        axis,
-        range: { ...axis.range },
-      }), false);
-  }
-
-  private onDragEnd(): void {
-    this.tva
-      .getProtocol({ incident: 'drag-in-time-axis' })
-      .trySign();
+    this.timeAxis.zoom(this.$el.getBoundingClientRect().width / 2, -e.dx);
   }
 
   private zoom(e: ZoomEvent): void {
-    const protocol: TVAProtocol = this.tva.getProtocol({ incident: 'zoom-time-axis', timeout: 1000 });
-    const { timeAxis: axis } = this;
-
-    if (protocol.isEmpty) {
-      // setup initial value
-      protocol.addIncident(new UpdateAxisRange({
-        axis,
-        range: { ...axis.range },
-      }));
-    }
-
-    axis.zoom(e.pivot, e.delta);
-
-    protocol.addIncident(new UpdateAxisRange({
-      axis,
-      range: { ...axis.range },
-    }));
+    this.timeAxis.zoom(e.pivot, e.delta);
   }
 
   private resize(e: ResizeEvent): void {

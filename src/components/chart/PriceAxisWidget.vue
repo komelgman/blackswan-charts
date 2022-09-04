@@ -2,8 +2,6 @@
   <div class="priceline pane" :style="cssVars">
     <layered-canvas
       :options="canvasOptions"
-      @drag-start="onDragStart"
-      @drag-end="onDragEnd"
       @drag-move="onDrag"
       @zoom="zoom"
       @resize="resize"
@@ -29,9 +27,7 @@ import Viewport from '@/model/viewport/Viewport';
 import { ChartStyle } from '@/model/ChartStyle';
 import PriceAxisMarksLayer from '@/components/chart/layers/PriceAxisMarksLayer';
 import PriceAxisLabelsLayer from '@/components/chart/layers/PriceAxisLabelsLayer';
-import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import TVAProtocol from '@/model/history/TVAProtocol';
 
 @Options({
   components: { LayeredCanvas, Divider, BoxLayout },
@@ -86,53 +82,12 @@ export default class PriceAxisWidget extends Vue {
     return new PriceAxisMarksLayer(this.viewportModel);
   }
 
-  private onDragStart(): void {
-    const axis = this.viewportModel.priceAxis;
-
-    this.tva
-      .getProtocol({ incident: 'drag-in-price-axis' })
-      .addIncident(new UpdateAxisRange({
-        axis,
-        range: { ...axis.range },
-      }), false);
-  }
-
   private onDrag(e: DragMoveEvent): void {
-    const axis = this.viewportModel.priceAxis;
-    axis.zoom(this.$el.getBoundingClientRect().height / 2, -e.dy);
-
-    this.tva
-      .getProtocol({ incident: 'drag-in-price-axis' })
-      .addIncident(new UpdateAxisRange({
-        axis,
-        range: { ...axis.range },
-      }), false);
-  }
-
-  private onDragEnd(): void {
-    this.tva
-      .getProtocol({ incident: 'drag-in-price-axis' })
-      .trySign();
+    this.viewportModel.priceAxis.zoom(this.$el.getBoundingClientRect().height / 2, -e.dy);
   }
 
   private zoom(e: ZoomEvent): void {
-    const protocol: TVAProtocol = this.tva.getProtocol({ incident: 'zoom-price-axis', timeout: 1000 });
-    const { priceAxis: axis } = this.viewportModel;
-
-    if (protocol.isEmpty) {
-      // setup initial value
-      protocol.addIncident(new UpdateAxisRange({
-        axis,
-        range: { ...axis.range },
-      }));
-    }
-
-    axis.zoom(e.pivot, e.delta);
-
-    protocol.addIncident(new UpdateAxisRange({
-      axis,
-      range: { ...axis.range },
-    }));
+    this.viewportModel.priceAxis.zoom(e.pivot, e.delta);
   }
 
   private resize(e: ResizeEvent): void {

@@ -117,6 +117,15 @@ export default class ChartWidget extends Vue {
     this.controller = new ChartController(this.chartState, this.chartStyle, this.tva, this.sketchers);
   }
 
+  mounted() {
+    const htmlBodyElement: HTMLBodyElement = document.querySelector('body') as HTMLBodyElement;
+    htmlBodyElement.style.backgroundColor = this.chartStyle.backgroundColor;
+  }
+
+  unmounted() {
+    (document.querySelector('body') as HTMLBodyElement).style.backgroundColor = ''
+  }
+
   private createChartStyleOptions(): ChartStyle {
     if (this.options && this.options.style) {
       return reactive(merge(clone(chartOptionsDefaults), this.options.style)[0] as ChartStyle)

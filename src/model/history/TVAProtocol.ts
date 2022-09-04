@@ -3,6 +3,7 @@ import {
   HistoricalIncidentLifeHooks,
 } from '@/model/history/HistoricalIncident';
 import { CanMergeWith } from '@/misc/CanMergeWith';
+import { Predicate } from '@/model/type-defs';
 
 export interface IsNexusIncident {
   isNexusIncident(): boolean;
@@ -124,6 +125,16 @@ export default class TVAProtocol {
 
   public get isEmpty(): boolean {
     return this.incidents.length === 0;
+  }
+
+  public hasIncident(predicate: Predicate<HistoricalIncident>): boolean {
+    for (const incident of this.incidents) {
+      if (predicate(incident)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public get isSigned(): boolean {

@@ -6,6 +6,7 @@ import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import PriceScale from '@/model/axis/scaling/PriceScale';
 import { clone } from '@/misc/strict-type-checks';
 import { TextStyle } from '@/model/ChartStyle';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;
@@ -22,11 +23,11 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
   private fractionValue: number = 0;
 
   protected scaleValue: PriceScale;
-  protected invertedValue: Inverted; // watch doesn't work with scalar
-  protected contentWidthValue: Wrapped<number> = { value: -1 };
+  protected invertedValue: Inverted;
+  protected contentWidthValue: Wrapped<number> = { value: -1 }; // watch doesn't work with scalar
 
-  public constructor(textStyle: TextStyle, scale: PriceScale, inverted: Inverted) {
-    super(textStyle);
+  public constructor(tva: TimeVarianceAuthority, textStyle: TextStyle, scale: PriceScale, inverted: Inverted) {
+    super(tva, textStyle);
     this.scaleValue = reactive(clone(scale));
     this.invertedValue = reactive(clone(inverted));
   }
@@ -121,7 +122,7 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
     return this.scale.func.revert(screenPos * unscaleK + virtualFrom);
   }
 
-  public zoom(screenPivot: number, screenDelta: number): void {
+  protected updateZoom(screenPivot: number, screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const { func: scalingFunction } = this.scale;
@@ -141,7 +142,7 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
     });
   }
 
-  public move(screenDelta: number): void {
+  protected updatePosition(screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const { func: scalingFunction } = this.scale;

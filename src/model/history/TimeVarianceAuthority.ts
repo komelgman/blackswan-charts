@@ -17,21 +17,16 @@ export default class TimeVarianceAuthority {
     this.current.trySign();
   }
 
-  public getProtocol(options: TVAProtocolOptions | undefined = undefined): TVAProtocol {
-    const isEmptyOptions: boolean = options === undefined;
-    if (!this.current.isSigned && isEmptyOptions) {
-      throw new Error('Illegal state: !this.current.isSigned && isEmptyOptions');
+  public getProtocol(options: TVAProtocolOptions): TVAProtocol {
+    if (this.lastIncident === undefined && !this.current.isSigned) {
+      throw new Error('Illegal state: this.lastIncident === undefined && !this.current.isSigned');
     }
 
-    if (this.lastIncident === undefined && !isEmptyOptions && !this.current.isSigned) {
-      throw new Error('Illegal state: this.lastIncident === undefined && !isEmptyOptions && !this.current.isSigned');
-    }
-
-    const isInTime: boolean = options?.timeout === undefined
+    const isInTime: boolean = options.timeout === undefined
       || (Date.now() - (this.lastTimeWhenProtocolUsed || 0) <= options.timeout);
 
-    const isNewProtocol = !isEmptyOptions && this.lastIncident !== undefined && this.lastIncident !== options?.incident;
-    const isTimeoutExpired = !isEmptyOptions && (this.lastIncident === options?.incident && !isInTime);
+    const isNewProtocol = this.lastIncident !== undefined && this.lastIncident !== options.incident;
+    const isTimeoutExpired = (this.lastIncident === options.incident && !isInTime);
 
     if (!this.current.isSigned && (isNewProtocol || isTimeoutExpired)) {
       console.warn(`auto sign [new: ${isNewProtocol}, timeout: ${isTimeoutExpired}]`);
@@ -43,7 +38,7 @@ export default class TimeVarianceAuthority {
     }
 
     this.lastTimeWhenProtocolUsed = Date.now();
-    this.lastIncident = options?.incident;
+    this.lastIncident = options.incident;
 
     return this.current;
   }

@@ -62,7 +62,7 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
   private updateInvertedHandler(): void {
     const { axis } = this;
     this.tva
-      .getProtocol()
+      .getProtocol({ incident: 'price-axis-update-inverted' })
       .addIncident(new UpdatePriceAxisInverted({
         axis,
         inverted: { value: axis.inverted.value > 0 ? -1 : 1 },
@@ -73,7 +73,7 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
   private updateScaleHandler(scale: PriceScale): void {
     const { axis } = this;
     this.tva
-      .getProtocol()
+      .getProtocol({ incident: 'price-axis-update-scale' })
       .addIncident(new UpdatePriceAxisScale({
         axis,
         scale,

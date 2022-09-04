@@ -36,7 +36,7 @@ export default class ChartController {
     this.tva = tva;
     this.sketchers = sketchers;
     this.panes = reactive([]);
-    this.timeAxis = new TimeAxis(chartOptions.text);
+    this.timeAxis = new TimeAxis(tva, chartOptions.text);
 
     watch(computed((): number => this.style.text.fontSize),
       (v) => {
@@ -46,7 +46,7 @@ export default class ChartController {
 
   public updateStyle(options: DeepPartial<ChartStyle>): void {
     this.tva
-      .getProtocol()
+      .getProtocol({ incident: 'chart-controller-update-style' })
       .addIncident(new UpdateChartStyle({
         style: this.style,
         update: options,
@@ -72,7 +72,7 @@ export default class ChartController {
 
     // todo: pane sizes
     this.tva
-      .getProtocol()
+      .getProtocol({ incident: 'chart-controller-create-pane' })
       .addIncident(new AddNewPane({
         dataSource,
         paneOptions,
@@ -91,7 +91,7 @@ export default class ChartController {
   public removePane(paneId: PaneId): void {
     // todo: pane sizes
     this.tva
-      .getProtocol()
+      .getProtocol({ incident: 'chart-controller-remove-pane' })
       .addIncident(new RemovePane({
         panes: this.panes,
         paneIndex: this.indexByPaneId(paneId),
@@ -125,7 +125,7 @@ export default class ChartController {
 
   public swapPanes(paneId1: PaneId, paneId2: PaneId): void {
     this.tva
-      .getProtocol()
+      .getProtocol({ incident: 'chart-controller-swap-panes' })
       .addIncident(new SwapPanes({
         panes: this.panes,
         pane1Index: this.indexByPaneId(paneId1),
@@ -137,7 +137,7 @@ export default class ChartController {
   public togglePane(paneId: PaneId): void {
     // todo: pane sizes
     this.tva
-      .getProtocol()
+      .getProtocol({ incident: 'chart-controller-toggle-pane' })
       .addIncident(new TogglePane({
         paneDescriptor: this.panes[this.indexByPaneId(paneId)],
       }))

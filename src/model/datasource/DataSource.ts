@@ -89,17 +89,21 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       afterInverse: () => this.flush(),
       afterApply: () => this.flush(),
     });
+
+    // console.debug('dataSource begin transaction', this.protocolOptions);
   }
 
   private get protocol(): TVAProtocol {
-    if (this.tva === undefined) {
-      throw new Error('Illegal state: this.tva === undefined');
+    if (this.tva === undefined || this.protocolOptions === undefined) {
+      throw new Error('Illegal state: this.tva === undefined || this.protocolOptions === undefined');
     }
 
     return this.tva.getProtocol(this.protocolOptions);
   }
 
   public endTransaction(): void {
+    // console.debug('dataSource end transaction', this.protocolOptions);
+
     if (this.protocol === undefined) {
       throw new Error('Illegal state: this.protocol === undefined');
     }

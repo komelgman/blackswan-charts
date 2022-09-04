@@ -23,22 +23,20 @@ import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptio
 import { PropType } from 'vue';
 import ResizeObserver from 'resize-observer-polyfill';
 import Layer from '@/components/layered-canvas/layers/Layer';
-import { onceDocument, onDocument } from '@/misc/document-listeners';
+import { EventRemover, onceDocument, onDocument } from '@/misc/document-listeners';
 import { Point } from '@/model/type-defs';
 
-export interface DragMoveEvent {
+export interface MousePositionEvent {
+  x: number;
+  y: number;
+}
+
+export interface DragMoveEvent extends MousePositionEvent {
   dx: number;
   dy: number;
 }
 
-export interface MouseMoveEvent {
-  x: number;
-  y: number;
-}
-
-export interface MouseClickEvent {
-  x: number;
-  y: number;
+export interface MouseClickEvent extends MousePositionEvent {
   isCtrl: boolean;
 }
 
@@ -62,8 +60,8 @@ export default class LayeredCanvas extends Vue {
 
   private resizeObserver!: ResizeObserver;
   private prevPos!: Point;
-  private removeMoveListener!: any;
-  private removeEndListener!: any;
+  private removeMoveListener!: EventRemover;
+  private removeEndListener!: EventRemover;
   private isSkipMovementsDetection: boolean = false;
   private isDrag: boolean = false;
   private isWasDrag: boolean = false;
@@ -92,7 +90,8 @@ export default class LayeredCanvas extends Vue {
   private onMouseLeftBtnClick(e: MouseEvent): void {
     if (!e.defaultPrevented && !this.isWasDrag) {
       e.preventDefault();
-      this.$emit('left-mouse-btn-click', { x: e.x, y: e.y, isCtrl: e.ctrlKey });
+      const event: MouseClickEvent = { x: e.x, y: e.y, isCtrl: e.ctrlKey };
+      this.$emit('left-mouse-btn-click', event);
     }
   }
 
@@ -100,7 +99,8 @@ export default class LayeredCanvas extends Vue {
     if (!e.defaultPrevented) {
       e.preventDefault();
 
-      this.$emit('left-mouse-btn-double-click', { x: e.x, y: e.y });
+      const event: MouseClickEvent = { x: e.x, y: e.y, isCtrl: e.ctrlKey };
+      this.$emit('left-mouse-btn-double-click', event);
     }
   }
 
@@ -110,13 +110,12 @@ export default class LayeredCanvas extends Vue {
     }
 
     const rect: DOMRect = e.target.getBoundingClientRect();
-    this.$emit('zoom', { pivot: e.pageY - rect.top, delta: e.deltaY });
+    const event: ZoomEvent = { pivot: e.pageY - rect.top, delta: e.deltaY };
+    this.$emit('zoom', event);
   }
 
   private onDragStart(e: MouseEvent): void {
     if (!e.defaultPrevented) {
-      // e.preventDefault();
-
       this.isDrag = true;
       this.isWasDrag = false;
       this.prevPos = { x: e.x, y: e.y };
@@ -132,11 +131,13 @@ export default class LayeredCanvas extends Vue {
     this.isSkipMovementsDetection = true;
 
     if (!this.isWasDrag) {
-      this.$emit('drag-start', { x: e.x, y: e.y, isCtrl: e.ctrlKey });
+      const startEvent: MouseClickEvent = { x: e.x, y: e.y, isCtrl: e.ctrlKey };
+      this.$emit('drag-start', startEvent);
       this.isWasDrag = true;
     }
 
-    this.$emit('drag-move', { dx: this.prevPos.x - e.x, dy: this.prevPos.y - e.y });
+    const moveEvent: DragMoveEvent = { x: e.x, y: e.y, dx: this.prevPos.x - e.x, dy: this.prevPos.y - e.y };
+    this.$emit('drag-move', moveEvent);
     this.prevPos = { x: e.x, y: e.y };
 
     // hint: decrease amount of drag events
@@ -149,7 +150,8 @@ export default class LayeredCanvas extends Vue {
     }
     this.isSkipMovementsDetection = true;
 
-    this.$emit('mouse-move', { x: e.x, y: e.y });
+    const event: MousePositionEvent = { x: e.x, y: e.y };
+    this.$emit('mouse-move', event);
 
     // hint: decrease amount of move events
     setTimeout(() => { this.isSkipMovementsDetection = false; }, 10);
@@ -161,7 +163,8 @@ export default class LayeredCanvas extends Vue {
     if (e === undefined || !e.defaultPrevented) {
       if (e !== undefined && this.isWasDrag) {
         e.preventDefault();
-        this.$emit('drag-end', { x: e.x, y: e.y });
+        const event: MousePositionEvent = { x: e.x, y: e.y };
+        this.$emit('drag-end', event);
       }
 
       if (typeof this.removeMoveListener === 'function') {
@@ -186,7 +189,7 @@ export default class LayeredCanvas extends Vue {
         layerCanvas.style.height = `${height}px`;
 
         const context = layerCanvas.getContext('2d');
-        if (context === null) {
+        if (!context) {
           throw new Error('context === null');
         }
 

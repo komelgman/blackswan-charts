@@ -10,6 +10,7 @@ import { ChartStyle } from '@/model/ChartStyle';
 import TimeAxis from '@/model/axis/TimeAxis';
 import { DrawingType } from '@/model/datasource/Drawing';
 import Sketcher from '@/model/datasource/Sketcher';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;
@@ -27,7 +28,16 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
     super(options);
 
     const { dataSource, paneOptions, style, timeAxis, sketchers } = this.options;
-    const priceAxis: PriceAxis = new PriceAxis(style.text, paneOptions.priceScale, paneOptions.priceInverted);
+    if (dataSource.tva === undefined) {
+      throw new Error('Illegal state: dataSource.tva === undefined');
+    }
+
+    const priceAxis: PriceAxis = new PriceAxis(
+      dataSource.tva,
+      style.text,
+      paneOptions.priceScale,
+      paneOptions.priceInverted,
+    );
 
     this.paneDescriptor = {
       model: new Viewport(dataSource, timeAxis, priceAxis, sketchers),

@@ -3,7 +3,8 @@ import {
   HistoricalIncidentOptions,
 } from '@/model/history/HistoricalIncident';
 import { CanMergeWith } from '@/misc/CanMergeWith';
-import Axis, { AxisOptions } from '@/model/axis/Axis';
+import type Axis from '@/model/axis/Axis';
+import type { AxisOptions } from '@/model/axis/Axis';
 import { IsNexusIncident } from '@/model/history/TVAProtocol';
 import { Range } from '@/model/type-defs';
 
