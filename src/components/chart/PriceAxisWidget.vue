@@ -87,7 +87,7 @@ export default class PriceAxisWidget extends Vue {
   }
 
   private zoom(e: ZoomEvent): void {
-    this.viewportModel.priceAxis.zoom(e.pivot, e.delta);
+    this.viewportModel.priceAxis.zoom(e.pivot.y, e.delta);
   }
 
   private resize(e: ResizeEvent): void {

@@ -26,7 +26,7 @@ import LayeredCanvas, {
 } from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import { InjectReactive, Prop } from 'vue-property-decorator';
-import { PropType, toRaw } from 'vue';
+import { PropType } from 'vue';
 import Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
@@ -37,11 +37,6 @@ import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
 import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
-import TVAProtocol from '@/model/history/TVAProtocol';
-import { DrawingId } from '@/model/datasource/Drawing';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import Sketcher from '@/model/datasource/Sketcher';
 
 @Options({
   components: { LayeredCanvas },
@@ -145,7 +140,7 @@ export default class ViewportWidget extends Vue {
   private onDragStart(e: MouseClickEvent): void {
     this.viewportModel.updateSelection(e.isCtrl, true);
 
-    if (this.viewportModel.selected.size > 0) {
+    if (this.viewportModel.selectionCanBeDragged()) {
       this.viewportModel.dataSource.beginTransaction({ incident: 'drag-in-viewport' });
 
       if (e.isCtrl) {
@@ -157,7 +152,7 @@ export default class ViewportWidget extends Vue {
   }
 
   private onDrag(e: DragMoveEvent): void {
-    if (this.viewportModel.selected.size > 0) {
+    if (this.viewportModel.selectionCanBeDragged()) {
       this.highlightInvalidator.invalidate(e);
       this.viewportModel.moveSelected(e);
     } else {
@@ -168,7 +163,7 @@ export default class ViewportWidget extends Vue {
   }
 
   private onDragEnd(): void {
-    if (this.viewportModel.selected.size > 0) {
+    if (this.viewportModel.selectionCanBeDragged()) {
       this.viewportModel.dataSource.endTransaction();
     } else {
       this.tva.getProtocol({ incident: 'move-in-viewport' }).trySign();
@@ -176,7 +171,7 @@ export default class ViewportWidget extends Vue {
   }
 
   private zoom(e: ZoomEvent): void {
-    this.viewportModel.timeAxis.zoom(e.pivot, e.delta);
+    this.viewportModel.timeAxis.zoom(e.pivot.x, e.delta);
   }
 
   get cssVars(): unknown {

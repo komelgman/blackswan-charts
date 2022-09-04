@@ -10,7 +10,6 @@ import { ChartStyle } from '@/model/ChartStyle';
 import TimeAxis from '@/model/axis/TimeAxis';
 import { DrawingType } from '@/model/datasource/Drawing';
 import Sketcher from '@/model/datasource/Sketcher';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;

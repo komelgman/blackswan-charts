@@ -4,8 +4,7 @@ import { Point } from '@/model/type-defs';
 import { setLineStyle } from '@/model/datasource/line/line-functions';
 
 export default class SquareHandle implements Handle {
-  public cursor: string = 'ns-resize';
-
+  private readonly nonLockedCursor: string;
   private readonly style: RectStyle;
   private readonly radius: number = 3;
   private readonly width: number = 11;
@@ -15,8 +14,12 @@ export default class SquareHandle implements Handle {
   private cxValue!: number;
   private cyValue!: number;
 
-  constructor(cx: number, cy: number, locked: boolean, style: RectStyle) {
+  public cursor: string = 'pointer';
+
+  constructor(cx: number, cy: number, locked: boolean, style: RectStyle, cursor: string) {
     this.style = style;
+    this.nonLockedCursor = cursor;
+
     this.invalidate(cx, cy, locked);
   }
 
@@ -36,7 +39,7 @@ export default class SquareHandle implements Handle {
     const x: number = cx - width / 2;
     const y: number = cy - height / 2;
 
-    this.cursor = locked ? 'pointer' : 'ns-resize';
+    this.cursor = locked ? 'pointer' : this.nonLockedCursor;
     this.path = new Path2D();
 
     if (!locked) {
@@ -54,7 +57,6 @@ export default class SquareHandle implements Handle {
       this.path.arc(cx, cy, 3, 0, 2 * Math.PI);
     }
   }
-
   public hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean {
     ctx.save();
     ctx.setLineDash([]);

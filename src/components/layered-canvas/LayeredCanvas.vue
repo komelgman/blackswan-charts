@@ -41,7 +41,7 @@ export interface MouseClickEvent extends MousePositionEvent {
 }
 
 export interface ZoomEvent {
-  pivot: number;
+  pivot: Point;
   delta: number;
 }
 
@@ -87,10 +87,20 @@ export default class LayeredCanvas extends Vue {
     return this.options.layers;
   }
 
+  private getPos(e: MouseEvent): Point {
+    if (!(e instanceof MouseEvent) || !(e.target instanceof Element)) {
+      throw new Error('Illeagl argument: e instanceof MouseEvent) || !(e.target instanceof Element');
+    }
+
+    const rect = e.target.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
   private onMouseLeftBtnClick(e: MouseEvent): void {
     if (!e.defaultPrevented && !this.isWasDrag) {
       e.preventDefault();
-      const event: MouseClickEvent = { x: e.x, y: e.y, isCtrl: e.ctrlKey };
+
+      const event: MouseClickEvent = { ...this.getPos(e), isCtrl: e.ctrlKey };
       this.$emit('left-mouse-btn-click', event);
     }
   }
@@ -99,7 +109,7 @@ export default class LayeredCanvas extends Vue {
     if (!e.defaultPrevented) {
       e.preventDefault();
 
-      const event: MouseClickEvent = { x: e.x, y: e.y, isCtrl: e.ctrlKey };
+      const event: MouseClickEvent = { ...this.getPos(e), isCtrl: e.ctrlKey };
       this.$emit('left-mouse-btn-double-click', event);
     }
   }
@@ -109,8 +119,7 @@ export default class LayeredCanvas extends Vue {
       return;
     }
 
-    const rect: DOMRect = e.target.getBoundingClientRect();
-    const event: ZoomEvent = { pivot: e.pageY - rect.top, delta: e.deltaY };
+    const event: ZoomEvent = { pivot: this.getPos(e), delta: e.deltaY };
     this.$emit('zoom', event);
   }
 
@@ -118,7 +127,7 @@ export default class LayeredCanvas extends Vue {
     if (!e.defaultPrevented) {
       this.isDrag = true;
       this.isWasDrag = false;
-      this.prevPos = { x: e.x, y: e.y };
+      this.prevPos = this.getPos(e);
       this.removeMoveListener = onDocument('mousemove', this.onDragMove, true);
       this.removeEndListener = onceDocument('mouseup', this.onDragEnd);
     }
@@ -131,14 +140,15 @@ export default class LayeredCanvas extends Vue {
     this.isSkipMovementsDetection = true;
 
     if (!this.isWasDrag) {
-      const startEvent: MouseClickEvent = { x: e.x, y: e.y, isCtrl: e.ctrlKey };
+      const startEvent: MouseClickEvent = { ...this.getPos(e), isCtrl: e.ctrlKey };
       this.$emit('drag-start', startEvent);
       this.isWasDrag = true;
     }
 
-    const moveEvent: DragMoveEvent = { x: e.x, y: e.y, dx: this.prevPos.x - e.x, dy: this.prevPos.y - e.y };
+    const pos: Point = this.getPos(e);
+    const moveEvent: DragMoveEvent = { ...pos, dx: this.prevPos.x - pos.x, dy: this.prevPos.y - pos.y };
     this.$emit('drag-move', moveEvent);
-    this.prevPos = { x: e.x, y: e.y };
+    this.prevPos = pos;
 
     // hint: decrease amount of drag events
     setTimeout(() => { this.isSkipMovementsDetection = false; }, 10);
@@ -150,7 +160,7 @@ export default class LayeredCanvas extends Vue {
     }
     this.isSkipMovementsDetection = true;
 
-    const event: MousePositionEvent = { x: e.x, y: e.y };
+    const event: MousePositionEvent = this.getPos(e);
     this.$emit('mouse-move', event);
 
     // hint: decrease amount of move events
@@ -163,7 +173,7 @@ export default class LayeredCanvas extends Vue {
     if (e === undefined || !e.defaultPrevented) {
       if (e !== undefined && this.isWasDrag) {
         e.preventDefault();
-        const event: MousePositionEvent = { x: e.x, y: e.y };
+        const event: MousePositionEvent = this.getPos(e);
         this.$emit('drag-end', event);
       }
 

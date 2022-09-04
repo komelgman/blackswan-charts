@@ -4,8 +4,6 @@ import Reactive, { HasPostConstruct } from '@/misc/reactive-decorator';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import { TextStyle } from '@/model/ChartStyle';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import TVAProtocol from '@/model/history/TVAProtocol';
-import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
 
 @Reactive
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {

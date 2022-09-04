@@ -51,6 +51,19 @@ export default class Viewport {
     }
   }
 
+  public selectionCanBeDragged(): boolean {
+    const { dataSource, selected } = this;
+
+    for (const drawingId of selected) {
+      const rawDS = toRaw(dataSource);
+      if (!rawDS.get(drawingId)[0].locked) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private selectionShouldBeCleared(isInDrag: boolean, isCtrlPressed: boolean): boolean {
     const { highlighted, selected, highlightedHandleId } = this;
 
@@ -66,6 +79,10 @@ export default class Viewport {
     const tmp: Set<DrawingId> = new Set();
 
     for (const id of selected) {
+      if (rawDS.get(id)[0].locked) {
+        continue;
+      }
+
       const clonedEntry: DataSourceEntry = rawDS.clone(id);
       const sketcher: Sketcher = this.getSketcher(clonedEntry[0].type);
       sketcher.draw(clonedEntry, this);

@@ -64,7 +64,7 @@ export default class TimeAxisWidget extends Vue {
   }
 
   private zoom(e: ZoomEvent): void {
-    this.timeAxis.zoom(e.pivot, e.delta);
+    this.timeAxis.zoom(e.pivot.x, e.delta);
   }
 
   private resize(e: ResizeEvent): void {

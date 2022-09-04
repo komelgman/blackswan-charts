@@ -4,7 +4,7 @@ import { InjectReactive } from 'vue-property-decorator';
 import { Point } from '@/model/type-defs';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { EventRemover, onceDocument } from '@/misc/document-listeners';
-import { CSSProperties, reactive, VNode, watch } from 'vue';
+import { CSSProperties, reactive, VNode } from 'vue';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
 import makeFont from '@/misc/make-font';

@@ -135,7 +135,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     for (const entry of this.filtered(invalidEntries)) {
       const drawingType: DrawingType = entry[0].type;
       if (!viewport.hasSketcher(drawingType)) {
-        // console.warn(`unknown drawing type ${drawingType}`);
+        console.warn(`unknown drawing type ${drawingType}`);
         continue;
       }
 

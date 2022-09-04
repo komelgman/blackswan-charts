@@ -29,7 +29,6 @@ export default class TimeVarianceAuthority {
     const isTimeoutExpired = (this.lastIncident === options.incident && !isInTime);
 
     if (!this.current.isSigned && (isNewProtocol || isTimeoutExpired)) {
-      console.warn(`auto sign [new: ${isNewProtocol}, timeout: ${isTimeoutExpired}]`);
       this.current.trySign();
     }
 
