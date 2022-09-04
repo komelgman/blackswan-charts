@@ -58,9 +58,9 @@ export default class ViewportHighlightingLayer extends Layer {
   }
 
   private highlight(entry: DataSourceEntry, native: CanvasRenderingContext2D, inverted: InvertedValue): void {
-    const [o, drawing] = entry;
+    const [options, drawing] = entry;
 
-    if (drawing !== undefined) {
+    if (options.visible && options.visibleInViewport && drawing !== undefined) {
       for (const part of drawing.parts) {
         part.render(native, inverted);
       }

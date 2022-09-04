@@ -32,15 +32,14 @@ export default class SquareHandle implements Handle {
   }
 
   public invalidate(cx: number, cy: number, locked: boolean): void {
-    const { radius, width, height } = this;
     this.cxValue = cx;
     this.cyValue = cy;
-
-    const x: number = cx - width / 2;
-    const y: number = cy - height / 2;
-
     this.cursor = locked ? 'pointer' : this.nonLockedCursor;
     this.path = new Path2D();
+
+    const { radius, width, height } = this;
+    const x: number = cx - width / 2;
+    const y: number = cy - height / 2;
 
     if (!locked) {
       this.path.moveTo(x + radius, y);

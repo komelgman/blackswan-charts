@@ -1,7 +1,7 @@
 import Sketcher from '@/model/datasource/Sketcher';
 import Viewport from '@/model/viewport/Viewport';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import { LineFillStyle, RectStyle } from '@/model/datasource/line/type-defs';
+import { LineFillStyle, LineStyle, RectStyle } from '@/model/datasource/line/type-defs';
 import { DragHandle } from '@/model/viewport/DragHandle';
 import { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { toRaw } from 'vue';
@@ -10,30 +10,32 @@ import HLine from '@/model/sketchers/graphics/HLine';
 import { invertColor } from '@/misc/color';
 import { HandleId } from '@/model/datasource/Drawing';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { Price } from '@/model/type-defs';
+
+export interface HLineOptions {
+  def: Price;
+  style: LineStyle;
+}
 
 export default class HLineSketcher implements Sketcher {
   // todo: extract to chartstyle
   private readonly handleStyle: RectStyle = { color: '#101010', border: { lineWidth: 2, color: '#1010BB', fill: LineFillStyle.Solid } };
 
-  public draw(entry: DataSourceEntry, viewport: Viewport): void {
+  public draw(entry: DataSourceEntry<HLineOptions>, viewport: Viewport): void {
     const [options, drawing, priceMark] = entry;
     const { data: line, locked } = options;
     const { priceAxis } = viewport;
     const { main: width } = viewport.timeAxis.screenSize;
     const { fraction, range } = priceAxis;
-    const markText = line.def.toLocaleString(undefined, {
-      minimumFractionDigits: fraction,
-      maximumFractionDigits: fraction,
-    });
-    const y = priceAxis.translate(line.def);
 
     options.visibleInViewport = line.def >= range.from && line.def <= range.to;
     options.valid = options.visibleInViewport;
 
-    if (!options.valid) {
+    if (!options.visibleInViewport) {
       return;
     }
 
+    const y = priceAxis.translate(line.def);
     if (drawing === undefined) {
       entry[1] = {
         parts: [new HLine(y, 0, width, line.style)],
@@ -43,6 +45,11 @@ export default class HLineSketcher implements Sketcher {
       (drawing.parts[0] as HLine).invalidate(y, 0, width, line.style);
       (drawing.handles.center as SquareHandle).invalidate(width / 2, y, locked);
     }
+
+    const markText = line.def.toLocaleString(undefined, {
+      minimumFractionDigits: fraction,
+      maximumFractionDigits: fraction,
+    });
 
     if (priceMark === undefined) {
       entry[2] = {
@@ -71,14 +78,13 @@ export default class HLineSketcher implements Sketcher {
     }
 
     const { dataSource, priceAxis } = viewport;
-    // only one handle and drag by body equals drag by handles.center
     return (e: DragMoveEvent) => {
       const rawDS = toRaw(dataSource);
-      const [options, drawing] = entry;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const y = drawing?.handles.center.cy - priceAxis.inverted.value * e.dy;
-      rawDS.update(options.id, { data: { def: priceAxis.revert(y) } });
+      const [options] = entry;
+      // only one handle and drag by body equals drag by handles.center
+      const def = priceAxis.revert(priceAxis.translate(options.data.def) - priceAxis.inverted.value * e.dy);
+
+      rawDS.update(options.id, { data: { def } });
     };
   }
 

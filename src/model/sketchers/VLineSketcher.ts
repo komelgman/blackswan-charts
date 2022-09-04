@@ -1,38 +1,41 @@
 import Sketcher from '@/model/datasource/Sketcher';
 import Viewport from '@/model/viewport/Viewport';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import { LineFillStyle, RectStyle } from '@/model/datasource/line/type-defs';
+import { LineFillStyle, LineStyle, RectStyle } from '@/model/datasource/line/type-defs';
 import { DragHandle } from '@/model/viewport/DragHandle';
 import { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { toRaw } from 'vue';
 import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
-import HLine from '@/model/sketchers/graphics/HLine';
 import { invertColor } from '@/misc/color';
-import Drawing, { HandleId } from '@/model/datasource/Drawing';
+import { HandleId } from '@/model/datasource/Drawing';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import VLine from '@/model/sketchers/graphics/VLine';
+import { UTCTimestamp } from '@/model/type-defs';
+
+export interface VLineOptions {
+  def: UTCTimestamp;
+  style: LineStyle;
+}
 
 export default class VLineSketcher implements Sketcher {
   // todo: extract to chartstyle
   private readonly handleStyle: RectStyle = { color: '#101010', border: { lineWidth: 2, color: '#1010BB', fill: LineFillStyle.Solid } };
 
-  public draw(entry: DataSourceEntry, viewport: Viewport): void {
+  public draw(entry: DataSourceEntry<VLineOptions>, viewport: Viewport): void {
     const [options, drawing, timeMark] = entry;
     const { data: line, locked } = options;
     const { timeAxis } = viewport;
     const { main: height } = viewport.priceAxis.screenSize;
     const { range } = timeAxis;
 
-    const markText = line.def;
-    const x = timeAxis.translate(line.def);
-
     options.visibleInViewport = line.def >= range.from && line.def <= range.to;
     options.valid = options.visibleInViewport;
 
-    if (!options.valid) {
+    if (!options.visibleInViewport) {
       return;
     }
 
+    const x = timeAxis.translate(line.def);
     if (drawing === undefined) {
       entry[1] = {
         parts: [new VLine(x, 0, height, line.style)],
@@ -43,6 +46,7 @@ export default class VLineSketcher implements Sketcher {
       (drawing.handles.center as SquareHandle).invalidate(x, height / 2, locked);
     }
 
+    const markText: string = `${line.def}`;
     if (timeMark === undefined) {
       entry[2] = {
         screenPos: x,
@@ -70,13 +74,14 @@ export default class VLineSketcher implements Sketcher {
     }
 
     const { dataSource, timeAxis } = viewport;
-    // only one handle and drag by body equals drag by handles.center
+
     return (e: DragMoveEvent) => {
       const rawDS = toRaw(dataSource);
-      const [options, drawing] = entry;
-      const x = (drawing as Drawing).handles.center.cx - e.dx;
+      const [options] = entry;
+      // only one handle and drag by body equals drag by handles.center
+      const def = timeAxis.revert(timeAxis.translate(options.data.def) - e.dx);
 
-      rawDS.update(options.id, { data: { def: timeAxis.revert(x) } });
+      rawDS.update(options.id, { data: { def } });
     };
   }
 
