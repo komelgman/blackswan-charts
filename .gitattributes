@@ -1,4 +1,4 @@
 * text=auto
-*.ts text eol=lf
-*.vue text eol=lf
-*.js text eol=lf
+*.ts text eol=ln
+*.vue text eol=ln
+*.js text eol=ln
