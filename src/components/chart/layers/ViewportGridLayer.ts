@@ -1,8 +1,8 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
 import PriceAxis, { InvertedValue } from '@/model/axis/PriceAxis';
 import TimeAxis from '@/model/axis/TimeAxis';
-import { watch } from 'vue';
 import { drawHorizontalLine, drawVerticalLine } from '@/model/datasource/line/line-functions';
+import { watch } from 'vue';
 
 export default class ViewportGridLayer extends Layer {
   private readonly priceAxis: PriceAxis;
@@ -18,7 +18,9 @@ export default class ViewportGridLayer extends Layer {
       this.timeAxis.labels,
       this.priceAxis.labels,
       this.priceAxis.inverted,
-    ], () => { this.invalid = true });
+    ], () => {
+      this.invalid = true;
+    });
   }
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
@@ -38,7 +40,7 @@ export default class ViewportGridLayer extends Layer {
 
     const { labels: timeLabels } = this.timeAxis;
     for (const x of timeLabels.keys()) {
-      drawVerticalLine(native, x, 0, inverted * height)
+      drawVerticalLine(native, x, 0, inverted * height);
     }
 
     native.scale(1, 1);

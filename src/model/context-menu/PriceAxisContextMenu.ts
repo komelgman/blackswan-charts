@@ -2,13 +2,13 @@ import {
   ContextMenuOptionsProvider,
   MenuItem,
 } from '@/components/context-menu/ContextMenuOptions';
-import PriceScale, { PriceScales } from '@/model/axis/scaling/PriceScale';
-import PriceAxis from '@/model/axis/PriceAxis';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import { merge } from '@/misc/strict-type-checks';
 import UpdatePriceAxisInverted from '@/model/axis/incidents/UpdatePriceAxisInverted';
 import UpdatePriceAxisScale from '@/model/axis/incidents/UpdatePriceAxisScale';
+import PriceAxis from '@/model/axis/PriceAxis';
+import PriceScale, { PriceScales } from '@/model/axis/scaling/PriceScale';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import { reactive, watch } from 'vue';
-import { merge } from '@/misc/strict-type-checks';
 
 export default class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private readonly axis: PriceAxis;
@@ -23,7 +23,9 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
 
     watch(
       [this.axis.inverted, this.axis.scale],
-      () => { merge(this.menu, this.createMenu()) },
+      () => {
+        merge(this.menu, this.createMenu());
+      },
     );
   }
 

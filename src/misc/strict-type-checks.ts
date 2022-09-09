@@ -11,11 +11,12 @@ export type DeepPartial<T> = {
 };
 
 export interface Cloneable<T> {
-  clone(): T
+  clone(): T;
 }
 
 // todo: add test for merge
 declare type Item = [Record<string, any>, Record<string, any>, Record<string, any>, string];
+
 export function merge(dst: Record<string, any>, ...sources: Record<string, any>[]): [Record<string, any>, Record<string, any>] {
   const items: Item[] = [];
   const unmerge: Record<string, any> = {};

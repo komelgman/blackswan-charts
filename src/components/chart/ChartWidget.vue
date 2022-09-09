@@ -13,6 +13,7 @@
       <template v-slot:default="props">
         <box-layout>
           <viewport-widget
+            :paneId="props.paneId"
             :viewport-model="props.model"
             v-contextmenu="{
               model: getViewportContextMenu(props.model),
@@ -52,37 +53,44 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop, ProvideReactive } from 'vue-property-decorator';
-import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
-import { BoxLayout, Divider, Multipane } from '@/components/layout';
 import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
-import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
+import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
-import { clone, DeepPartial, merge } from '@/misc/strict-type-checks';
-import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
-import ChartController from '@/model/ChartController';
-import { CSSProperties, reactive } from 'vue';
-import ChartState from '@/model/ChartState';
-import contextMenuDirective from '@/components/context-menu/ContextMenuDirective';
 import ContextMenu from '@/components/context-menu/ContextMenu.vue';
-import { DrawingType } from '@/model/datasource/Drawing';
-import { ChartStyle } from '@/model/ChartStyle';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import PriceAxis from '@/model/axis/PriceAxis';
+import contextMenuDirective from '@/components/context-menu/ContextMenuDirective';
 import { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
+import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
+import { BoxLayout, Divider, Multipane } from '@/components/layout';
+import { clone, DeepPartial, merge } from '@/misc/strict-type-checks';
+import PriceAxis from '@/model/axis/PriceAxis';
+import ChartController from '@/model/ChartController';
+import ChartState from '@/model/ChartState';
+import { ChartStyle } from '@/model/ChartStyle';
+import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
 import PriceAxisContextMenu from '@/model/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/context-menu/TimeAxisContextMenu';
-import Viewport from '@/model/viewport/Viewport';
 import ViewportContextMenu from '@/model/context-menu/ViewportContextMenu';
+import { DrawingType } from '@/model/datasource/Drawing';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import Sketcher from '@/model/sketchers/Sketcher';
 import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
+import Viewport from '@/model/viewport/Viewport';
+import { CSSProperties, reactive } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Prop, ProvideReactive } from 'vue-property-decorator';
 
 export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: Map<DrawingType, Sketcher> };
 
 @Options({
   components: {
-    ViewportWidget, TimeAxisWidget, BoxLayout, Multipane, PriceAxisWidget, Divider, LayeredCanvas, ContextMenu,
+    ViewportWidget,
+    TimeAxisWidget,
+    BoxLayout,
+    Multipane,
+    PriceAxisWidget,
+    Divider,
+    LayeredCanvas,
+    ContextMenu,
   },
   directives: {
     contextmenu: contextMenuDirective,
@@ -124,15 +132,19 @@ export default class ChartWidget extends Vue {
   }
 
   unmounted(): void {
-    (document.querySelector('body') as HTMLBodyElement).style.backgroundColor = ''
+    (document.querySelector('body') as HTMLBodyElement).style.backgroundColor = '';
+  }
+
+  public getChartAPI(): ChartController {
+    return this.controller;
   }
 
   private createChartStyleOptions(): ChartStyle {
     if (this.options && this.options.style) {
-      return reactive(merge(clone(chartOptionsDefaults), this.options.style)[0] as ChartStyle)
+      return merge(clone(chartOptionsDefaults), this.options.style)[0] as ChartStyle;
     }
 
-    return reactive(clone(chartOptionsDefaults));
+    return clone(chartOptionsDefaults);
   }
 
   private createSketchersOptions(): Map<DrawingType, Sketcher> {
@@ -181,8 +193,9 @@ export default class ChartWidget extends Vue {
   }
 
   private onKeyDown(e: KeyboardEvent): void {
+    // https://keyjs.dev/
     const isCommandKey: boolean = e.ctrlKey || e.metaKey;
-    const isZKeyPressed: boolean = e.key === 'z' || e.key === 'Z';
+    const isZKeyPressed: boolean = e.code === 'KeyZ';
 
     if (isZKeyPressed && isCommandKey) {
       e.preventDefault();
@@ -192,10 +205,6 @@ export default class ChartWidget extends Vue {
         this.controller.undo();
       }
     }
-  }
-
-  public getChartAPI(): ChartController {
-    return this.controller;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

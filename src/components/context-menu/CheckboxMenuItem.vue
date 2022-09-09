@@ -1,11 +1,11 @@
 <script lang="tsx">
-import { Options, Vue } from 'vue-class-component';
-import { VNode } from 'vue';
-import { Prop } from 'vue-property-decorator';
 import { CheckboxMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
+import { VNode } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
 
 @Options({
-  components: { },
+  components: {},
 })
 export default class CheckboxMenuItem extends Vue {
   @Prop()
@@ -28,8 +28,8 @@ export default class CheckboxMenuItem extends Vue {
         onMousedown={() => this.model.onclick()}
         onKeypress={this.onKeyPress}
       >
-          {this.model.checked ? <span class="tickmark">&#x2714;</span> : null}
-          {this.model.title}
+        {this.model.checked ? <span class="tickmark">&#x2714;</span> : null}
+        {this.model.title}
       </li>
     );
   }

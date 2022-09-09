@@ -1,9 +1,9 @@
-import { Handle } from '@/model/datasource/Drawing';
+import { DrawingHandle } from '@/model/datasource/Drawing';
+import { setLineStyle } from '@/model/datasource/line/line-functions';
 import { RectStyle } from '@/model/datasource/line/type-defs';
 import { Point } from '@/model/type-defs';
-import { setLineStyle } from '@/model/datasource/line/line-functions';
 
-export default class SquareHandle implements Handle {
+export default class SquareHandle implements DrawingHandle {
   private readonly nonLockedCursor: string;
   private readonly style: RectStyle;
   private readonly radius: number = 3;
@@ -56,6 +56,7 @@ export default class SquareHandle implements Handle {
       this.path.arc(cx, cy, 3, 0, 2 * Math.PI);
     }
   }
+
   public hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean {
     ctx.save();
     ctx.setLineDash([]);

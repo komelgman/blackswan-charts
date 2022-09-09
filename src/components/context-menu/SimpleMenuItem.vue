@@ -1,11 +1,11 @@
 <script lang="tsx">
-import { Options, Vue } from 'vue-class-component';
-import { VNode } from 'vue';
-import { Prop } from 'vue-property-decorator';
 import { SimpleMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
+import { VNode } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
 
 @Options({
-  components: { },
+  components: {},
 })
 export default class SimpleMenuItem extends Vue {
   @Prop()
@@ -32,8 +32,8 @@ export default class SimpleMenuItem extends Vue {
         onClick={() => this.model.onclick()}
         onKeypress={this.onKeyPress}
       >
-          {this.renderIcon()}
-          {this.model.title}
+        {this.renderIcon()}
+        {this.model.title}
       </li>
     );
   }

@@ -5,7 +5,7 @@ import {
 
 export default class BigBoom extends AbstractHistoricalIncident<HistoricalIncidentOptions> {
   public constructor() {
-    super({ });
+    super({});
   }
 
   protected applyIncident(): void {

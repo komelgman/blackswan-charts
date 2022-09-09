@@ -4,6 +4,7 @@ import { reactive } from 'vue';
 export interface HasPostConstruct {
   postConstruct: () => void;
 }
+
 type Constructor<T> = new (...args: any[]) => T;
 
 export default function Reactive<T extends Record<string, any>>(ConstructorFunction: Constructor<T>): Constructor<T> {
@@ -16,7 +17,7 @@ export default function Reactive<T extends Record<string, any>>(ConstructorFunct
       }
 
       return result;
-    } as any as { new (): T };
+    } as any as { new(): T };
 
     Proxy.prototype = ConstructorFunction.prototype;
     return new Proxy();

@@ -10,20 +10,20 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
 import LayeredCanvas, {
   DragMoveEvent,
   ResizeEvent,
   ZoomEvent,
 } from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import { InjectReactive, Prop } from 'vue-property-decorator';
-import { PropType } from 'vue';
-import TimeAxis from '@/model/axis/TimeAxis';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import TimeLabelsInvalidator from '@/model/axis/label/TimeLabelsInvalidator';
-import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
+import TimeAxis from '@/model/axis/TimeAxis';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { InjectReactive, Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas },

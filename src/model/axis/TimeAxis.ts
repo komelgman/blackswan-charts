@@ -1,9 +1,10 @@
-import { UTCTimestamp } from '@/model/type-defs';
-import Axis, { AxisOptions } from '@/model/axis/Axis';
 import Reactive, { HasPostConstruct } from '@/misc/reactive-decorator';
+import Axis from '@/model/axis/Axis';
+import AxisOptions from '@/model/axis/AxisOptions';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import { TextStyle } from '@/model/ChartStyle';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import { UTCTimestamp } from '@/model/type-defs';
 
 @Reactive
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {
@@ -82,6 +83,6 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
 
     this.update({
       range: { from: revert(screenDelta), to: revert(screenSize + screenDelta) },
-    })
+    });
   }
 }

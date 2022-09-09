@@ -1,3 +1,4 @@
+import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
 import { toRaw } from 'vue';
 
@@ -9,14 +10,19 @@ export default class DrawingIdHelper {
   }
 
   private init(dataSource: DataSource): void {
-    const tmp = toRaw(dataSource);
-    for (const [options] of tmp) {
+    const rawDS = toRaw(dataSource);
+    for (const [descriptor] of rawDS) {
+      if (!isString(descriptor.ref)) {
+        continue;
+      }
+
+      const { options } = descriptor;
       const regex = new RegExp(`${options.type}(\\d+)`, 'i');
-      const matches = options.id.match(regex)
+      const matches = descriptor.ref.match(regex);
 
       if (matches == null || matches.length > 2) {
         throw new Error(`Unsupported DataSourceEntry Id template, use 'options.type' +
-        Number but for type: ${options.type} found id: ${options.id}`)
+        Number but for type: ${options.type} found id: ${descriptor.ref}`);
       }
 
       const current: number = this.maxValueForPrefix.get(options.type) || -1;

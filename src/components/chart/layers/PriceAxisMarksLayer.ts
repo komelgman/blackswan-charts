@@ -1,13 +1,15 @@
-import Layer from '@/components/layered-canvas/layers/Layer';
-import { InvertedValue } from '@/model/axis/PriceAxis';
-import { toRaw, watch } from 'vue';
-import makeFont from '@/misc/make-font';
-import Viewport from '@/model/viewport/Viewport';
-import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import { Predicate } from '@/model/type-defs';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
+import Layer from '@/components/layered-canvas/layers/Layer';
+import makeFont from '@/misc/make-font';
+import { InvertedValue } from '@/model/axis/PriceAxis';
+import DataSourceChangeEventListener, {
+  ChangeReasons,
+} from '@/model/datasource/DataSourceChangeEventListener';
+import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { Predicate } from '@/model/type-defs';
+import Viewport from '@/model/viewport/Viewport';
+import { toRaw, watch } from 'vue';
 
 export default class PriceAxisMarksLayer extends Layer {
   private readonly viewport: Viewport;
@@ -19,7 +21,9 @@ export default class PriceAxisMarksLayer extends Layer {
     watch([
       this.viewport.priceAxis.textStyle,
       this.viewport.priceAxis.inverted,
-    ], () => { this.invalid = true });
+    ], () => {
+      this.invalid = true;
+    });
   }
 
   public installListeners(): void {
@@ -30,7 +34,7 @@ export default class PriceAxisMarksLayer extends Layer {
     this.viewport.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: ChangeReasons): void => {
     if (reasons.has(DataSourceChangeEventReason.CacheInvalidated)) {
       this.invalid = true;
     }
@@ -49,12 +53,18 @@ export default class PriceAxisMarksLayer extends Layer {
     native.textAlign = 'end';
     native.font = makeFont(textStyle);
 
-    const validMarks: Predicate<DataSourceEntry> = ([options, drawing, mark])
-      : boolean => options.type === 'HLine' && options.visible && !!options.valid
-      && !!options.visibleInViewport && mark !== undefined;
+    const validMarks: Predicate<DataSourceEntry> = ([descriptor, drawing, mark]): boolean => {
+      const { options } = descriptor;
+
+      return options.type === 'HLine'
+        && options.visible
+        && !!descriptor.valid
+        && !!descriptor.visibleInViewport
+        && mark !== undefined;
+    };
 
     const x = width - PRICE_LABEL_PADDING;
-    for (const [options, drawing, mark] of toRaw(this.viewport.dataSource).filtered(validMarks)) {
+    for (const [descriptor, drawing, mark] of toRaw(this.viewport.dataSource).filtered(validMarks)) {
       if (mark === undefined || drawing === undefined) {
         continue;
       }
@@ -63,7 +73,7 @@ export default class PriceAxisMarksLayer extends Layer {
 
       native.beginPath();
       native.lineWidth = 1;
-      native.fillStyle = options.data.style.color;
+      native.fillStyle = descriptor.options.data.style.color;
       native.rect(0, y - half - 3, width, textStyle.fontSize + 4);
       native.fill();
 

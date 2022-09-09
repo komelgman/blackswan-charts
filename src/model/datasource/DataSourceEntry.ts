@@ -1,3 +1,3 @@
-import Drawing, { AxisMark, DrawingOptions } from '@/model/datasource/Drawing';
+import Drawing, { AxisMark, DrawingDescriptor } from '@/model/datasource/Drawing';
 
-export declare type DataSourceEntry<DataType = any> = [DrawingOptions<DataType>, Drawing?, AxisMark?];
+export declare type DataSourceEntry<DataType = any> = [DrawingDescriptor<DataType>, Drawing?, AxisMark?];

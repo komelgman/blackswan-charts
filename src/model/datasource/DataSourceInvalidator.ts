@@ -1,8 +1,13 @@
-import Viewport from '@/model/viewport/Viewport';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import { computed, toRaw, watch, WatchStopHandle } from 'vue';
+import DataSourceChangeEventListener, {
+  ChangeReasons,
+} from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { DrawingType } from '@/model/datasource/Drawing';
+import Sketcher from '@/model/sketchers/Sketcher';
+import Viewport from '@/model/viewport/Viewport';
+import { computed, toRaw, watch, WatchStopHandle } from 'vue';
 
 export default class DataSourceInvalidator {
   private readonly viewportModel: Viewport;
@@ -44,25 +49,43 @@ export default class DataSourceInvalidator {
     dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
-    if (reasons.has(DataSourceChangeEventReason.CacheReset)
-      || reasons.has(DataSourceChangeEventReason.AddEntry)
-      || reasons.has(DataSourceChangeEventReason.RemoveEntry)
-      || reasons.has(DataSourceChangeEventReason.UpdateEntry)) {
-      this.invalidate();
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: ChangeReasons): void => {
+    const entries: DataSourceEntry[] = [
+      ...(reasons.get(DataSourceChangeEventReason.CacheReset) || []),
+      ...(reasons.get(DataSourceChangeEventReason.AddEntry) || []),
+      ...(reasons.get(DataSourceChangeEventReason.UpdateEntry) || []),
+    ];
+
+    if (entries.length) {
+      this.invalidate(entries);
+      toRaw(this.viewportModel.dataSource).invalidated(entries);
     }
   };
 
-  public invalidate(): void {
+  private invalidate(entries: DataSourceEntry[]): void {
     if (this.context === undefined) {
       return;
     }
 
-    const dataSource = toRaw(this.viewportModel.dataSource);
-    dataSource.invalidateCache(this.viewportModel);
+    for (const entry of entries) {
+      if (entry[0].valid) {
+        debugger;
+        console.warn(`Invalid state: entry ${entry[0].ref} already valid`);
+        continue;
+      }
+
+      const drawingType: DrawingType = entry[0].options.type;
+      if (!this.viewportModel.hasSketcher(drawingType)) {
+        console.warn(`unknown drawing type ${drawingType}`);
+        continue;
+      }
+
+      const sketcher: Sketcher = this.viewportModel.getSketcher(drawingType) as Sketcher;
+      sketcher.draw(entry, this.viewportModel);
+    }
   }
 
-  public resetDataSourceCache(): void {
+  private resetDataSourceCache(): void {
     toRaw(this.viewportModel.dataSource).resetCache();
   }
 }

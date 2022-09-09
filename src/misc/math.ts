@@ -20,4 +20,4 @@ export default {
   exp(x: number): number {
     return Math.sign(x) * C * (-1 + Math.exp(Math.abs(x)));
   },
-}
+};

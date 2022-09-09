@@ -17,14 +17,14 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop, Ref } from 'vue-property-decorator';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import { PropType } from 'vue';
-import ResizeObserver from 'resize-observer-polyfill';
 import Layer from '@/components/layered-canvas/layers/Layer';
 import { EventRemover, onceDocument, onDocument } from '@/misc/document-listeners';
 import { Point } from '@/model/type-defs';
+import ResizeObserver from 'resize-observer-polyfill';
+import { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Prop, Ref } from 'vue-property-decorator';
 
 export interface MousePositionEvent {
   x: number;
@@ -95,7 +95,7 @@ export default class LayeredCanvas extends Vue {
     }
 
     const rect = target.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
   private onMouseLeftBtnClick(e: MouseEvent): void {
@@ -143,18 +143,27 @@ export default class LayeredCanvas extends Vue {
     this.isSkipMovementsDetection = true;
 
     if (!this.isWasDrag) {
-      const startEvent: MouseClickEvent = { ...this.getPos(e, this.dragInElement), isCtrl: e.ctrlKey };
+      const startEvent: MouseClickEvent = {
+        ...this.getPos(e, this.dragInElement),
+        isCtrl: e.ctrlKey,
+      };
       this.$emit('drag-start', startEvent);
       this.isWasDrag = true;
     }
 
     const pos: Point = this.getPos(e, this.dragInElement);
-    const moveEvent: DragMoveEvent = { ...pos, dx: this.prevPos.x - pos.x, dy: this.prevPos.y - pos.y };
+    const moveEvent: DragMoveEvent = {
+      ...pos,
+      dx: this.prevPos.x - pos.x,
+      dy: this.prevPos.y - pos.y,
+    };
     this.$emit('drag-move', moveEvent);
     this.prevPos = pos;
 
     // hint: decrease amount of drag events
-    setTimeout(() => { this.isSkipMovementsDetection = false; }, 10);
+    setTimeout(() => {
+      this.isSkipMovementsDetection = false;
+    }, 10);
   }
 
   private onMouseMove(e: MouseEvent): void {
@@ -167,7 +176,9 @@ export default class LayeredCanvas extends Vue {
     this.$emit('mouse-move', event);
 
     // hint: decrease amount of move events
-    setTimeout(() => { this.isSkipMovementsDetection = false; }, 10);
+    setTimeout(() => {
+      this.isSkipMovementsDetection = false;
+    }, 10);
   }
 
   private onDragEnd(e?: DragEvent): void {
@@ -215,7 +226,7 @@ export default class LayeredCanvas extends Vue {
       }
 
       this.$emit('resize', { width, height });
-    })
+    });
   }
 }
 </script>

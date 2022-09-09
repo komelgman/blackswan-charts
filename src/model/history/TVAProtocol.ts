@@ -2,7 +2,7 @@ import {
   HistoricalIncident,
   HistoricalIncidentLifeHooks,
 } from '@/model/history/HistoricalIncident';
-import { CanMergeWith } from '@/misc/CanMergeWith';
+import { CanMergeWith } from '@/model/options/CanMergeWith';
 import { Predicate } from '@/model/type-defs';
 
 export interface IsNexusIncident {

@@ -1,22 +1,23 @@
-import { PaneDescriptor, PaneOptions } from '@/components/layout';
-import TimeAxis from '@/model/axis/TimeAxis';
-import DataSource from '@/model/datasource/DataSource';
-import { computed, reactive, watch, WatchStopHandle } from 'vue';
-import { DeepPartial, merge } from '@/misc/strict-type-checks';
-import ChartState from '@/model/ChartState';
-import { PriceScales } from '@/model/axis/scaling/PriceScale';
-import { PaneId } from '@/components/layout/PaneDescriptor';
-import Viewport, { ViewportOptions } from '@/model/viewport/Viewport';
-import Sketcher from '@/model/sketchers/Sketcher';
-import { DrawingType } from '@/model/datasource/Drawing';
-import { ChartStyle } from '@/model/ChartStyle';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
+import { PaneDescriptor, PaneOptions } from '@/components/layout';
+import { PaneId } from '@/components/layout/PaneDescriptor';
+import { DeepPartial, merge } from '@/misc/strict-type-checks';
+import { PriceScales } from '@/model/axis/scaling/PriceScale';
+import TimeAxis from '@/model/axis/TimeAxis';
+import ChartState from '@/model/ChartState';
+import { ChartStyle } from '@/model/ChartStyle';
+import DataSource from '@/model/datasource/DataSource';
+import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
+import { DrawingType } from '@/model/datasource/Drawing';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import AddNewPane from '@/model/incidents/AddNewPane';
 import RemovePane from '@/model/incidents/RemovePane';
 import SwapPanes from '@/model/incidents/SwapPanes';
-import UpdateChartStyle from '@/model/incidents/UpdateChartStyle';
 import TogglePane from '@/model/incidents/TogglePane';
+import UpdateChartStyle from '@/model/incidents/UpdateChartStyle';
+import Sketcher from '@/model/sketchers/Sketcher';
+import Viewport, { ViewportOptions } from '@/model/viewport/Viewport';
+import { computed, reactive, watch, WatchStopHandle } from 'vue';
 
 export default class ChartController {
   private static paneIdGen: number = 0;
@@ -26,21 +27,23 @@ export default class ChartController {
   private readonly tva: TimeVarianceAuthority;
   private readonly state: ChartState;
   private readonly unwatchers: Map<PaneId, WatchStopHandle[]> = new Map();
+  private readonly dataSourceInterconnect: DataSourceInterconnect;
 
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
 
   constructor(state: ChartState, chartOptions: ChartStyle, tva: TimeVarianceAuthority, sketchers: Map<DrawingType, Sketcher>) {
     this.state = state;
-    this.style = chartOptions;
+    this.style = reactive(chartOptions);
     this.tva = tva;
     this.sketchers = sketchers;
     this.panes = reactive([]);
     this.timeAxis = new TimeAxis(tva, chartOptions.text);
+    this.dataSourceInterconnect = new DataSourceInterconnect();
 
     watch(computed((): number => this.style.text.fontSize),
       (v) => {
-        this.state.timeWidgetHeight = v + 16
+        this.state.timeWidgetHeight = v + 16;
       }, { immediate: true });
   }
 
@@ -50,13 +53,12 @@ export default class ChartController {
       .addIncident(new UpdateChartStyle({
         style: this.style,
         update: options,
-      }))
-      .trySign();
+      }));
   }
 
   public createPane(dataSource: DataSource, options?: Partial<PaneOptions<ViewportOptions>>): PaneId {
     // eslint-disable-next-line no-plusplus
-    const generatedPaneId: PaneId = `pane${ChartController.paneIdGen++}`;
+    const generatedPaneId: PaneId = `pane${ChartController.paneIdGen++}`; // todo: id generation
     const paneOptions: PaneOptions<ViewportOptions> = {
       id: generatedPaneId,
       minSize: 100,
@@ -80,8 +82,8 @@ export default class ChartController {
         style: this.style,
         timeAxis: this.timeAxis,
         sketchers: this.sketchers,
-        afterApply: () => this.installWatchersForPane(paneOptions.id),
-        beforeInverse: () => this.uninstallWatchersForPane(paneOptions.id),
+        afterApply: () => this.installPane(paneOptions.id),
+        beforeInverse: () => this.uninstallPane(paneOptions.id),
       }))
       .trySign();
 
@@ -95,28 +97,32 @@ export default class ChartController {
       .addIncident(new RemovePane({
         panes: this.panes,
         paneIndex: this.indexByPaneId(paneId),
-        beforeApply: () => this.uninstallWatchersForPane(paneId),
-        afterInverse: () => this.installWatchersForPane(paneId),
+        beforeApply: () => this.uninstallPane(paneId),
+        afterInverse: () => this.installPane(paneId),
       }))
       .trySign();
   }
 
-  private installWatchersForPane(paneId: PaneId): void {
+  private installPane(paneId: PaneId): void {
     if (!this.unwatchers.has(paneId)) {
       this.unwatchers.set(paneId, []);
     }
 
     const pane = this.panes[this.indexByPaneId(paneId)];
-    const { priceAxis } = pane.model;
+    const { priceAxis, dataSource } = pane.model;
     (this.unwatchers.get(paneId) as WatchStopHandle[]).push(
       watch(priceAxis.contentWidth, this.updatePriceAxisWidth.bind(this), { immediate: true }),
-    )
+    );
+
+    this.dataSourceInterconnect.addDataSource(paneId, dataSource);
   }
 
-  private uninstallWatchersForPane(paneId: PaneId): void {
+  private uninstallPane(paneId: PaneId): void {
     if (!this.unwatchers.has(paneId)) {
-      throw new Error('Oops: !this.unwatchers.has(paneId)')
+      throw new Error(`Oops: !this.unwatchers.has(${paneId})`);
     }
+
+    this.dataSourceInterconnect.removeDataSource(paneId);
 
     for (const unwatch of (this.unwatchers.get(paneId) as WatchStopHandle[])) {
       unwatch();

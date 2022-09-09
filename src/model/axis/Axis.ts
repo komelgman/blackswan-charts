@@ -1,15 +1,10 @@
-import { LogicSize, Range } from '@/model/type-defs';
-import { TextStyle } from '@/model/ChartStyle';
 import { clone, merge } from '@/misc/strict-type-checks';
-import TVAProtocol from '@/model/history/TVAProtocol';
+import AxisOptions from '@/model/axis/AxisOptions';
 import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
+import { TextStyle } from '@/model/ChartStyle';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-
-export interface AxisOptions<T> {
-  range?: Range<T>;
-  textStyle?: TextStyle;
-  screenSize?: LogicSize;
-}
+import TVAProtocol from '@/model/history/TVAProtocol';
+import { LogicSize, Range } from '@/model/type-defs';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
   private readonly rangeValue: Range<T> = { from: -1 as T, to: 1 as T };
@@ -23,7 +18,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     this.tva = tva;
     this.textStyleValue = textStyle;
 
-    this.id = Math.random(); // todo: get uid
+    this.id = Math.random(); // todo: id generation
   }
 
   public update(options: Options): void {
@@ -32,7 +27,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     }
 
     if (options.textStyle) {
-      merge(this.textStyleValue, clone(options.textStyle))
+      merge(this.textStyleValue, clone(options.textStyle));
     }
 
     if (options.screenSize) {
@@ -53,6 +48,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   public abstract translate(value: T): number;
+
   public abstract revert(screenPos: number): T;
 
   public move(screenDelta: number): void {
@@ -75,7 +71,10 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   public zoom(screenPivot: number, screenDelta: number): void {
-    const protocol: TVAProtocol = this.tva.getProtocol({ incident: `zoom-axis-${this.id}`, timeout: 1000 });
+    const protocol: TVAProtocol = this.tva.getProtocol({
+      incident: `zoom-axis-${this.id}`,
+      timeout: 1000,
+    });
 
     if (!protocol.hasIncident((incident) => (incident as UpdateAxisRange<T>).options?.axis === this)) {
       // setup initial value

@@ -1,6 +1,6 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
-import TimeAxis from '@/model/axis/TimeAxis';
 import makeFont from '@/misc/make-font';
+import TimeAxis from '@/model/axis/TimeAxis';
 import { computed, watch } from 'vue';
 
 export default class TimeAxisLabelsLayer extends Layer {
@@ -13,7 +13,9 @@ export default class TimeAxisLabelsLayer extends Layer {
     watch([
       this.timeAxis.labels,
       computed(() => this.timeAxis.screenSize.second),
-    ], () => { this.invalid = true });
+    ], () => {
+      this.invalid = true;
+    });
   }
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {

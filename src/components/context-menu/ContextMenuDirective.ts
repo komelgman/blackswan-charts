@@ -1,6 +1,6 @@
-import { Directive, DirectiveBinding } from 'vue';
 import ContextMenu from '@/components/context-menu/ContextMenu.vue';
 import { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
+import { Directive, DirectiveBinding } from 'vue';
 
 type ContextMenuDirectiveEl = Element
 type ContextMenuDirectiveValue = { model: ContextMenuOptionsProvider, instance: ContextMenu };
@@ -20,7 +20,10 @@ class ContextMenuDirective {
 
       event.preventDefault();
       if (contextMenu != null) {
-        contextMenu.show(event, binding.value.model.contextmenu({ x: event.pageX - rect.left, y: event.pageY - rect.top }));
+        contextMenu.show(event, binding.value.model.contextmenu({
+          x: event.pageX - rect.left,
+          y: event.pageY - rect.top,
+        }));
       }
     };
 
@@ -47,7 +50,7 @@ class ContextMenuDirective {
       mounted: this.bind.bind(this),
       updated: this.rebind.bind(this),
       beforeUnmount: this.unbind.bind(this),
-    }
+    };
   }
 }
 

@@ -1,6 +1,6 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
-import PriceAxis, { InvertedValue } from '@/model/axis/PriceAxis';
 import makeFont from '@/misc/make-font';
+import PriceAxis, { InvertedValue } from '@/model/axis/PriceAxis';
 import { computed, watch } from 'vue';
 
 export const PRICE_LABEL_PADDING = 8;
@@ -16,7 +16,9 @@ export default class PriceAxisLabelsLayer extends Layer {
       this.priceAxis.labels,
       this.priceAxis.inverted,
       computed(() => this.priceAxis.screenSize.second),
-    ], () => { this.invalid = true });
+    ], () => {
+      this.invalid = true;
+    });
   }
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {

@@ -1,7 +1,7 @@
 import { Graphics } from '@/model/datasource/Drawing';
+import { setLineStyle } from '@/model/datasource/line/line-functions';
 import { LineStyle } from '@/model/datasource/line/type-defs';
 import { Point } from '@/model/type-defs';
-import { setLineStyle } from '@/model/datasource/line/line-functions';
 
 export default class VLine implements Graphics {
   private path!: Path2D;

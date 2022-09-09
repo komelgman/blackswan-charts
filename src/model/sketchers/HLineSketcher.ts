@@ -1,17 +1,16 @@
-import Viewport from '@/model/viewport/Viewport';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import { LineFillStyle, LineStyle, RectStyle } from '@/model/datasource/line/type-defs';
-import { DragHandle } from '@/model/viewport/DragHandle';
 import { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
-import { toRaw } from 'vue';
-import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
-import HLine from '@/model/sketchers/graphics/HLine';
 import { invertColor } from '@/misc/color';
-import { HandleId } from '@/model/datasource/Drawing';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { Price } from '@/model/type-defs';
-import Sketcher from '@/model/sketchers/Sketcher';
+import { HandleId } from '@/model/datasource/Drawing';
+import { LineStyle } from '@/model/datasource/line/type-defs';
 import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
+import HLine from '@/model/sketchers/graphics/HLine';
+import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
+import { Price } from '@/model/type-defs';
+import { DragHandle } from '@/model/viewport/DragHandle';
+import Viewport from '@/model/viewport/Viewport';
+import { toRaw } from 'vue';
 
 export interface HLineOptions {
   def: Price;
@@ -24,16 +23,16 @@ export default class HLineSketcher extends AbstractSketcher {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    const [options, drawing, priceMark] = entry;
-    const { data: line, locked } = options;
+    const [descriptor, drawing, priceMark] = entry;
+    const { data: line, locked } = descriptor.options;
     const { priceAxis } = viewport;
     const { main: width } = viewport.timeAxis.screenSize;
     const { fraction, range } = priceAxis;
 
-    options.visibleInViewport = line.def >= range.from && line.def <= range.to;
-    options.valid = options.visibleInViewport;
+    descriptor.visibleInViewport = line.def >= range.from && line.def <= range.to;
+    descriptor.valid = descriptor.visibleInViewport;
 
-    if (!options.visibleInViewport) {
+    if (!descriptor.visibleInViewport) {
       return;
     }
 
@@ -58,7 +57,7 @@ export default class HLineSketcher extends AbstractSketcher {
         screenPos: y,
         textColor: invertColor(line.style.color),
         text: markText,
-      }
+      };
     } else {
       Object.assign(priceMark, {
         screenPos: y,
@@ -71,8 +70,8 @@ export default class HLineSketcher extends AbstractSketcher {
 
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
-      || entry[0].type !== 'HLine'
-      || entry[0].locked
+      || entry[0].options.type !== 'HLine'
+      || entry[0].options.locked
       || entry[1] === undefined
     ) {
       console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
@@ -82,11 +81,11 @@ export default class HLineSketcher extends AbstractSketcher {
     const { dataSource, priceAxis } = viewport;
     return (e: DragMoveEvent) => {
       const rawDS = toRaw(dataSource);
-      const [options] = entry;
+      const { options } = entry[0];
       // only one handle and drag by body equals drag by handles.center
       const def = priceAxis.revert(priceAxis.translate(options.data.def) - priceAxis.inverted.value * e.dy);
 
-      rawDS.update(options.id, { data: { def } });
+      rawDS.update(entry[0].ref, { options: { data: { def } } });
     };
   }
 

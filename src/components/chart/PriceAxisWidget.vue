@@ -10,24 +10,24 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { InjectReactive, Prop } from 'vue-property-decorator';
-import { BoxLayout, Divider } from '@/components/layout';
+import PriceAxisLabelsLayer from '@/components/chart/layers/PriceAxisLabelsLayer';
+import PriceAxisMarksLayer from '@/components/chart/layers/PriceAxisMarksLayer';
 import LayeredCanvas, {
   DragMoveEvent,
   ResizeEvent,
   ZoomEvent,
 } from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import { PropType } from 'vue';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import ChartState from '@/model/ChartState';
+import { BoxLayout, Divider } from '@/components/layout';
 import PriceLabelsInvalidator from '@/model/axis/label/PriceLabelsInvalidator';
-import Viewport from '@/model/viewport/Viewport';
+import ChartState from '@/model/ChartState';
 import { ChartStyle } from '@/model/ChartStyle';
-import PriceAxisMarksLayer from '@/components/chart/layers/PriceAxisMarksLayer';
-import PriceAxisLabelsLayer from '@/components/chart/layers/PriceAxisLabelsLayer';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import Viewport from '@/model/viewport/Viewport';
+import { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { InjectReactive, Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas, Divider, BoxLayout },

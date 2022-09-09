@@ -5,13 +5,29 @@ export function setLineStyle(ctx: CanvasRenderingContext2D, style: LineStyle): v
   const { lineWidth, fill, color } = style;
 
   switch (fill) {
-    case LineFillStyle.Solid: { dashPattern = []; break; }
-    case LineFillStyle.Dotted: { dashPattern = [2 * lineWidth, 3 * lineWidth]; break; }
-    case LineFillStyle.Dashed: { dashPattern = [5 * lineWidth, 5 * lineWidth]; break; }
-    case LineFillStyle.LargeDashed: { dashPattern = [15 * lineWidth, 5 * lineWidth]; break; }
-    case LineFillStyle.SparseDotted: { dashPattern = [10 * lineWidth, 4 * lineWidth, 3 * lineWidth,
-      4 * lineWidth, 3 * lineWidth, 4 * lineWidth, 3 * lineWidth, 4 * lineWidth]; break; }
-    default: dashPattern = [];
+    case LineFillStyle.Solid: {
+      dashPattern = [];
+      break;
+    }
+    case LineFillStyle.Dotted: {
+      dashPattern = [2 * lineWidth, 3 * lineWidth];
+      break;
+    }
+    case LineFillStyle.Dashed: {
+      dashPattern = [5 * lineWidth, 5 * lineWidth];
+      break;
+    }
+    case LineFillStyle.LargeDashed: {
+      dashPattern = [15 * lineWidth, 5 * lineWidth];
+      break;
+    }
+    case LineFillStyle.SparseDotted: {
+      dashPattern = [10 * lineWidth, 4 * lineWidth, 3 * lineWidth,
+        4 * lineWidth, 3 * lineWidth, 4 * lineWidth, 3 * lineWidth, 4 * lineWidth];
+      break;
+    }
+    default:
+      dashPattern = [];
   }
   ctx.lineWidth = lineWidth;
   ctx.strokeStyle = color;

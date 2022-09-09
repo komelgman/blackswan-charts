@@ -1,17 +1,16 @@
-import Viewport from '@/model/viewport/Viewport';
 import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import { LineFillStyle, LineStyle, RectStyle } from '@/model/datasource/line/type-defs';
-import { DragHandle } from '@/model/viewport/DragHandle';
 import { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
-import { toRaw } from 'vue';
-import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
 import { invertColor } from '@/misc/color';
-import { HandleId } from '@/model/datasource/Drawing';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { HandleId } from '@/model/datasource/Drawing';
+import { LineStyle } from '@/model/datasource/line/type-defs';
+import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
+import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
 import VLine from '@/model/sketchers/graphics/VLine';
 import { UTCTimestamp } from '@/model/type-defs';
-import Sketcher from '@/model/sketchers/Sketcher';
-import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
+import { DragHandle } from '@/model/viewport/DragHandle';
+import Viewport from '@/model/viewport/Viewport';
+import { toRaw } from 'vue';
 
 export interface VLineOptions {
   def: UTCTimestamp;
@@ -24,16 +23,17 @@ export default class VLineSketcher extends AbstractSketcher {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    const [options, drawing, timeMark] = entry;
-    const { data: line, locked } = options;
+    const [descriptor, drawing, timeMark] = entry;
+    const { data: line, locked } = descriptor.options;
     const { timeAxis } = viewport;
     const { main: height } = viewport.priceAxis.screenSize;
     const { range } = timeAxis;
 
-    options.visibleInViewport = line.def >= range.from && line.def <= range.to;
-    options.valid = options.visibleInViewport;
+    descriptor.visibleInViewport = line.def >= range.from && line.def <= range.to;
+    descriptor.valid = descriptor.visibleInViewport;
+    descriptor.options.shared = true;
 
-    if (!options.visibleInViewport) {
+    if (!descriptor.visibleInViewport) {
       return;
     }
 
@@ -54,7 +54,7 @@ export default class VLineSketcher extends AbstractSketcher {
         screenPos: x,
         textColor: invertColor(line.style.color),
         text: markText,
-      }
+      };
     } else {
       Object.assign(timeMark, {
         screenPos: x,
@@ -67,8 +67,8 @@ export default class VLineSketcher extends AbstractSketcher {
 
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
-      || entry[0].type !== 'VLine'
-      || entry[0].locked
+      || entry[0].options.type !== 'VLine'
+      || entry[0].options.locked
       || entry[1] === undefined
     ) {
       console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
@@ -79,11 +79,11 @@ export default class VLineSketcher extends AbstractSketcher {
 
     return (e: DragMoveEvent) => {
       const rawDS = toRaw(dataSource);
-      const [options] = entry;
+      const { options } = entry[0];
       // only one handle and drag by body equals drag by handles.center
       const def = timeAxis.revert(timeAxis.translate(options.data.def) - e.dx);
 
-      rawDS.update(options.id, { data: { def } });
+      rawDS.update(entry[0].ref, { options: { data: { def } } });
     };
   }
 

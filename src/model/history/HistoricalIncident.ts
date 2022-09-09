@@ -1,5 +1,6 @@
 export interface HistoricalIncident {
   apply(): void;
+
   inverse(): void;
 }
 
@@ -47,5 +48,6 @@ export abstract class AbstractHistoricalIncident<Options extends HistoricalIncid
   }
 
   protected abstract applyIncident(): void;
+
   protected abstract inverseIncident(): void;
 }

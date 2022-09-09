@@ -5,10 +5,10 @@
 </template>
 
 <script lang="ts">
+import { Thickness } from '@/components/layout';
+import { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
-import { PropType } from 'vue';
-import { Thickness } from '@/components/layout';
 
 @Options({})
 export default class Divider extends Vue {

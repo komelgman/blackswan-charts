@@ -1,15 +1,15 @@
+import { PaneDescriptor, PaneOptions } from '@/components/layout';
+import PriceAxis from '@/model/axis/PriceAxis';
+import TimeAxis from '@/model/axis/TimeAxis';
+import { ChartStyle } from '@/model/ChartStyle';
+import DataSource from '@/model/datasource/DataSource';
+import { DrawingType } from '@/model/datasource/Drawing';
 import {
   AbstractHistoricalIncident,
   HistoricalIncidentOptions,
 } from '@/model/history/HistoricalIncident';
-import { PaneDescriptor, PaneOptions } from '@/components/layout';
-import Viewport, { ViewportOptions } from '@/model/viewport/Viewport';
-import PriceAxis from '@/model/axis/PriceAxis';
-import DataSource from '@/model/datasource/DataSource';
-import { ChartStyle } from '@/model/ChartStyle';
-import TimeAxis from '@/model/axis/TimeAxis';
-import { DrawingType } from '@/model/datasource/Drawing';
 import Sketcher from '@/model/sketchers/Sketcher';
+import Viewport, { ViewportOptions } from '@/model/viewport/Viewport';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;
@@ -27,10 +27,6 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
     super(options);
 
     const { dataSource, paneOptions, style, timeAxis, sketchers } = this.options;
-    if (dataSource.tva === undefined) {
-      throw new Error('Illegal state: dataSource.tva === undefined');
-    }
-
     const priceAxis: PriceAxis = new PriceAxis(
       dataSource.tva,
       style.text,

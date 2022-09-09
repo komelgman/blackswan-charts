@@ -1,9 +1,9 @@
-import { Point } from '@/model/type-defs';
-import Viewport from '@/model/viewport/Viewport';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import DataSource from '@/model/datasource/DataSource';
-import { toRaw } from 'vue';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { Point } from '@/model/type-defs';
+import Viewport from '@/model/viewport/Viewport';
+import { toRaw } from 'vue';
 
 export default class ViewportHighlightInvalidator {
   public layerContext!: LayerContext;
@@ -42,7 +42,7 @@ export default class ViewportHighlightInvalidator {
         continue;
       }
 
-      if (currentHighlighted !== undefined && entry[0].id === currentHighlighted[0].id) {
+      if (currentHighlighted !== undefined && entry[0].ref === currentHighlighted[0].ref) {
         for (const [handleId, graphics] of Object.entries(entry[1].handles)) {
           if (graphics.hitTest(native, screenPos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;

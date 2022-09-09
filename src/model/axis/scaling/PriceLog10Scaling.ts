@@ -1,7 +1,7 @@
-import { Price } from '@/model/type-defs';
-import { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
-import { Cloneable } from '@/misc/strict-type-checks';
 import math from '@/misc/math';
+import { Cloneable } from '@/misc/strict-type-checks';
+import { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
+import { Price } from '@/model/type-defs';
 
 export default class PriceLog10Scaling implements PriceScalingFunction, Cloneable<PriceScalingFunction> {
   public translate(worldCoordinate: Price): number {

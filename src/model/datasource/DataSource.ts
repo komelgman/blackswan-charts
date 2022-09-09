@@ -1,67 +1,102 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import { Predicate } from '@/model/type-defs';
-import { clone, DeepPartial } from '@/misc/strict-type-checks';
+import { clone, DeepPartial, merge } from '@/misc/strict-type-checks';
+import DataSourceChangeEventListener, {
+  ChangeReasons,
+} from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import { DrawingId, DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
-import { isProxy } from 'vue';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
+import DataSourceStorage from '@/model/datasource/DataSourceStorage';
+import {
+  DrawingDescriptor,
+  DrawingId,
+  DrawingOptions,
+  DrawingReference,
+} from '@/model/datasource/Drawing';
 import DrawingIdHelper from '@/model/datasource/DrawingIdHelper';
-import Sketcher from '@/model/sketchers/Sketcher';
-import Viewport from '@/model/viewport/Viewport';
+import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
+import RemoveEntry from '@/model/datasource/incidents/RemoveEntry';
+import UpdateEntry from '@/model/datasource/incidents/UpdateEntry';
 import TimeVarianceAuthority, { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import TVAProtocol from '@/model/history/TVAProtocol';
-import UpdateDrawing from '@/model/datasource/incidents/UpdateDrawing';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import AddNewDrawing from '@/model/datasource/incidents/AddNewDrawing';
-import RemoveDrawing from '@/model/datasource/incidents/RemoveDrawing';
+import { Predicate } from '@/model/type-defs';
+import { isProxy } from 'vue';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
-  private readonly data: DataSourceEntry[];
-  private readonly reasons: Set<DataSourceChangeEventReason> = new Set();
+  private readonly storage: DataSourceStorage;
+  private readonly reasons: ChangeReasons = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private drawingIdHelper: DrawingIdHelper;
   private protocolOptions: TVAProtocolOptions | undefined = undefined;
-  public tva: TimeVarianceAuthority | undefined;
+  private interconnectValue: DataSourceInterconnect | undefined;
+  private tvaValue: TimeVarianceAuthority | undefined;
 
-  public constructor(drawingOptions: DrawingOptions[]) {
-    this.data = this.convertToDataArray(drawingOptions);
+  public constructor(drawings: DrawingOptions[]) {
+    this.storage = new DataSourceStorage();
+    this.initEntries(drawings);
     this.drawingIdHelper = new DrawingIdHelper(this);
+  }
+
+  public set interconnect(value: DataSourceInterconnect) {
+    this.interconnectValue = value;
+  }
+
+  public get interconnect(): DataSourceInterconnect {
+    if (this.interconnectValue === undefined) {
+      throw new Error('Illegal State: this.interconnectValue === undefined');
+    }
+
+    return this.interconnectValue;
+  }
+
+  public set tva(value: TimeVarianceAuthority) {
+    this.tvaValue = value;
+  }
+
+  public get tva(): TimeVarianceAuthority {
+    if (this.tvaValue === undefined) {
+      throw new Error('Illegal state: this.tvaValue === undefined');
+    }
+    return this.tvaValue;
   }
 
   * [Symbol.iterator](): IterableIterator<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
 
-    for (const value of this.data) yield value;
+    let entry = this.storage.head;
+    while (entry !== undefined) {
+      yield entry.value;
+      entry = entry.next;
+    }
   }
 
   * visible(inverse: boolean = false): IterableIterator<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
 
-    if (inverse) {
-      for (let i = this.data.length - 1; i >= 0; i -= 1) {
-        const value: DataSourceEntry = this.data[i];
-        const opt = value[0];
-        if (opt.visible && opt.visibleInViewport && opt.valid) {
-          yield value;
-        }
+    const it = inverse ? 'prev' : 'next';
+    let entry = inverse ? this.storage.tail : this.storage.head;
+    while (entry !== undefined) {
+      const entryValue: DataSourceEntry = entry.value;
+      const [descriptor] = entryValue;
+      if (descriptor.visibleInViewport && descriptor.valid && descriptor.options.visible) {
+        yield entryValue;
       }
-    } else {
-      for (const value of this.data) {
-        const opt = value[0];
-        if (opt.visible && opt.visibleInViewport && opt.valid) {
-          yield value;
-        }
-      }
+
+      entry = entry[it];
     }
   }
 
   * filtered(predicate: Predicate<DataSourceEntry>): IterableIterator<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
 
-    for (const value of this.data) {
-      if (predicate(value)) {
-        yield value;
+    let entry = this.storage.head;
+    while (entry !== undefined) {
+      const entryValue: DataSourceEntry = entry.value;
+      if (predicate(entryValue)) {
+        yield entryValue;
       }
+
+      entry = entry.next;
     }
   }
 
@@ -80,10 +115,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
-    if (this.tva === undefined) {
-      throw new Error('Illegal state: this.tva === undefined');
-    }
-
     this.protocolOptions = options || { incident: this.getNewTransactionId() };
     this.protocol.setLifeHooks({
       afterInverse: () => this.flush(),
@@ -91,14 +122,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     });
 
     // console.debug('dataSource begin transaction', this.protocolOptions);
-  }
-
-  private get protocol(): TVAProtocol {
-    if (this.tva === undefined || this.protocolOptions === undefined) {
-      throw new Error('Illegal state: this.tva === undefined || this.protocolOptions === undefined');
-    }
-
-    return this.tva.getProtocol(this.protocolOptions);
   }
 
   public endTransaction(): void {
@@ -110,10 +133,11 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
     this.protocol.trySign();
     this.protocolOptions = undefined;
+    this.flush();
   }
 
   public flush(): void {
-    const reasons: Set<DataSourceChangeEventReason> = new Set(this.reasons);
+    const reasons: ChangeReasons = new Map(this.reasons);
     this.reasons.clear();
     this.fire(reasons);
   }
@@ -121,222 +145,193 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public resetCache(): void {
     // console.debug('reset datasource cache');
 
-    for (const [options] of this.data) {
-      options.valid = false;
+    const entries: DataSourceEntry[] = [];
+    for (const entry of this) {
+      entry[0].valid = false;
+      entries[entries.length] = entry as DataSourceEntry;
     }
 
-    this.fire(DataSourceChangeEventReason.CacheReset);
+    this.fire(new Map([[DataSourceChangeEventReason.CacheReset, entries]]));
   }
 
-  public invalidateCache(viewport: Viewport): void {
-    // console.debug('invalidate datasource cache');
-
-    const invalidEntries = ([options]: DataSourceEntry): boolean => options.visible && !options.valid;
-    for (const entry of this.filtered(invalidEntries)) {
-      const drawingType: DrawingType = entry[0].type;
-      if (!viewport.hasSketcher(drawingType)) {
-        console.warn(`unknown drawing type ${drawingType}`);
-        continue;
-      }
-
-      const sketcher: Sketcher = viewport.getSketcher(drawingType) as Sketcher;
-      sketcher.draw(entry as DataSourceEntry, viewport);
-    }
-
-    this.fire(DataSourceChangeEventReason.CacheInvalidated);
+  public invalidated(entries: DataSourceEntry[]): void {
+    this.fire(new Map([[DataSourceChangeEventReason.CacheInvalidated, entries]]));
   }
 
   // todo: tva
-  public bringToFront(id: DrawingId): void {
-    this.checkWeAreNotInProxy();
-    this.checkWeAreInTransaction();
-
-    if (!this.has(id)) {
-      console.warn(`id not found: ${id}`)
-      return;
-    }
-    this.addReason(DataSourceChangeEventReason.OrderChanged);
-
-    const index: number = this.indexById(id);
-    const { data } = this;
-
-    const tmp = data[index];
-    data.splice(index, 1);
-    data.push(tmp);
+  public bringToFront(ref: DrawingReference): void {
+    // this.checkWeAreNotInProxy();
+    // this.checkWeAreInTransaction();
+    //
+    // if (!this.has(ref)) {
+    //   console.warn(`reference not found: ${ref}`)
+    //   return;
+    // }
+    //
+    // const index: number = this.indexByRef(ref);
+    // const { orderedEntries } = this;
+    //
+    // const tmp = orderedEntries[index];
+    // orderedEntries.splice(index, 1);
+    // orderedEntries.push(tmp);
+    //
+    // this.addReason(DataSourceChangeEventReason.OrderChanged, orderedEntries);
   }
 
   // todo: tva
-  public sendToBack(id: DrawingId): void {
-    this.checkWeAreNotInProxy();
-    this.checkWeAreInTransaction();
-
-    if (!this.has(id)) {
-      console.warn(`id not found: ${id}`)
-      return;
-    }
-
-    const index: number = this.indexById(id);
-    if (index === 0) {
-      console.warn('index === 0')
-      return;
-    }
-
-    this.addReason(DataSourceChangeEventReason.OrderChanged);
-
-    const { data } = this;
-    const tmp = data[index];
-    data.splice(index, 1);
-    data.unshift(tmp);
+  public sendToBack(ref: DrawingReference): void {
+    // this.checkWeAreNotInProxy();
+    // this.checkWeAreInTransaction();
+    //
+    // if (!this.has(ref)) {
+    //   console.warn(`reference not found: ${ref}`)
+    //   return;
+    // }
+    //
+    // const index: number = this.indexByRef(ref);
+    // if (index === 0) {
+    //   console.warn('index === 0')
+    //   return;
+    // }
+    //
+    // const { orderedEntries } = this;
+    // const tmp = orderedEntries[index];
+    // orderedEntries.splice(index, 1);
+    // orderedEntries.unshift(tmp);
+    //
+    // this.addReason(DataSourceChangeEventReason.OrderChanged, orderedEntries);
   }
 
   // todo: tva
-  public bringForward(id: DrawingId): void {
-    this.checkWeAreNotInProxy();
-    this.checkWeAreInTransaction();
-
-    if (!this.has(id)) {
-      console.warn(`id not found: ${id}`)
-      return;
-    }
-
-    const index: number = this.indexById(id);
-    const { data } = this;
-    if (index >= data.length - 1) {
-      console.warn('index >= order.length - 1')
-      return;
-    }
-
-    this.addReason(DataSourceChangeEventReason.OrderChanged);
-
-    const tmp = data[index];
-    data[index] = data[index + 1];
-    data.splice(index + 1, 1, tmp);
+  public bringForward(ref: DrawingReference): void {
+    // this.checkWeAreNotInProxy();
+    // this.checkWeAreInTransaction();
+    //
+    // if (!this.has(ref)) {
+    //   console.warn(`ref not found: ${ref}`)
+    //   return;
+    // }
+    //
+    // const index: number = this.indexByRef(ref);
+    // const { orderedEntries } = this;
+    // if (index >= orderedEntries.length - 1) {
+    //   console.warn('index >= order.length - 1')
+    //   return;
+    // }
+    //
+    // const tmp = orderedEntries[index];
+    // orderedEntries[index] = orderedEntries[index + 1];
+    // orderedEntries.splice(index + 1, 1, tmp);
+    //
+    // this.addReason(DataSourceChangeEventReason.OrderChanged, orderedEntries);
   }
 
   // todo: tva
-  public sendBackward(id: DrawingId): void {
-    this.checkWeAreNotInProxy();
-    this.checkWeAreInTransaction();
-
-    if (!this.has(id)) {
-      console.warn(`id not found: ${id}`)
-      return;
-    }
-
-    const index: number = this.indexById(id);
-    if (index === 0) {
-      console.warn('index === 0')
-      return;
-    }
-
-    this.addReason(DataSourceChangeEventReason.OrderChanged);
-
-    const { data } = this;
-    const tmp = data[index];
-    data[index] = data[index - 1];
-    data.splice(index - 1, 1, tmp);
-  }
-
-  public get(id: DrawingId): DataSourceEntry {
-    const index = this.indexById(id)
-    if (index < 0) {
-      throw new Error(`Unknown drawingId: ${id}`);
-    }
-
-    return this.data[index];
+  public sendBackward(ref: DrawingReference): void {
+    // this.checkWeAreNotInProxy();
+    // this.checkWeAreInTransaction();
+    //
+    // if (!this.has(ref)) {
+    //   console.warn(`ref not found: ${ref}`)
+    //   return;
+    // }
+    //
+    // const index: number = this.indexByRef(ref);
+    // if (index === 0) {
+    //   console.warn('index === 0')
+    //   return;
+    // }
+    //
+    // const { orderedEntries } = this;
+    // const tmp = orderedEntries[index];
+    // orderedEntries[index] = orderedEntries[index - 1];
+    // orderedEntries.splice(index - 1, 1, tmp);
+    //
+    // this.addReason(DataSourceChangeEventReason.OrderChanged, orderedEntries);
   }
 
   public add<T>(options: DrawingOptions<T>): void {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    if (this.has(options.id)) {
-      throw new Error(`Entry with this Id already exists: ${options.id}`);
+    if (this.storage.has(options.ref)) {
+      throw new Error(`Entry with this reference already exists: ${options.ref}`);
     }
 
-    this.protocol.addIncident(new AddNewDrawing({
+    this.protocol.addIncident(new AddNewEntry({
+      descriptor: this.createDescriptor(options),
+      storage: this.storage,
       addReason: this.addReason.bind(this),
-      drawingOptions: options,
-      dataSourceEntries: this.data,
     }));
   }
 
-  public update<T>(id: DrawingId, value: DeepPartial<DrawingOptions<T>>): void {
+  public update<T>(ref: DrawingReference, value: DeepPartial<DrawingDescriptor<T>>): void {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    const index = this.indexById(id);
-    if (index < 0) {
-      throw new Error(`try update: Entry with Id wasn't found: ${id}`);
-    } else {
-      const [options] = this.data[index];
-      this.protocol.addIncident(new UpdateDrawing({
-        addReason: this.addReason.bind(this),
-        drawingOptions: options,
-        update: value,
-      }));
-    }
-  }
-
-  public clone(id: DrawingId): DataSourceEntry {
-    this.checkWeAreNotInProxy();
-    this.checkWeAreInTransaction();
-
-    const entry = this.get(id);
-    if (entry === undefined) {
-      throw new Error(`Entry width Id wasn't found: ${id}`);
-    }
-
-    const options: DrawingOptions = clone(entry[0]);
-    options.id = this.getNewId(options.type);
-
-    this.protocol.addIncident(new AddNewDrawing({
+    this.protocol.addIncident(new UpdateEntry({
+      entry: this.storage.get(ref),
+      update: value,
       addReason: this.addReason.bind(this),
-      drawingOptions: options,
-      dataSourceEntries: this.data,
-    }));
-
-    return this.get(options.id);
-  }
-
-  public remove(id: DrawingId): void {
-    this.checkWeAreNotInProxy();
-    this.checkWeAreInTransaction();
-
-    if (!this.has(id)) {
-      console.warn(`id not found: ${id}`)
-      return;
-    }
-
-    this.addReason(DataSourceChangeEventReason.RemoveEntry);
-
-    this.protocol.addIncident(new RemoveDrawing({
-      index: this.indexById(id),
-      addReason: this.addReason.bind(this),
-      dataSourceEntries: this.data,
     }));
   }
 
-  public has(id: DrawingId): boolean {
-    return this.data.findIndex((value) => value[0].id === id) >= 0;
+  public clone(entry: DataSourceEntry): DataSourceEntry {
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
+    // todo: detect if it is external then clone by interconnect link
+    const cloned: DrawingDescriptor = clone(entry[0]);
+    cloned.ref = this.getNewId(cloned.options.type);
+
+    this.protocol.addIncident(new AddNewEntry({
+      descriptor: cloned,
+      storage: this.storage,
+      addReason: this.addReason.bind(this),
+    }));
+
+    return this.storage.get(cloned.ref);
+  }
+
+  public remove(ref: DrawingReference): void {
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
+    this.protocol.addIncident(new RemoveEntry({
+      entry: this.storage.get(ref),
+      storage: this.storage,
+      addReason: this.addReason.bind(this),
+    }));
   }
 
   public getNewId(type: string): DrawingId {
     return this.drawingIdHelper.getNewId(type);
   }
 
-  private fire(value: Set<DataSourceChangeEventReason> | DataSourceChangeEventReason): void {
-    const reasons: Set<DataSourceChangeEventReason> = (value as Set<DataSourceChangeEventReason>).forEach === undefined
-      ? new Set<DataSourceChangeEventReason>([value as DataSourceChangeEventReason])
-      : value as Set<DataSourceChangeEventReason>;
-
+  private fire(reasons: ChangeReasons): void {
     for (const listener of this.eventListeners) {
-      listener.call(listener, reasons);
+      listener.call(listener, reasons, this);
     }
   }
 
-  private convertToDataArray(drawingOptions: DrawingOptions[]): DataSourceEntry[] {
-    return drawingOptions.map((value) => [value]);
+  private initEntries(drawings: DrawingOptions[]): void {
+    for (const drawing of drawings) {
+      this.storage.push([this.createDescriptor(drawing)]);
+    }
+  }
+
+  private createDescriptor<T>(options: DrawingOptions<T>): DrawingDescriptor<T> {
+    const { ref } = options;
+    const [descriptor] = merge({ ref, options }, { options: { id: null } });
+    return descriptor as DrawingDescriptor;
+  }
+
+  private get protocol(): TVAProtocol {
+    if (this.protocolOptions === undefined) {
+      throw new Error('Illegal state: this.protocolOptions === undefined');
+    }
+
+    return this.tva.getProtocol(this.protocolOptions);
   }
 
   private checkWeAreNotInProxy(): void {
@@ -351,21 +346,20 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     }
   }
 
-  private addReason(reason: DataSourceChangeEventReason): void {
-    this.reasons.add(reason);
-  }
+  private addReason(reason: DataSourceChangeEventReason, entries: DataSourceEntry[]): void {
+    if (this.reasons.has(reason)) {
+      const newEntries = [
+        ...this.reasons.get(reason) as DataSourceEntry[],
+        ...entries,
+      ];
 
-  private indexById(id: DrawingId): number {
-    const result: number = this.data.findIndex((value) => value[0].id === id);
-
-    if (result === -1) {
-      throw new Error(`id wasn't found: ${id}`)
+      this.reasons.set(reason, newEntries);
+    } else {
+      this.reasons.set(reason, entries);
     }
-
-    return result;
   }
 
   private getNewTransactionId(): string {
-    return `--dataSourceTransaction${Math.random()}`;
+    return `--dataSourceTransaction${Math.random()}`; // todo: id generation
   }
 }

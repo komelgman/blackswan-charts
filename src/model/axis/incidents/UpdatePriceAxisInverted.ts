@@ -1,9 +1,9 @@
+import { clone } from '@/misc/strict-type-checks';
+import PriceAxis, { Inverted } from '@/model/axis/PriceAxis';
 import {
   AbstractHistoricalIncident,
   HistoricalIncidentOptions,
 } from '@/model/history/HistoricalIncident';
-import PriceAxis, { Inverted } from '@/model/axis/PriceAxis';
-import { clone } from '@/misc/strict-type-checks';
 
 export interface UpdatePriceAxisInvertedOptions extends HistoricalIncidentOptions {
   axis: PriceAxis;

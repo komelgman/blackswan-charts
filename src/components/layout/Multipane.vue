@@ -6,15 +6,13 @@
       </divider>
 
       <div ref="paneElements" class="pane">
-        <slot :index="index" :model="item.model"></slot>
+        <slot :index="index" :model="item.model" :paneId="item.id"></slot>
       </div>
     </template>
   </box-layout>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop, Ref, Watch } from 'vue-property-decorator';
 import {
   BoxLayout,
   Direction,
@@ -23,8 +21,10 @@ import {
   ResizeHandle,
   ResizeHandleMoveEvent,
 } from '@/components/layout';
-import { PropType } from 'vue';
 import ResizeObserver from 'resize-observer-polyfill';
+import { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Prop, Ref, Watch } from 'vue-property-decorator';
 
 interface PaneSize {
   min: number;
@@ -58,7 +58,7 @@ export default class Multipane<T> extends Vue {
   layout: Layout = {
     minSize: undefined,
     maxSize: undefined,
-  }
+  };
 
   get style(): any {
     const result: any = {};
@@ -104,6 +104,7 @@ export default class Multipane<T> extends Vue {
     this.$nextTick(this.adjustPanesSizes);
   }
 
+  // todo: pane sizes add to history
   private adjustPanesSizes(): void {
     const availableSize = this.getSize(this.$el);
 
@@ -165,8 +166,7 @@ export default class Multipane<T> extends Vue {
     let shouldBeDistributed: number = 0;
     let availableForStretch = panesInfo.length;
     let availableForShrink = panesInfo.length;
-    for (let i = 0; i < panesInfo.length; i += 1) {
-      const info: PaneSize = panesInfo[i];
+    for (const info of panesInfo) {
       let size = info.virtualSize * scale;
 
       if (size > info.max) {
@@ -198,8 +198,7 @@ export default class Multipane<T> extends Vue {
     while ((shouldBeDistributed + eps) < 0 && availableForShrink > 0) {
       const dSize = -shouldBeDistributed / availableForShrink;
 
-      for (let i = 0; i < panesInfo.length; i += 1) {
-        const info = panesInfo[i];
+      for (const info of panesInfo) {
         if (info.min === info.actualSize) {
           continue;
         }
@@ -225,8 +224,7 @@ export default class Multipane<T> extends Vue {
     while ((shouldBeDistributed - eps) > 0 && availableForStretch > 0) {
       const dSize = shouldBeDistributed / availableForStretch;
 
-      for (let i = 0; i < panesInfo.length; i += 1) {
-        const info = panesInfo[i];
+      for (const info of panesInfo) {
         if (info.max === info.actualSize) {
           continue;
         }
@@ -249,8 +247,8 @@ export default class Multipane<T> extends Vue {
 
     // fix inaccuracy and apply size to property and elements
     let computedSize = 0;
-    for (let i = 0; i < panesInfo.length; i += 1) {
-      const size = panesInfo[i].actualSize;
+    for (const info of panesInfo) {
+      const size = info.actualSize;
       computedSize += size;
     }
 
@@ -301,7 +299,7 @@ export default class Multipane<T> extends Vue {
       const incItem: PaneDescriptor<T> = items[incPaneIndex];
       if (decItem.preferredSize === undefined || incItem.preferredSize === undefined
         || decItem.minSize === undefined || incItem.maxSize === undefined) {
-        throw new Error('oops')
+        throw new Error('oops');
       }
 
       let shouldBeDistributed = 0;

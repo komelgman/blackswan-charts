@@ -1,8 +1,8 @@
+import { PaneDescriptor } from '@/components/layout';
 import {
   AbstractHistoricalIncident,
   HistoricalIncidentOptions,
 } from '@/model/history/HistoricalIncident';
-import { PaneDescriptor } from '@/components/layout';
 import Viewport from '@/model/viewport/Viewport';
 
 export interface SwapPanesOptions extends HistoricalIncidentOptions {

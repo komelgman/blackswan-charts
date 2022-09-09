@@ -1,14 +1,14 @@
 <script lang="tsx">
-import { Options, Vue } from 'vue-class-component';
-import { InjectReactive } from 'vue-property-decorator';
-import { Point } from '@/model/type-defs';
-import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import { EventRemover, onceDocument } from '@/misc/document-listeners';
-import { CSSProperties, reactive, VNode } from 'vue';
-import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
+import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
+import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
+import { EventRemover, onceDocument } from '@/misc/document-listeners';
 import makeFont from '@/misc/make-font';
 import { ChartStyle } from '@/model/ChartStyle';
+import { Point } from '@/model/type-defs';
+import { CSSProperties, reactive, VNode } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { InjectReactive } from 'vue-property-decorator';
 
 const HIDDEN_POS: Point = { x: -10000, y: 0 };
 
@@ -39,7 +39,7 @@ export default class ContextMenu extends Vue {
 
     this.$nextTick(() => {
       this.position = this.calcPosition(event);
-    })
+    });
   }
 
   private calcPosition(event: MouseEvent): Point {
@@ -50,7 +50,7 @@ export default class ContextMenu extends Vue {
     const result: Point = {
       x: event.pageX,
       y: event.pageY,
-    }
+    };
 
     if (height + result.y >= window.innerHeight + window.scrollY) {
       const targetTop = result.y - height;
@@ -94,9 +94,12 @@ export default class ContextMenu extends Vue {
   renderItems(): VNode[] {
     return this.items.map((item) => {
       switch (item.type) {
-        case 'item': return <simple-item model={item}/>;
-        case 'checkbox': return <checkbox-item model={item}/>;
-        default: return <span>error</span>
+        case 'item':
+          return <simple-item model={item}/>;
+        case 'checkbox':
+          return <checkbox-item model={item}/>;
+        default:
+          return <span>error</span>;
       }
     });
   }

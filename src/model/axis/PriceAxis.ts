@@ -1,12 +1,13 @@
-import { Price, Wrapped } from '@/model/type-defs';
-import Axis, { AxisOptions } from '@/model/axis/Axis';
 import Reactive, { HasPostConstruct } from '@/misc/reactive-decorator';
-import { reactive } from 'vue';
-import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
-import PriceScale from '@/model/axis/scaling/PriceScale';
 import { clone } from '@/misc/strict-type-checks';
+import Axis from '@/model/axis/Axis';
+import AxisOptions from '@/model/axis/AxisOptions';
+import PriceScale from '@/model/axis/scaling/PriceScale';
+import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import { TextStyle } from '@/model/ChartStyle';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import { Price, Wrapped } from '@/model/type-defs';
+import { reactive } from 'vue';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;

@@ -7,7 +7,7 @@ export function onDocument(event: string, cb: any, useCapture?: boolean): any {
     document.documentElement.removeEventListener(event, cb, useCapture);
     remover = null;
     return remover;
-  }
+  };
 
   return remover;
 }
@@ -18,11 +18,11 @@ export function onceDocument(event: string, cb: any, useCapture?: boolean): any 
   const wrapper = (e: Event) => {
     if (cb(e)) {
       if (remover != null) {
-        return remover()
+        return remover();
       }
     }
 
-    return undefined
+    return undefined;
   };
 
   document.documentElement.addEventListener(event, wrapper, useCapture);
@@ -30,7 +30,7 @@ export function onceDocument(event: string, cb: any, useCapture?: boolean): any 
     document.documentElement.removeEventListener(event, wrapper, useCapture);
     remover = null;
     return remover;
-  }
+  };
 
   return remover;
 }

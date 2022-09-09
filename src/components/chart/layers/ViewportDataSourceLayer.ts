@@ -1,9 +1,11 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
-import DataSource from '@/model/datasource/DataSource';
 import { Inverted, InvertedValue } from '@/model/axis/PriceAxis';
-import { toRaw, watch } from 'vue';
-import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import DataSource from '@/model/datasource/DataSource';
+import DataSourceChangeEventListener, {
+  ChangeReasons,
+} from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import { toRaw, watch } from 'vue';
 
 export default class ViewportDataSourceLayer extends Layer {
   private readonly ds: DataSource;
@@ -15,7 +17,9 @@ export default class ViewportDataSourceLayer extends Layer {
     this.ds = ds;
     this.inverted = priceAxisIsInverted;
 
-    watch([this.inverted], () => { this.invalid = true });
+    watch([this.inverted], () => {
+      this.invalid = true;
+    });
   }
 
   public installListeners(): void {
@@ -26,7 +30,7 @@ export default class ViewportDataSourceLayer extends Layer {
     this.ds.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: ChangeReasons): void => {
     if (reasons.has(DataSourceChangeEventReason.CacheInvalidated)) {
       this.invalid = true;
     }

@@ -1,5 +1,5 @@
-import { Point } from '@/model/type-defs';
 import ResizeHandle from '@/components/layout/ResizeHandle.vue';
+import { Point } from '@/model/type-defs';
 
 export default interface ResizeHandleMoveEvent {
   sender: ResizeHandle;

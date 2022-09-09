@@ -1,5 +1,5 @@
-import TVAProtocol, { TVAProtocolSign } from '@/model/history/TVAProtocol';
 import BigBoom from '@/model/history/BigBoom';
+import TVAProtocol, { TVAProtocolSign } from '@/model/history/TVAProtocol';
 
 export interface TVAProtocolOptions {
   incident: string;

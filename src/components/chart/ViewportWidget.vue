@@ -17,7 +17,9 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
+import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
+import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
 import LayeredCanvas, {
   DragMoveEvent,
   MouseClickEvent,
@@ -25,18 +27,20 @@ import LayeredCanvas, {
   ZoomEvent,
 } from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import { InjectReactive, Prop } from 'vue-property-decorator';
-import { PropType } from 'vue';
+import LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import { PaneId } from '@/components/layout/PaneDescriptor';
+import DataSourceChangeEventListener, {
+  ChangeReasons,
+} from '@/model/datasource/DataSourceChangeEventListener';
+import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
-import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
-import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
-import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
-import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
-import DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { InjectReactive, Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas },
@@ -44,6 +48,8 @@ import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 export default class ViewportWidget extends Vue {
   @Prop({ type: Object as PropType<Viewport>, required: true })
   private viewportModel!: Viewport;
+  @Prop({ type: String as PropType<PaneId>, required: true })
+  private paneId!: PaneId;
   private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private highlightInvalidator!: ViewportHighlightInvalidator;
   private dataSourceInvalidator!: DataSourceInvalidator;
@@ -62,6 +68,7 @@ export default class ViewportWidget extends Vue {
     this.canvasOptions.layers.push(
       this.createGridLayer(),
       this.dataSourceLayer,
+      // shared data from siblings renderer
       // priceline renderer
       this.highlightingLayer,
       // tool/crosshair renderer ??? shared with other panes
@@ -69,6 +76,7 @@ export default class ViewportWidget extends Vue {
   }
 
   mounted(): void {
+    console.debug('ViewportWidget::mounted');
     this.dataSourceInvalidator.installListeners();
     this.dataSourceLayer.installListeners();
     this.highlightingLayer.installListeners();
@@ -76,26 +84,29 @@ export default class ViewportWidget extends Vue {
   }
 
   unmounted(): void {
+    console.debug('ViewportWidget::unmounted');
     this.dataSourceInvalidator.uninstallListeners();
     this.dataSourceLayer.uninstallListeners();
     this.highlightingLayer.uninstallListeners();
     this.viewportModel.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: Set<DataSourceChangeEventReason>): void => {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: ChangeReasons): void => {
     if (reasons.has(DataSourceChangeEventReason.RemoveEntry)) {
-      const { dataSource, selected, highlighted } = this.viewportModel;
-      if (highlighted !== undefined && !dataSource.has(highlighted[0].id)) {
-        this.viewportModel.highlighted = undefined;
-        this.viewportModel.highlightedHandleId = undefined;
-        this.viewportModel.cursor = undefined;
-      }
+      const { selected, highlighted } = this.viewportModel;
+      const removedEntries: DataSourceEntry[] = reasons.get(DataSourceChangeEventReason.RemoveEntry) as DataSourceEntry[];
 
-      selected.forEach((v) => {
-        if (!dataSource.has(v)) {
-          selected.delete(v);
+      for (const removedEntry of removedEntries) {
+        if (highlighted === removedEntry) {
+          this.viewportModel.highlighted = undefined;
+          this.viewportModel.highlightedHandleId = undefined;
+          this.viewportModel.cursor = undefined;
         }
-      });
+
+        if (selected.has(removedEntry)) {
+          selected.delete(removedEntry);
+        }
+      }
     }
   };
 
@@ -127,7 +138,7 @@ export default class ViewportWidget extends Vue {
   private onLeftMouseBtnDoubleClick(): void {
     const { highlighted } = this.viewportModel;
     if (highlighted !== undefined) {
-      console.log(`double click on element: ${highlighted[0].id}`);
+      console.log(`double click on element: ${highlighted[0].ref}`);
     } else {
       console.log('double click on viewport');
     }

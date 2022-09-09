@@ -1,13 +1,13 @@
-import TimeAxis from '@/model/axis/TimeAxis';
-import PriceAxis, { Inverted } from '@/model/axis/PriceAxis';
-import type DataSource from '@/model/datasource/DataSource';
-import PriceScale from '@/model/axis/scaling/PriceScale';
-import { DrawingId, DrawingType, HandleId } from '@/model/datasource/Drawing';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { toRaw } from 'vue';
-import { DragHandle } from '@/model/viewport/DragHandle';
 import { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
+import PriceAxis, { Inverted } from '@/model/axis/PriceAxis';
+import PriceScale from '@/model/axis/scaling/PriceScale';
+import TimeAxis from '@/model/axis/TimeAxis';
+import type DataSource from '@/model/datasource/DataSource';
+import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { DrawingType, HandleId } from '@/model/datasource/Drawing';
 import type Sketcher from '@/model/sketchers/Sketcher';
+import { DragHandle } from '@/model/viewport/DragHandle';
+import { toRaw } from 'vue';
 
 export interface ViewportOptions {
   priceScale: PriceScale;
@@ -21,7 +21,7 @@ export default class Viewport {
   public readonly priceAxis: PriceAxis;
   public readonly dataSource: DataSource;
 
-  public readonly selected: Set<DrawingId> = new Set();
+  public readonly selected: Set<DataSourceEntry> = new Set();
   public highlighted: DataSourceEntry | undefined;
   public cursor: string | undefined;
   public highlightedHandleId: HandleId | undefined;
@@ -42,21 +42,19 @@ export default class Viewport {
     }
 
     if (highlighted !== undefined) {
-      const { id } = highlighted[0];
-      if (isCtrlPressed && !isInDrag && selected.has(id)) {
-        selected.delete(id);
+      if (isCtrlPressed && !isInDrag && selected.has(highlighted)) {
+        selected.delete(highlighted);
       } else {
-        selected.add(id);
+        selected.add(highlighted);
       }
     }
   }
 
   public selectionCanBeDragged(): boolean {
-    const { dataSource, selected } = this;
+    const { selected } = this;
 
-    for (const drawingId of selected) {
-      const rawDS = toRaw(dataSource);
-      if (!rawDS.get(drawingId)[0].locked) {
+    for (const entry of selected) {
+      if (!entry[0].options.locked) {
         return true;
       }
     }
@@ -68,7 +66,7 @@ export default class Viewport {
     const { highlighted, selected, highlightedHandleId } = this;
 
     return (isInDrag && highlightedHandleId !== undefined) // drag handle
-      || (!isCtrlPressed && isInDrag && highlighted !== undefined && !selected.has(highlighted[0].id)) // start dragging no selected element
+      || (!isCtrlPressed && isInDrag && highlighted !== undefined && !selected.has(highlighted)) // start dragging no selected element
       || (isInDrag && highlighted === undefined)
       || (!isInDrag && !isCtrlPressed); // click without ctrl
   }
@@ -76,18 +74,16 @@ export default class Viewport {
   public cloneSelected(): void {
     const { dataSource, selected } = this;
     const rawDS = toRaw(dataSource);
-    const tmp: Set<DrawingId> = new Set();
+    const tmp: Set<DataSourceEntry> = new Set();
 
-    for (const id of selected) {
-      if (rawDS.get(id)[0].locked) {
+    for (const entry of selected) {
+      if (entry[0].options.locked) {
         continue;
       }
 
-      const clonedEntry: DataSourceEntry = rawDS.clone(id);
-      const sketcher: Sketcher = this.getSketcher(clonedEntry[0].type);
-      sketcher.draw(clonedEntry, this);
-      selected.delete(id);
-      tmp.add(clonedEntry[0].id);
+      const clonedEntry: DataSourceEntry = rawDS.clone(entry);
+      selected.delete(entry);
+      tmp.add(clonedEntry);
     }
 
     rawDS.flush();
@@ -110,20 +106,19 @@ export default class Viewport {
   }
 
   private getDragHandle(): DragHandle | undefined {
-    const { dataSource, highlighted, selected, highlightedHandleId } = this;
+    const { highlighted, selected, highlightedHandleId } = this;
 
     // case when we drag some handle
-    if (highlighted !== undefined && !highlighted[0].locked && highlightedHandleId !== undefined) {
-      const sketcher: Sketcher = this.getSketcher(highlighted[0].type);
+    if (highlighted !== undefined && !highlighted[0].options.locked && highlightedHandleId !== undefined) {
+      const sketcher: Sketcher = this.getSketcher(highlighted[0].options.type);
       return sketcher.dragHandle(this, highlighted, highlightedHandleId);
     }
 
     // case when we drag several (mb one) element by body picking
     const dragHandles: DragHandle[] = [];
-    for (const id of selected) {
-      const entry: DataSourceEntry = dataSource.get(id);
-      if (!entry[0].locked) {
-        const sketcher: Sketcher = this.getSketcher(entry[0].type);
+    for (const entry of selected) {
+      if (!entry[0].options.locked) {
+        const sketcher: Sketcher = this.getSketcher(entry[0].options.type);
         const dragHandle: DragHandle | undefined = sketcher.dragHandle(this, entry);
         if (dragHandle !== undefined) {
           dragHandles.push(dragHandle);

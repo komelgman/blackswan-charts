@@ -1,9 +1,9 @@
-import { LogicSize, Price } from '@/model/type-defs';
-import type PriceAxis from '@/model/axis/PriceAxis';
 import makeFont from '@/misc/make-font';
-import { computed, watch } from 'vue';
+import AbstractInvalidator from '@/model/axis/label/AbstractInvalidator';
 import { LabelOptions } from '@/model/axis/label/LabelOptions';
-import AbstractInvalidator from '@/model/AbstractInvalidator';
+import type PriceAxis from '@/model/axis/PriceAxis';
+import { LogicSize, Price } from '@/model/type-defs';
+import { computed, watch } from 'vue';
 
 const SCALES = [0.05, 0.1, 0.2, 0.25, 0.5, 0.8, 1, 2, 5];
 export default class PriceLabelsInvalidator extends AbstractInvalidator {
@@ -58,7 +58,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     const caption = this.getCaption(goodLookingValue);
 
     if (this.context === undefined) {
-      console.warn('this.context === undefined')
+      console.warn('this.context === undefined');
     }
 
     let size = -1;

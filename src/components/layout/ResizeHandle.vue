@@ -3,12 +3,12 @@
 </template>
 
 <script lang="ts">
+import { ResizeHandleMoveEvent } from '@/components/layout';
+import { onceDocument, onDocument } from '@/misc/document-listeners';
+import { Point } from '@/model/type-defs';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
-import { ResizeHandleMoveEvent } from '@/components/layout';
-import { Point } from '@/model/type-defs';
-import { onceDocument, onDocument } from '@/misc/document-listeners';
 
 @Options({})
 export default class ResizeHandle extends Vue {
