@@ -27,7 +27,7 @@ module.exports = {
     'object-curly-newline': 0,
     'semi': 0,
     // Changing max row length from 80 to 150.
-    // Remember to change in .editorconfig also, although am not sure if that file is even needed?
+    // Remember to change in .editorconfig also, although I am not sure if that file is even needed?
     // Especially as scaffolding gave 100 as max len while ESLint default is 80...
     'max-len': [
       'error',
