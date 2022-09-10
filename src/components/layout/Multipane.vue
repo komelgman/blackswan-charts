@@ -5,8 +5,8 @@
         <resize-handle :index="index" v-if="resizable" @resize-move="onResizeHandleMove"/>
       </divider>
 
-      <div ref="paneElements" class="pane">
-        <slot :index="index" :model="item.model" :paneId="item.id"></slot>
+      <div ref="paneElements" class="pane" :data-index="index">
+        <slot :model="item.model" :paneId="item.id"></slot>
       </div>
     </template>
   </box-layout>
@@ -87,6 +87,10 @@ export default class Multipane<T> extends Vue {
     return this.items.filter((item) => item.visible === undefined || item.visible);
   }
 
+  private sortedPaneElements(): HTMLElement[] {
+    return this.paneElements.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any));
+  }
+
   created(): void {
     this.resizeObserver = new ResizeObserver(this.onResize);
   }
@@ -112,10 +116,11 @@ export default class Multipane<T> extends Vue {
     let maximumSize = 0;
     let retrievedSize = 0;
     const panesInfo: PaneSize[] = [];
+    const paneElements = this.sortedPaneElements();
 
     // get/calc init params from elements and props
     for (let i = 0; i < this.visibleItems?.length || 0; i += 1) {
-      const pane = this.paneElements[i];
+      const pane = paneElements[i];
       const paneDesc = this.visibleItems[i];
       const paneSize: number = this.getSize(pane);
 
@@ -274,7 +279,7 @@ export default class Multipane<T> extends Vue {
           fix = 0;
         }
 
-        this.setSize(this.paneElements[i], size);
+        this.setSize(paneElements[i], size);
         this.visibleItems[i].preferredSize = size;
       }
     });
@@ -284,6 +289,7 @@ export default class Multipane<T> extends Vue {
     const items = this.visibleItems;
     const dsize = (this.direction === Direction.Vertical ? e.dy : e.dx) * Multipane.getDPR();
     const deltaSign = Math.sign(dsize);
+    const paneElements = this.sortedPaneElements();
     let deltaSize = Math.abs(dsize);
 
     while (deltaSize > 0) {
@@ -316,8 +322,8 @@ export default class Multipane<T> extends Vue {
 
       decItem.preferredSize -= deltaSize;
       incItem.preferredSize += deltaSize;
-      this.setSize(this.paneElements[decPaneIndex], decItem.preferredSize);
-      this.setSize(this.paneElements[incPaneIndex], incItem.preferredSize);
+      this.setSize(paneElements[decPaneIndex], decItem.preferredSize);
+      this.setSize(paneElements[incPaneIndex], incItem.preferredSize);
 
       deltaSize = shouldBeDistributed;
     }
@@ -329,8 +335,9 @@ export default class Multipane<T> extends Vue {
     if (change < 0) {
       dec += change;
     }
+
     while (dec >= 0 && dec < items.length) {
-      const info = this.visibleItems[dec];
+      const info = items[dec];
       if (info.minSize !== info.preferredSize) {
         return dec;
       }
@@ -346,8 +353,9 @@ export default class Multipane<T> extends Vue {
     if (change < 0) {
       inc += change;
     }
+
     while (inc >= 0 && inc < items.length) {
-      const info = this.visibleItems[inc];
+      const info = items[inc];
       if (info.maxSize !== info.preferredSize) {
         return inc;
       }
