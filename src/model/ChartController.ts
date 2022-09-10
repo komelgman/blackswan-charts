@@ -10,7 +10,6 @@ import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import { DrawingType } from '@/model/datasource/Drawing';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import TVAClerk from '@/model/history/TVAClerk';
 import AddNewPane from '@/model/incidents/AddNewPane';
 import RemovePane from '@/model/incidents/RemovePane';
 import SwapPanes from '@/model/incidents/SwapPanes';

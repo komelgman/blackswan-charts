@@ -36,11 +36,43 @@ export default class DataSourceStorage {
   }
 
   public insertAfter(prevEntry: StorageEntry, entry: DataSourceEntry): void {
-    // todo
+    const nextEntry = prevEntry.next;
+    const newEntry: StorageEntry = {
+      value: entry,
+      prev: prevEntry,
+      next: nextEntry,
+    }
+
+    prevEntry.next = newEntry;
+    if (nextEntry) {
+      newEntry.prev = newEntry;
+    }
+
+    if (this.tail === prevEntry) {
+      this.tail = newEntry;
+    }
+
+    this.refToEntry.set(entry[0].ref, newEntry);
   }
 
   public insertBefore(nextEntry: StorageEntry, entry: DataSourceEntry): void {
-    // todo
+    const prevEntry = nextEntry.prev;
+    const newEntry: StorageEntry = {
+      value: entry,
+      prev: prevEntry,
+      next: nextEntry,
+    }
+
+    nextEntry.prev = newEntry;
+    if (prevEntry) {
+      prevEntry.next = newEntry;
+    }
+
+    if (this.head === nextEntry) {
+      this.head = newEntry;
+    }
+
+    this.refToEntry.set(entry[0].ref, newEntry);
   }
 
   public pop(): DataSourceEntry {

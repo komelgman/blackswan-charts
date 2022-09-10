@@ -105,7 +105,7 @@ export default class App extends Vue {
       ref: newId,
       title: 'hline6',
       type: 'HLine',
-      data: { def: -0.75, style: { lineWidth: 1, fill: 0, color: '#AA0000' } },
+      data: { def: 0, style: { lineWidth: 1, fill: 0, color: '#AA0000' } },
       locked: false,
       visible: true,
     });
@@ -115,13 +115,13 @@ export default class App extends Vue {
     this.mainDs.remove(newId);
     this.mainDs.endTransaction();
 
-    // chartApi.togglePane(secondPane);
-    // chartApi.togglePane(secondPane);
-    chartApi.swapPanes('mainPane', secondPane);
+    chartApi.togglePane(secondPane);
+    chartApi.togglePane(secondPane);
+    // chartApi.swapPanes('mainPane', secondPane);
 
-    chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
-    chartApi.updateStyle({ text: { fontSize: 14, fontStyle: 'italic' } });
-    chartApi.updateStyle({ text: { fontSize: 13, fontStyle: 'italic' } });
+    // chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
+    // chartApi.updateStyle({ text: { fontSize: 14, fontStyle: 'italic' } });
+    // chartApi.updateStyle({ text: { fontSize: 13, fontStyle: 'italic' } });
 
     //* sample 0
     setTimeout(() => {

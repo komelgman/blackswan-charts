@@ -56,7 +56,7 @@ export default class DataSourceInvalidator {
       ...(reasons.get(DataSourceChangeEventReason.UpdateEntry) || []),
     ];
 
-    if (entries.length) {
+    if (entries.length || reasons.has(DataSourceChangeEventReason.RemoveEntry)) {
       this.invalidate(entries);
       toRaw(this.viewportModel.dataSource).invalidated(entries);
     }
@@ -69,7 +69,6 @@ export default class DataSourceInvalidator {
 
     for (const entry of entries) {
       if (entry[0].valid) {
-        debugger;
         console.warn(`Invalid state: entry ${entry[0].ref} already valid`);
         continue;
       }
