@@ -1,4 +1,5 @@
 import BigBoom from '@/model/history/BigBoom';
+import TVAClerk, { HistoricalIncidentReport } from '@/model/history/TVAClerk';
 import TVAProtocol, { TVAProtocolSign } from '@/model/history/TVAProtocol';
 
 export interface TVAProtocolOptions {
@@ -10,11 +11,13 @@ export default class TimeVarianceAuthority {
   private current: TVAProtocol;
   private lastIncident: string | undefined;
   private lastTimeWhenProtocolUsed!: number;
+  private clerkValue: TVAClerk;
 
   constructor() {
     this.current = new TVAProtocol();
     this.current.addIncident(new BigBoom());
     this.current.trySign();
+    this.clerkValue = new TVAClerk(this.reportProcessor);
   }
 
   public getProtocol(options: TVAProtocolOptions): TVAProtocol {
@@ -83,6 +86,29 @@ export default class TimeVarianceAuthority {
       this.current = tmp.prev as TVAProtocol;
       this.current.next = undefined;
       tmp.prev = undefined;
+    }
+  }
+
+  public get clerk(): TVAClerk {
+    return this.clerkValue;
+  }
+
+  private reportProcessor: (report: HistoricalIncidentReport) => void = (report): void => {
+    const protocol = this.getProtocol(report.protocolOptions);
+    if (report.skipIf && protocol.hasIncident(report.skipIf)) {
+      return;
+    }
+
+    if (report.incident) {
+      protocol.addIncident(report.incident);
+    }
+
+    if (report.lifeHooks) {
+      protocol.setLifeHooks(report.lifeHooks);
+    }
+
+    if (report.sign) {
+      protocol.trySign();
     }
   }
 }

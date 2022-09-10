@@ -10,6 +10,7 @@ import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import { DrawingType } from '@/model/datasource/Drawing';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import TVAClerk from '@/model/history/TVAClerk';
 import AddNewPane from '@/model/incidents/AddNewPane';
 import RemovePane from '@/model/incidents/RemovePane';
 import SwapPanes from '@/model/incidents/SwapPanes';
@@ -32,13 +33,13 @@ export default class ChartController {
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
 
-  constructor(state: ChartState, chartOptions: ChartStyle, tva: TimeVarianceAuthority, sketchers: Map<DrawingType, Sketcher>) {
+  constructor(state: ChartState, chartOptions: ChartStyle, sketchers: Map<DrawingType, Sketcher>) {
+    this.tva = new TimeVarianceAuthority();
+    this.panes = reactive([]);
     this.state = state;
     this.style = reactive(chartOptions);
-    this.tva = tva;
     this.sketchers = sketchers;
-    this.panes = reactive([]);
-    this.timeAxis = new TimeAxis(tva, chartOptions.text);
+    this.timeAxis = new TimeAxis(this.tva.clerk, chartOptions.text);
     this.dataSourceInterconnect = new DataSourceInterconnect();
 
     watch(computed((): number => this.style.text.fontSize),
@@ -70,7 +71,7 @@ export default class ChartController {
       merge(paneOptions, options);
     }
 
-    dataSource.tva = this.tva;
+    dataSource.tvaClerk = this.tva.clerk;
 
     // todo: pane sizes
     this.tva

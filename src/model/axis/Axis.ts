@@ -2,8 +2,8 @@ import { clone, merge } from '@/misc/strict-type-checks';
 import AxisOptions from '@/model/axis/AxisOptions';
 import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
 import { TextStyle } from '@/model/ChartStyle';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import TVAProtocol from '@/model/history/TVAProtocol';
+import { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import TVAClerk from '@/model/history/TVAClerk';
 import { LogicSize, Range } from '@/model/type-defs';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
@@ -11,11 +11,11 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   private readonly textStyleValue: TextStyle;
   private readonly screenSizeValue: LogicSize = { main: -1, second: -1 };
   private readonly id: number;
-  protected tva: TimeVarianceAuthority;
+  public readonly tvaClerk: TVAClerk;
   public readonly labels: Map<number, string> = new Map<number, string>();
 
-  protected constructor(tva: TimeVarianceAuthority, textStyle: TextStyle) {
-    this.tva = tva;
+  protected constructor(tvaClerk: TVAClerk, textStyle: TextStyle) {
+    this.tvaClerk = tvaClerk;
     this.textStyleValue = textStyle;
 
     this.id = Math.random(); // todo: id generation
@@ -52,46 +52,55 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   public abstract revert(screenPos: number): T;
 
   public move(screenDelta: number): void {
-    const protocol: TVAProtocol = this.tva.getProtocol({ incident: 'move-in-viewport' });
+    const protocolOptions: TVAProtocolOptions = { incident: 'move-in-viewport' };
 
-    if (!protocol.hasIncident((incident) => (incident as UpdateAxisRange<T>).options?.axis === this)) {
-      // setup initial value
-      protocol.addIncident(new UpdateAxisRange({
+    this.tvaClerk.processReport({
+      protocolOptions,
+      skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
+      incident: new UpdateAxisRange({
         axis: this,
         range: { ...this.range },
-      }));
-    }
+      }),
+    });
 
     this.updatePosition(screenDelta);
 
-    protocol.addIncident(new UpdateAxisRange({
-      axis: this,
-      range: { ...this.range },
-    }));
+    this.tvaClerk.processReport({
+      protocolOptions,
+      incident: new UpdateAxisRange({
+        axis: this,
+        range: { ...this.range },
+      }),
+    });
   }
 
   public zoom(screenPivot: number, screenDelta: number): void {
-    const protocol: TVAProtocol = this.tva.getProtocol({
+    const protocolOptions: TVAProtocolOptions = {
       incident: `zoom-axis-${this.id}`,
       timeout: 1000,
-    });
+    };
 
-    if (!protocol.hasIncident((incident) => (incident as UpdateAxisRange<T>).options?.axis === this)) {
-      // setup initial value
-      protocol.addIncident(new UpdateAxisRange({
+    this.tvaClerk.processReport({
+      protocolOptions,
+      skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
+      incident: new UpdateAxisRange({
         axis: this,
         range: { ...this.range },
-      }));
-    }
+      }),
+    });
 
     this.updateZoom(screenPivot, screenDelta);
 
-    protocol.addIncident(new UpdateAxisRange({
-      axis: this,
-      range: { ...this.range },
-    }));
+    this.tvaClerk.processReport({
+      protocolOptions,
+      incident: new UpdateAxisRange({
+        axis: this,
+        range: { ...this.range },
+      }),
+    });
   }
 
   protected abstract updatePosition(screenDelta: number): void;
+
   protected abstract updateZoom(screenPivot: number, screenDelta: number): void;
 }

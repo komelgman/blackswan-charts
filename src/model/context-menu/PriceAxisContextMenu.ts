@@ -7,16 +7,13 @@ import UpdatePriceAxisInverted from '@/model/axis/incidents/UpdatePriceAxisInver
 import UpdatePriceAxisScale from '@/model/axis/incidents/UpdatePriceAxisScale';
 import PriceAxis from '@/model/axis/PriceAxis';
 import PriceScale, { PriceScales } from '@/model/axis/scaling/PriceScale';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import { reactive, watch } from 'vue';
 
 export default class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private readonly axis: PriceAxis;
-  private readonly tva: TimeVarianceAuthority;
   private readonly menu: MenuItem[];
 
-  public constructor(tva: TimeVarianceAuthority, axis: PriceAxis) {
-    this.tva = tva;
+  public constructor(axis: PriceAxis) {
     this.axis = axis;
 
     this.menu = reactive(this.createMenu());
@@ -63,23 +60,25 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
 
   private updateInvertedHandler(): void {
     const { axis } = this;
-    this.tva
-      .getProtocol({ incident: 'price-axis-update-inverted' })
-      .addIncident(new UpdatePriceAxisInverted({
+    axis.tvaClerk.processReport({
+      protocolOptions: { incident: 'price-axis-update-inverted' },
+      incident: new UpdatePriceAxisInverted({
         axis,
         inverted: { value: axis.inverted.value > 0 ? -1 : 1 },
-      }))
-      .trySign();
+      }),
+      sign: true,
+    });
   }
 
   private updateScaleHandler(scale: PriceScale): void {
     const { axis } = this;
-    this.tva
-      .getProtocol({ incident: 'price-axis-update-scale' })
-      .addIncident(new UpdatePriceAxisScale({
+    axis.tvaClerk.processReport({
+      protocolOptions: { incident: 'price-axis-update-scale' },
+      incident: new UpdatePriceAxisScale({
         axis,
         scale,
-      }))
-      .trySign();
+      }),
+      sign: true,
+    });
   }
 }

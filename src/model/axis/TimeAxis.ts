@@ -3,7 +3,7 @@ import Axis from '@/model/axis/Axis';
 import AxisOptions from '@/model/axis/AxisOptions';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import { TextStyle } from '@/model/ChartStyle';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import TVAClerk from '@/model/history/TVAClerk';
 import { UTCTimestamp } from '@/model/type-defs';
 
 @Reactive
@@ -11,8 +11,8 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
 
   // eslint-disable-next-line no-useless-constructor
-  public constructor(tva: TimeVarianceAuthority, textOptions: TextStyle) {
-    super(tva, textOptions);
+  public constructor(tvaClerk: TVAClerk, textOptions: TextStyle) {
+    super(tvaClerk, textOptions);
   }
 
   public postConstruct(): void {

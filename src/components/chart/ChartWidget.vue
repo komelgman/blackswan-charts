@@ -71,7 +71,7 @@ import PriceAxisContextMenu from '@/model/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/context-menu/TimeAxisContextMenu';
 import ViewportContextMenu from '@/model/context-menu/ViewportContextMenu';
 import { DrawingType } from '@/model/datasource/Drawing';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import TVAClerk from '@/model/history/TVAClerk';
 import Sketcher from '@/model/sketchers/Sketcher';
 import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
 import Viewport from '@/model/viewport/Viewport';
@@ -104,8 +104,6 @@ export default class ChartWidget extends Vue {
   private chartStyle!: ChartStyle;
   @ProvideReactive()
   private chartState!: ChartState;
-  @ProvideReactive()
-  private tva!: TimeVarianceAuthority;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private contextMenuMap: WeakMap<any, ContextMenuOptionsProvider> = new WeakMap<any, ContextMenuOptionsProvider>();
@@ -114,7 +112,6 @@ export default class ChartWidget extends Vue {
   private sketchers!: Map<DrawingType, Sketcher>;
 
   public created(): void {
-    this.tva = new TimeVarianceAuthority();
     this.chartStyle = this.createChartStyleOptions();
     this.sketchers = this.createSketchersOptions();
 
@@ -123,7 +120,7 @@ export default class ChartWidget extends Vue {
       timeWidgetHeight: -1,
     });
 
-    this.controller = new ChartController(this.chartState, this.chartStyle, this.tva, this.sketchers);
+    this.controller = new ChartController(this.chartState, this.chartStyle, this.sketchers);
   }
 
   mounted(): void {
@@ -161,7 +158,7 @@ export default class ChartWidget extends Vue {
 
   private getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
     if (!this.contextMenuMap.has(priceAxis)) {
-      this.contextMenuMap.set(priceAxis, new PriceAxisContextMenu(this.tva, priceAxis));
+      this.contextMenuMap.set(priceAxis, new PriceAxisContextMenu(priceAxis));
     }
 
     return this.contextMenuMap.get(priceAxis) as ContextMenuOptionsProvider;
@@ -170,7 +167,7 @@ export default class ChartWidget extends Vue {
   private getTimeAxisContextMenu(): ContextMenuOptionsProvider {
     const { timeAxis } = this.controller;
     if (!this.contextMenuMap.has(timeAxis)) {
-      this.contextMenuMap.set(timeAxis, new TimeAxisContextMenu(this.tva, timeAxis));
+      this.contextMenuMap.set(timeAxis, new TimeAxisContextMenu(timeAxis));
     }
 
     return this.contextMenuMap.get(timeAxis) as ContextMenuOptionsProvider;
@@ -178,7 +175,7 @@ export default class ChartWidget extends Vue {
 
   private getViewportContextMenu(viewport: Viewport): ContextMenuOptionsProvider {
     if (!this.contextMenuMap.has(viewport)) {
-      this.contextMenuMap.set(viewport, new ViewportContextMenu(this.tva, viewport));
+      this.contextMenuMap.set(viewport, new ViewportContextMenu(viewport));
     }
 
     return this.contextMenuMap.get(viewport) as ContextMenuOptionsProvider;

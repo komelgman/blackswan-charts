@@ -23,7 +23,6 @@ import { BoxLayout, Divider } from '@/components/layout';
 import PriceLabelsInvalidator from '@/model/axis/label/PriceLabelsInvalidator';
 import ChartState from '@/model/ChartState';
 import { ChartStyle } from '@/model/ChartStyle';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import Viewport from '@/model/viewport/Viewport';
 import { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
@@ -42,9 +41,6 @@ export default class PriceAxisWidget extends Vue {
   private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private labelsInvalidator!: PriceLabelsInvalidator;
   private marksLayer!: PriceAxisMarksLayer;
-
-  @InjectReactive()
-  private tva!: TimeVarianceAuthority;
 
   created(): void {
     const { priceAxis } = this.viewportModel;

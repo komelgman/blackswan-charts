@@ -5,7 +5,7 @@ import AxisOptions from '@/model/axis/AxisOptions';
 import PriceScale from '@/model/axis/scaling/PriceScale';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import { TextStyle } from '@/model/ChartStyle';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import TVAClerk from '@/model/history/TVAClerk';
 import { Price, Wrapped } from '@/model/type-defs';
 import { reactive } from 'vue';
 
@@ -27,8 +27,8 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
   protected invertedValue: Inverted;
   protected contentWidthValue: Wrapped<number> = { value: -1 }; // watch doesn't work with scalar
 
-  public constructor(tva: TimeVarianceAuthority, textStyle: TextStyle, scale: PriceScale, inverted: Inverted) {
-    super(tva, textStyle);
+  public constructor(tvaClerk: TVAClerk, textStyle: TextStyle, scale: PriceScale, inverted: Inverted) {
+    super(tvaClerk, textStyle);
     this.scaleValue = reactive(clone(scale));
     this.invertedValue = reactive(clone(inverted));
   }

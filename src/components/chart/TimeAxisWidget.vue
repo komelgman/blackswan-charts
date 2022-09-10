@@ -20,10 +20,9 @@ import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptio
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import TimeLabelsInvalidator from '@/model/axis/label/TimeLabelsInvalidator';
 import TimeAxis from '@/model/axis/TimeAxis';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
-import { InjectReactive, Prop } from 'vue-property-decorator';
+import { Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas },
@@ -33,9 +32,6 @@ export default class TimeAxisWidget extends Vue {
   private timeAxis!: TimeAxis;
   private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private labelsInvalidator!: TimeLabelsInvalidator;
-
-  @InjectReactive()
-  private tva!: TimeVarianceAuthority;
 
   created(): void {
     this.labelsInvalidator = new TimeLabelsInvalidator(this.timeAxis);

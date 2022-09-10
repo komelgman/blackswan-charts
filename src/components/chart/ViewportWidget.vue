@@ -29,18 +29,18 @@ import LayeredCanvas, {
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import { PaneId } from '@/components/layout/PaneDescriptor';
+import DataSource from '@/model/datasource/DataSource';
 import DataSourceChangeEventListener, {
   ChangeReasons,
 } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
 import { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
-import { InjectReactive, Prop } from 'vue-property-decorator';
+import { Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas },
@@ -55,9 +55,6 @@ export default class ViewportWidget extends Vue {
   private dataSourceInvalidator!: DataSourceInvalidator;
   private dataSourceLayer!: ViewportDataSourceLayer;
   private highlightingLayer!: ViewportHighlightingLayer;
-
-  @InjectReactive()
-  private tva!: TimeVarianceAuthority;
 
   created(): void {
     this.highlightInvalidator = new ViewportHighlightInvalidator(this.viewportModel);
@@ -174,10 +171,14 @@ export default class ViewportWidget extends Vue {
   }
 
   private onDragEnd(): void {
+    const { dataSource } = this.viewportModel;
     if (this.viewportModel.selectionCanBeDragged()) {
-      this.viewportModel.dataSource.endTransaction();
+      dataSource.endTransaction();
     } else {
-      this.tva.getProtocol({ incident: 'move-in-viewport' }).trySign();
+      dataSource.tvaClerk.processReport({
+        protocolOptions: { incident: 'move-in-viewport' },
+        sign: true,
+      });
     }
   }
 

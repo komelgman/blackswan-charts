@@ -17,8 +17,8 @@ import DrawingIdHelper from '@/model/datasource/DrawingIdHelper';
 import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
 import RemoveEntry from '@/model/datasource/incidents/RemoveEntry';
 import UpdateEntry from '@/model/datasource/incidents/UpdateEntry';
-import TimeVarianceAuthority, { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
-import TVAProtocol from '@/model/history/TVAProtocol';
+import { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import TVAClerk from '@/model/history/TVAClerk';
 import { Predicate } from '@/model/type-defs';
 import { isProxy } from 'vue';
 
@@ -27,9 +27,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private readonly reasons: ChangeReasons = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private drawingIdHelper: DrawingIdHelper;
-  private protocolOptions: TVAProtocolOptions | undefined = undefined;
   private interconnectValue: DataSourceInterconnect | undefined;
-  private tvaValue: TimeVarianceAuthority | undefined;
+  private tvaClerkValue: TVAClerk | undefined;
+  private protocolOptions: TVAProtocolOptions | undefined = undefined;
 
   public constructor(drawings: DrawingOptions[]) {
     this.storage = new DataSourceStorage();
@@ -49,15 +49,16 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     return this.interconnectValue;
   }
 
-  public set tva(value: TimeVarianceAuthority) {
-    this.tvaValue = value;
+  public set tvaClerk(value: TVAClerk) {
+    this.tvaClerkValue = value;
   }
 
-  public get tva(): TimeVarianceAuthority {
-    if (this.tvaValue === undefined) {
+  public get tvaClerk(): TVAClerk {
+    if (this.tvaClerkValue === undefined) {
       throw new Error('Illegal state: this.tvaValue === undefined');
     }
-    return this.tvaValue;
+
+    return this.tvaClerkValue;
   }
 
   * [Symbol.iterator](): IterableIterator<Readonly<DataSourceEntry>> {
@@ -116,9 +117,13 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
   public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
     this.protocolOptions = options || { incident: this.getNewTransactionId() };
-    this.protocol.setLifeHooks({
-      afterInverse: () => this.flush(),
-      afterApply: () => this.flush(),
+
+    this.tvaClerk.processReport({
+      protocolOptions: this.protocolOptions,
+      lifeHooks: {
+        afterInverse: () => this.flush(),
+        afterApply: () => this.flush(),
+      },
     });
 
     // console.debug('dataSource begin transaction', this.protocolOptions);
@@ -126,12 +131,13 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
   public endTransaction(): void {
     // console.debug('dataSource end transaction', this.protocolOptions);
+    this.checkWeAreInTransaction();
 
-    if (this.protocol === undefined) {
-      throw new Error('Illegal state: this.protocol === undefined');
-    }
+    this.tvaClerk.processReport({
+      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      sign: true,
+    });
 
-    this.protocol.trySign();
     this.protocolOptions = undefined;
     this.flush();
   }
@@ -258,22 +264,28 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       throw new Error(`Entry with this reference already exists: ${options.ref}`);
     }
 
-    this.protocol.addIncident(new AddNewEntry({
-      descriptor: this.createDescriptor(options),
-      storage: this.storage,
-      addReason: this.addReason.bind(this),
-    }));
+    this.tvaClerk.processReport({
+      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      incident: new AddNewEntry({
+        descriptor: this.createDescriptor(options),
+        storage: this.storage,
+        addReason: this.addReason.bind(this),
+      }),
+    });
   }
 
   public update<T>(ref: DrawingReference, value: DeepPartial<DrawingDescriptor<T>>): void {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    this.protocol.addIncident(new UpdateEntry({
-      entry: this.storage.get(ref),
-      update: value,
-      addReason: this.addReason.bind(this),
-    }));
+    this.tvaClerk.processReport({
+      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      incident: new UpdateEntry({
+        entry: this.storage.get(ref),
+        update: value,
+        addReason: this.addReason.bind(this),
+      }),
+    });
   }
 
   public clone(entry: DataSourceEntry): DataSourceEntry {
@@ -284,11 +296,14 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     const cloned: DrawingDescriptor = clone(entry[0]);
     cloned.ref = this.getNewId(cloned.options.type);
 
-    this.protocol.addIncident(new AddNewEntry({
-      descriptor: cloned,
-      storage: this.storage,
-      addReason: this.addReason.bind(this),
-    }));
+    this.tvaClerk.processReport({
+      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      incident: new AddNewEntry({
+        descriptor: cloned,
+        storage: this.storage,
+        addReason: this.addReason.bind(this),
+      }),
+    });
 
     return this.storage.get(cloned.ref);
   }
@@ -297,11 +312,14 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    this.protocol.addIncident(new RemoveEntry({
-      entry: this.storage.get(ref),
-      storage: this.storage,
-      addReason: this.addReason.bind(this),
-    }));
+    this.tvaClerk.processReport({
+      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      incident: new RemoveEntry({
+        entry: this.storage.get(ref),
+        storage: this.storage,
+        addReason: this.addReason.bind(this),
+      }),
+    });
   }
 
   public getNewId(type: string): DrawingId {
@@ -326,14 +344,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     return descriptor as DrawingDescriptor;
   }
 
-  private get protocol(): TVAProtocol {
-    if (this.protocolOptions === undefined) {
-      throw new Error('Illegal state: this.protocolOptions === undefined');
-    }
-
-    return this.tva.getProtocol(this.protocolOptions);
-  }
-
   private checkWeAreNotInProxy(): void {
     if (isProxy(this)) {
       throw new Error('Invalid state, dataSource shouldn\'t be reactive');
@@ -341,7 +351,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   private checkWeAreInTransaction(): void {
-    if (!this.protocol) {
+    if (!this.protocolOptions) {
       throw new Error('Invalid state, dataSource.beginTransaction() should be used before');
     }
   }
