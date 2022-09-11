@@ -122,13 +122,13 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
   public attachExternal(paneId: PaneId, entries: IterableIterator<Readonly<DataSourceEntry>>): void {
     const { storage } = this;
-    let { head } = storage;
+    let headRef = storage.head?.value[0].ref;
     for (const entry of entries) {
-      if (!head) {
+      if (!headRef) {
         storage.unshift(this.createExternalEntry(paneId, entry));
-        head = storage.head;
+        headRef = storage.head?.value[0].ref;
       } else {
-        storage.insertBefore(head, this.createExternalEntry(paneId, entry));
+        storage.insertBefore(headRef, this.createExternalEntry(paneId, entry));
       }
     }
   }
@@ -149,10 +149,10 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     let entry = this.storage.head;
     while (entry !== undefined) {
       const [descriptor] = entry.value;
+      entry = entry.next;
+
       if (!isString(descriptor.ref) && descriptor.ref[0] === paneId) {
-        [, , entry] = this.storage.remove(descriptor.ref);
-      } else {
-        entry = entry.next;
+        this.storage.remove(descriptor.ref);
       }
     }
   }
@@ -316,8 +316,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    if (this.storage.has(options.ref)) {
-      throw new Error(`Entry with this reference already exists: ${options.ref}`);
+    if (this.storage.has(options.id)) {
+      throw new Error(`Entry with this reference already exists: ${options.id}`);
     }
 
     this.tvaClerk.processReport({
@@ -395,8 +395,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   private createDescriptor<T>(options: DrawingOptions<T>): DrawingDescriptor<T> {
-    const { ref } = options;
-    const [descriptor] = merge({ ref, options }, { options: { ref: null } });
+    const { id } = options;
+    const [descriptor] = merge({ ref: id, options }, { options: { id: null } });
     return descriptor as DrawingDescriptor;
   }
 

@@ -18,6 +18,8 @@ export default class DataSourceStorage {
   }
 
   public push(value: DataSourceEntry): void {
+    console.debug('push entry', value[0].ref);
+
     const newEntry: StorageEntry = {
       value,
     };
@@ -40,6 +42,8 @@ export default class DataSourceStorage {
       throw new Error('Illegal state: this.tail is empty');
     }
 
+    console.debug('pop entry', this.tail.value[0].ref);
+
     return this.remove(this.tail.value[0].ref)[0];
   }
 
@@ -59,6 +63,8 @@ export default class DataSourceStorage {
     }
 
     this.head = newEntry;
+
+    console.debug('unshift (add head) entry', this.head.value[0].ref);
   }
 
   public shift(): DataSourceEntry {
@@ -66,10 +72,17 @@ export default class DataSourceStorage {
       throw new Error('Illegal state: this.head is empty');
     }
 
+    console.debug('shift (delete head) entry', this.head.value[0].ref);
+
     return this.remove(this.head.value[0].ref)[0];
   }
 
-  public insertAfter(prevEntry: StorageEntry, entry: DataSourceEntry): void {
+  public insertAfter(prev: DrawingReference, entry: DataSourceEntry): void {
+    const prevEntry = this.refToEntry.get(this.refToMapId(prev));
+    if (!prevEntry) {
+      throw new Error(`Illegal argument: prev ref not found: ${prev}`);
+    }
+
     const nextEntry = prevEntry.next;
     const newEntry: StorageEntry = {
       value: entry,
@@ -77,19 +90,26 @@ export default class DataSourceStorage {
       next: nextEntry,
     }
 
+    if (this.tail === prevEntry) {
+      this.tail = newEntry;
+    }
+
     prevEntry.next = newEntry;
     if (nextEntry) {
       newEntry.prev = newEntry;
     }
 
-    if (this.tail === prevEntry) {
-      this.tail = newEntry;
-    }
+    console.debug('insertAfter entry', this.head);
 
     this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
   }
 
-  public insertBefore(nextEntry: StorageEntry, entry: DataSourceEntry): void {
+  public insertBefore(next: DrawingReference, entry: DataSourceEntry): void {
+    const nextEntry = this.refToEntry.get(this.refToMapId(next));
+    if (!nextEntry) {
+      throw new Error(`Illegal argument: prev ref not found: ${next}`);
+    }
+
     const prevEntry = nextEntry.prev;
     const newEntry: StorageEntry = {
       value: entry,
@@ -97,19 +117,20 @@ export default class DataSourceStorage {
       next: nextEntry,
     }
 
+    if (this.head === nextEntry) {
+      this.head = newEntry;
+    }
+
     nextEntry.prev = newEntry;
     if (prevEntry) {
       prevEntry.next = newEntry;
     }
 
-    if (this.head === nextEntry) {
-      this.head = newEntry;
-    }
-
     this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
   }
 
-  public remove(ref: DrawingReference): [DataSourceEntry, Readonly<StorageEntry>?, Readonly<StorageEntry>?] {
+  public remove(ref: DrawingReference): [DataSourceEntry, DrawingReference?, DrawingReference?] {
+    console.debug('remove entry', ref);
     const key: string = this.refToMapId(ref);
     const tmp = this.refToEntry.get(key);
 
@@ -121,17 +142,15 @@ export default class DataSourceStorage {
     this.refToEntry.delete(key);
 
     const tmpPrev = tmp.prev;
-    if (tmpPrev) {
-      tmpPrev.next = undefined;
-    }
-
     const tmpNext = tmp.next;
-    if (tmpNext) {
-      tmpNext.prev = undefined;
+
+    if (tmpPrev) {
+      tmpPrev.next = tmpNext;
     }
 
-    tmp.prev = undefined;
-    tmp.next = undefined;
+    if (tmpNext) {
+      tmpNext.prev = tmpPrev;
+    }
 
     if (tmp === this.tail) {
       this.tail = tmpPrev;
@@ -141,7 +160,10 @@ export default class DataSourceStorage {
       this.head = tmpNext;
     }
 
-    return [result, tmpPrev, tmpNext];
+    tmp.prev = undefined;
+    tmp.next = undefined;
+
+    return [result, tmpPrev ? tmpPrev.value[0].ref : undefined, tmpNext ? tmpNext.value[0].ref : undefined];
   }
 
   public has(ref: DrawingReference): boolean {

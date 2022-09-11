@@ -11,7 +11,7 @@ export declare type DrawingType = string;
 export declare type HandleId = string;
 
 export interface DrawingOptions<DataType = any> {
-  ref: DrawingReference;
+  id: DrawingId;
   type: DrawingType;
   data: DataType;
   locked: boolean;
@@ -25,7 +25,7 @@ export interface DrawingDescriptor<DataType = any> {
   ref: DrawingReference;
   valid?: boolean;
   visibleInViewport?: boolean;
-  options: Omit<DrawingOptions<DataType>, 'ref'>;
+  options: Omit<DrawingOptions<DataType>, 'id'>;
 }
 
 export interface Graphics {

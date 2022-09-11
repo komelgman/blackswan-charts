@@ -1,6 +1,7 @@
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import DataSourceStorage, { StorageEntry } from '@/model/datasource/DataSourceStorage';
+import { DrawingReference } from '@/model/datasource/Drawing';
 import {
   AbstractHistoricalIncident,
   HistoricalIncidentOptions,
@@ -13,7 +14,7 @@ export interface RemoveEntryOptions extends HistoricalIncidentOptions {
 }
 
 export default class RemoveEntry extends AbstractHistoricalIncident<RemoveEntryOptions> {
-  private removedEntry!: [DataSourceEntry, StorageEntry?, StorageEntry?];
+  private removedEntry!: [DataSourceEntry, DrawingReference?, DrawingReference?];
 
   // eslint-disable-next-line no-useless-constructor
   public constructor(options: RemoveEntryOptions) {
@@ -30,12 +31,14 @@ export default class RemoveEntry extends AbstractHistoricalIncident<RemoveEntryO
 
   protected inverseIncident(): void {
     const { storage, addReason } = this.options;
-    const [entry, prevEntry, nextEntry] = this.removedEntry;
+    const [entry, prevRef, nextRef] = this.removedEntry;
 
-    if (prevEntry) {
-      storage.insertAfter(prevEntry, entry);
-    } else if (nextEntry) {
-      storage.insertBefore(nextEntry, entry);
+    entry[0].valid = false;
+
+    if (prevRef) {
+      storage.insertAfter(prevRef, entry);
+    } else if (nextRef) {
+      storage.insertBefore(nextRef, entry);
     } else {
       storage.push(entry);
     }
