@@ -1,3 +1,4 @@
+import { isString } from '@/misc/strict-type-checks';
 import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import { DrawingReference } from '@/model/datasource/Drawing';
 
@@ -8,7 +9,7 @@ export interface StorageEntry {
 }
 
 export default class DataSourceStorage {
-  private readonly refToEntry: Map<DrawingReference, StorageEntry>;
+  private readonly refToEntry: Map<string, StorageEntry>;
   public head: StorageEntry | undefined;
   public tail: StorageEntry | undefined;
 
@@ -19,10 +20,9 @@ export default class DataSourceStorage {
   public push(value: DataSourceEntry): void {
     const newEntry: StorageEntry = {
       value,
-      prev: this.head,
     };
 
-    this.refToEntry.set(newEntry.value[0].ref, newEntry);
+    this.refToEntry.set(this.refToMapId(newEntry.value[0].ref), newEntry);
     if (!this.head) {
       this.head = newEntry;
     }
@@ -33,6 +33,40 @@ export default class DataSourceStorage {
     }
 
     this.tail = newEntry;
+  }
+
+  public pop(): DataSourceEntry {
+    if (!this.tail) {
+      throw new Error('Illegal state: this.tail is empty');
+    }
+
+    return this.remove(this.tail.value[0].ref)[0];
+  }
+
+  public unshift(value: DataSourceEntry): void {
+    const newEntry: StorageEntry = {
+      value,
+    };
+
+    this.refToEntry.set(this.refToMapId(newEntry.value[0].ref), newEntry);
+    if (!this.tail) {
+      this.tail = newEntry;
+    }
+
+    if (this.head) {
+      this.head.prev = newEntry;
+      newEntry.next = this.head;
+    }
+
+    this.head = newEntry;
+  }
+
+  public shift(): DataSourceEntry {
+    if (!this.head) {
+      throw new Error('Illegal state: this.head is empty');
+    }
+
+    return this.remove(this.head.value[0].ref)[0];
   }
 
   public insertAfter(prevEntry: StorageEntry, entry: DataSourceEntry): void {
@@ -52,7 +86,7 @@ export default class DataSourceStorage {
       this.tail = newEntry;
     }
 
-    this.refToEntry.set(entry[0].ref, newEntry);
+    this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
   }
 
   public insertBefore(nextEntry: StorageEntry, entry: DataSourceEntry): void {
@@ -72,25 +106,19 @@ export default class DataSourceStorage {
       this.head = newEntry;
     }
 
-    this.refToEntry.set(entry[0].ref, newEntry);
+    this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
   }
 
-  public pop(): DataSourceEntry {
-    if (this.tail == null) {
-      throw new Error('Illegal state: this.tail == null');
-    }
+  public remove(ref: DrawingReference): [DataSourceEntry, Readonly<StorageEntry>?, Readonly<StorageEntry>?] {
+    const key: string = this.refToMapId(ref);
+    const tmp = this.refToEntry.get(key);
 
-    return this.remove(this.tail.value[0].ref)[0];
-  }
-
-  public remove(ref: DrawingReference): [DataSourceEntry, StorageEntry?, StorageEntry?] {
-    const tmp = this.refToEntry.get(ref);
     if (!tmp) {
       throw new Error(`Illegal state: no ref found ${ref}`);
     }
 
     const result = tmp.value;
-    this.refToEntry.delete(ref);
+    this.refToEntry.delete(key);
 
     const tmpPrev = tmp.prev;
     if (tmpPrev) {
@@ -117,15 +145,19 @@ export default class DataSourceStorage {
   }
 
   public has(ref: DrawingReference): boolean {
-    return this.refToEntry.has(ref);
+    return this.refToEntry.has(this.refToMapId(ref));
   }
 
   public get(ref: DrawingReference): DataSourceEntry {
-    const storageEntry: StorageEntry | undefined = this.refToEntry.get(ref);
+    const storageEntry: StorageEntry | undefined = this.refToEntry.get(this.refToMapId(ref));
     if (storageEntry === undefined) {
-      throw new Error(`Illegal argument: ref not found${ref}`);
+      throw new Error(`Illegal argument: ref not found: ${ref}`);
     }
 
     return storageEntry.value;
+  }
+
+  private refToMapId(ref: DrawingReference): string {
+    return isString(ref) ? ref : `${ref[0]}:${ref[1]}`;
   }
 }

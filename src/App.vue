@@ -78,6 +78,7 @@ export default class App extends Vue {
         data: { def: 0, style: { lineWidth: 3, fill: 2, color: '#AABBCC' } },
         locked: false,
         visible: true,
+        shared: true,
       },
     ]);
   }
@@ -94,6 +95,7 @@ export default class App extends Vue {
         data: { def: 0.0, style: { lineWidth: 4, fill: 0, color: '#AA0000' } },
         locked: false,
         visible: true,
+        shared: true,
       },
     ]));
 
@@ -117,6 +119,7 @@ export default class App extends Vue {
 
     chartApi.togglePane(secondPane);
     chartApi.togglePane(secondPane);
+    chartApi.removePane('mainPane');
     // chartApi.swapPanes('mainPane', secondPane);
 
     // chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });

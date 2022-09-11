@@ -29,7 +29,6 @@ import LayeredCanvas, {
 import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import { PaneId } from '@/components/layout/PaneDescriptor';
-import DataSource from '@/model/datasource/DataSource';
 import DataSourceChangeEventListener, {
   ChangeReasons,
 } from '@/model/datasource/DataSourceChangeEventListener';
@@ -73,7 +72,6 @@ export default class ViewportWidget extends Vue {
   }
 
   mounted(): void {
-    console.debug('ViewportWidget::mounted');
     this.dataSourceInvalidator.installListeners();
     this.dataSourceLayer.installListeners();
     this.highlightingLayer.installListeners();
@@ -81,7 +79,6 @@ export default class ViewportWidget extends Vue {
   }
 
   unmounted(): void {
-    console.debug('ViewportWidget::unmounted');
     this.dataSourceInvalidator.uninstallListeners();
     this.dataSourceLayer.uninstallListeners();
     this.highlightingLayer.uninstallListeners();

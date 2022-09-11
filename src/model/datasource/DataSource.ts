@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { clone, DeepPartial, merge } from '@/misc/strict-type-checks';
+import { PaneId } from '@/components/layout/PaneDescriptor';
+import { clone, DeepPartial, isString, merge } from '@/misc/strict-type-checks';
 import DataSourceChangeEventListener, {
   ChangeReasons,
 } from '@/model/datasource/DataSourceChangeEventListener';
@@ -98,6 +99,61 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       }
 
       entry = entry.next;
+    }
+  }
+
+  * shared(external: PaneId): IterableIterator<Readonly<DataSourceEntry>> {
+    this.checkWeAreNotInProxy();
+
+    let entry = this.storage.head;
+    while (entry !== undefined) {
+      const entryValue: DataSourceEntry = entry.value;
+      const [descriptor] = entryValue;
+      if (isString(descriptor.ref)
+        && descriptor.options.shared
+        && (descriptor.options.shareWith === undefined || descriptor.options.shareWith.indexOf(external))
+      ) {
+        yield entryValue;
+      }
+
+      entry = entry.next;
+    }
+  }
+
+  public attachExternal(paneId: PaneId, entries: IterableIterator<Readonly<DataSourceEntry>>): void {
+    const { storage } = this;
+    let { head } = storage;
+    for (const entry of entries) {
+      if (!head) {
+        storage.unshift(this.createExternalEntry(paneId, entry));
+        head = storage.head;
+      } else {
+        storage.insertBefore(head, this.createExternalEntry(paneId, entry));
+      }
+    }
+  }
+
+  private createExternalEntry(paneId: PaneId, externalEntry: Readonly<DataSourceEntry>): DataSourceEntry {
+    const [externalDescriptor] = externalEntry;
+    if (!isString(externalDescriptor.ref)) {
+      throw new Error('Illegal argument: external entry cant be shared');
+    }
+
+    return [{
+      ref: [paneId, externalDescriptor.ref],
+      options: externalDescriptor.options,
+    }];
+  }
+
+  public detachExternal(paneId: PaneId): void {
+    let entry = this.storage.head;
+    while (entry !== undefined) {
+      const [descriptor] = entry.value;
+      if (!isString(descriptor.ref) && descriptor.ref[0] === paneId) {
+        [, , entry] = this.storage.remove(descriptor.ref);
+      } else {
+        entry = entry.next;
+      }
     }
   }
 
@@ -333,14 +389,14 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   private initEntries(drawings: DrawingOptions[]): void {
-    for (const drawing of drawings) {
-      this.storage.push([this.createDescriptor(drawing)]);
+    for (const drawingOptions of drawings) {
+      this.storage.push([this.createDescriptor(drawingOptions)]);
     }
   }
 
   private createDescriptor<T>(options: DrawingOptions<T>): DrawingDescriptor<T> {
     const { ref } = options;
-    const [descriptor] = merge({ ref, options }, { options: { id: null } });
+    const [descriptor] = merge({ ref, options }, { options: { ref: null } });
     return descriptor as DrawingDescriptor;
   }
 
@@ -371,5 +427,11 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
   private getNewTransactionId(): string {
     return `--dataSourceTransaction${Math.random()}`; // todo: id generation
+  }
+
+  public externalUpdate(ref: DrawingReference): void {
+    const entry: DataSourceEntry = this.storage.get(ref);
+    entry[0].valid = false;
+    this.addReason(DataSourceChangeEventReason.ExternalUpdateEntry, [entry]);
   }
 }

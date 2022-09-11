@@ -88,7 +88,9 @@ export default class Multipane<T> extends Vue {
   }
 
   private sortedPaneElements(): HTMLElement[] {
-    return this.paneElements.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any));
+    return this.paneElements
+      ? this.paneElements.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
+      : [];
   }
 
   created(): void {

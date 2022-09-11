@@ -5,7 +5,7 @@ import HasCursor from '@/model/options/HasCursor';
 import { Point } from '@/model/type-defs';
 
 export declare type DrawingId = string;
-export declare type ExternalDrawingId = { paneId: PaneId; id: DrawingId; }
+export declare type ExternalDrawingId = [PaneId, DrawingId];
 export declare type DrawingReference = DrawingId | ExternalDrawingId;
 export declare type DrawingType = string;
 export declare type HandleId = string;
