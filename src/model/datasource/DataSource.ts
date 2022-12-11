@@ -80,7 +80,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     while (entry !== undefined) {
       const entryValue: DataSourceEntry = entry.value;
       const [descriptor] = entryValue;
-      if (descriptor.visibleInViewport && descriptor.valid && descriptor.options.visible) {
+
+      if (descriptor.visibleInViewport && descriptor.options.visible) {
         yield entryValue;
       }
 

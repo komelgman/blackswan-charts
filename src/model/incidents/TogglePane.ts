@@ -6,19 +6,51 @@ import {
 import Viewport from '@/model/viewport/Viewport';
 
 export interface TogglePaneOptions extends HistoricalIncidentOptions {
-  paneDescriptor: PaneDescriptor<Viewport>;
+  panes: PaneDescriptor<Viewport>[];
+  paneIndex: number;
 }
 
 export default class TogglePane extends AbstractHistoricalIncident<TogglePaneOptions> {
+  private panesSizes: number[] = [];
   // eslint-disable-next-line no-useless-constructor
   public constructor(options: TogglePaneOptions) {
     super(options);
   }
 
   protected applyIncident(): void {
-    const { paneDescriptor } = this.options;
+    const { panes, paneIndex } = this.options;
+    const targetPane = panes[paneIndex];
+
     // undefined === true by  default
-    paneDescriptor.visible = !(paneDescriptor.visible || paneDescriptor.visible === undefined);
+    const isVisible: boolean = targetPane.visible || targetPane.visible === undefined;
+    if (isVisible) {
+      this.hide();
+    } else {
+      this.show();
+    }
+  }
+
+  private show(): void {
+    const { panes, paneIndex } = this.options;
+    const targetPane = panes[paneIndex];
+
+    targetPane.visible = true;
+    for (const pane of panes) {
+      pane.actualSize = this.panesSizes.shift();
+    }
+  }
+
+  private hide(): void {
+    const { panes, paneIndex } = this.options;
+    const targetPane = panes[paneIndex];
+
+    this.panesSizes = [];
+    for (const pane of panes) {
+      this.panesSizes.push(pane.actualSize || 0);
+    }
+
+    targetPane.visible = false;
+    targetPane.actualSize = undefined;
   }
 
   protected inverseIncident(): void {

@@ -3,7 +3,7 @@ export declare type PaneId = string;
 export default interface PaneDescriptor<T> {
   id: PaneId;
   model: T;
-  preferredSize?: number;
+  actualSize?: number;
   minSize?: number;
   maxSize?: number;
   visible?: boolean;

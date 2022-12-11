@@ -72,7 +72,7 @@ export default class ChartController {
 
     dataSource.tvaClerk = this.tva.clerk;
 
-    // todo: pane sizes
+    // todo: pane sizes create pane
     this.tva
       .getProtocol({ incident: 'chart-controller-create-pane' })
       .addIncident(new AddNewPane({
@@ -91,7 +91,7 @@ export default class ChartController {
   }
 
   public removePane(paneId: PaneId): void {
-    // todo: pane sizes
+    // todo: pane sizes remove pane
     this.tva
       .getProtocol({ incident: 'chart-controller-remove-pane' })
       .addIncident(new RemovePane({
@@ -141,11 +141,12 @@ export default class ChartController {
   }
 
   public togglePane(paneId: PaneId): void {
-    // todo: pane sizes
+    // todo: pane sizes show/hide pane
     this.tva
       .getProtocol({ incident: 'chart-controller-toggle-pane' })
       .addIncident(new TogglePane({
-        paneDescriptor: this.panes[this.indexByPaneId(paneId)],
+        panes: this.panes,
+        paneIndex: this.indexByPaneId(paneId),
       }))
       .trySign();
   }

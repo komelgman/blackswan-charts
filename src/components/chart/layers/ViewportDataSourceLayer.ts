@@ -37,7 +37,7 @@ export default class ViewportDataSourceLayer extends Layer {
   };
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
-    // console.debug('datasource render');
+    console.debug('ViewportDataSourceLayer render');
 
     const inverted: InvertedValue = this.inverted.value;
     if (inverted < 0) {
