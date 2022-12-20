@@ -21,6 +21,7 @@ import {
   ResizeHandle,
   ResizeHandleMoveEvent,
 } from '@/components/layout';
+import { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import ResizeObserver from 'resize-observer-polyfill';
 import { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
@@ -54,6 +55,7 @@ export default class Multipane<T> extends Vue {
   borderElements!: Divider[];
 
   private resizeObserver!: ResizeObserver;
+  private valid: boolean = true;
 
   layout: Layout = {
     minSize: undefined,
@@ -94,7 +96,7 @@ export default class Multipane<T> extends Vue {
   }
 
   created(): void {
-    this.resizeObserver = new ResizeObserver(this.onResize);
+    this.resizeObserver = new ResizeObserver(this.resizeObserverCallback);
   }
 
   mounted(): void {
@@ -106,12 +108,28 @@ export default class Multipane<T> extends Vue {
   }
 
   @Watch('visibleItems')
-  private onResize(): void {
-    this.$nextTick(this.adjustPanesSizes);
+  private visibleItemsChanged(): void {
+    console.debug('multipane.visibleItemsChanged')
+    this.invalidate();
   }
 
-  // todo: pane sizes add to history
+  private resizeObserverCallback(): void {
+    console.debug('multipane.resizeObserverCallback')
+    this.invalidate();
+  }
+
+  public invalidate(): void {
+    console.debug('multipane.invalidate')
+    if (this.valid) {
+      this.valid = false;
+      this.$nextTick(this.adjustPanesSizes);
+    }
+  }
+
   private adjustPanesSizes(): void {
+    this.valid = true;
+    console.debug('multipane.adjustPanesSizes')
+
     const availableSize = this.getSize(this.$el);
     const panesInfo: PaneSize[] = [];
     const paneElements = this.sortedPaneElements();
@@ -135,15 +153,15 @@ export default class Multipane<T> extends Vue {
         paneDesc.minSize = 0;
       }
 
-      if (paneDesc.actualSize === undefined) {
-        paneDesc.actualSize = paneDesc.minSize || 1;
+      if (paneDesc.size === undefined) {
+        paneDesc.size = paneDesc.minSize || 1;
       }
 
       if (paneDesc.maxSize === undefined) {
         paneDesc.maxSize = Number.MAX_VALUE;
       }
 
-      if (paneDesc.actualSize < paneDesc.minSize) {
+      if (paneDesc.size < paneDesc.minSize) {
         throw new Error('paneDesc.actualSize < paneDesc.minSize');
       }
 
@@ -151,11 +169,11 @@ export default class Multipane<T> extends Vue {
         min: paneDesc.minSize,
         max: paneDesc.maxSize,
         elementSize: paneSize,
-        targetSize: paneDesc.actualSize,
+        targetSize: paneDesc.size,
       });
 
       minimumSize += paneDesc.minSize;
-      retrievedSize += paneDesc.actualSize;
+      retrievedSize += paneDesc.size;
 
       if (maximumSize < Number.MAX_VALUE) {
         maximumSize = paneDesc.maxSize === Number.MAX_VALUE
@@ -280,18 +298,18 @@ export default class Multipane<T> extends Vue {
         }
 
         this.setSize(paneElements[i], size);
-        this.visibleItems[i].actualSize = size;
+        this.visibleItems[i].size = size;
       }
     });
   }
 
-  // todo: pane sizes add to history
   private onResizeHandleMove(e: ResizeHandleMoveEvent): void {
     const items = this.visibleItems;
     const dsize = (this.direction === Direction.Vertical ? e.dy : e.dx) * Multipane.getDPR();
     const deltaSign = Math.sign(dsize);
     const paneElements = this.sortedPaneElements();
     let deltaSize = Math.abs(dsize);
+    const initialSizes = items.map((v) => v.size);
 
     while (deltaSize > 0) {
       const decPaneIndex: number | undefined = this.getDecPaneIndex(deltaSign, e.index, items);
@@ -304,30 +322,38 @@ export default class Multipane<T> extends Vue {
 
       const decItem: PaneDescriptor<T> = items[decPaneIndex];
       const incItem: PaneDescriptor<T> = items[incPaneIndex];
-      if (decItem.actualSize === undefined || incItem.actualSize === undefined
+      if (decItem.size === undefined || incItem.size === undefined
         || decItem.minSize === undefined || incItem.maxSize === undefined) {
         throw new Error('oops');
       }
 
       let shouldBeDistributed = 0;
-      if (decItem.actualSize - deltaSize < decItem.minSize) {
-        shouldBeDistributed = deltaSize - (decItem.actualSize - decItem.minSize);
+      if (decItem.size - deltaSize < decItem.minSize) {
+        shouldBeDistributed = deltaSize - (decItem.size - decItem.minSize);
         deltaSize -= shouldBeDistributed;
       }
 
-      if (incItem.actualSize + deltaSize > incItem.maxSize) {
-        const sbdDelta = deltaSize - (incItem.maxSize - incItem.actualSize);
+      if (incItem.size + deltaSize > incItem.maxSize) {
+        const sbdDelta = deltaSize - (incItem.maxSize - incItem.size);
         shouldBeDistributed += sbdDelta;
         deltaSize -= sbdDelta;
       }
 
-      decItem.actualSize -= deltaSize;
-      incItem.actualSize += deltaSize;
-      this.setSize(paneElements[decPaneIndex], decItem.actualSize);
-      this.setSize(paneElements[incPaneIndex], incItem.actualSize);
+      decItem.size -= deltaSize;
+      incItem.size += deltaSize;
+      this.setSize(paneElements[decPaneIndex], decItem.size);
+      this.setSize(paneElements[incPaneIndex], incItem.size);
 
       deltaSize = shouldBeDistributed;
     }
+
+    const changedSizes = items.map((v) => v.size);
+
+    this.$emit('drag-handle-moved', {
+      source: this,
+      initial: initialSizes,
+      changed: changedSizes,
+    } as PanesSizeChangeEvent);
   }
 
   private getDecPaneIndex(sign: number, index: number, items: PaneDescriptor<T>[]): number | undefined {
@@ -339,7 +365,7 @@ export default class Multipane<T> extends Vue {
 
     while (dec >= 0 && dec < items.length) {
       const info = items[dec];
-      if (info.minSize !== info.actualSize) {
+      if (info.minSize !== info.size) {
         return dec;
       }
       dec += change;
@@ -357,7 +383,7 @@ export default class Multipane<T> extends Vue {
 
     while (inc >= 0 && inc < items.length) {
       const info = items[inc];
-      if (info.maxSize !== info.actualSize) {
+      if (info.maxSize !== info.size) {
         return inc;
       }
       inc += change;

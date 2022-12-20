@@ -1,6 +1,7 @@
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
-import { PaneDescriptor, PaneOptions } from '@/components/layout';
+import { Multipane, PaneDescriptor, PaneOptions } from '@/components/layout';
 import { PaneId } from '@/components/layout/PaneDescriptor';
+import { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import { DeepPartial, merge } from '@/misc/strict-type-checks';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
 import TimeAxis from '@/model/axis/TimeAxis';
@@ -11,6 +12,8 @@ import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import { DrawingType } from '@/model/datasource/Drawing';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import AddNewPane from '@/model/incidents/AddNewPane';
+import InvalidatePanesSizes from '@/model/incidents/InvalidatePanesSizes';
+import PanesSizeChanged from '@/model/incidents/PanesSizeChanged';
 import RemovePane from '@/model/incidents/RemovePane';
 import SwapPanes from '@/model/incidents/SwapPanes';
 import TogglePane from '@/model/incidents/TogglePane';
@@ -22,7 +25,6 @@ import { computed, reactive, watch, WatchStopHandle } from 'vue';
 export default class ChartController {
   private static paneIdGen: number = 0;
 
-  private readonly panes: PaneDescriptor<Viewport>[];
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly tva: TimeVarianceAuthority;
   private readonly state: ChartState;
@@ -31,6 +33,7 @@ export default class ChartController {
 
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
+  public readonly panes: PaneDescriptor<Viewport>[];
 
   constructor(state: ChartState, chartOptions: ChartStyle, sketchers: Map<DrawingType, Sketcher>) {
     this.tva = new TimeVarianceAuthority();
@@ -59,6 +62,7 @@ export default class ChartController {
   public createPane(dataSource: DataSource, options?: Partial<PaneOptions<ViewportOptions>>): PaneId {
     // eslint-disable-next-line no-plusplus
     const generatedPaneId: PaneId = `pane${ChartController.paneIdGen++}`; // todo: id generation
+    const initialSizes = this.getPanesSizes();
     const paneOptions: PaneOptions<ViewportOptions> = {
       id: generatedPaneId,
       minSize: 100,
@@ -72,7 +76,6 @@ export default class ChartController {
 
     dataSource.tvaClerk = this.tva.clerk;
 
-    // todo: pane sizes create pane
     this.tva
       .getProtocol({ incident: 'chart-controller-create-pane' })
       .addIncident(new AddNewPane({
@@ -85,13 +88,19 @@ export default class ChartController {
         afterApply: () => this.installPane(paneOptions.id),
         beforeInverse: () => this.uninstallPane(paneOptions.id),
       }))
+      .addIncident(new InvalidatePanesSizes({
+        panes: this.panes,
+        initial: initialSizes,
+        changed: this.getPanesSizes(),
+      }))
       .trySign();
 
     return paneOptions.id;
   }
 
   public removePane(paneId: PaneId): void {
-    // todo: pane sizes remove pane
+    const initialSizes = this.getPanesSizes();
+
     this.tva
       .getProtocol({ incident: 'chart-controller-remove-pane' })
       .addIncident(new RemovePane({
@@ -100,33 +109,12 @@ export default class ChartController {
         beforeApply: () => this.uninstallPane(paneId),
         afterInverse: () => this.installPane(paneId),
       }))
+      .addIncident(new InvalidatePanesSizes({
+        panes: this.panes,
+        initial: initialSizes,
+        changed: this.getPanesSizes(),
+      }))
       .trySign();
-  }
-
-  private installPane(paneId: PaneId): void {
-    if (!this.unwatchers.has(paneId)) {
-      this.unwatchers.set(paneId, []);
-    }
-
-    const pane = this.panes[this.indexByPaneId(paneId)];
-    const { priceAxis, dataSource } = pane.model;
-    (this.unwatchers.get(paneId) as WatchStopHandle[]).push(
-      watch(priceAxis.contentWidth, this.updatePriceAxisWidth.bind(this), { immediate: true }),
-    );
-
-    this.dataSourceInterconnect.addDataSource(paneId, dataSource);
-  }
-
-  private uninstallPane(paneId: PaneId): void {
-    if (!this.unwatchers.has(paneId)) {
-      throw new Error(`Oops: !this.unwatchers.has(${paneId})`);
-    }
-
-    this.dataSourceInterconnect.removeDataSource(paneId);
-
-    for (const unwatch of (this.unwatchers.get(paneId) as WatchStopHandle[])) {
-      unwatch();
-    }
   }
 
   public swapPanes(paneId1: PaneId, paneId2: PaneId): void {
@@ -141,14 +129,28 @@ export default class ChartController {
   }
 
   public togglePane(paneId: PaneId): void {
-    // todo: pane sizes show/hide pane
+    const initialSizes = this.getPanesSizes();
+
     this.tva
       .getProtocol({ incident: 'chart-controller-toggle-pane' })
       .addIncident(new TogglePane({
         panes: this.panes,
         paneIndex: this.indexByPaneId(paneId),
       }))
+      .addIncident(new InvalidatePanesSizes({
+        panes: this.panes,
+        initial: initialSizes,
+        changed: initialSizes,
+      }))
       .trySign();
+  }
+
+  public onPaneSizeChanged(event: PanesSizeChangeEvent): void {
+    this.tva
+      .getProtocol({ incident: 'chart-controller-pane-size-changed', timeout: 1000 })
+      .addIncident(new PanesSizeChanged({
+        event,
+      }), false);
   }
 
   public paneModel(paneId: PaneId): Viewport {
@@ -173,6 +175,38 @@ export default class ChartController {
 
   public undo(): void {
     this.tva.undo();
+  }
+
+  private getPanesSizes(): Record<string, number> {
+    return this.panes.reduce((obj, item) => ({ ...obj, [item.id]: item.size }), {});
+  }
+
+  private installPane(paneId: PaneId): void {
+    console.debug(`ChartController.installPane: ${paneId}`);
+
+    if (!this.unwatchers.has(paneId)) {
+      this.unwatchers.set(paneId, []);
+    }
+
+    const pane = this.panes[this.indexByPaneId(paneId)];
+    const { priceAxis, dataSource } = pane.model;
+    (this.unwatchers.get(paneId) as WatchStopHandle[]).push(
+      watch(priceAxis.contentWidth, this.updatePriceAxisWidth.bind(this), { immediate: true }),
+    );
+
+    this.dataSourceInterconnect.addDataSource(paneId, dataSource);
+  }
+
+  private uninstallPane(paneId: PaneId): void {
+    if (!this.unwatchers.has(paneId)) {
+      throw new Error(`Oops: !this.unwatchers.has(${paneId})`);
+    }
+
+    this.dataSourceInterconnect.removeDataSource(paneId);
+
+    for (const unwatch of (this.unwatchers.get(paneId) as WatchStopHandle[])) {
+      unwatch();
+    }
   }
 
   private updatePriceAxisWidth(): void {

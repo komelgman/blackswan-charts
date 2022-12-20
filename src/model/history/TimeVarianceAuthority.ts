@@ -14,7 +14,7 @@ export default class TimeVarianceAuthority {
   private clerkValue: TVAClerk;
 
   constructor() {
-    this.current = new TVAProtocol();
+    this.current = new TVAProtocol('big-boom');
     this.current.addIncident(new BigBoom());
     this.current.trySign();
     this.clerkValue = new TVAClerk(this.reportProcessor);
@@ -36,7 +36,7 @@ export default class TimeVarianceAuthority {
     }
 
     if (this.current.isSigned) {
-      this.current = new TVAProtocol(this.current);
+      this.current = new TVAProtocol(options.incident, this.current);
     }
 
     this.lastTimeWhenProtocolUsed = Date.now();
@@ -59,6 +59,8 @@ export default class TimeVarianceAuthority {
       return;
     }
 
+    console.debug(`redo: ${this.current.title}`);
+
     this.current = this.current.next as TVAProtocol;
     this.current.apply();
   }
@@ -68,6 +70,8 @@ export default class TimeVarianceAuthority {
       console.warn('Illegal state, can\'t do undo');
       return;
     }
+
+    console.debug(`undo: ${this.current.title}`);
 
     if (!this.current.isSigned) {
       this.current.trySign(); // will be inversed in case when rejected

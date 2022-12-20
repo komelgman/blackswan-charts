@@ -17,6 +17,7 @@ export default class TVAProtocol {
   private readonly incidents: HistoricalIncident[] = [];
   private signValue: TVAProtocolSign = TVAProtocolSign.NotSigned;
 
+  public readonly title: string;
   public next?: TVAProtocol = undefined;
   public prev?: TVAProtocol;
 
@@ -25,10 +26,10 @@ export default class TVAProtocol {
   private beforeInverse?: () => void;
   private afterInverse?: () => void;
 
-  constructor(base: TVAProtocol | undefined = undefined) {
+  constructor(title: string, base: TVAProtocol | undefined = undefined) {
     const current = this.newTimelineFrom(base);
-
     this.prev = current;
+    this.title = title;
     if (current !== undefined) {
       current.next = this;
     }

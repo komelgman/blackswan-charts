@@ -18,8 +18,6 @@ export default class DataSourceStorage {
   }
 
   public push(value: DataSourceEntry): void {
-    console.debug('push entry', value[0].ref);
-
     const newEntry: StorageEntry = {
       value,
     };
@@ -34,6 +32,8 @@ export default class DataSourceStorage {
       newEntry.prev = this.tail;
     }
 
+    console.debug('DataSourceStorage.push', value[0].ref);
+
     this.tail = newEntry;
   }
 
@@ -42,29 +42,21 @@ export default class DataSourceStorage {
       throw new Error('Illegal state: this.tail is empty');
     }
 
-    console.debug('pop entry', this.tail.value[0].ref);
+    console.debug('DataSourceStorage.pop', this.tail.value[0].ref);
 
     return this.remove(this.tail.value[0].ref)[0];
   }
 
   public unshift(value: DataSourceEntry): void {
-    const newEntry: StorageEntry = {
-      value,
-    };
-
-    this.refToEntry.set(this.refToMapId(newEntry.value[0].ref), newEntry);
-    if (!this.tail) {
-      this.tail = newEntry;
+    if (this.head !== undefined) {
+      this.insertBefore(this.head.value[0].ref, value);
+    } else {
+      this.push(value);
     }
 
-    if (this.head) {
-      this.head.prev = newEntry;
-      newEntry.next = this.head;
-    }
-
-    this.head = newEntry;
-
-    console.debug('unshift (add head) entry', this.head.value[0].ref);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    console.debug('DataSourceStorage.unshift (add head) entry', this.head.value[0].ref);
   }
 
   public shift(): DataSourceEntry {
@@ -72,7 +64,7 @@ export default class DataSourceStorage {
       throw new Error('Illegal state: this.head is empty');
     }
 
-    console.debug('shift (delete head) entry', this.head.value[0].ref);
+    console.debug('DataSourceStorage.shift (delete head) entry', this.head.value[0].ref);
 
     return this.remove(this.head.value[0].ref)[0];
   }
@@ -99,7 +91,7 @@ export default class DataSourceStorage {
       newEntry.prev = newEntry;
     }
 
-    console.debug('insertAfter entry', this.head);
+    console.debug('DataSourceStorage.insertAfter', newEntry);
 
     this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
   }
@@ -126,11 +118,12 @@ export default class DataSourceStorage {
       prevEntry.next = newEntry;
     }
 
+    console.debug('DataSourceStorage.insertBefore', [newEntry, this.head, this.tail]);
+
     this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
   }
 
   public remove(ref: DrawingReference): [DataSourceEntry, DrawingReference?, DrawingReference?] {
-    console.debug('remove entry', ref);
     const key: string = this.refToMapId(ref);
     const tmp = this.refToEntry.get(key);
 
@@ -162,6 +155,8 @@ export default class DataSourceStorage {
 
     tmp.prev = undefined;
     tmp.next = undefined;
+
+    console.debug('DataSourceStorage.remove', ref);
 
     return [result, tmpPrev ? tmpPrev.value[0].ref : undefined, tmpNext ? tmpNext.value[0].ref : undefined];
   }

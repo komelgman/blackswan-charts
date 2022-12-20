@@ -9,7 +9,12 @@
     tabindex="0"
   >
     <ContextMenu ref="contextmenu"/>
-    <multipane :items="controller.panes" direction="vertical" resizable>
+    <multipane
+      :items="controller.panes"
+      direction="vertical"
+      resizable
+      @drag-handle-moved="onPaneSizeChanged"
+    >
       <template v-slot:default="props">
         <box-layout>
           <viewport-widget
@@ -61,6 +66,7 @@ import contextMenuDirective from '@/components/context-menu/ContextMenuDirective
 import { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import { BoxLayout, Divider, Multipane } from '@/components/layout';
+import { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import { clone, DeepPartial, merge } from '@/misc/strict-type-checks';
 import PriceAxis from '@/model/axis/PriceAxis';
 import ChartController from '@/model/ChartController';
@@ -71,13 +77,12 @@ import PriceAxisContextMenu from '@/model/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/context-menu/TimeAxisContextMenu';
 import ViewportContextMenu from '@/model/context-menu/ViewportContextMenu';
 import { DrawingType } from '@/model/datasource/Drawing';
-import TVAClerk from '@/model/history/TVAClerk';
 import Sketcher from '@/model/sketchers/Sketcher';
 import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
 import Viewport from '@/model/viewport/Viewport';
 import { CSSProperties, reactive } from 'vue';
 import { Options, Vue } from 'vue-class-component';
-import { Prop, ProvideReactive } from 'vue-property-decorator';
+import { Prop, ProvideReactive, Ref } from 'vue-property-decorator';
 
 export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: Map<DrawingType, Sketcher> };
 
@@ -187,6 +192,10 @@ export default class ChartWidget extends Vue {
 
   private onMouseLeave(): void {
     this.$el.blur();
+  }
+
+  private onPaneSizeChanged(e: PanesSizeChangeEvent): void {
+    this.controller.onPaneSizeChanged(e);
   }
 
   private onKeyDown(e: KeyboardEvent): void {

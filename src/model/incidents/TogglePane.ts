@@ -11,7 +11,6 @@ export interface TogglePaneOptions extends HistoricalIncidentOptions {
 }
 
 export default class TogglePane extends AbstractHistoricalIncident<TogglePaneOptions> {
-  private panesSizes: number[] = [];
   // eslint-disable-next-line no-useless-constructor
   public constructor(options: TogglePaneOptions) {
     super(options);
@@ -30,30 +29,21 @@ export default class TogglePane extends AbstractHistoricalIncident<TogglePaneOpt
     }
   }
 
+  protected inverseIncident(): void {
+    this.applyIncident();
+  }
+
   private show(): void {
     const { panes, paneIndex } = this.options;
     const targetPane = panes[paneIndex];
 
     targetPane.visible = true;
-    for (const pane of panes) {
-      pane.actualSize = this.panesSizes.shift();
-    }
   }
 
   private hide(): void {
     const { panes, paneIndex } = this.options;
     const targetPane = panes[paneIndex];
 
-    this.panesSizes = [];
-    for (const pane of panes) {
-      this.panesSizes.push(pane.actualSize || 0);
-    }
-
     targetPane.visible = false;
-    targetPane.actualSize = undefined;
-  }
-
-  protected inverseIncident(): void {
-    this.apply();
   }
 }

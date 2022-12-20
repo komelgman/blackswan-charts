@@ -126,7 +126,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     let headRef = storage.head?.value[0].ref;
     for (const entry of entries) {
       if (!headRef) {
-        storage.unshift(this.createExternalEntry(paneId, entry));
+        storage.push(this.createExternalEntry(paneId, entry));
         headRef = storage.head?.value[0].ref;
       } else {
         storage.insertBefore(headRef, this.createExternalEntry(paneId, entry));
