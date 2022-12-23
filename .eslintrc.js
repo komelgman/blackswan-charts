@@ -12,12 +12,8 @@ module.exports = {
     ecmaVersion: 2020,
   },
   rules: {
-    '@typescript-eslint/no-inferrable-types': 0,
-
     'no-shadow': 0,
     'no-param-reassign': 0,
-    '@typescript-eslint/no-shadow': ['error'],
-
     'class-methods-use-this': 0,
     'no-continue': 0,
     'no-restricted-globals': 0,
@@ -39,7 +35,10 @@ module.exports = {
     ],
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
     '@typescript-eslint/ban-ts-ignore': 0,
+    '@typescript-eslint/no-inferrable-types': 0,
+    '@typescript-eslint/no-shadow': ['error'],
   },
   overrides: [
     {
