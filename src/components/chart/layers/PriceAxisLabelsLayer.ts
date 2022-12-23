@@ -1,6 +1,7 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
 import makeFont from '@/misc/make-font';
-import PriceAxis, { InvertedValue } from '@/model/axis/PriceAxis';
+import type PriceAxis from '@/model/axis/PriceAxis';
+import type { InvertedValue } from '@/model/axis/PriceAxis';
 import { computed, watch } from 'vue';
 
 export const PRICE_LABEL_PADDING = 8;

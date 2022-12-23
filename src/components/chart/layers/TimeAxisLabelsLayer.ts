@@ -1,6 +1,6 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
 import makeFont from '@/misc/make-font';
-import TimeAxis from '@/model/axis/TimeAxis';
+import type TimeAxis from '@/model/axis/TimeAxis';
 import { computed, watch } from 'vue';
 
 export default class TimeAxisLabelsLayer extends Layer {

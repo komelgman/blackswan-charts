@@ -1,7 +1,7 @@
 /**
  * Generates a font string, which can be used to set in canvas' font property.
  */
-import { TextStyle } from '@/model/ChartStyle';
+import type { TextStyle } from '@/model/ChartStyle';
 
 export default function makeFont(textOptions: TextStyle): string {
   const style = textOptions.fontStyle ? `${textOptions.fontStyle} ` : '';

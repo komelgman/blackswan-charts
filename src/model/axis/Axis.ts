@@ -1,10 +1,10 @@
 import { clone, merge } from '@/misc/strict-type-checks';
-import AxisOptions from '@/model/axis/AxisOptions';
+import type AxisOptions from '@/model/axis/AxisOptions';
 import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
-import { TextStyle } from '@/model/ChartStyle';
-import { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
-import TVAClerk from '@/model/history/TVAClerk';
-import { LogicSize, Range } from '@/model/type-defs';
+import type { TextStyle } from '@/model/ChartStyle';
+import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import type TVAClerk from '@/model/history/TVAClerk';
+import type { LogicSize, Range } from '@/model/type-defs';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
   private readonly rangeValue: Range<T> = { from: -1 as T, to: 1 as T };

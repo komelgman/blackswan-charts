@@ -1,4 +1,5 @@
-import { LineFillStyle, LineStyle } from '@/model/datasource/line/type-defs';
+import { LineFillStyle } from '@/model/datasource/line/type-defs';
+import type { LineStyle } from '@/model/datasource/line/type-defs';
 
 export function setLineStyle(ctx: CanvasRenderingContext2D, style: LineStyle): void {
   let dashPattern: number[];

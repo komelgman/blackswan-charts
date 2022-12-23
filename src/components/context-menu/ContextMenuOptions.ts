@@ -1,5 +1,5 @@
-import { Point } from '@/model/type-defs';
-import { CSSProperties } from 'vue';
+import type { Point } from '@/model/type-defs';
+import type { CSSProperties } from 'vue';
 
 export declare type TextIcon = { type: 'text', text: string }
 export declare type ImageIcon = { type: 'image', image: string }

@@ -1,6 +1,7 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
-import PriceAxis, { InvertedValue } from '@/model/axis/PriceAxis';
-import TimeAxis from '@/model/axis/TimeAxis';
+import type PriceAxis from '@/model/axis/PriceAxis';
+import type { InvertedValue } from '@/model/axis/PriceAxis';
+import type TimeAxis from '@/model/axis/TimeAxis';
 import { drawHorizontalLine, drawVerticalLine } from '@/model/datasource/line/line-functions';
 import { watch } from 'vue';
 

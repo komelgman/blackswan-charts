@@ -63,26 +63,28 @@ import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
 import ContextMenu from '@/components/context-menu/ContextMenu.vue';
 import contextMenuDirective from '@/components/context-menu/ContextMenuDirective';
-import { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
+import type { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import { BoxLayout, Divider, Multipane } from '@/components/layout';
-import { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
-import { clone, DeepPartial, merge } from '@/misc/strict-type-checks';
-import PriceAxis from '@/model/axis/PriceAxis';
+import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
+import type { DeepPartial } from '@/misc/strict-type-checks';
+import { clone, merge } from '@/misc/strict-type-checks';
+import type PriceAxis from '@/model/axis/PriceAxis';
 import ChartController from '@/model/ChartController';
-import ChartState from '@/model/ChartState';
-import { ChartStyle } from '@/model/ChartStyle';
+import type ChartState from '@/model/ChartState';
+import type { ChartStyle } from '@/model/ChartStyle';
 import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
 import PriceAxisContextMenu from '@/model/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/context-menu/TimeAxisContextMenu';
 import ViewportContextMenu from '@/model/context-menu/ViewportContextMenu';
-import { DrawingType } from '@/model/datasource/Drawing';
-import Sketcher from '@/model/sketchers/Sketcher';
+import type { DrawingType } from '@/model/datasource/Drawing';
+import type Sketcher from '@/model/sketchers/Sketcher';
 import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
-import Viewport from '@/model/viewport/Viewport';
-import { CSSProperties, reactive } from 'vue';
+import type Viewport from '@/model/viewport/Viewport';
+import type { CSSProperties } from 'vue';
+import { reactive } from 'vue';
 import { Options, Vue } from 'vue-class-component';
-import { Prop, ProvideReactive, Ref } from 'vue-property-decorator';
+import { Prop, Provide } from 'vue-property-decorator';
 
 export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: Map<DrawingType, Sketcher> };
 
@@ -105,15 +107,15 @@ export default class ChartWidget extends Vue {
   @Prop()
   private options!: ChartOptions;
   private controller!: ChartController;
-  @ProvideReactive()
+  @Provide({ reactive: true })
   private chartStyle!: ChartStyle;
-  @ProvideReactive()
+  @Provide({ reactive: true })
   private chartState!: ChartState;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private contextMenuMap: WeakMap<any, ContextMenuOptionsProvider> = new WeakMap<any, ContextMenuOptionsProvider>();
 
-  @ProvideReactive()
+  @Provide({ reactive: true })
   private sketchers!: Map<DrawingType, Sketcher>;
 
   public created(): void {

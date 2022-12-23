@@ -1,8 +1,8 @@
 import makeFont from '@/misc/make-font';
 import AbstractInvalidator from '@/model/axis/label/AbstractInvalidator';
-import { LabelOptions } from '@/model/axis/label/LabelOptions';
+import type { LabelOptions } from '@/model/axis/label/LabelOptions';
 import type PriceAxis from '@/model/axis/PriceAxis';
-import { LogicSize, Price } from '@/model/type-defs';
+import type { LogicSize, Price } from '@/model/type-defs';
 import { computed, watch } from 'vue';
 
 const SCALES = [0.05, 0.1, 0.2, 0.25, 0.5, 0.8, 1, 2, 5];

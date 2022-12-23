@@ -4,14 +4,14 @@
 
 <script lang="ts">
 import ChartWidget from '@/components/chart/ChartWidget.vue';
-import { DeepPartial } from '@/misc/strict-type-checks';
-import ChartController from '@/model/ChartController';
-import { ChartStyle } from '@/model/ChartStyle';
 import DataSource from '@/model/datasource/DataSource';
-import { DrawingType } from '@/model/datasource/Drawing';
-import Sketcher from '@/model/sketchers/Sketcher';
 import { Options, Vue } from 'vue-class-component';
 import { Ref } from 'vue-property-decorator';
+import type { DeepPartial } from '@/misc/strict-type-checks';
+import type ChartController from '@/model/ChartController';
+import type { ChartStyle } from '@/model/ChartStyle';
+import type { DrawingType } from '@/model/datasource/Drawing';
+import type Sketcher from '@/model/sketchers/Sketcher';
 
 @Options({
   components: {

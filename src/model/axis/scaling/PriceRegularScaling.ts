@@ -1,6 +1,6 @@
-import { Cloneable } from '@/misc/strict-type-checks';
-import { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
-import { Price } from '@/model/type-defs';
+import type { Cloneable } from '@/misc/strict-type-checks';
+import type { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
+import type { Price } from '@/model/type-defs';
 
 export default class PriceRegularScaling implements PriceScalingFunction, Cloneable<PriceScalingFunction> {
   public translate(worldCoordinate: Price): number {

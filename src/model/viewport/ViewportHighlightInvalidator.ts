@@ -1,8 +1,8 @@
-import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import DataSource from '@/model/datasource/DataSource';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { Point } from '@/model/type-defs';
-import Viewport from '@/model/viewport/Viewport';
+import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import type DataSource from '@/model/datasource/DataSource';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { Point } from '@/model/type-defs';
+import type Viewport from '@/model/viewport/Viewport';
 import { toRaw } from 'vue';
 
 export default class ViewportHighlightInvalidator {

@@ -1,5 +1,5 @@
-import { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import Viewport from '@/model/viewport/Viewport';
+import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
+import type Viewport from '@/model/viewport/Viewport';
 
 export default class ViewportContextMenu implements ContextMenuOptionsProvider {
   private viewport: Viewport;

@@ -1,6 +1,6 @@
 import PriceLog10Scaling from '@/model/axis/scaling/PriceLog10Scaling';
 import PriceRegularScaling from '@/model/axis/scaling/PriceRegularScaling';
-import { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
+import type { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
 
 export default interface PriceScale {
   title: string;

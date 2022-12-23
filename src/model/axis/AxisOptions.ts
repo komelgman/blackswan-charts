@@ -1,5 +1,5 @@
-import { TextStyle } from '@/model/ChartStyle';
-import { LogicSize, Range } from '@/model/type-defs';
+import type { TextStyle } from '@/model/ChartStyle';
+import type { LogicSize, Range } from '@/model/type-defs';
 
 export default interface AxisOptions<T> {
   range?: Range<T>;

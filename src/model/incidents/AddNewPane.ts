@@ -1,15 +1,14 @@
-import { PaneDescriptor, PaneOptions } from '@/components/layout';
+import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import PriceAxis from '@/model/axis/PriceAxis';
-import TimeAxis from '@/model/axis/TimeAxis';
-import { ChartStyle } from '@/model/ChartStyle';
-import DataSource from '@/model/datasource/DataSource';
-import { DrawingType } from '@/model/datasource/Drawing';
-import {
-  AbstractHistoricalIncident,
-  HistoricalIncidentOptions,
-} from '@/model/history/HistoricalIncident';
-import Sketcher from '@/model/sketchers/Sketcher';
-import Viewport, { ViewportOptions } from '@/model/viewport/Viewport';
+import type TimeAxis from '@/model/axis/TimeAxis';
+import type { ChartStyle } from '@/model/ChartStyle';
+import type DataSource from '@/model/datasource/DataSource';
+import type { DrawingType } from '@/model/datasource/Drawing';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
+import type Sketcher from '@/model/sketchers/Sketcher';
+import Viewport from '@/model/viewport/Viewport';
+import type { ViewportOptions } from '@/model/viewport/Viewport';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;

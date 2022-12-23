@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { Thickness } from '@/components/layout';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 

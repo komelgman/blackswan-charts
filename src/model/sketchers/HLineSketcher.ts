@@ -1,15 +1,15 @@
-import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
+import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
+import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { HandleId } from '@/model/datasource/Drawing';
-import { LineStyle } from '@/model/datasource/line/type-defs';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { HandleId } from '@/model/datasource/Drawing';
+import type { LineStyle } from '@/model/datasource/line/type-defs';
 import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 import HLine from '@/model/sketchers/graphics/HLine';
 import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
-import { Price } from '@/model/type-defs';
-import { DragHandle } from '@/model/viewport/DragHandle';
-import Viewport from '@/model/viewport/Viewport';
+import type { Price } from '@/model/type-defs';
+import type { DragHandle } from '@/model/viewport/DragHandle';
+import type Viewport from '@/model/viewport/Viewport';
 import { toRaw } from 'vue';
 
 export interface HLineOptions {

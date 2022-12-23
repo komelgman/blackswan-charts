@@ -1,6 +1,6 @@
 <script lang="tsx">
-import { CheckboxMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
-import { VNode } from 'vue';
+import type { CheckboxMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
+import type { VNode } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 

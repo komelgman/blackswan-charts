@@ -1,4 +1,4 @@
-import { TimePeriod, UTCTimestamp } from '@/model/type-defs';
+import type { TimePeriod, UTCTimestamp } from '@/model/type-defs';
 
 export interface TimeSeriesOptions {
   start: UTCTimestamp;

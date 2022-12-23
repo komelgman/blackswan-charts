@@ -1,5 +1,5 @@
-import { LineOptions, LineStyle } from '@/model/datasource/line/type-defs';
-import { Price, UTCTimestamp } from '@/model/type-defs';
+import type { LineOptions, LineStyle } from '@/model/datasource/line/type-defs';
+import type { Price, UTCTimestamp } from '@/model/type-defs';
 
 // * sample tuple
 // function distanceFromOrigin([x, y]: [number, number]) {

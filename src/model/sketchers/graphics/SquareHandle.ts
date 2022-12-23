@@ -1,7 +1,7 @@
-import { DrawingHandle } from '@/model/datasource/Drawing';
+import type { DrawingHandle } from '@/model/datasource/Drawing';
 import { setLineStyle } from '@/model/datasource/line/line-functions';
-import { RectStyle } from '@/model/datasource/line/type-defs';
-import { Point } from '@/model/type-defs';
+import type { RectStyle } from '@/model/datasource/line/type-defs';
+import type { Point } from '@/model/type-defs';
 
 export default class SquareHandle implements DrawingHandle {
   private readonly nonLockedCursor: string;

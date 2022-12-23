@@ -13,17 +13,11 @@
 </template>
 
 <script lang="ts">
-import {
-  BoxLayout,
-  Direction,
-  Divider,
-  PaneDescriptor,
-  ResizeHandle,
-  ResizeHandleMoveEvent,
-} from '@/components/layout';
-import { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
+import { BoxLayout, Direction, Divider, ResizeHandle } from '@/components/layout';
+import type { PaneDescriptor, ResizeHandleMoveEvent } from '@/components/layout';
+import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import ResizeObserver from 'resize-observer-polyfill';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop, Ref, Watch } from 'vue-property-decorator';
 
@@ -91,8 +85,8 @@ export default class Multipane<T> extends Vue {
 
   private sortedPaneElements(): HTMLElement[] {
     return this.paneElements
-      ? this.paneElements.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
-      : [];
+        ? this.paneElements.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
+        : [];
   }
 
   created(): void {
@@ -109,17 +103,17 @@ export default class Multipane<T> extends Vue {
 
   @Watch('visibleItems')
   private visibleItemsChanged(): void {
-    console.debug('multipane.visibleItemsChanged')
+    console.debug('multipane.visibleItemsChanged');
     this.invalidate();
   }
 
   private resizeObserverCallback(): void {
-    console.debug('multipane.resizeObserverCallback')
+    console.debug('multipane.resizeObserverCallback');
     this.invalidate();
   }
 
   public invalidate(): void {
-    console.debug('multipane.invalidate')
+    console.debug('multipane.invalidate');
     if (this.valid) {
       this.valid = false;
       this.$nextTick(this.adjustPanesSizes);
@@ -128,7 +122,7 @@ export default class Multipane<T> extends Vue {
 
   private adjustPanesSizes(): void {
     this.valid = true;
-    console.debug('multipane.adjustPanesSizes')
+    console.debug('multipane.adjustPanesSizes');
 
     const availableSize = this.getSize(this.$el);
     const panesInfo: PaneSize[] = [];
@@ -177,8 +171,8 @@ export default class Multipane<T> extends Vue {
 
       if (maximumSize < Number.MAX_VALUE) {
         maximumSize = paneDesc.maxSize === Number.MAX_VALUE
-          ? Number.MAX_VALUE
-          : maximumSize + paneDesc.maxSize;
+            ? Number.MAX_VALUE
+            : maximumSize + paneDesc.maxSize;
       }
     }
 
@@ -323,7 +317,7 @@ export default class Multipane<T> extends Vue {
       const decItem: PaneDescriptor<T> = items[decPaneIndex];
       const incItem: PaneDescriptor<T> = items[incPaneIndex];
       if (decItem.size === undefined || incItem.size === undefined
-        || decItem.minSize === undefined || incItem.maxSize === undefined) {
+          || decItem.minSize === undefined || incItem.maxSize === undefined) {
         throw new Error('oops');
       }
 

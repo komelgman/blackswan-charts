@@ -1,8 +1,8 @@
 import makeFont from '@/misc/make-font';
 import AbstractInvalidator from '@/model/axis/label/AbstractInvalidator';
-import { LabelOptions } from '@/model/axis/label/LabelOptions';
+import type { LabelOptions } from '@/model/axis/label/LabelOptions';
 import type TimeAxis from '@/model/axis/TimeAxis';
-import { LogicSize, UTCTimestamp } from '@/model/type-defs';
+import type { LogicSize, UTCTimestamp } from '@/model/type-defs';
 import { computed, watch } from 'vue';
 
 const SECOND = 1000;

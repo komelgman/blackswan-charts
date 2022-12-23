@@ -1,5 +1,5 @@
-import { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import TimeAxis from '@/model/axis/TimeAxis';
+import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
+import type TimeAxis from '@/model/axis/TimeAxis';
 
 export default class TimeAxisContextMenu implements ContextMenuOptionsProvider {
   private axis: TimeAxis;

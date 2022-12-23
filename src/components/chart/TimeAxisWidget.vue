@@ -11,16 +11,13 @@
 
 <script lang="ts">
 import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
-import LayeredCanvas, {
-  DragMoveEvent,
-  ResizeEvent,
-  ZoomEvent,
-} from '@/components/layered-canvas/LayeredCanvas.vue';
-import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
+import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
+import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
+import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import TimeLabelsInvalidator from '@/model/axis/label/TimeLabelsInvalidator';
-import TimeAxis from '@/model/axis/TimeAxis';
-import { PropType } from 'vue';
+import type TimeAxis from '@/model/axis/TimeAxis';
+import type { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 

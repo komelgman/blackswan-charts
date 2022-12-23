@@ -1,13 +1,12 @@
-import { DeepPartial, isEmpty, merge } from '@/misc/strict-type-checks';
+import { isEmpty, merge } from '@/misc/strict-type-checks';
+import type { DeepPartial } from '@/misc/strict-type-checks';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { DrawingDescriptor } from '@/model/datasource/Drawing';
-import {
-  AbstractHistoricalIncident,
-  HistoricalIncidentOptions,
-} from '@/model/history/HistoricalIncident';
-import { IsNexusIncident } from '@/model/history/TVAProtocol';
-import { CanMergeWith } from '@/model/options/CanMergeWith';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { DrawingDescriptor } from '@/model/datasource/Drawing';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
+import type { IsNexusIncident } from '@/model/history/TVAProtocol';
+import type { CanMergeWith } from '@/model/options/CanMergeWith';
 
 export interface UpdateOptions extends HistoricalIncidentOptions {
   entry: DataSourceEntry;

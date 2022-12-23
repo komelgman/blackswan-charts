@@ -1,9 +1,7 @@
-import { PaneDescriptor } from '@/components/layout';
-import {
-  AbstractHistoricalIncident,
-  HistoricalIncidentOptions,
-} from '@/model/history/HistoricalIncident';
-import Viewport from '@/model/viewport/Viewport';
+import type { PaneDescriptor } from '@/components/layout';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
+import type Viewport from '@/model/viewport/Viewport';
 
 export interface RemovePaneOptions extends HistoricalIncidentOptions {
   paneIndex: number;

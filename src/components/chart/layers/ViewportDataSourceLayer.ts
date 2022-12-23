@@ -1,9 +1,8 @@
 import Layer from '@/components/layered-canvas/layers/Layer';
-import { Inverted, InvertedValue } from '@/model/axis/PriceAxis';
-import DataSource from '@/model/datasource/DataSource';
-import DataSourceChangeEventListener, {
-  ChangeReasons,
-} from '@/model/datasource/DataSourceChangeEventListener';
+import type { Inverted, InvertedValue } from '@/model/axis/PriceAxis';
+import type DataSource from '@/model/datasource/DataSource';
+import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import { toRaw, watch } from 'vue';
 

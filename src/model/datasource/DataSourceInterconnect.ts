@@ -1,12 +1,11 @@
-import { PaneId } from '@/components/layout/PaneDescriptor';
+import type { PaneId } from '@/components/layout/PaneDescriptor';
 import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
-import DataSourceChangeEventListener, {
-  ChangeReasons,
-} from '@/model/datasource/DataSourceChangeEventListener';
+import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { DrawingId, DrawingReference } from '@/model/datasource/Drawing';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { DrawingId, DrawingReference } from '@/model/datasource/Drawing';
 import { toRaw } from 'vue';
 
 export default class DataSourceInterconnect {

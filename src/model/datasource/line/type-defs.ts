@@ -1,5 +1,5 @@
-import ScalingFunction from '@/model/axis/scaling/ScalingFunction';
-import { Price, Range, UTCTimestamp } from '@/model/type-defs';
+import type ScalingFunction from '@/model/axis/scaling/ScalingFunction';
+import type { Price, Range, UTCTimestamp } from '@/model/type-defs';
 
 export declare type LineWidth = 1 | 2 | 3 | 4;
 

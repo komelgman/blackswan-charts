@@ -1,12 +1,13 @@
-import Reactive, { HasPostConstruct } from '@/misc/reactive-decorator';
+import Reactive from '@/misc/reactive-decorator';
+import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import { clone } from '@/misc/strict-type-checks';
 import Axis from '@/model/axis/Axis';
-import AxisOptions from '@/model/axis/AxisOptions';
-import PriceScale from '@/model/axis/scaling/PriceScale';
+import type AxisOptions from '@/model/axis/AxisOptions';
+import type PriceScale from '@/model/axis/scaling/PriceScale';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
-import { TextStyle } from '@/model/ChartStyle';
-import TVAClerk from '@/model/history/TVAClerk';
-import { Price, Wrapped } from '@/model/type-defs';
+import type { TextStyle } from '@/model/ChartStyle';
+import type TVAClerk from '@/model/history/TVAClerk';
+import type { Price, Wrapped } from '@/model/type-defs';
 import { reactive } from 'vue';
 
 export declare type InvertedValue = 1 | -1;

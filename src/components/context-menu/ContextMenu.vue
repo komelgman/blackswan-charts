@@ -1,14 +1,16 @@
 <script lang="tsx">
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
-import { MenuItem } from '@/components/context-menu/ContextMenuOptions';
+import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
-import { EventRemover, onceDocument } from '@/misc/document-listeners';
+import type { EventRemover } from '@/misc/document-listeners';
+import { onceDocument } from '@/misc/document-listeners';
 import makeFont from '@/misc/make-font';
-import { ChartStyle } from '@/model/ChartStyle';
-import { Point } from '@/model/type-defs';
-import { CSSProperties, reactive, VNode } from 'vue';
+import type { ChartStyle } from '@/model/ChartStyle';
+import type { Point } from '@/model/type-defs';
+import type { CSSProperties, VNode } from 'vue';
+import { reactive } from 'vue';
 import { Options, Vue } from 'vue-class-component';
-import { InjectReactive } from 'vue-property-decorator';
+import { Inject } from 'vue-property-decorator';
 
 const HIDDEN_POS: Point = { x: -10000, y: 0 };
 
@@ -21,7 +23,7 @@ export default class ContextMenu extends Vue {
   private visible: boolean = false;
   private removeHideListener!: EventRemover;
 
-  @InjectReactive()
+  @Inject()
   private chartStyle!: ChartStyle;
 
   unmounted(): void {

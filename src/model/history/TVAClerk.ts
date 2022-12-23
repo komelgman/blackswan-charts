@@ -1,7 +1,4 @@
-import {
-  HistoricalIncident,
-  HistoricalIncidentLifeHooks,
-} from '@/model/history/HistoricalIncident';
+import type { HistoricalIncident, HistoricalIncidentLifeHooks } from '@/model/history/HistoricalIncident';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 
 export interface HistoricalIncidentReport {

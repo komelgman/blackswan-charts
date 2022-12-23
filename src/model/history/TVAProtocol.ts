@@ -1,9 +1,6 @@
-import {
-  HistoricalIncident,
-  HistoricalIncidentLifeHooks,
-} from '@/model/history/HistoricalIncident';
-import { CanMergeWith } from '@/model/options/CanMergeWith';
-import { Predicate } from '@/model/type-defs';
+import type { HistoricalIncident, HistoricalIncidentLifeHooks } from '@/model/history/HistoricalIncident';
+import type { CanMergeWith } from '@/model/options/CanMergeWith';
+import type { Predicate } from '@/model/type-defs';
 
 export interface IsNexusIncident {
   isNexusIncident(): boolean;

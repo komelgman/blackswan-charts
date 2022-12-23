@@ -1,4 +1,4 @@
-import { LogicSize } from '@/model/type-defs';
+import type { LogicSize } from '@/model/type-defs';
 
 export declare type LabelOptions<T> = {
   value: T,

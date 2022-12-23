@@ -12,21 +12,18 @@
 <script lang="ts">
 import PriceAxisLabelsLayer from '@/components/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisMarksLayer from '@/components/chart/layers/PriceAxisMarksLayer';
-import LayeredCanvas, {
-  DragMoveEvent,
-  ResizeEvent,
-  ZoomEvent,
-} from '@/components/layered-canvas/LayeredCanvas.vue';
-import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
+import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
+import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
+import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import { BoxLayout, Divider } from '@/components/layout';
 import PriceLabelsInvalidator from '@/model/axis/label/PriceLabelsInvalidator';
-import ChartState from '@/model/ChartState';
-import { ChartStyle } from '@/model/ChartStyle';
-import Viewport from '@/model/viewport/Viewport';
-import { PropType } from 'vue';
+import type ChartState from '@/model/ChartState';
+import type { ChartStyle } from '@/model/ChartStyle';
+import type Viewport from '@/model/viewport/Viewport';
+import type { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
-import { InjectReactive, Prop } from 'vue-property-decorator';
+import { Inject, Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas, Divider, BoxLayout },
@@ -34,9 +31,9 @@ import { InjectReactive, Prop } from 'vue-property-decorator';
 export default class PriceAxisWidget extends Vue {
   @Prop({ type: Object as PropType<Viewport>, required: true })
   private viewportModel!: Viewport;
-  @InjectReactive()
+  @Inject()
   private chartStyle!: ChartStyle;
-  @InjectReactive()
+  @Inject()
   private chartState!: ChartState;
   private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private labelsInvalidator!: PriceLabelsInvalidator;

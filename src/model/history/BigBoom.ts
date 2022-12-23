@@ -1,7 +1,5 @@
-import {
-  AbstractHistoricalIncident,
-  HistoricalIncidentOptions,
-} from '@/model/history/HistoricalIncident';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 
 export default class BigBoom extends AbstractHistoricalIncident<HistoricalIncidentOptions> {
   public constructor() {

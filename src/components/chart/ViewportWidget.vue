@@ -20,24 +20,19 @@
 import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
 import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
-import LayeredCanvas, {
-  DragMoveEvent,
-  MouseClickEvent,
-  MousePositionEvent,
-  ZoomEvent,
-} from '@/components/layered-canvas/LayeredCanvas.vue';
-import LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import { PaneId } from '@/components/layout/PaneDescriptor';
-import DataSourceChangeEventListener, {
-  ChangeReasons,
-} from '@/model/datasource/DataSourceChangeEventListener';
+import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
+import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
+import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
+import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import type { PaneId } from '@/components/layout/PaneDescriptor';
+import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
-import Viewport from '@/model/viewport/Viewport';
+import type Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
-import { PropType } from 'vue';
+import type { PropType } from '@vue/runtime-core';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 

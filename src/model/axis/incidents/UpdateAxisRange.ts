@@ -1,12 +1,10 @@
 import type Axis from '@/model/axis/Axis';
-import AxisOptions from '@/model/axis/AxisOptions';
-import {
-  AbstractHistoricalIncident,
-  HistoricalIncidentOptions,
-} from '@/model/history/HistoricalIncident';
-import { IsNexusIncident } from '@/model/history/TVAProtocol';
-import { CanMergeWith } from '@/model/options/CanMergeWith';
-import { Range } from '@/model/type-defs';
+import type AxisOptions from '@/model/axis/AxisOptions';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
+import type { IsNexusIncident } from '@/model/history/TVAProtocol';
+import type { CanMergeWith } from '@/model/options/CanMergeWith';
+import type { Range } from '@/model/type-defs';
 
 export interface UpdateRangeOptions<T extends number> extends HistoricalIncidentOptions {
   axis: Axis<T, AxisOptions<T>>;

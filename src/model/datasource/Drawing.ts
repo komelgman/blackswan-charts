@@ -1,8 +1,8 @@
-import { PaneId } from '@/components/layout/PaneDescriptor';
-import { InvertedValue } from '@/model/axis/PriceAxis';
-import HasCenterPos from '@/model/options/HasCenterPos';
-import HasCursor from '@/model/options/HasCursor';
-import { Point } from '@/model/type-defs';
+import type { PaneId } from '@/components/layout/PaneDescriptor';
+import type { InvertedValue } from '@/model/axis/PriceAxis';
+import type HasCenterPos from '@/model/options/HasCenterPos';
+import type HasCursor from '@/model/options/HasCursor';
+import type { Point } from '@/model/type-defs';
 
 export declare type DrawingId = string;
 export declare type ExternalDrawingId = [PaneId, DrawingId];

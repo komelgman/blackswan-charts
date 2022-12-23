@@ -1,6 +1,5 @@
-import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import LayerContextChangeListener
-  from '@/components/layered-canvas/layers/LayerContextChangeListener';
+import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import type LayerContextChangeListener from '@/components/layered-canvas/layers/LayerContextChangeListener';
 import { nextTick } from 'vue';
 
 export default abstract class Layer {

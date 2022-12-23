@@ -1,26 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PaneId } from '@/components/layout/PaneDescriptor';
-import { clone, DeepPartial, isString, merge } from '@/misc/strict-type-checks';
-import DataSourceChangeEventListener, {
-  ChangeReasons,
-} from '@/model/datasource/DataSourceChangeEventListener';
+import type { PaneId } from '@/components/layout/PaneDescriptor';
+import { clone, isString, merge } from '@/misc/strict-type-checks';
+import type { DeepPartial } from '@/misc/strict-type-checks';
+import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import DataSourceStorage from '@/model/datasource/DataSourceStorage';
-import {
-  DrawingDescriptor,
-  DrawingId,
-  DrawingOptions,
-  DrawingReference,
-} from '@/model/datasource/Drawing';
+import type { DrawingDescriptor, DrawingId, DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 import DrawingIdHelper from '@/model/datasource/DrawingIdHelper';
 import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
 import RemoveEntry from '@/model/datasource/incidents/RemoveEntry';
 import UpdateEntry from '@/model/datasource/incidents/UpdateEntry';
-import { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
-import TVAClerk from '@/model/history/TVAClerk';
-import { Predicate } from '@/model/type-defs';
+import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import type TVAClerk from '@/model/history/TVAClerk';
+import type { Predicate } from '@/model/type-defs';
 import { isProxy } from 'vue';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {

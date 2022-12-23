@@ -1,10 +1,11 @@
-import Reactive, { HasPostConstruct } from '@/misc/reactive-decorator';
+import Reactive from '@/misc/reactive-decorator';
+import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import Axis from '@/model/axis/Axis';
-import AxisOptions from '@/model/axis/AxisOptions';
+import type AxisOptions from '@/model/axis/AxisOptions';
 import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
-import { TextStyle } from '@/model/ChartStyle';
-import TVAClerk from '@/model/history/TVAClerk';
-import { UTCTimestamp } from '@/model/type-defs';
+import type { TextStyle } from '@/model/ChartStyle';
+import type TVAClerk from '@/model/history/TVAClerk';
+import type { UTCTimestamp } from '@/model/type-defs';
 
 @Reactive
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {

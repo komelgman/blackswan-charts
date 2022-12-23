@@ -1,13 +1,13 @@
-import LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import DataSourceChangeEventListener, {
-  ChangeReasons,
-} from '@/model/datasource/DataSourceChangeEventListener';
+import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
+import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { DrawingType } from '@/model/datasource/Drawing';
-import Sketcher from '@/model/sketchers/Sketcher';
-import Viewport from '@/model/viewport/Viewport';
-import { computed, toRaw, watch, WatchStopHandle } from 'vue';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { DrawingType } from '@/model/datasource/Drawing';
+import type Sketcher from '@/model/sketchers/Sketcher';
+import type Viewport from '@/model/viewport/Viewport';
+import type { WatchStopHandle } from 'vue';
+import { computed, toRaw, watch } from 'vue';
 
 export default class DataSourceInvalidator {
   private readonly viewportModel: Viewport;
