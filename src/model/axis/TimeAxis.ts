@@ -42,13 +42,13 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
 
   public translate(value: UTCTimestamp): number {
     const { from } = this.range;
-    const [scaleK, _] = this.cache;
+    const [scaleK] = this.cache;
     return (value - from) * scaleK;
   }
 
   public revert(screenPos: number): UTCTimestamp {
     const { from } = this.range;
-    const [_, unscaleK] = this.cache;
+    const [, unscaleK] = this.cache;
     return (from + unscaleK * screenPos) as UTCTimestamp;
   }
 

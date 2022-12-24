@@ -5,7 +5,7 @@ enum DataSourceChangeEventReason {
   ExternalUpdateEntry,
   RemoveEntry,
   CacheReset,
-  CacheInvalidated
+  CacheInvalidated,
 }
 
 export default DataSourceChangeEventReason;

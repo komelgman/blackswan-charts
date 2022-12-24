@@ -1,5 +1,5 @@
 export const enum ZoomType {
-  IN = -0.01, OUT = 0.01
+  IN = -0.01, OUT = 0.01,
 }
 
 /**

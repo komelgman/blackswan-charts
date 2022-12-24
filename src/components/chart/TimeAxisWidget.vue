@@ -10,6 +10,9 @@
 </template>
 
 <script lang="ts">
+import type { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
 import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
@@ -17,9 +20,6 @@ import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvas
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import TimeLabelsInvalidator from '@/model/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/axis/TimeAxis';
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas },

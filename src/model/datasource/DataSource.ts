@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { isProxy } from 'vue';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
 import { clone, isString, merge } from '@/misc/strict-type-checks';
 import type { DeepPartial } from '@/misc/strict-type-checks';
@@ -16,7 +17,6 @@ import UpdateEntry from '@/model/datasource/incidents/UpdateEntry';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { Predicate } from '@/model/type-defs';
-import { isProxy } from 'vue';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private readonly storage: DataSourceStorage;
@@ -217,6 +217,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   // todo: tva
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringToFront(ref: DrawingReference): void {
     // this.checkWeAreNotInProxy();
     // this.checkWeAreInTransaction();
@@ -237,6 +238,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   // todo: tva
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendToBack(ref: DrawingReference): void {
     // this.checkWeAreNotInProxy();
     // this.checkWeAreInTransaction();
@@ -261,6 +263,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   // todo: tva
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringForward(ref: DrawingReference): void {
     // this.checkWeAreNotInProxy();
     // this.checkWeAreInTransaction();
@@ -285,6 +288,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   // todo: tva
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendBackward(ref: DrawingReference): void {
     // this.checkWeAreNotInProxy();
     // this.checkWeAreInTransaction();

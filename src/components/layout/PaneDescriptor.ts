@@ -10,4 +10,4 @@ export default interface PaneDescriptor<T> {
 }
 
 export declare type PaneOptions<O> = Omit<PaneDescriptor<never>, 'model'> & O;
-export declare type PaneSizes = Omit<PaneDescriptor<never>, 'model'|'id'>;
+export declare type PaneSizes = Omit<PaneDescriptor<never>, 'model' | 'id'>;

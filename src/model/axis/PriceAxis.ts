@@ -1,3 +1,4 @@
+import { reactive } from 'vue';
 import Reactive from '@/misc/reactive-decorator';
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import { clone } from '@/misc/strict-type-checks';
@@ -8,7 +9,6 @@ import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
 import type { TextStyle } from '@/model/ChartStyle';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { Price, Wrapped } from '@/model/type-defs';
-import { reactive } from 'vue';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;
@@ -115,12 +115,12 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
   }
 
   public translate(value: Price): number {
-    const [virtualFrom, scaleK, _] = this.cache;
+    const [virtualFrom, scaleK] = this.cache;
     return (this.scale.func.translate(value) - virtualFrom) * scaleK;
   }
 
   public revert(screenPos: number): Price {
-    const [virtualFrom, _, unscaleK] = this.cache;
+    const [virtualFrom, , unscaleK] = this.cache;
     return this.scale.func.revert(screenPos * unscaleK + virtualFrom);
   }
 

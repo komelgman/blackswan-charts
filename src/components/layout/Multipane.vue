@@ -6,20 +6,20 @@
       </divider>
 
       <div ref="paneElements" class="pane" :data-index="index">
-        <slot :model="item.model" :paneId="item.id"></slot>
+        <slot :model="item.model" :paneId="item.id"/>
       </div>
     </template>
   </box-layout>
 </template>
 
 <script lang="ts">
-import { BoxLayout, Direction, Divider, ResizeHandle } from '@/components/layout';
-import type { PaneDescriptor, ResizeHandleMoveEvent } from '@/components/layout';
-import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import ResizeObserver from 'resize-observer-polyfill';
 import type { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop, Ref, Watch } from 'vue-property-decorator';
+import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
+import type { PaneDescriptor, ResizeHandleMoveEvent } from '@/components/layout';
+import { BoxLayout, Direction, Divider, ResizeHandle } from '@/components/layout';
 
 interface PaneSize {
   min: number;
@@ -38,15 +38,15 @@ interface Layout {
 })
 export default class Multipane<T> extends Vue {
   @Prop({ type: Array as () => PaneDescriptor<T>[], required: true })
-  items!: PaneDescriptor<T>[];
+  private items!: PaneDescriptor<T>[];
   @Prop({ type: String as PropType<Direction>, default: Direction.Vertical })
-  direction!: Direction;
+  private direction!: Direction;
   @Prop({ type: Boolean, default: false })
-  resizable!: boolean;
+  private resizable!: boolean;
   @Ref('paneElements')
-  paneElements!: HTMLElement[];
+  private paneElements!: HTMLElement[];
   @Ref('borderElements')
-  borderElements!: Divider[];
+  private borderElements!: Divider[];
 
   private resizeObserver!: ResizeObserver;
   private valid: boolean = true;
@@ -85,8 +85,8 @@ export default class Multipane<T> extends Vue {
 
   private sortedPaneElements(): HTMLElement[] {
     return this.paneElements
-        ? this.paneElements.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
-        : [];
+      ? this.paneElements.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
+      : [];
   }
 
   created(): void {
@@ -171,8 +171,8 @@ export default class Multipane<T> extends Vue {
 
       if (maximumSize < Number.MAX_VALUE) {
         maximumSize = paneDesc.maxSize === Number.MAX_VALUE
-            ? Number.MAX_VALUE
-            : maximumSize + paneDesc.maxSize;
+          ? Number.MAX_VALUE
+          : maximumSize + paneDesc.maxSize;
       }
     }
 

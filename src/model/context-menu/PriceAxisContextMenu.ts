@@ -1,3 +1,4 @@
+import { reactive, watch } from 'vue';
 import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { merge } from '@/misc/strict-type-checks';
 import UpdatePriceAxisInverted from '@/model/axis/incidents/UpdatePriceAxisInverted';
@@ -5,7 +6,6 @@ import UpdatePriceAxisScale from '@/model/axis/incidents/UpdatePriceAxisScale';
 import type PriceAxis from '@/model/axis/PriceAxis';
 import type PriceScale from '@/model/axis/scaling/PriceScale';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
-import { reactive, watch } from 'vue';
 
 export default class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private readonly axis: PriceAxis;

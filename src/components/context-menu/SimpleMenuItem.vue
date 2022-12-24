@@ -1,8 +1,8 @@
 <script lang="tsx">
-import type { SimpleMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
 import type { VNode } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
+import type { SimpleMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
 
 @Options({
   components: {},

@@ -1,3 +1,5 @@
+import { computed, reactive, watch } from 'vue';
+import type { WatchStopHandle } from 'vue';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
 import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
@@ -22,8 +24,6 @@ import UpdateChartStyle from '@/model/incidents/UpdateChartStyle';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import type Viewport from '@/model/viewport/Viewport';
 import type { ViewportOptions } from '@/model/viewport/Viewport';
-import { computed, reactive, watch } from 'vue';
-import type { WatchStopHandle } from 'vue';
 
 export default class ChartController {
   private static paneIdGen: number = 0;
@@ -47,10 +47,13 @@ export default class ChartController {
     this.timeAxis = new TimeAxis(this.tva.clerk, chartOptions.text);
     this.dataSourceInterconnect = new DataSourceInterconnect();
 
-    watch(computed((): number => this.style.text.fontSize),
+    watch(
+      computed((): number => this.style.text.fontSize),
       (v) => {
         this.state.timeWidgetHeight = v + 16;
-      }, { immediate: true });
+      },
+      { immediate: true },
+    );
   }
 
   public updateStyle(options: DeepPartial<ChartStyle>): void {

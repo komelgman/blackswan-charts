@@ -1,8 +1,8 @@
-import type { Point } from '@/model/type-defs';
 import type { CSSProperties } from 'vue';
+import type { Point } from '@/model/type-defs';
 
-export declare type TextIcon = { type: 'text', text: string }
-export declare type ImageIcon = { type: 'image', image: string }
+export declare type TextIcon = { type: 'text', text: string };
+export declare type ImageIcon = { type: 'image', image: string };
 export declare type MenuItemIcon = TextIcon | ImageIcon;
 
 export declare type SimpleMenuItemModel = {

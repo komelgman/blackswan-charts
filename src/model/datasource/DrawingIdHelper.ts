@@ -1,6 +1,6 @@
+import { toRaw } from 'vue';
 import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
-import { toRaw } from 'vue';
 
 export default class DrawingIdHelper {
   private maxValueForPrefix: Map<string, number> = new Map<string, number>();

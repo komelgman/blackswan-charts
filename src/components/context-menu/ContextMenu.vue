@@ -1,4 +1,8 @@
 <script lang="tsx">
+import type { CSSProperties, VNode } from 'vue';
+import { reactive } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Inject } from 'vue-property-decorator';
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
 import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
@@ -7,10 +11,6 @@ import { onceDocument } from '@/misc/document-listeners';
 import makeFont from '@/misc/make-font';
 import type { ChartStyle } from '@/model/ChartStyle';
 import type { Point } from '@/model/type-defs';
-import type { CSSProperties, VNode } from 'vue';
-import { reactive } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Inject } from 'vue-property-decorator';
 
 const HIDDEN_POS: Point = { x: -10000, y: 0 };
 
@@ -97,9 +97,9 @@ export default class ContextMenu extends Vue {
     return this.items.map((item) => {
       switch (item.type) {
         case 'item':
-          return <simple-item model={item}/>;
+          return <simple-item model={item} />;
         case 'checkbox':
-          return <checkbox-item model={item}/>;
+          return <checkbox-item model={item} />;
         default:
           return <span>error</span>;
       }

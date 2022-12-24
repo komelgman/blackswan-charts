@@ -1,3 +1,4 @@
+import { toRaw } from 'vue';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
 import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
@@ -6,7 +7,6 @@ import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventList
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingId, DrawingReference } from '@/model/datasource/Drawing';
-import { toRaw } from 'vue';
 
 export default class DataSourceInterconnect {
   private readonly dataSources: Map<PaneId, DataSource> = new Map();
@@ -63,6 +63,7 @@ export default class DataSourceInterconnect {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private addEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
     for (const [descriptor] of entries) {
       if (!descriptor.options.shared) {
@@ -73,6 +74,7 @@ export default class DataSourceInterconnect {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private removeEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
     for (const [descriptor] of entries) {
       if (!descriptor.options.shared) {

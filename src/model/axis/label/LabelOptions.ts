@@ -4,4 +4,4 @@ export declare type LabelOptions<T> = {
   value: T,
   caption: string,
   size: LogicSize,
-}
+};

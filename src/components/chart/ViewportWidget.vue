@@ -17,6 +17,9 @@
 </template>
 
 <script lang="ts">
+import type { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
 import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
 import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
@@ -32,9 +35,6 @@ import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
 import type Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
-import type { PropType } from '@vue/runtime-core';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas },

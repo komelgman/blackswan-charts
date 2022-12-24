@@ -10,6 +10,9 @@
 </template>
 
 <script lang="ts">
+import type { PropType } from 'vue';
+import { Options, Vue } from 'vue-class-component';
+import { Inject, Prop } from 'vue-property-decorator';
 import PriceAxisLabelsLayer from '@/components/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisMarksLayer from '@/components/chart/layers/PriceAxisMarksLayer';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
@@ -21,9 +24,6 @@ import PriceLabelsInvalidator from '@/model/axis/label/PriceLabelsInvalidator';
 import type ChartState from '@/model/ChartState';
 import type { ChartStyle } from '@/model/ChartStyle';
 import type Viewport from '@/model/viewport/Viewport';
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Inject, Prop } from 'vue-property-decorator';
 
 @Options({
   components: { LayeredCanvas, Divider, BoxLayout },

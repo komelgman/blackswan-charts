@@ -11,6 +11,7 @@ export default class PriceRegularScaling implements PriceScalingFunction, Clonea
     return (scaledCoordinate as any) as Price;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public translateInRawArray(worldData: never[][], translatedDataIndexes: number[]): void {
     // for (let i = 0; i < worldData.length; i += 1) {
     //  (worldCoordinates[i][index] as any) as Price

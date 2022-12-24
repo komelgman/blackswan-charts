@@ -7,7 +7,7 @@ export interface IsNexusIncident {
 }
 
 export const enum TVAProtocolSign {
-  NotSigned, Rejected, Approved
+  NotSigned, Rejected, Approved,
 }
 
 export default class TVAProtocol {

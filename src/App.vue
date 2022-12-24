@@ -3,10 +3,10 @@
 </template>
 
 <script lang="ts">
-import ChartWidget from '@/components/chart/ChartWidget.vue';
-import DataSource from '@/model/datasource/DataSource';
 import { Options, Vue } from 'vue-class-component';
 import { Ref } from 'vue-property-decorator';
+import ChartWidget from '@/components/chart/ChartWidget.vue';
+import DataSource from '@/model/datasource/DataSource';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import type ChartController from '@/model/ChartController';
 import type { ChartStyle } from '@/model/ChartStyle';
@@ -87,6 +87,7 @@ export default class App extends Vue {
     chartApi.createPane(this.mainDs, { id: 'mainPane', size: 150 }); // use provided id
     chartApi.clearHistory();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const secondPane = chartApi.createPane(new DataSource([
       {
         id: 'hline1',

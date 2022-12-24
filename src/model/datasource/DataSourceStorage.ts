@@ -80,7 +80,7 @@ export default class DataSourceStorage {
       value: entry,
       prev: prevEntry,
       next: nextEntry,
-    }
+    };
 
     if (this.tail === prevEntry) {
       this.tail = newEntry;
@@ -107,7 +107,7 @@ export default class DataSourceStorage {
       value: entry,
       prev: prevEntry,
       next: nextEntry,
-    }
+    };
 
     if (this.head === nextEntry) {
       this.head = newEntry;

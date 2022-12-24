@@ -17,15 +17,15 @@
 </template>
 
 <script lang="ts">
+import { Prop, Ref } from 'vue-property-decorator';
+import { Options, Vue } from 'vue-class-component';
+import type { PropType } from 'vue';
+import ResizeObserver from 'resize-observer-polyfill';
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import type Layer from '@/components/layered-canvas/layers/Layer';
 import type { EventRemover } from '@/misc/document-listeners';
 import { onceDocument, onDocument } from '@/misc/document-listeners';
 import type { Point } from '@/model/type-defs';
-import ResizeObserver from 'resize-observer-polyfill';
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop, Ref } from 'vue-property-decorator';
 
 export interface MousePositionEvent {
   x: number;

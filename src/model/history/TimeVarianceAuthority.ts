@@ -115,5 +115,5 @@ export default class TimeVarianceAuthority {
     if (report.sign) {
       protocol.trySign();
     }
-  }
+  };
 }

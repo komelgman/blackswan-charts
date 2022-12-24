@@ -1,3 +1,4 @@
+import { toRaw, watch } from 'vue';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
 import Layer from '@/components/layered-canvas/layers/Layer';
 import makeFont from '@/misc/make-font';
@@ -8,7 +9,6 @@ import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEven
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { Predicate } from '@/model/type-defs';
 import type Viewport from '@/model/viewport/Viewport';
-import { toRaw, watch } from 'vue';
 
 export default class PriceAxisMarksLayer extends Layer {
   private readonly viewport: Viewport;
@@ -52,7 +52,7 @@ export default class PriceAxisMarksLayer extends Layer {
     native.textAlign = 'end';
     native.font = makeFont(textStyle);
 
-    const validMarks: Predicate<DataSourceEntry> = ([descriptor, drawing, mark]): boolean => {
+    const validMarks: Predicate<DataSourceEntry> = ([descriptor, , mark]): boolean => {
       const { options } = descriptor;
 
       return options.type === 'HLine'

@@ -1,3 +1,4 @@
+import { toRaw } from 'vue';
 import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
@@ -10,7 +11,6 @@ import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
 import type { Price } from '@/model/type-defs';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
-import { toRaw } from 'vue';
 
 export interface HLineOptions {
   def: Price;
@@ -68,6 +68,7 @@ export default class HLineSketcher extends AbstractSketcher {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
       || entry[0].options.type !== 'HLine'
@@ -89,6 +90,7 @@ export default class HLineSketcher extends AbstractSketcher {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public contextmenu(dataSourceEntry: DataSourceEntry): MenuItem[] {
     return [];
   }

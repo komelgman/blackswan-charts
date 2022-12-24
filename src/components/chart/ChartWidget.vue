@@ -22,7 +22,7 @@
             :viewport-model="props.model"
             v-contextmenu="{
               model: getViewportContextMenu(props.model),
-              instance: $refs['contextmenu']
+              instance: $refs['contextmenu'],
             }"
           />
 
@@ -32,7 +32,7 @@
             :viewport-model="props.model"
             v-contextmenu="{
               model: getPriceAxisContextMenu(props.model.priceAxis),
-              instance: $refs['contextmenu']
+              instance: $refs['contextmenu'],
             }"
           />
         </box-layout>
@@ -46,18 +46,22 @@
         :time-axis="controller.timeAxis"
         v-contextmenu="{
           model: getTimeAxisContextMenu(),
-          instance: $refs['contextmenu']
+          instance: $refs['contextmenu'],
         }"
       />
 
       <divider/>
 
-      <div class="pane" :style="timeLineButtonPaneStyle"></div>
+      <div class="pane" :style="timeLineButtonPaneStyle"/>
     </box-layout>
   </box-layout>
 </template>
 
 <script lang="ts">
+import type { CSSProperties } from 'vue';
+import { Prop, Provide } from 'vue-property-decorator';
+import { Options, Vue } from 'vue-class-component';
+import { reactive } from 'vue';
 import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
 import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
@@ -81,10 +85,6 @@ import type { DrawingType } from '@/model/datasource/Drawing';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
 import type Viewport from '@/model/viewport/Viewport';
-import type { CSSProperties } from 'vue';
-import { reactive } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop, Provide } from 'vue-property-decorator';
 
 export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: Map<DrawingType, Sketcher> };
 

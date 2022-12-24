@@ -1,14 +1,14 @@
 <template>
   <div :class="classnames">
-    <slot></slot>
+    <slot/>
   </div>
 </template>
 
 <script lang="ts">
-import { Direction } from '@/components/layout';
 import type { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
+import { Direction } from '@/components/layout';
 
 @Options({})
 export default class BoxLayout extends Vue {

@@ -7,7 +7,7 @@ export const enum LineBound {
   NoBound,
   BoundStart,
   BoundEnd,
-  Both
+  Both,
 }
 
 export const enum LineFillStyle {
