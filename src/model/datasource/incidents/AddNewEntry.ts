@@ -1,13 +1,13 @@
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type DataSourceStorage from '@/model/datasource/DataSourceStorage';
+import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DrawingDescriptor } from '@/model/datasource/Drawing';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 
 export interface AddNewEntryOptions extends HistoricalIncidentOptions {
   descriptor: DrawingDescriptor<unknown>;
-  storage: DataSourceStorage;
+  storage: DataSourceEntriesStorage;
   addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
 }
 

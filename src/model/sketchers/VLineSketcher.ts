@@ -84,7 +84,7 @@ export default class VLineSketcher extends AbstractSketcher {
       // only one handle and drag by body equals drag by handles.center
       const def = timeAxis.revert(timeAxis.translate(options.data.def) - e.dx);
 
-      rawDS.update(entry[0].ref, { options: { data: { def } } });
+      rawDS.update(entry[0].ref, { data: { def } });
     };
   }
 

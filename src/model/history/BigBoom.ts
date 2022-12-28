@@ -7,7 +7,7 @@ export default class BigBoom extends AbstractHistoricalIncident<HistoricalIncide
   }
 
   protected applyIncident(): void {
-    console.debug('Biiig Boom!!');
+    // do nothing
   }
 
   protected inverseIncident(): void {

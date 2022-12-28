@@ -1,13 +1,13 @@
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type DataSourceStorage from '@/model/datasource/DataSourceStorage';
+import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DrawingReference } from '@/model/datasource/Drawing';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 
 export interface RemoveEntryOptions extends HistoricalIncidentOptions {
   entry: DataSourceEntry;
-  storage: DataSourceStorage;
+  storage: DataSourceEntriesStorage;
   addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
 }
 

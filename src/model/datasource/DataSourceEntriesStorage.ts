@@ -8,7 +8,7 @@ export interface StorageEntry {
   next?: StorageEntry;
 }
 
-export default class DataSourceStorage {
+export default class DataSourceEntriesStorage {
   private readonly refToEntry: Map<string, StorageEntry>;
   public head: StorageEntry | undefined;
   public tail: StorageEntry | undefined;
@@ -22,7 +22,12 @@ export default class DataSourceStorage {
       value,
     };
 
-    this.refToEntry.set(this.refToMapId(newEntry.value[0].ref), newEntry);
+    const key: string = this.refToMapId(value[0].ref);
+    if (this.refToEntry.has(key)) {
+      throw new Error(`Entry already exists: ${key}`);
+    }
+
+    this.refToEntry.set(key, newEntry);
     if (!this.head) {
       this.head = newEntry;
     }
@@ -32,8 +37,6 @@ export default class DataSourceStorage {
       newEntry.prev = this.tail;
     }
 
-    console.debug('DataSourceStorage.push', value[0].ref);
-
     this.tail = newEntry;
   }
 
@@ -41,8 +44,6 @@ export default class DataSourceStorage {
     if (!this.tail) {
       throw new Error('Illegal state: this.tail is empty');
     }
-
-    console.debug('DataSourceStorage.pop', this.tail.value[0].ref);
 
     return this.remove(this.tail.value[0].ref)[0];
   }
@@ -53,10 +54,6 @@ export default class DataSourceStorage {
     } else {
       this.push(value);
     }
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    console.debug('DataSourceStorage.unshift (add head) entry', this.head.value[0].ref);
   }
 
   public shift(): DataSourceEntry {
@@ -64,20 +61,23 @@ export default class DataSourceStorage {
       throw new Error('Illegal state: this.head is empty');
     }
 
-    console.debug('DataSourceStorage.shift (delete head) entry', this.head.value[0].ref);
-
     return this.remove(this.head.value[0].ref)[0];
   }
 
-  public insertAfter(prev: DrawingReference, entry: DataSourceEntry): void {
+  public insertAfter(prev: DrawingReference, value: DataSourceEntry): void {
     const prevEntry = this.refToEntry.get(this.refToMapId(prev));
     if (!prevEntry) {
-      throw new Error(`Illegal argument: prev ref not found: ${prev}`);
+      throw new Error(`Illegal argument: prev entry ref not found: ${prev}`);
+    }
+
+    const key: string = this.refToMapId(value[0].ref);
+    if (this.refToEntry.has(key)) {
+      throw new Error(`Entry already exists: ${key}`);
     }
 
     const nextEntry = prevEntry.next;
     const newEntry: StorageEntry = {
-      value: entry,
+      value,
       prev: prevEntry,
       next: nextEntry,
     };
@@ -91,20 +91,23 @@ export default class DataSourceStorage {
       newEntry.prev = newEntry;
     }
 
-    console.debug('DataSourceStorage.insertAfter', newEntry);
-
-    this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
+    this.refToEntry.set(key, newEntry);
   }
 
-  public insertBefore(next: DrawingReference, entry: DataSourceEntry): void {
+  public insertBefore(next: DrawingReference, value: DataSourceEntry): void {
     const nextEntry = this.refToEntry.get(this.refToMapId(next));
     if (!nextEntry) {
-      throw new Error(`Illegal argument: prev ref not found: ${next}`);
+      throw new Error(`Illegal argument: next entry ref not found: ${next}`);
+    }
+
+    const key: string = this.refToMapId(value[0].ref);
+    if (this.refToEntry.has(key)) {
+      throw new Error(`Entry already exists: ${key}`);
     }
 
     const prevEntry = nextEntry.prev;
     const newEntry: StorageEntry = {
-      value: entry,
+      value,
       prev: prevEntry,
       next: nextEntry,
     };
@@ -118,9 +121,7 @@ export default class DataSourceStorage {
       prevEntry.next = newEntry;
     }
 
-    console.debug('DataSourceStorage.insertBefore', [newEntry, this.head, this.tail]);
-
-    this.refToEntry.set(this.refToMapId(entry[0].ref), newEntry);
+    this.refToEntry.set(key, newEntry);
   }
 
   public remove(ref: DrawingReference): [DataSourceEntry, DrawingReference?, DrawingReference?] {
@@ -155,8 +156,6 @@ export default class DataSourceStorage {
 
     tmp.prev = undefined;
     tmp.next = undefined;
-
-    console.debug('DataSourceStorage.remove', ref);
 
     return [result, tmpPrev ? tmpPrev.value[0].ref : undefined, tmpNext ? tmpNext.value[0].ref : undefined];
   }

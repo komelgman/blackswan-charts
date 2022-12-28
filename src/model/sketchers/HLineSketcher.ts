@@ -86,7 +86,7 @@ export default class HLineSketcher extends AbstractSketcher {
       // only one handle and drag by body equals drag by handles.center
       const def = priceAxis.revert(priceAxis.translate(options.data.def) - priceAxis.inverted.value * e.dy);
 
-      rawDS.update(entry[0].ref, { options: { data: { def } } });
+      rawDS.update(entry[0].ref, { data: { def } });
     };
   }
 

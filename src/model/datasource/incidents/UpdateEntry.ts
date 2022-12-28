@@ -2,7 +2,7 @@ import { isEmpty, merge } from '@/misc/strict-type-checks';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingDescriptor } from '@/model/datasource/Drawing';
+import type { DrawingOptions } from '@/model/datasource/Drawing';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
@@ -10,7 +10,7 @@ import type { CanMergeWith } from '@/model/options/CanMergeWith';
 
 export interface UpdateOptions extends HistoricalIncidentOptions {
   entry: DataSourceEntry;
-  update: DeepPartial<DrawingDescriptor<unknown>>;
+  update: DeepPartial<Omit<DrawingOptions<unknown>, 'id'>>;
   addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
 }
 
@@ -29,14 +29,14 @@ export default class UpdateEntry
   protected applyIncident(): void {
     const { entry, update, addReason } = this.options;
     merge(entry[0], { valid: false });
-    [, this.unmerge] = merge(entry[0], update);
+    [, this.unmerge] = merge(entry[0].options, update);
 
     addReason(DataSourceChangeEventReason.UpdateEntry, [entry]);
   }
 
   protected inverseIncident(): void {
     const { entry, addReason } = this.options;
-    merge(entry[0], this.unmerge, { valid: false });
+    merge(entry[0], { options: this.unmerge, valid: false });
 
     addReason(DataSourceChangeEventReason.UpdateEntry, [entry]);
   }
@@ -55,7 +55,7 @@ export default class UpdateEntry
 
     const { update } = this.options;
     merge(update, op.options.update); // combine updates
-    merge(descriptor, this.unmerge); // restore original state
+    merge(descriptor, { options: this.unmerge, valid: false }); // restore original state
 
     return true;
   }
