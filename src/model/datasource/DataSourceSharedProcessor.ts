@@ -20,7 +20,7 @@ export default class DataSourceSharedProcessor {
   ) {
     this.dataSource = dataSource;
     this.storage = storage;
-    this.addReason = addReason;
+    this.addReason = addReason.bind(dataSource);
   }
 
   public get paneId(): PaneId {
