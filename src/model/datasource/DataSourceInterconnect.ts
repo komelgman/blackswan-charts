@@ -1,4 +1,5 @@
 import { toRaw } from 'vue';
+import type DataSourceSharedProcessor from '@/model/datasource/DataSourceSharedProcessor';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
 import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
@@ -9,40 +10,38 @@ import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingId, DrawingReference } from '@/model/datasource/Drawing';
 
 export default class DataSourceInterconnect {
-  private readonly dataSources: Map<PaneId, DataSource> = new Map();
-  private readonly paneIds: Map<DataSource, PaneId> = new Map();
+  private readonly sharedProcessors: Map<PaneId, DataSourceSharedProcessor> = new Map();
 
   public addDataSource(paneId: PaneId, dataSource: DataSource): void {
-    if (this.dataSources.has(paneId)) {
+    if (this.sharedProcessors.has(paneId)) {
       throw new Error(`Illegal state: dataSource with paneId=${paneId} already exists`);
     }
 
-    const rawDS: DataSource = toRaw(dataSource);
-    rawDS.interconnect = this;
-    rawDS.addChangeEventListener(this.dataSourceChangeEventListener);
+    const { sharedProcessor } = toRaw(dataSource);
+    sharedProcessor.paneId = paneId;
+    sharedProcessor.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
 
-    for (const [id, ds] of this.dataSources) {
-      rawDS.attachExternal(id, ds.shared(paneId));
-      ds.attachExternal(paneId, rawDS.shared(id));
+    for (const [id, dssp] of this.sharedProcessors) {
+      sharedProcessor.attachExternalEntries(id, dssp.shared(paneId));
+      dssp.attachExternalEntries(paneId, sharedProcessor.shared(id));
     }
 
-    this.dataSources.set(paneId, rawDS);
-    this.paneIds.set(rawDS, paneId);
+    this.sharedProcessors.set(paneId, sharedProcessor);
   }
 
   public removeDataSource(paneId: PaneId): void {
-    if (!this.dataSources.has(paneId)) {
+    if (!this.sharedProcessors.has(paneId)) {
       throw new Error(`Illegal state: dataSource with paneId=${paneId} doesn''t exists`);
     }
 
-    const dataSource: DataSource = this.dataSources.get(paneId) as DataSource;
-    dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
-    this.dataSources.delete(paneId);
-    this.paneIds.delete(dataSource);
+    const sharedProcessor: DataSourceSharedProcessor = this.sharedProcessors.get(paneId) as DataSourceSharedProcessor;
+    sharedProcessor.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
+    sharedProcessor.paneId = undefined;
+    this.sharedProcessors.delete(paneId);
 
-    for (const [id, ds] of this.dataSources) {
-      dataSource.detachExternal(id);
-      ds.detachExternal(paneId);
+    for (const [id, ds] of this.sharedProcessors) {
+      sharedProcessor.detachExternalEntries(id);
+      ds.detachExternalEntries(paneId);
     }
   }
 
@@ -51,7 +50,7 @@ export default class DataSourceInterconnect {
     // think about new change reason
 
     if (reasons.has(DataSourceChangeEventReason.AddEntry)) {
-      this.addEntries(reasons.get(DataSourceChangeEventReason.UpdateEntry) || [], srcDs);
+      this.addEntries(reasons.get(DataSourceChangeEventReason.AddEntry) || [], srcDs);
     }
 
     if (reasons.has(DataSourceChangeEventReason.RemoveEntry)) {
@@ -66,7 +65,7 @@ export default class DataSourceInterconnect {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private addEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
     for (const [descriptor] of entries) {
-      if (!descriptor.options.shared) {
+      if (descriptor.options.shareWith === undefined) {
         continue;
       }
 
@@ -77,7 +76,7 @@ export default class DataSourceInterconnect {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private removeEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
     for (const [descriptor] of entries) {
-      if (!descriptor.options.shared) {
+      if (descriptor.options.shareWith === undefined) {
         continue;
       }
 
@@ -86,34 +85,36 @@ export default class DataSourceInterconnect {
   }
 
   private updateEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    const sourcePainId = this.paneIds.get(toRaw(srcDs)) as PaneId;
+    const sourcePaneId = srcDs.sharedProcessor.paneId;
 
     for (const entry of entries) {
       const [descriptor] = entry;
-
-      if (!descriptor.options.shared) {
+      const { shareWith } = descriptor.options;
+      if (shareWith === undefined) {
         continue;
       }
 
       const needUpdate: Set<DataSource> = new Set<DataSource>();
       const isInternal: boolean = isString(descriptor.ref);
-      const externalRef: DrawingReference = isInternal ? [sourcePainId, descriptor.ref as DrawingId] : descriptor.ref;
+      const externalRef: DrawingReference = isInternal ? [sourcePaneId, descriptor.ref as DrawingId] : descriptor.ref;
       const internalRef: DrawingReference = isInternal ? descriptor.ref : descriptor.ref[1];
 
-      if (descriptor.options.shareWith) {
-        throw new Error('not implemented');
-        // for (const pid of descriptor.options.shareWith) {
-        //   dataSource = toRaw(this.dataSources.get(pid) as DataSource);
-        //   dataSource.externalUpdate(entryRef);
-        //   needUpdate.add(dataSource);
-        // }
-      } else {
-        for (const [, ds] of this.dataSources) {
-          const currentPaneId: PaneId = this.paneIds.get(ds) as PaneId;
-          if (sourcePainId !== currentPaneId) {
+      if (shareWith === '*') {
+        for (const [, dssp] of this.sharedProcessors) {
+          const currentPaneId: PaneId = dssp.paneId;
+          if (sourcePaneId !== currentPaneId) {
             const entryRef = externalRef[0] === currentPaneId ? internalRef : externalRef;
-            ds.externalUpdate(entryRef);
-            needUpdate.add(ds);
+            dssp.sharedUpdate(entryRef);
+            needUpdate.add(dssp.dataSource);
+          }
+        }
+      } else {
+        for (const pid of [...shareWith, externalRef[0]]) {
+          if (sourcePaneId !== pid) {
+            const dssp: DataSourceSharedProcessor = this.sharedProcessors.get(pid) as DataSourceSharedProcessor;
+            const entryRef = externalRef[0] === pid ? internalRef : externalRef;
+            dssp.sharedUpdate(entryRef);
+            needUpdate.add(dssp.dataSource);
           }
         }
       }

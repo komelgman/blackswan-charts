@@ -2,7 +2,7 @@ enum DataSourceChangeEventReason {
   OrderChanged,
   AddEntry,
   UpdateEntry,
-  ExternalUpdateEntry,
+  UpdateSharedEntry, // prevent recursive update call
   RemoveEntry,
   CacheReset,
   CacheInvalidated,

@@ -31,7 +31,6 @@ export default class VLineSketcher extends AbstractSketcher {
 
     descriptor.visibleInViewport = line.def >= range.from && line.def <= range.to;
     descriptor.valid = descriptor.visibleInViewport;
-    descriptor.options.shared = true;
 
     if (!descriptor.visibleInViewport) {
       return;

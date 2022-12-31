@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clone, merge } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/strict-type-checks';
 import DataSource from '@/model/datasource/DataSource';
 
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
@@ -81,7 +81,7 @@ describe('DataSource', () => {
       references.push(dse[0].ref);
     }
 
-    expect(getDrawingReferences()).toEqual([drawing1.id, drawing2.id, drawing3.id]);
+    expect(references).toEqual([drawing1.id, drawing2.id, drawing3.id]);
   });
 
   it('test visible() iterator', () => {
@@ -108,38 +108,38 @@ describe('DataSource', () => {
     expect(drawingReferencesFromIterator).toEqual([drawing1.id, drawing2.id]);
   });
 
-  it('test shared() iterator', () => {
-    const ds2: DataSource = new DataSource(clone([
-      merge({}, drawing1, { shared: true })[0] as any as DrawingOptions,
-      merge({}, drawing2, { shareWith: 'pane1' })[0] as any as DrawingOptions,
-      merge({}, drawing3, { shareWith: 'pane3' })[0] as any as DrawingOptions,
-    ]));
+  // it('test shared() iterator', () => {
+  //   const ds2: DataSource = new DataSource(clone([
+  //     merge({}, drawing1, { shareWith: '*' })[0] as DrawingOptions,
+  //     merge({}, drawing2, { shareWith: 'pane1' })[0] as DrawingOptions,
+  //     merge({}, drawing3, { shareWith: 'pane3' })[0] as DrawingOptions,
+  //   ]));
+  //
+  //   const drawingReferencesFromIterator: DrawingReference[] = getDrawingReferencesFromIterator(ds2.shared('pane1'));
+  //   expect(drawingReferencesFromIterator).toEqual([drawing1.id, drawing2.id]);
+  // });
 
-    const drawingReferencesFromIterator: DrawingReference[] = getDrawingReferencesFromIterator(ds2.shared('pane1'));
-    expect(drawingReferencesFromIterator).toEqual([drawing1.id, drawing2.id]);
-  });
-
-  it('test attachExternal()/detachExternal()', () => {
-    const ds2: DataSource = new DataSource(clone([
-      merge({}, drawing1, { shared: true })[0] as any as DrawingOptions,
-      merge({}, drawing2, { shareWith: 'pane1' })[0] as any as DrawingOptions,
-      merge({}, drawing3, { shareWith: 'pane3' })[0] as any as DrawingOptions,
-    ]));
-
-    ds.attachExternal('pane2', ds2.shared('pane1'));
-
-    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
-      .toEqual([['pane2', drawing2.id], ['pane2', drawing1.id], drawing1.id, drawing2.id, drawing3.id]);
-    expect(storage.head?.value[0].ref).toEqual(['pane2', drawing2.id]);
-    expect(storage.tail?.value[0].ref).toEqual(drawing3.id);
-
-    ds.detachExternal('pane2');
-
-    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
-      .toEqual([drawing1.id, drawing2.id, drawing3.id]);
-    expect(storage.head?.value[0].ref).toEqual(drawing1.id);
-    expect(storage.tail?.value[0].ref).toEqual(drawing3.id);
-  });
+  // it('test attachExternalEntries()/detachExternalEntries()', () => {
+  //   const ds2: DataSource = new DataSource(clone([
+  //     merge({}, drawing1, { shareWith: '*' })[0] as DrawingOptions,
+  //     merge({}, drawing2, { shareWith: 'pane1' })[0] as DrawingOptions,
+  //     merge({}, drawing3, { shareWith: 'pane3' })[0] as DrawingOptions,
+  //   ]));
+  //
+  //   ds.attachExternalEntries('pane2', ds2.shared('pane1'));
+  //
+  //   expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+  //     .toEqual([['pane2', drawing2.id], ['pane2', drawing1.id], drawing1.id, drawing2.id, drawing3.id]);
+  //   expect(storage.head?.value[0].ref).toEqual(['pane2', drawing2.id]);
+  //   expect(storage.tail?.value[0].ref).toEqual(drawing3.id);
+  //
+  //   ds.detachExternalEntries('pane2');
+  //
+  //   expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+  //     .toEqual([drawing1.id, drawing2.id, drawing3.id]);
+  //   expect(storage.head?.value[0].ref).toEqual(drawing1.id);
+  //   expect(storage.tail?.value[0].ref).toEqual(drawing3.id);
+  // });
 
   it('test (add|remove)ChangeEventListener()/resetCache()', () => {
     let entries: DataSourceEntry[] = [];
@@ -304,7 +304,7 @@ describe('DataSource', () => {
 
     const listenerSpy = vi.spyOn(options, 'eventListener');
     ds.addChangeEventListener(options.eventListener);
-    (getDSEntry(drawing1.id) as any as DataSourceEntry)[0].valid = true;
+    storage.get(drawing1.id)[0].valid = true;
 
     expect(getDSEntry(drawing1.id)[0].valid).toBeTruthy();
 
@@ -322,6 +322,40 @@ describe('DataSource', () => {
 
     expect(listenerSpy).toHaveBeenCalledOnce();
     expect(updatedEntries).toEqual([drawing1.id]);
+    expect(tva['current'].sign).toBeTruthy();
+  });
+
+  it('test clone() entry', () => {
+    const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
+    let clonedEntries: DrawingReference[] = [];
+    const options: any = {
+      eventListener: (reasons: ChangeReasons): void => {
+        clonedEntries = [];
+        for (const item of reasons.get(DataSourceChangeEventReason.AddEntry) || []) {
+          clonedEntries.push(item[0].ref);
+        }
+      },
+    };
+
+    const listenerSpy = vi.spyOn(options, 'eventListener');
+    const entry: DataSourceEntry<unknown> = storage.get(drawing1.id);
+
+    ds.tvaClerk = tva.clerk;
+    ds.addChangeEventListener(options.eventListener);
+    entry[0].valid = true;
+
+    ds.beginTransaction();
+    const cloned = ds.clone(entry);
+
+    expect(cloned[0].ref).toEqual('test4');
+    expect(cloned[0].options).toEqual(entry[0].options);
+    expect(cloned[0].valid).toBeFalsy();
+    expect(tva['current'].sign).toBeFalsy();
+
+    ds.endTransaction();
+
+    expect(listenerSpy).toHaveBeenCalledOnce();
+    expect(clonedEntries).toEqual(['test4']);
     expect(tva['current'].sign).toBeTruthy();
   });
 });

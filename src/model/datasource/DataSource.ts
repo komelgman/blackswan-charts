@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isProxy } from 'vue';
-import type { PaneId } from '@/components/layout/PaneDescriptor';
-import { clone, isString, merge } from '@/misc/strict-type-checks';
+import DataSourceSharedProcessor from '@/model/datasource/DataSourceSharedProcessor';
 import type { DeepPartial } from '@/misc/strict-type-checks';
+import { clone, merge } from '@/misc/strict-type-checks';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingDescriptor, DrawingId, DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 import DrawingIdHelper from '@/model/datasource/DrawingIdHelper';
 import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
@@ -19,11 +18,11 @@ import type TVAClerk from '@/model/history/TVAClerk';
 import type { Predicate } from '@/model/type-defs';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
+  public readonly sharedProcessor: DataSourceSharedProcessor;
   private readonly storage: DataSourceEntriesStorage;
   private readonly reasons: ChangeReasons = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private drawingIdHelper: DrawingIdHelper;
-  private interconnectValue: DataSourceInterconnect | undefined;
   private tvaClerkValue: TVAClerk | undefined;
   private protocolOptions: TVAProtocolOptions | undefined = undefined;
 
@@ -32,18 +31,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.initEntries(drawings);
     // sic
     this.drawingIdHelper = new DrawingIdHelper(this);
-  }
-
-  public set interconnect(value: DataSourceInterconnect) {
-    this.interconnectValue = value;
-  }
-
-  public get interconnect(): DataSourceInterconnect {
-    if (this.interconnectValue === undefined) {
-      throw new Error('Illegal State: this.interconnectValue === undefined');
-    }
-
-    return this.interconnectValue;
+    this.sharedProcessor = new DataSourceSharedProcessor(this, this.storage, this.addReason);
   }
 
   public set tvaClerk(value: TVAClerk) {
@@ -96,49 +84,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       }
 
       entry = entry.next;
-    }
-  }
-
-  * shared(external: PaneId): IterableIterator<Readonly<DataSourceEntry>> {
-    this.checkWeAreNotInProxy();
-
-    let entry = this.storage.head;
-    while (entry !== undefined) {
-      const entryValue: DataSourceEntry = entry.value;
-      const [descriptor] = entryValue;
-      const { shared, shareWith } = descriptor.options;
-
-      if (isString(descriptor.ref) && (shared || (shareWith !== undefined && shareWith.indexOf(external) > -1))) {
-        yield entryValue;
-      }
-
-      entry = entry.next;
-    }
-  }
-
-  public attachExternal(paneId: PaneId, entries: IterableIterator<Readonly<DataSourceEntry>>): void {
-    const { storage } = this;
-    let headRef = storage.head?.value[0].ref;
-    for (const entry of entries) {
-      if (!headRef) {
-        storage.push(this.createExternalEntry(paneId, entry));
-      } else {
-        storage.insertBefore(headRef, this.createExternalEntry(paneId, entry));
-      }
-
-      headRef = storage.head?.value[0].ref;
-    }
-  }
-
-  public detachExternal(paneId: PaneId): void {
-    let entry = this.storage.head;
-    while (entry !== undefined) {
-      const [descriptor] = entry.value;
-      entry = entry.next;
-
-      if (!isString(descriptor.ref) && descriptor.ref[0] === paneId) {
-        this.storage.remove(descriptor.ref);
-      }
     }
   }
 
@@ -250,7 +195,14 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    // todo: detect if it is external then clone by interconnect link
+    // because we want to create new cloned entry
+    // in the same pane which was original for it
+    // but we can't create id for this entry
+    // todo id helper should be shared (or add support for more complex ID)
+    // if (!isString(entry[0].ref)) {
+    //   send change reason
+    // }
+
     const cloned: DrawingDescriptor = clone(entry[0]);
     cloned.ref = this.getNewId(cloned.options.type);
 
@@ -368,12 +320,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.fire(reasons);
   }
 
-  public externalUpdate(ref: DrawingReference): void {
-    const entry: DataSourceEntry = this.storage.get(ref);
-    entry[0].valid = false;
-    this.addReason(DataSourceChangeEventReason.ExternalUpdateEntry, [entry]);
-  }
-
   public getNewId(type: string): DrawingId {
     return this.drawingIdHelper.getNewId(type);
   }
@@ -388,18 +334,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     const { id } = options;
     const [descriptor] = merge({ ref: id, options }, { options: { id: null } });
     return descriptor as DrawingDescriptor;
-  }
-
-  private createExternalEntry(paneId: PaneId, externalEntry: Readonly<DataSourceEntry>): DataSourceEntry {
-    const [externalDescriptor] = externalEntry;
-    if (!isString(externalDescriptor.ref)) {
-      throw new Error('Illegal argument: external entry cant be shared');
-    }
-
-    return [{
-      ref: [paneId, externalDescriptor.ref],
-      options: externalDescriptor.options,
-    }];
   }
 
   private checkWeAreNotInProxy(): void {
@@ -423,7 +357,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
       this.reasons.set(reason, newEntries);
     } else {
-      this.reasons.set(reason, entries);
+      this.reasons.set(reason, [...entries]);
     }
   }
 

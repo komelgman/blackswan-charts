@@ -54,7 +54,7 @@ export default class DataSourceInvalidator {
       ...(reasons.get(DataSourceChangeEventReason.CacheReset) || []),
       ...(reasons.get(DataSourceChangeEventReason.AddEntry) || []),
       ...(reasons.get(DataSourceChangeEventReason.UpdateEntry) || []),
-      ...(reasons.get(DataSourceChangeEventReason.ExternalUpdateEntry) || []),
+      ...(reasons.get(DataSourceChangeEventReason.UpdateSharedEntry) || []),
     ];
 
     if (entries.length || reasons.has(DataSourceChangeEventReason.RemoveEntry)) {

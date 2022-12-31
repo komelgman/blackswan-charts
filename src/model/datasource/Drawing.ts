@@ -17,8 +17,7 @@ export interface DrawingOptions<DataType = any> {
   locked: boolean;
   visible: boolean;
   title?: string;
-  shared?: boolean;
-  shareWith?: PaneId[];
+  shareWith?: '*' | PaneId[];
 }
 
 export interface DrawingDescriptor<DataType = any> {
