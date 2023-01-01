@@ -37,12 +37,12 @@ interface Layout {
   components: { BoxLayout, ResizeHandle, Divider },
 })
 export default class Multipane<T> extends Vue {
+  @Prop({ type: Boolean, default: false })
+  public resizable!: boolean;
+  @Prop({ type: String as PropType<Direction>, default: Direction.Vertical })
+  public direction!: Direction;
   @Prop({ type: Array as () => PaneDescriptor<T>[], required: true })
   private items!: PaneDescriptor<T>[];
-  @Prop({ type: String as PropType<Direction>, default: Direction.Vertical })
-  private direction!: Direction;
-  @Prop({ type: Boolean, default: false })
-  private resizable!: boolean;
   @Ref('paneElements')
   private paneElements!: HTMLElement[];
   @Ref('borderElements')
@@ -297,7 +297,7 @@ export default class Multipane<T> extends Vue {
     });
   }
 
-  private onResizeHandleMove(e: ResizeHandleMoveEvent): void {
+  onResizeHandleMove(e: ResizeHandleMoveEvent): void {
     const items = this.visibleItems;
     const dsize = (this.direction === Direction.Vertical ? e.dy : e.dx) * Multipane.getDPR();
     const deltaSign = Math.sign(dsize);

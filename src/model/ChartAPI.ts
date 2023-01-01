@@ -25,15 +25,12 @@ import type Sketcher from '@/model/sketchers/Sketcher';
 import type Viewport from '@/model/viewport/Viewport';
 import type { ViewportOptions } from '@/model/viewport/Viewport';
 
-export default class ChartController {
-  private static paneIdGen: number = 0;
-
+export default class ChartAPI {
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly tva: TimeVarianceAuthority;
   private readonly state: ChartState;
   private readonly unwatchers: Map<PaneId, WatchStopHandle[]> = new Map();
   private readonly dataSourceInterconnect: DataSourceInterconnect;
-
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
   public readonly panes: PaneDescriptor<Viewport>[];
@@ -66,11 +63,8 @@ export default class ChartController {
   }
 
   public createPane(dataSource: DataSource, options?: Partial<PaneOptions<ViewportOptions>>): PaneId {
-    // eslint-disable-next-line no-plusplus
-    const generatedPaneId: PaneId = `pane${ChartController.paneIdGen++}`; // todo: id generation
     const initialSizes = this.getPanesSizes();
     const paneOptions: PaneOptions<ViewportOptions> = {
-      id: generatedPaneId,
       minSize: 100,
       priceScale: PriceScales.regular,
       priceInverted: { value: -1 },
@@ -91,8 +85,8 @@ export default class ChartController {
         style: this.style,
         timeAxis: this.timeAxis,
         sketchers: this.sketchers,
-        afterApply: () => this.installPane(paneOptions.id),
-        beforeInverse: () => this.uninstallPane(paneOptions.id),
+        afterApply: () => this.installPane(dataSource.id),
+        beforeInverse: () => this.uninstallPane(dataSource.id),
       }))
       .addIncident(new InvalidatePanesSizes({
         panes: this.panes,
@@ -101,7 +95,7 @@ export default class ChartController {
       }))
       .trySign();
 
-    return paneOptions.id;
+    return dataSource.id;
   }
 
   public removePane(paneId: PaneId): void {
@@ -200,7 +194,7 @@ export default class ChartController {
       watch(priceAxis.contentWidth, this.updatePriceAxisWidth.bind(this), { immediate: true }),
     );
 
-    this.dataSourceInterconnect.addDataSource(paneId, dataSource);
+    this.dataSourceInterconnect.addDataSource(dataSource);
   }
 
   private uninstallPane(paneId: PaneId): void {

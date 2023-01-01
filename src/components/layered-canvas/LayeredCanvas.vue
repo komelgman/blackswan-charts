@@ -99,7 +99,7 @@ export default class LayeredCanvas extends Vue {
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
-  private onMouseLeftBtnClick(e: MouseEvent): void {
+  onMouseLeftBtnClick(e: MouseEvent): void {
     if (!e.defaultPrevented && !this.isWasDrag) {
       e.preventDefault();
 
@@ -108,7 +108,7 @@ export default class LayeredCanvas extends Vue {
     }
   }
 
-  private onMouseLeftBtnDoubleClick(e: MouseEvent): void {
+  onMouseLeftBtnDoubleClick(e: MouseEvent): void {
     if (!e.defaultPrevented) {
       e.preventDefault();
 
@@ -117,7 +117,7 @@ export default class LayeredCanvas extends Vue {
     }
   }
 
-  private onWheel(e: WheelEvent): void {
+  onWheel(e: WheelEvent): void {
     if (!(e instanceof MouseEvent) || !(e.target instanceof Element)) {
       return;
     }
@@ -126,7 +126,7 @@ export default class LayeredCanvas extends Vue {
     this.$emit('zoom', event);
   }
 
-  private onDragStart(e: MouseEvent): void {
+  onDragStart(e: MouseEvent): void {
     if (!e.defaultPrevented && e.target instanceof Element) {
       this.isDrag = true;
       this.isWasDrag = false;
@@ -137,7 +137,7 @@ export default class LayeredCanvas extends Vue {
     }
   }
 
-  private onDragMove(e: MouseEvent): void {
+  onDragMove(e: MouseEvent): void {
     if (!this.isDrag || this.isSkipMovementsDetection) {
       return;
     }
@@ -167,7 +167,7 @@ export default class LayeredCanvas extends Vue {
     }, 10);
   }
 
-  private onMouseMove(e: MouseEvent): void {
+  onMouseMove(e: MouseEvent): void {
     if (this.isDrag || this.isSkipMovementsDetection) {
       return;
     }
@@ -182,7 +182,7 @@ export default class LayeredCanvas extends Vue {
     }, 10);
   }
 
-  private onDragEnd(e?: DragEvent): void {
+  onDragEnd(e?: DragEvent): void {
     this.isDrag = false;
 
     if (e === undefined || !e.defaultPrevented) {

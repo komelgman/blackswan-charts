@@ -1,5 +1,5 @@
 <template>
-  <div class="resize-handle" @mousedown="dragStart"/>
+  <div class="resize-handle" @mousedown="onDragStart"/>
 </template>
 
 <script lang="ts">
@@ -20,7 +20,7 @@ export default class ResizeHandle extends Vue {
   removeMoveListener!: any;
   removeEndListener!: any;
 
-  private dragStart(e: MouseEvent): void {
+  onDragStart(e: MouseEvent): void {
     this.dragBlocked = false;
     if (!e.defaultPrevented) {
       e.preventDefault();
@@ -28,12 +28,12 @@ export default class ResizeHandle extends Vue {
       this.startPos = { x: e.x, y: e.y };
       this.prevPos = { x: e.x, y: e.y };
 
-      this.removeMoveListener = onDocument('mousemove', this.drag);
-      this.removeEndListener = onceDocument('mouseup', this.dragEnd);
+      this.removeMoveListener = onDocument('mousemove', this.onDrag);
+      this.removeEndListener = onceDocument('mouseup', this.onDragEnd);
     }
   }
 
-  private drag(e: DragEvent): void {
+  private onDrag(e: DragEvent): void {
     const dPos = {
       sender: this,
       index: this.index,
@@ -52,7 +52,7 @@ export default class ResizeHandle extends Vue {
     this.$emit('resize-move', dPos);
   }
 
-  private dragEnd(e?: DragEvent): void {
+  private onDragEnd(e?: DragEvent): void {
     if (e !== undefined) {
       e.preventDefault();
     }

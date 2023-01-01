@@ -10,15 +10,14 @@
   >
     <ContextMenu ref="contextmenu"/>
     <multipane
-      :items="controller.panes"
+      :items="api.panes"
       direction="vertical"
       resizable
-      @drag-handle-moved="onPaneSizeChanged"
+      @drag-handle-moved="api.onPaneSizeChanged.bind(api)"
     >
       <template v-slot:default="props">
         <box-layout>
           <viewport-widget
-            :paneId="props.paneId"
             :viewport-model="props.model"
             v-contextmenu="{
               model: getViewportContextMenu(props.model),
@@ -43,7 +42,7 @@
 
     <box-layout :style="timeLineStyle">
       <time-axis-widget
-        :time-axis="controller.timeAxis"
+        :time-axis="api.timeAxis"
         v-contextmenu="{
           model: getTimeAxisContextMenu(),
           instance: $refs['contextmenu'],
@@ -74,7 +73,7 @@ import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedE
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, merge } from '@/misc/strict-type-checks';
 import type PriceAxis from '@/model/axis/PriceAxis';
-import ChartController from '@/model/ChartController';
+import ChartAPI from '@/model/ChartAPI';
 import type ChartState from '@/model/ChartState';
 import type { ChartStyle } from '@/model/ChartStyle';
 import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
@@ -106,19 +105,18 @@ export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: 
 export default class ChartWidget extends Vue {
   @Prop()
   private options!: ChartOptions;
-  private controller!: ChartController;
+  private controller!: ChartAPI;
   @Provide({ reactive: true })
   private chartStyle!: ChartStyle;
   @Provide({ reactive: true })
   private chartState!: ChartState;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private contextMenuMap: WeakMap<any, ContextMenuOptionsProvider> = new WeakMap<any, ContextMenuOptionsProvider>();
 
   @Provide({ reactive: true })
   private sketchers!: Map<DrawingType, Sketcher>;
 
-  public created(): void {
+  created(): void {
     this.chartStyle = this.createChartStyleOptions();
     this.sketchers = this.createSketchersOptions();
 
@@ -127,7 +125,7 @@ export default class ChartWidget extends Vue {
       timeWidgetHeight: -1,
     });
 
-    this.controller = new ChartController(this.chartState, this.chartStyle, this.sketchers);
+    this.controller = new ChartAPI(this.chartState, this.chartStyle, this.sketchers);
   }
 
   mounted(): void {
@@ -139,7 +137,7 @@ export default class ChartWidget extends Vue {
     (document.querySelector('body') as HTMLBodyElement).style.backgroundColor = '';
   }
 
-  public getChartAPI(): ChartController {
+  public get api(): ChartAPI {
     return this.controller;
   }
 
@@ -163,7 +161,7 @@ export default class ChartWidget extends Vue {
     return result;
   }
 
-  private getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
+  getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
     if (!this.contextMenuMap.has(priceAxis)) {
       this.contextMenuMap.set(priceAxis, new PriceAxisContextMenu(priceAxis));
     }
@@ -171,7 +169,7 @@ export default class ChartWidget extends Vue {
     return this.contextMenuMap.get(priceAxis) as ContextMenuOptionsProvider;
   }
 
-  private getTimeAxisContextMenu(): ContextMenuOptionsProvider {
+  getTimeAxisContextMenu(): ContextMenuOptionsProvider {
     const { timeAxis } = this.controller;
     if (!this.contextMenuMap.has(timeAxis)) {
       this.contextMenuMap.set(timeAxis, new TimeAxisContextMenu(timeAxis));
@@ -180,7 +178,7 @@ export default class ChartWidget extends Vue {
     return this.contextMenuMap.get(timeAxis) as ContextMenuOptionsProvider;
   }
 
-  private getViewportContextMenu(viewport: Viewport): ContextMenuOptionsProvider {
+  getViewportContextMenu(viewport: Viewport): ContextMenuOptionsProvider {
     if (!this.contextMenuMap.has(viewport)) {
       this.contextMenuMap.set(viewport, new ViewportContextMenu(viewport));
     }
@@ -188,19 +186,19 @@ export default class ChartWidget extends Vue {
     return this.contextMenuMap.get(viewport) as ContextMenuOptionsProvider;
   }
 
-  private onMouseEnter(): void {
+  onMouseEnter(): void {
     this.$el.focus();
   }
 
-  private onMouseLeave(): void {
+  onMouseLeave(): void {
     this.$el.blur();
   }
 
-  private onPaneSizeChanged(e: PanesSizeChangeEvent): void {
+  onPaneSizeChanged(e: PanesSizeChangeEvent): void {
     this.controller.onPaneSizeChanged(e);
   }
 
-  private onKeyDown(e: KeyboardEvent): void {
+  onKeyDown(e: KeyboardEvent): void {
     // https://keyjs.dev/
     const isCommandKey: boolean = e.ctrlKey || e.metaKey;
     const isZKeyPressed: boolean = e.code === 'KeyZ';

@@ -4,7 +4,7 @@ import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 
 export interface InvalidatePanesSizesOptions extends HistoricalIncidentOptions {
-  panes: PaneDescriptor<any>[],
+  panes: PaneDescriptor<unknown>[],
   initial: Record<string, number>;
   changed: Record<string, number>;
 }

@@ -1,37 +1,46 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isProxy } from 'vue';
-import DataSourceSharedProcessor from '@/model/datasource/DataSourceSharedProcessor';
+import type { EntityId } from '@/model/tools/IdBuilder';
 import type { DeepPartial } from '@/misc/strict-type-checks';
-import { clone, merge } from '@/misc/strict-type-checks';
+import { clone, isString, merge } from '@/misc/strict-type-checks';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import DataSourceSharedProcessor from '@/model/datasource/DataSourceSharedProcessor';
 import type { DrawingDescriptor, DrawingId, DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
-import DrawingIdHelper from '@/model/datasource/DrawingIdHelper';
 import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
 import RemoveEntry from '@/model/datasource/incidents/RemoveEntry';
 import UpdateEntry from '@/model/datasource/incidents/UpdateEntry';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
+import type IdHelper from '@/model/tools/IdHelper';
 import type { Predicate } from '@/model/type-defs';
 
+export declare type DataSourceId = EntityId;
+export interface DataSourceOptions {
+  id?: DataSourceId;
+  idHelper: IdHelper
+}
+
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
+  public readonly id: DataSourceId;
   public readonly sharedProcessor: DataSourceSharedProcessor;
   private readonly storage: DataSourceEntriesStorage;
   private readonly reasons: ChangeReasons = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
-  private drawingIdHelper: DrawingIdHelper;
+  private readonly idHelper: IdHelper;
   private tvaClerkValue: TVAClerk | undefined;
   private protocolOptions: TVAProtocolOptions | undefined = undefined;
 
-  public constructor(drawings: DrawingOptions[]) {
+  public constructor(options: DataSourceOptions, drawings: DrawingOptions[]) {
+    this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
     this.storage = new DataSourceEntriesStorage();
-    this.initEntries(drawings);
-    // sic
-    this.drawingIdHelper = new DrawingIdHelper(this);
+    this.idHelper = options.idHelper;
     this.sharedProcessor = new DataSourceSharedProcessor(this, this.storage, this.addReason);
+
+    this.initEntries(drawings);
   }
 
   public set tvaClerk(value: TVAClerk) {
@@ -149,7 +158,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    if (this.storage.has(options.id)) {
+    if (options.id !== undefined && this.storage.has(options.id)) {
       throw new Error(`Entry with this reference already exists: ${options.id}`);
     }
 
@@ -321,7 +330,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public getNewId(type: string): DrawingId {
-    return this.drawingIdHelper.getNewId(type);
+    return this.idHelper.forGroup(this.id).getNewId(type);
   }
 
   private initEntries(drawings: DrawingOptions[]): void {
@@ -331,9 +340,26 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   private createDescriptor<T>(options: DrawingOptions<T>): DrawingDescriptor<T> {
-    const { id } = options;
-    const [descriptor] = merge({ ref: id, options }, { options: { id: null } });
-    return descriptor as DrawingDescriptor;
+    const { id, type } = options;
+    if (isString(id)) {
+      this.idHelper
+        .forGroup(this.id)
+        .update(type, this.getNumberFromId(type, id));
+    }
+
+    return merge({ ref: id, options }, { options: { id: null } })[0] as DrawingDescriptor;
+  }
+
+  private getNumberFromId(type: string, id: DrawingId): number {
+    const regex = new RegExp(`${type}(\\d+)`, 'i');
+    const matches = id.match(regex);
+
+    if (matches == null || matches.length > 2) {
+      throw new Error(`Unsupported DrawingId template, use 'drawing.type + Number'. 
+      Drawing with type '${type}' found incorrect id '${id}'`);
+    }
+
+    return Number.parseInt(matches[1], 10);
   }
 
   private checkWeAreNotInProxy(): void {
@@ -362,7 +388,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   private getNewTransactionId(): string {
-    return `--dataSourceTransaction${Math.random()}`; // todo: id generation
+    return this.idHelper.getNewId(`datasource-${this.id}-transaction-`);
   }
 
   private fire(reasons: ChangeReasons): void {

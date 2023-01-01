@@ -3,8 +3,8 @@
     <layered-canvas
       :options="canvasOptions"
       @drag-move="onDrag"
-      @zoom="zoom"
-      @resize="resize"
+      @zoom="onZoom"
+      @resize="onResize"
     />
   </div>
 </template>
@@ -25,9 +25,9 @@ import type TimeAxis from '@/model/axis/TimeAxis';
   components: { LayeredCanvas },
 })
 export default class TimeAxisWidget extends Vue {
+  canvasOptions: LayeredCanvasOptions = { layers: [] };
   @Prop({ type: Object as PropType<TimeAxis>, required: true })
   private timeAxis!: TimeAxis;
-  private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private labelsInvalidator!: TimeLabelsInvalidator;
 
   created(): void {
@@ -52,15 +52,15 @@ export default class TimeAxisWidget extends Vue {
     return result;
   }
 
-  private onDrag(e: DragMoveEvent): void {
+  onDrag(e: DragMoveEvent): void {
     this.timeAxis.zoom(this.$el.getBoundingClientRect().width / 2, -e.dx);
   }
 
-  private zoom(e: ZoomEvent): void {
+  onZoom(e: ZoomEvent): void {
     this.timeAxis.zoom(e.pivot.x, e.delta);
   }
 
-  private resize(e: ResizeEvent): void {
+  onResize(e: ResizeEvent): void {
     this.timeAxis.update({ screenSize: { main: e.width, second: e.height } });
   }
 }

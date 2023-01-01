@@ -1,6 +1,6 @@
-import type { PaneId } from '@/components/layout/PaneDescriptor';
 import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
+import type { DataSourceId } from '@/model/datasource/DataSource';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { StorageEntry } from '@/model/datasource/DataSourceEntriesStorage';
@@ -11,7 +11,6 @@ export default class DataSourceSharedProcessor {
   public readonly dataSource: DataSource;
   private readonly storage: DataSourceEntriesStorage;
   private readonly addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
-  private paneIdValue?: PaneId;
 
   public constructor(
     dataSource: DataSource,
@@ -23,23 +22,7 @@ export default class DataSourceSharedProcessor {
     this.addReason = addReason.bind(dataSource);
   }
 
-  public get paneId(): PaneId {
-    if (this.paneIdValue === undefined) {
-      throw new Error('Illegal state: paneId not initialized');
-    }
-
-    return this.paneIdValue;
-  }
-
-  public set paneId(value: PaneId | undefined) {
-    if (this.paneIdValue !== undefined) {
-      throw new Error('Illegal state: paneId already initialized');
-    }
-
-    this.paneIdValue = value;
-  }
-
-  * shared(external: PaneId): IterableIterator<Readonly<DataSourceEntry>> {
+  * shared(external: DataSourceId): IterableIterator<Readonly<DataSourceEntry>> {
     // this.checkWeAreNotInProxy();
 
     let entry = this.storage.head;
@@ -56,15 +39,15 @@ export default class DataSourceSharedProcessor {
     }
   }
 
-  public attachExternalEntries(paneId: PaneId, entries: IterableIterator<Readonly<DataSourceEntry<unknown>>>): void {
+  public attachExternalEntries(dsId: DataSourceId, entries: IterableIterator<Readonly<DataSourceEntry<unknown>>>): void {
     // this.checkWeAreNotInProxy();
 
     for (const entry of entries) {
-      this.storage.unshift(this.createExternalEntry(paneId, entry));
+      this.storage.unshift(this.createExternalEntry(dsId, entry));
     }
   }
 
-  public detachExternalEntries(paneId: PaneId): void {
+  public detachExternalEntries(dsId: DataSourceId): void {
     // this.checkWeAreNotInProxy();
 
     let entry = this.storage.head;
@@ -74,7 +57,7 @@ export default class DataSourceSharedProcessor {
         break;
       }
 
-      if (descriptor.ref[0] === paneId) {
+      if (descriptor.ref[0] === dsId) {
         this.storage.remove(descriptor.ref);
       }
 
@@ -88,13 +71,13 @@ export default class DataSourceSharedProcessor {
     this.addReason(DataSourceChangeEventReason.UpdateSharedEntry, [entry]);
   }
 
-  public sharedAddEntry(paneId: PaneId, entry: Readonly<DataSourceEntry<unknown>>) {
+  public sharedAddEntry(dsId: DataSourceId, entry: Readonly<DataSourceEntry<unknown>>) {
     const { storage } = this;
-    const [, paneTail] = this.getExternalPaneRange(paneId);
-    const externalEntry = this.createExternalEntry(paneId, entry);
+    const [, tail] = this.getRangeForExternalDS(dsId);
+    const externalEntry = this.createExternalEntry(dsId, entry);
 
-    if (paneTail) {
-      storage.insertAfter(paneTail, externalEntry);
+    if (tail) {
+      storage.insertAfter(tail, externalEntry);
     } else {
       storage.unshift(externalEntry);
     }
@@ -102,15 +85,15 @@ export default class DataSourceSharedProcessor {
     this.addReason(DataSourceChangeEventReason.UpdateSharedEntry, [externalEntry]);
   }
 
-  private getExternalPaneRange(paneId: PaneId): [DrawingReference?, DrawingReference?] {
+  private getRangeForExternalDS(dsId: DataSourceId): [DrawingReference?, DrawingReference?] {
     const { storage } = this;
     if (storage.head === undefined) {
       return [];
     }
 
     let entry: StorageEntry | undefined = storage.head;
-    let paneHead: DrawingReference | undefined;
-    let paneTail: DrawingReference | undefined;
+    let head: DrawingReference | undefined;
+    let tail: DrawingReference | undefined;
 
     while (entry) {
       const entryRef: DrawingReference = entry.value[0].ref;
@@ -118,28 +101,28 @@ export default class DataSourceSharedProcessor {
         break;
       }
 
-      if (entryRef[0] === paneId) {
-        if (paneHead === undefined) {
-          paneHead = entry.value[0].ref;
+      if (entryRef[0] === dsId) {
+        if (head === undefined) {
+          head = entry.value[0].ref;
         }
 
-        paneTail = entry.value[0].ref;
+        tail = entry.value[0].ref;
       }
 
       entry = entry.next;
     }
 
-    return [paneHead, paneTail];
+    return [head, tail];
   }
 
-  private createExternalEntry(paneId: PaneId, externalEntry: Readonly<DataSourceEntry>): DataSourceEntry {
+  private createExternalEntry(dsId: DataSourceId, externalEntry: Readonly<DataSourceEntry>): DataSourceEntry {
     const [externalDescriptor] = externalEntry;
     if (!isString(externalDescriptor.ref)) {
       throw new Error('Illegal argument: external entry cant be shared');
     }
 
     return [{
-      ref: [paneId, externalDescriptor.ref],
+      ref: [dsId, externalDescriptor.ref],
       options: externalDescriptor.options,
     }];
   }

@@ -9,7 +9,7 @@
       @drag-end="onDragEnd"
       @drag-move="onDrag"
       @mouse-move="onMouseMove"
-      @zoom="zoom"
+      @zoom="onZoom"
       @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
       @left-mouse-btn-click="onLeftMouseBtnClick"
     />
@@ -27,7 +27,6 @@ import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import type { PaneId } from '@/components/layout/PaneDescriptor';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
@@ -40,11 +39,9 @@ import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInva
   components: { LayeredCanvas },
 })
 export default class ViewportWidget extends Vue {
+  canvasOptions: LayeredCanvasOptions = { layers: [] };
   @Prop({ type: Object as PropType<Viewport>, required: true })
   private viewportModel!: Viewport;
-  @Prop({ type: String as PropType<PaneId>, required: true })
-  private paneId!: PaneId;
-  private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private highlightInvalidator!: ViewportHighlightInvalidator;
   private dataSourceInvalidator!: DataSourceInvalidator;
   private dataSourceLayer!: ViewportDataSourceLayer;
@@ -120,11 +117,11 @@ export default class ViewportWidget extends Vue {
     return new ViewportHighlightingLayer(this.viewportModel);
   }
 
-  private onMouseMove(e: MousePositionEvent): void {
+  onMouseMove(e: MousePositionEvent): void {
     this.highlightInvalidator.invalidate(e);
   }
 
-  private onLeftMouseBtnDoubleClick(): void {
+  onLeftMouseBtnDoubleClick(): void {
     const { highlighted } = this.viewportModel;
     if (highlighted !== undefined) {
       console.log(`double click on element: ${highlighted[0].ref}`);
@@ -133,11 +130,11 @@ export default class ViewportWidget extends Vue {
     }
   }
 
-  private onLeftMouseBtnClick(e: MouseClickEvent): void {
+  onLeftMouseBtnClick(e: MouseClickEvent): void {
     this.viewportModel.updateSelection(e.isCtrl);
   }
 
-  private onDragStart(e: MouseClickEvent): void {
+  onDragStart(e: MouseClickEvent): void {
     this.viewportModel.updateSelection(e.isCtrl, true);
 
     if (this.viewportModel.selectionCanBeDragged()) {
@@ -151,7 +148,7 @@ export default class ViewportWidget extends Vue {
     this.viewportModel.updateDragHandle();
   }
 
-  private onDrag(e: DragMoveEvent): void {
+  onDrag(e: DragMoveEvent): void {
     if (this.viewportModel.selectionCanBeDragged()) {
       this.highlightInvalidator.invalidate(e);
       this.viewportModel.moveSelected(e);
@@ -162,7 +159,7 @@ export default class ViewportWidget extends Vue {
     }
   }
 
-  private onDragEnd(): void {
+  onDragEnd(): void {
     const { dataSource } = this.viewportModel;
     if (this.viewportModel.selectionCanBeDragged()) {
       dataSource.endTransaction();
@@ -174,11 +171,11 @@ export default class ViewportWidget extends Vue {
     }
   }
 
-  private zoom(e: ZoomEvent): void {
+  onZoom(e: ZoomEvent): void {
     this.viewportModel.timeAxis.zoom(e.pivot.x, e.delta);
   }
 
-  get cssVars(): unknown {
+  get cssVars(): any {
     const cursor: string = this.viewportModel.cursor || 'default';
     return {
       cursor: `${cursor} !important`,

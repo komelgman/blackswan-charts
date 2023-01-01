@@ -5,10 +5,11 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import { Ref } from 'vue-property-decorator';
+import IdHelper from '@/model/tools/IdHelper';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import DataSource from '@/model/datasource/DataSource';
 import type { DeepPartial } from '@/misc/strict-type-checks';
-import type ChartController from '@/model/ChartController';
+import type ChartAPI from '@/model/ChartAPI';
 import type { ChartStyle } from '@/model/ChartStyle';
 import type { DrawingType } from '@/model/datasource/Drawing';
 import type Sketcher from '@/model/sketchers/Sketcher';
@@ -19,17 +20,19 @@ import type Sketcher from '@/model/sketchers/Sketcher';
   },
 })
 export default class App extends Vue {
+  chartStyle!: DeepPartial<ChartStyle>;
+  customSketchers!: Map<DrawingType, Sketcher>;
   @Ref('chart')
   private chart!: ChartWidget;
-  private chartStyle!: DeepPartial<ChartStyle>;
-  private customSketchers!: Map<DrawingType, Sketcher>;
+  private idHelper!: IdHelper;
   private mainDs!: DataSource;
 
   created(): void {
     this.chartStyle = {};
     this.customSketchers = new Map<DrawingType, Sketcher>([]);
+    this.idHelper = new IdHelper();
 
-    this.mainDs = new DataSource([
+    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, [
       // {
       //   id: 'hline1',
       //   title: 'hline1',
@@ -83,12 +86,12 @@ export default class App extends Vue {
   }
 
   mounted(): void {
-    const chartApi: ChartController = this.chart.getChartAPI();
-    chartApi.createPane(this.mainDs, { id: 'mainPane', size: 150 }); // use provided id
+    const chartApi: ChartAPI = this.chart.api;
+    chartApi.createPane(this.mainDs, { size: 150 });
     chartApi.clearHistory();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const secondPane = chartApi.createPane(new DataSource([
+    const secondPane = chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
       {
         id: 'hline1',
         title: 'hline1',
@@ -96,7 +99,7 @@ export default class App extends Vue {
         data: { def: 0.5, style: { lineWidth: 4, fill: 0, color: '#AA0000' } },
         locked: false,
         visible: true,
-        shareWith: ['mainPane'],
+        shareWith: ['main'],
       },
     ]), { size: 150 });
 

@@ -7,6 +7,7 @@ import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesS
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 import TimeVarianceAuthority from '../../history/TimeVarianceAuthority';
+import IdHelper from '../../tools/IdHelper';
 import type { ChangeReasons } from '../DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '../DataSourceChangeEventReason';
 
@@ -62,7 +63,7 @@ describe('DataSource', () => {
   }
 
   beforeEach(async () => {
-    ds = new DataSource(clone([drawing1, drawing2, drawing3]));
+    ds = new DataSource({ idHelper: new IdHelper() }, clone([drawing1, drawing2, drawing3]));
     storage = ds['storage'];
   });
 
@@ -74,6 +75,8 @@ describe('DataSource', () => {
     expect(ds.getNewId('test')).toEqual('test4');
     expect(ds.getNewId('sometype')).toEqual('sometype0');
   });
+
+  // todo add test for bad initial id in dataset
 
   it('test default iterator', () => {
     const references: DrawingReference[] = [];

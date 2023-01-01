@@ -1,4 +1,6 @@
-export declare type PaneId = string;
+import type { EntityId } from '@/model/tools/IdBuilder';
+
+export declare type PaneId = EntityId;
 
 export default interface PaneDescriptor<T> {
   id: PaneId;
@@ -9,5 +11,4 @@ export default interface PaneDescriptor<T> {
   visible?: boolean;
 }
 
-export declare type PaneOptions<O> = Omit<PaneDescriptor<never>, 'model'> & O;
-export declare type PaneSizes = Omit<PaneDescriptor<never>, 'model' | 'id'>;
+export declare type PaneOptions<O> = Omit<PaneDescriptor<never>, 'model' | 'id'> & O;

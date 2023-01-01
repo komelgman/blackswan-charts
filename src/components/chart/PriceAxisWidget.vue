@@ -3,8 +3,8 @@
     <layered-canvas
       :options="canvasOptions"
       @drag-move="onDrag"
-      @zoom="zoom"
-      @resize="resize"
+      @zoom="onZoom"
+      @resize="onResize"
     />
   </div>
 </template>
@@ -29,13 +29,14 @@ import type Viewport from '@/model/viewport/Viewport';
   components: { LayeredCanvas, Divider, BoxLayout },
 })
 export default class PriceAxisWidget extends Vue {
+  canvasOptions: LayeredCanvasOptions = { layers: [] };
+
   @Prop({ type: Object as PropType<Viewport>, required: true })
   private viewportModel!: Viewport;
   @Inject()
   private chartStyle!: ChartStyle;
   @Inject()
   private chartState!: ChartState;
-  private canvasOptions: LayeredCanvasOptions = { layers: [] };
   private labelsInvalidator!: PriceLabelsInvalidator;
   private marksLayer!: PriceAxisMarksLayer;
 
@@ -75,19 +76,19 @@ export default class PriceAxisWidget extends Vue {
     return new PriceAxisMarksLayer(this.viewportModel);
   }
 
-  private onDrag(e: DragMoveEvent): void {
+  onDrag(e: DragMoveEvent): void {
     this.viewportModel.priceAxis.zoom(this.$el.getBoundingClientRect().height / 2, -e.dy);
   }
 
-  private zoom(e: ZoomEvent): void {
+  onZoom(e: ZoomEvent): void {
     this.viewportModel.priceAxis.zoom(e.pivot.y, e.delta);
   }
 
-  private resize(e: ResizeEvent): void {
+  onResize(e: ResizeEvent): void {
     this.viewportModel.priceAxis.update({ screenSize: { main: e.height, second: e.width } });
   }
 
-  get cssVars(): unknown {
+  get cssVars(): any {
     const widgetWidth = this.chartState.priceWidgetWidth;
 
     return {
