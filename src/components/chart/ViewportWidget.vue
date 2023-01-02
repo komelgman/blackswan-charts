@@ -28,9 +28,8 @@ import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } fr
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
+import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
 import type Viewport from '@/model/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
@@ -77,20 +76,20 @@ export default class ViewportWidget extends Vue {
     this.viewportModel.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: ChangeReasons): void => {
-    if (reasons.has(DataSourceChangeEventReason.RemoveEntry)) {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
+    if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
       const { selected, highlighted } = this.viewportModel;
-      const removedEntries: DataSourceEntry[] = reasons.get(DataSourceChangeEventReason.RemoveEntry) as DataSourceEntry[];
+      const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
 
-      for (const removedEntry of removedEntries) {
-        if (highlighted === removedEntry) {
+      for (const event of removedEntriesEvents) {
+        if (highlighted === event.entry) {
           this.viewportModel.highlighted = undefined;
           this.viewportModel.highlightedHandleId = undefined;
           this.viewportModel.cursor = undefined;
         }
 
-        if (selected.has(removedEntry)) {
-          selected.delete(removedEntry);
+        if (selected.has(event.entry)) {
+          selected.delete(event.entry);
         }
       }
     }

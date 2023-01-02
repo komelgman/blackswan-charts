@@ -2,7 +2,7 @@ import type { WatchStopHandle } from 'vue';
 import { computed, toRaw, watch } from 'vue';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
+import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingType } from '@/model/datasource/Drawing';
@@ -49,17 +49,21 @@ export default class DataSourceInvalidator {
     dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: ChangeReasons): void => {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const entries: DataSourceEntry[] = [
-      ...(reasons.get(DataSourceChangeEventReason.CacheReset) || []),
-      ...(reasons.get(DataSourceChangeEventReason.AddEntry) || []),
-      ...(reasons.get(DataSourceChangeEventReason.UpdateEntry) || []),
-      ...(reasons.get(DataSourceChangeEventReason.UpdateSharedEntry) || []),
+      ...((events.get(DataSourceChangeEventReason.CacheReset) || []).map((e) => (e.entry))),
+      ...((events.get(DataSourceChangeEventReason.AddEntry) || []).map((e) => (e.entry))),
+      ...((events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((e) => (e.entry))),
     ];
 
-    if (entries.length || reasons.has(DataSourceChangeEventReason.RemoveEntry)) {
+    if (entries.length) {
       this.invalidate(entries);
       toRaw(this.viewportModel.dataSource).invalidated(entries);
+    }
+
+    if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
+      const removedEntries: DataSourceEntry[] = (events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((e) => (e.entry));
+      toRaw(this.viewportModel.dataSource).invalidated(removedEntries);
     }
   };
 

@@ -2,14 +2,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/misc/strict-type-checks';
 import DataSource from '@/model/datasource/DataSource';
-
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
-import TimeVarianceAuthority from '../../history/TimeVarianceAuthority';
-import IdHelper from '../../tools/IdHelper';
-import type { ChangeReasons } from '../DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '../DataSourceChangeEventReason';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import IdHelper from '@/model/tools/IdHelper';
+import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import type { DataSourceChangeEventsMap } from '../DataSourceChangeEventListener';
 
 describe('DataSource', () => {
   let ds: DataSource;
@@ -88,13 +87,9 @@ describe('DataSource', () => {
   });
 
   it('test visible() iterator', () => {
-    function dataSourceChangeEventListener(reasons: ChangeReasons): void {
-      const entries: DataSourceEntry[] = [
-        ...(reasons.get(DataSourceChangeEventReason.CacheReset) || []),
-      ];
-
-      for (const entry of entries) {
-        entry[0].visibleInViewport = true;
+    function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
+      for (const event of events.get(DataSourceChangeEventReason.CacheReset) || []) {
+        event.entry[0].visibleInViewport = true;
       }
     }
 
@@ -111,46 +106,11 @@ describe('DataSource', () => {
     expect(drawingReferencesFromIterator).toEqual([drawing1.id, drawing2.id]);
   });
 
-  // it('test shared() iterator', () => {
-  //   const ds2: DataSource = new DataSource(clone([
-  //     merge({}, drawing1, { shareWith: '*' })[0] as DrawingOptions,
-  //     merge({}, drawing2, { shareWith: 'pane1' })[0] as DrawingOptions,
-  //     merge({}, drawing3, { shareWith: 'pane3' })[0] as DrawingOptions,
-  //   ]));
-  //
-  //   const drawingReferencesFromIterator: DrawingReference[] = getDrawingReferencesFromIterator(ds2.shared('pane1'));
-  //   expect(drawingReferencesFromIterator).toEqual([drawing1.id, drawing2.id]);
-  // });
-
-  // it('test attachExternalEntries()/detachExternalEntries()', () => {
-  //   const ds2: DataSource = new DataSource(clone([
-  //     merge({}, drawing1, { shareWith: '*' })[0] as DrawingOptions,
-  //     merge({}, drawing2, { shareWith: 'pane1' })[0] as DrawingOptions,
-  //     merge({}, drawing3, { shareWith: 'pane3' })[0] as DrawingOptions,
-  //   ]));
-  //
-  //   ds.attachExternalEntries('pane2', ds2.shared('pane1'));
-  //
-  //   expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
-  //     .toEqual([['pane2', drawing2.id], ['pane2', drawing1.id], drawing1.id, drawing2.id, drawing3.id]);
-  //   expect(storage.head?.value[0].ref).toEqual(['pane2', drawing2.id]);
-  //   expect(storage.tail?.value[0].ref).toEqual(drawing3.id);
-  //
-  //   ds.detachExternalEntries('pane2');
-  //
-  //   expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
-  //     .toEqual([drawing1.id, drawing2.id, drawing3.id]);
-  //   expect(storage.head?.value[0].ref).toEqual(drawing1.id);
-  //   expect(storage.tail?.value[0].ref).toEqual(drawing3.id);
-  // });
-
   it('test (add|remove)ChangeEventListener()/resetCache()', () => {
     let entries: DataSourceEntry[] = [];
     const options: any = {
-      eventListener: (reasons: ChangeReasons): void => {
-        entries = [
-          ...(reasons.get(DataSourceChangeEventReason.CacheReset) || []),
-        ];
+      eventListener: (events: DataSourceChangeEventsMap): void => {
+        entries = (events.get(DataSourceChangeEventReason.CacheReset) || []).map((event) => (event.entry));
       },
     };
 
@@ -174,21 +134,14 @@ describe('DataSource', () => {
     let entriesWhichWasReset: DataSourceEntry[] = [];
     let entriesWhichWasInvalidated: DataSourceEntry[] = [];
     const options: any = {
-      resetEventListener: (reasons: ChangeReasons): void => {
-        entriesWhichWasReset = [
-          ...(reasons.get(DataSourceChangeEventReason.CacheReset) || []),
-        ];
-      },
-      invalidateEventListener: (reasons: ChangeReasons): void => {
-        entriesWhichWasInvalidated = [
-          ...(reasons.get(DataSourceChangeEventReason.CacheInvalidated) || []),
-        ];
+      eventListener: (events: DataSourceChangeEventsMap): void => {
+        entriesWhichWasReset = (events.get(DataSourceChangeEventReason.CacheReset) || []).map((event) => (event.entry));
+        entriesWhichWasInvalidated = (events.get(DataSourceChangeEventReason.CacheInvalidated) || []).map((event) => (event.entry));
       },
     };
 
-    const listenerSpy = vi.spyOn(options, 'invalidateEventListener');
-    ds.addChangeEventListener(options.resetEventListener);
-    ds.addChangeEventListener(options.invalidateEventListener);
+    const listenerSpy = vi.spyOn(options, 'eventListener');
+    ds.addChangeEventListener(options.eventListener);
     ds.resetCache();
 
     expect(listenerSpy).toHaveBeenCalled();
@@ -228,16 +181,9 @@ describe('DataSource', () => {
     let addedEntries: DrawingReference[] = [];
     let removedEntries: DrawingReference[] = [];
     const options: any = {
-      eventListener: (reasons: ChangeReasons): void => {
-        addedEntries = [];
-        for (const item of reasons.get(DataSourceChangeEventReason.AddEntry) || []) {
-          addedEntries.push(item[0].ref);
-        }
-
-        removedEntries = [];
-        for (const item of reasons.get(DataSourceChangeEventReason.RemoveEntry) || []) {
-          removedEntries.push(item[0].ref);
-        }
+      eventListener: (events: DataSourceChangeEventsMap): void => {
+        addedEntries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry[0].ref));
+        removedEntries = (events.get(DataSourceChangeEventReason.RemoveEntry) || []).map((event) => (event.entry[0].ref));
       },
     };
     const listenerSpy = vi.spyOn(options, 'eventListener');
@@ -297,11 +243,8 @@ describe('DataSource', () => {
     ds.tvaClerk = tva.clerk;
     let updatedEntries: DrawingReference[] = [];
     const options: any = {
-      eventListener: (reasons: ChangeReasons): void => {
-        updatedEntries = [];
-        for (const item of reasons.get(DataSourceChangeEventReason.UpdateEntry) || []) {
-          updatedEntries.push(item[0].ref);
-        }
+      eventListener: (events: DataSourceChangeEventsMap): void => {
+        updatedEntries = (events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((event) => (event.entry[0].ref));
       },
     };
 
@@ -332,11 +275,8 @@ describe('DataSource', () => {
     const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
     let clonedEntries: DrawingReference[] = [];
     const options: any = {
-      eventListener: (reasons: ChangeReasons): void => {
-        clonedEntries = [];
-        for (const item of reasons.get(DataSourceChangeEventReason.AddEntry) || []) {
-          clonedEntries.push(item[0].ref);
-        }
+      eventListener: (events: DataSourceChangeEventsMap): void => {
+        clonedEntries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry[0].ref));
       },
     };
 

@@ -1,9 +1,9 @@
 import { toRaw, watch } from 'vue';
+import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import Layer from '@/components/layered-canvas/layers/Layer';
 import type { Inverted, InvertedValue } from '@/model/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 
 export default class ViewportDataSourceLayer extends Layer {
@@ -29,8 +29,8 @@ export default class ViewportDataSourceLayer extends Layer {
     this.ds.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (reasons: ChangeReasons): void => {
-    if (reasons.has(DataSourceChangeEventReason.CacheInvalidated)) {
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
+    if (events.has(DataSourceChangeEventReason.CacheInvalidated)) {
       this.invalid = true;
     }
   };

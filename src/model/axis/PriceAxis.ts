@@ -1,3 +1,4 @@
+import type { EntityId } from '@/model/tools/IdBuilder';
 import { reactive } from 'vue';
 import Reactive from '@/misc/reactive-decorator';
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
@@ -28,8 +29,8 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
   protected invertedValue: Inverted;
   protected contentWidthValue: Wrapped<number> = { value: -1 }; // watch doesn't work with scalar
 
-  public constructor(tvaClerk: TVAClerk, textStyle: TextStyle, scale: PriceScale, inverted: Inverted) {
-    super(tvaClerk, textStyle);
+  public constructor(id: EntityId, tvaClerk: TVAClerk, textStyle: TextStyle, scale: PriceScale, inverted: Inverted) {
+    super(`${id}-price`, tvaClerk, textStyle);
     this.scaleValue = reactive(clone(scale));
     this.invertedValue = reactive(clone(inverted));
   }

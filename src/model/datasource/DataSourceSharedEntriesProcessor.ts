@@ -7,10 +7,10 @@ import type { StorageEntry } from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingReference } from '@/model/datasource/Drawing';
 
-export default class DataSourceSharedProcessor {
+export default class DataSourceSharedEntriesProcessor {
   public readonly dataSource: DataSource;
   private readonly storage: DataSourceEntriesStorage;
-  private readonly addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
+  private readonly addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean) => void;
 
   public constructor(
     dataSource: DataSource,
@@ -22,7 +22,7 @@ export default class DataSourceSharedProcessor {
     this.addReason = addReason.bind(dataSource);
   }
 
-  * shared(external: DataSourceId): IterableIterator<Readonly<DataSourceEntry>> {
+  * shared(externalDataSourceId: DataSourceId): IterableIterator<Readonly<DataSourceEntry>> {
     // this.checkWeAreNotInProxy();
 
     let entry = this.storage.head;
@@ -31,7 +31,7 @@ export default class DataSourceSharedProcessor {
       const [descriptor] = entryValue;
       const { shareWith } = descriptor.options;
 
-      if (isString(descriptor.ref) && (shareWith === '*' || (shareWith !== undefined && shareWith.indexOf(external) > -1))) {
+      if (isString(descriptor.ref) && (shareWith === '*' || (shareWith !== undefined && shareWith.indexOf(externalDataSourceId) > -1))) {
         yield entryValue;
       }
 
@@ -39,15 +39,21 @@ export default class DataSourceSharedProcessor {
     }
   }
 
-  public attachExternalEntries(dsId: DataSourceId, entries: IterableIterator<Readonly<DataSourceEntry<unknown>>>): void {
+  public attachSharedEntriesFrom(sourceDataSource: DataSource): void {
     // this.checkWeAreNotInProxy();
 
-    for (const entry of entries) {
-      this.storage.unshift(this.createExternalEntry(dsId, entry));
+    const { storage } = this;
+    const headref = storage.head;
+    for (const entry of sourceDataSource.sharedProcessor.shared(this.dataSource.id)) {
+      if (headref === undefined) {
+        storage.push(this.createExternalEntry(sourceDataSource.id, entry));
+      } else {
+        storage.insertBefore(headref.value[0].ref, this.createExternalEntry(sourceDataSource.id, entry));
+      }
     }
   }
 
-  public detachExternalEntries(dsId: DataSourceId): void {
+  public detachSharedEntries(dsId: DataSourceId): void {
     // this.checkWeAreNotInProxy();
 
     let entry = this.storage.head;
@@ -57,21 +63,20 @@ export default class DataSourceSharedProcessor {
         break;
       }
 
-      if (descriptor.ref[0] === dsId) {
-        this.storage.remove(descriptor.ref);
-      }
-
       entry = entry.next;
+      if (descriptor.ref[0] === dsId) {
+        this.storage.remove(descriptor.ref); // todo add method removeEntry
+      }
     }
   }
 
-  public sharedUpdate(ref: DrawingReference): void {
+  public update(ref: DrawingReference): void {
     const entry: DataSourceEntry = this.storage.get(ref);
     entry[0].valid = false;
-    this.addReason(DataSourceChangeEventReason.UpdateSharedEntry, [entry]);
+    this.addReason(DataSourceChangeEventReason.UpdateEntry, [entry], true);
   }
 
-  public sharedAddEntry(dsId: DataSourceId, entry: Readonly<DataSourceEntry<unknown>>) {
+  public addEntry(dsId: DataSourceId, entry: Readonly<DataSourceEntry<unknown>>) {
     const { storage } = this;
     const [, tail] = this.getRangeForExternalDS(dsId);
     const externalEntry = this.createExternalEntry(dsId, entry);
@@ -82,7 +87,12 @@ export default class DataSourceSharedProcessor {
       storage.unshift(externalEntry);
     }
 
-    this.addReason(DataSourceChangeEventReason.UpdateSharedEntry, [externalEntry]);
+    this.addReason(DataSourceChangeEventReason.AddEntry, [externalEntry], true);
+  }
+
+  public removeEntry(ref: DrawingReference): void {
+    const entry: DataSourceEntry = this.storage.remove(ref)[0];
+    this.addReason(DataSourceChangeEventReason.RemoveEntry, [entry], true);
   }
 
   private getRangeForExternalDS(dsId: DataSourceId): [DrawingReference?, DrawingReference?] {

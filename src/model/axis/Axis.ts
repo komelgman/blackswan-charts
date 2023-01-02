@@ -4,21 +4,21 @@ import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
 import type { TextStyle } from '@/model/ChartStyle';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
+import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/type-defs';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
   private readonly rangeValue: Range<T> = { from: -1 as T, to: 1 as T };
   private readonly textStyleValue: TextStyle;
   private readonly screenSizeValue: LogicSize = { main: -1, second: -1 };
-  private readonly id: number;
+  private readonly id: EntityId;
   public readonly tvaClerk: TVAClerk;
   public readonly labels: Map<number, string> = new Map<number, string>();
 
-  protected constructor(tvaClerk: TVAClerk, textStyle: TextStyle) {
+  protected constructor(id: EntityId, tvaClerk: TVAClerk, textStyle: TextStyle) {
     this.tvaClerk = tvaClerk;
     this.textStyleValue = textStyle;
-
-    this.id = Math.random(); // todo: id generation
+    this.id = id;
   }
 
   public update(options: Options): void {

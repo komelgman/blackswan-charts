@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isProxy } from 'vue';
-import type { EntityId } from '@/model/tools/IdBuilder';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, isString, merge } from '@/misc/strict-type-checks';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import type { ChangeReasons } from '@/model/datasource/DataSourceChangeEventListener';
+import type { DataSourceChangeEventsMap, DataSourceChangeEvent } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import DataSourceSharedProcessor from '@/model/datasource/DataSourceSharedProcessor';
+import DataSourceSharedEntriesProcessor from '@/model/datasource/DataSourceSharedEntriesProcessor';
 import type { DrawingDescriptor, DrawingId, DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
 import RemoveEntry from '@/model/datasource/incidents/RemoveEntry';
 import UpdateEntry from '@/model/datasource/incidents/UpdateEntry';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
+import type { EntityId } from '@/model/tools/IdBuilder';
 import type IdHelper from '@/model/tools/IdHelper';
 import type { Predicate } from '@/model/type-defs';
 
@@ -26,9 +26,9 @@ export interface DataSourceOptions {
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;
-  public readonly sharedProcessor: DataSourceSharedProcessor;
+  public readonly sharedProcessor: DataSourceSharedEntriesProcessor;
   private readonly storage: DataSourceEntriesStorage;
-  private readonly reasons: ChangeReasons = new Map();
+  private readonly changeEvents: DataSourceChangeEventsMap = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private readonly idHelper: IdHelper;
   private tvaClerkValue: TVAClerk | undefined;
@@ -38,7 +38,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
     this.storage = new DataSourceEntriesStorage();
     this.idHelper = options.idHelper;
-    this.sharedProcessor = new DataSourceSharedProcessor(this, this.storage, this.addReason);
+    this.sharedProcessor = new DataSourceSharedEntriesProcessor(this, this.storage, this.addReason);
 
     this.initEntries(drawings);
   }
@@ -123,11 +123,13 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       entries[entries.length] = entry as DataSourceEntry;
     }
 
-    this.fire(new Map([[DataSourceChangeEventReason.CacheReset, entries]]));
+    const { CacheReset } = DataSourceChangeEventReason;
+    this.fire(new Map([[CacheReset, this.toChangeEvents(CacheReset, entries)]]));
   }
 
   public invalidated(entries: DataSourceEntry[]): void {
-    this.fire(new Map([[DataSourceChangeEventReason.CacheInvalidated, entries]]));
+    const { CacheInvalidated } = DataSourceChangeEventReason;
+    this.fire(new Map([[CacheInvalidated, this.toChangeEvents(CacheInvalidated, entries)]]));
   }
 
   public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
@@ -324,9 +326,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public flush(): void {
-    const reasons: ChangeReasons = new Map(this.reasons);
-    this.reasons.clear();
-    this.fire(reasons);
+    const events: DataSourceChangeEventsMap = new Map(this.changeEvents);
+    this.changeEvents.clear();
+    this.fire(events);
   }
 
   public getNewId(type: string): DrawingId {
@@ -374,26 +376,26 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     }
   }
 
-  private addReason(reason: DataSourceChangeEventReason, entries: DataSourceEntry[]): void {
-    if (this.reasons.has(reason)) {
-      const newEntries = [
-        ...this.reasons.get(reason) as DataSourceEntry[],
-        ...entries,
-      ];
-
-      this.reasons.set(reason, newEntries);
+  private addReason(reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean = false): void {
+    const changeEvents: DataSourceChangeEvent[] = this.toChangeEvents(reason, entries, shared);
+    if (this.changeEvents.has(reason)) {
+      (this.changeEvents.get(reason) as DataSourceChangeEvent[]).push(...changeEvents);
     } else {
-      this.reasons.set(reason, [...entries]);
+      this.changeEvents.set(reason, changeEvents);
     }
+  }
+
+  private toChangeEvents(reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean = false): DataSourceChangeEvent[] {
+    return entries.map((entry) => ({ entry, reason, shared }));
   }
 
   private getNewTransactionId(): string {
     return this.idHelper.getNewId(`datasource-${this.id}-transaction-`);
   }
 
-  private fire(reasons: ChangeReasons): void {
+  private fire(events: DataSourceChangeEventsMap): void {
     for (const listener of this.eventListeners) {
-      listener.call(listener, reasons, this);
+      listener.call(listener, events, this);
     }
   }
 }

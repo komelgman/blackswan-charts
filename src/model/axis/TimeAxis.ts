@@ -13,7 +13,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
 
   // eslint-disable-next-line no-useless-constructor
   public constructor(tvaClerk: TVAClerk, textOptions: TextStyle) {
-    super(tvaClerk, textOptions);
+    super('time', tvaClerk, textOptions);
   }
 
   public postConstruct(): void {
