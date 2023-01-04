@@ -1,3 +1,4 @@
+import { isString } from '@/misc/strict-type-checks';
 import type { InvertedValue } from '@/model/axis/PriceAxis';
 import type { DataSourceId } from '@/model/datasource/DataSource';
 import type HasCenterPos from '@/model/options/HasCenterPos';
@@ -10,6 +11,14 @@ export declare type ExternalDrawingId = [DataSourceId, DrawingId];
 export declare type DrawingReference = DrawingId | ExternalDrawingId;
 export declare type DrawingType = string;
 export declare type HandleId = string;
+
+export function isEqualDrawingReference(ref1: DrawingReference, ref2: DrawingReference): boolean {
+  if (isString(ref1)) {
+    return isString(ref2) && ref1 === ref2;
+  }
+
+  return !isString(ref2) && ref1[0] === ref2[0] && ref1[1] === ref2[1];
+}
 
 export interface DrawingOptions<DataType = any> {
   id: DrawingId; // todo: think about remove

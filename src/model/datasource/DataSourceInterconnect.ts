@@ -76,19 +76,24 @@ export default class DataSourceInterconnect {
       }
 
       const needUpdate: Set<DataSource> = new Set<DataSource>();
+      const isInternal: boolean = isString(descriptor.ref);
+      const externalRef: DrawingReference = isInternal ? [srcDs.id, descriptor.ref as DrawingId] : descriptor.ref;
+      const internalRef: DrawingReference = isInternal ? descriptor.ref : descriptor.ref[1];
 
       if (shareWith === '*') {
         for (const [cid, dssp] of this.sharedProcessors) {
           if (srcDs.id !== cid) {
-            dssp.addEntry(srcDs.id, entry);
+            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
+            dssp.addEntry(entryRef, entry[0].options);
             needUpdate.add(dssp.dataSource);
           }
         }
       } else {
-        for (const cid of [...shareWith, srcDs.id]) {
+        for (const cid of [...shareWith, externalRef[0]]) {
           if (srcDs.id !== cid) {
             const dssp: DataSourceSharedEntriesProcessor = this.sharedProcessors.get(cid) as DataSourceSharedEntriesProcessor;
-            dssp.addEntry(srcDs.id, entry);
+            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
+            dssp.addEntry(entryRef, entry[0].options);
             needUpdate.add(dssp.dataSource);
           }
         }
@@ -121,7 +126,7 @@ export default class DataSourceInterconnect {
           }
         }
       } else {
-        for (const cid of [...shareWith, srcDs.id]) {
+        for (const cid of [...shareWith, externalRef[0]]) {
           if (srcDs.id !== cid) {
             const dssp: DataSourceSharedEntriesProcessor = this.sharedProcessors.get(cid) as DataSourceSharedEntriesProcessor;
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;

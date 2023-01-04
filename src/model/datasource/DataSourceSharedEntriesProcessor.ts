@@ -1,11 +1,10 @@
-import { isString } from '@/misc/strict-type-checks';
+import { clone, isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceId } from '@/model/datasource/DataSource';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
-import type { StorageEntry } from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingReference } from '@/model/datasource/Drawing';
+import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 
 export default class DataSourceSharedEntriesProcessor {
   public readonly dataSource: DataSource;
@@ -39,16 +38,22 @@ export default class DataSourceSharedEntriesProcessor {
     }
   }
 
-  public attachSharedEntriesFrom(sourceDataSource: DataSource): void {
+  public attachSharedEntriesFrom(source: DataSource): void {
     // this.checkWeAreNotInProxy();
 
     const { storage } = this;
-    const headref = storage.head;
-    for (const entry of sourceDataSource.sharedProcessor.shared(this.dataSource.id)) {
+    const headref = storage.head?.value[0].ref;
+    for (const entry of source.sharedProcessor.shared(this.dataSource.id)) {
+      const { ref, options } = entry[0];
+      if (!isString(ref)) {
+        throw new Error('Illegal state: try to attach external entry as shared');
+      }
+
+      const newEntry: DataSourceEntry = this.createEntry([source.id, ref], options);
       if (headref === undefined) {
-        storage.push(this.createExternalEntry(sourceDataSource.id, entry));
+        storage.push(newEntry);
       } else {
-        storage.insertBefore(headref.value[0].ref, this.createExternalEntry(sourceDataSource.id, entry));
+        storage.insertBefore(headref, newEntry);
       }
     }
   }
@@ -76,18 +81,18 @@ export default class DataSourceSharedEntriesProcessor {
     this.addReason(DataSourceChangeEventReason.UpdateEntry, [entry], true);
   }
 
-  public addEntry(dsId: DataSourceId, entry: Readonly<DataSourceEntry<unknown>>) {
+  public addEntry(entryRef: DrawingReference, options: Omit<DrawingOptions, 'id'>) {
     const { storage } = this;
-    const [, tail] = this.getRangeForExternalDS(dsId);
-    const externalEntry = this.createExternalEntry(dsId, entry);
+    const [, tail] = storage.getRange(entryRef);
+    const entry = this.createEntry(entryRef, options);
 
     if (tail) {
-      storage.insertAfter(tail, externalEntry);
+      storage.insertAfter(tail, entry);
     } else {
-      storage.unshift(externalEntry);
+      storage.unshift(entry);
     }
 
-    this.addReason(DataSourceChangeEventReason.AddEntry, [externalEntry], true);
+    this.addReason(DataSourceChangeEventReason.AddEntry, [entry], true);
   }
 
   public removeEntry(ref: DrawingReference): void {
@@ -95,45 +100,15 @@ export default class DataSourceSharedEntriesProcessor {
     this.addReason(DataSourceChangeEventReason.RemoveEntry, [entry], true);
   }
 
-  private getRangeForExternalDS(dsId: DataSourceId): [DrawingReference?, DrawingReference?] {
-    const { storage } = this;
-    if (storage.head === undefined) {
-      return [];
+  private createEntry(ref: DrawingReference, options: Omit<DrawingOptions, 'id'>): DataSourceEntry {
+    if (isString(ref)) {
+      return [{ ref, options }];
     }
 
-    let entry: StorageEntry | undefined = storage.head;
-    let head: DrawingReference | undefined;
-    let tail: DrawingReference | undefined;
-
-    while (entry) {
-      const entryRef: DrawingReference = entry.value[0].ref;
-      if (isString(entryRef)) {
-        break;
-      }
-
-      if (entryRef[0] === dsId) {
-        if (head === undefined) {
-          head = entry.value[0].ref;
-        }
-
-        tail = entry.value[0].ref;
-      }
-
-      entry = entry.next;
+    if (ref[0] === this.dataSource.id) {
+      throw new Error('Illegal argument: ref[0] === this.dataSource.id');
     }
 
-    return [head, tail];
-  }
-
-  private createExternalEntry(dsId: DataSourceId, externalEntry: Readonly<DataSourceEntry>): DataSourceEntry {
-    const [externalDescriptor] = externalEntry;
-    if (!isString(externalDescriptor.ref)) {
-      throw new Error('Illegal argument: external entry cant be shared');
-    }
-
-    return [{
-      ref: [dsId, externalDescriptor.ref],
-      options: externalDescriptor.options,
-    }];
+    return [{ ref: clone(ref), options }];
   }
 }

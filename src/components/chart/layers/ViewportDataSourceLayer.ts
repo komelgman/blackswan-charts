@@ -30,7 +30,8 @@ export default class ViewportDataSourceLayer extends Layer {
   }
 
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
-    if (events.has(DataSourceChangeEventReason.CacheInvalidated)) {
+    const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
+    if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
       this.invalid = true;
     }
   };

@@ -4,12 +4,10 @@ import IdHelper from '@/model/tools/IdHelper';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import TimeVarianceAuthority from '../../history/TimeVarianceAuthority';
-// import type { DataSourceChangeEventsMap } from '../DataSourceChangeEventListener';
-// import DataSourceChangeEventReason from '../DataSourceChangeEventReason';
-import DataSourceInterconnect from '../DataSourceInterconnect';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 
-describe('DataSourceSharedEntriesProcessor', () => {
+describe('DataSourceSharedEntriesProcessor | DataSource operations', () => {
   let interconnect: DataSourceInterconnect;
   let ds1: DataSource;
   let ds2: DataSource;
@@ -90,64 +88,114 @@ describe('DataSourceSharedEntriesProcessor', () => {
     ds3.tvaClerk = tva.clerk;
   });
 
-  it('test add/remove DataSource', () => {
+  it('test add DataSource', () => {
     interconnect.addDataSource(ds1);
+
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
-      .toEqual([drawing0.id, drawing1.id, drawing2.id]);
+      .toEqual([
+        drawing0.id,
+        drawing1.id,
+        drawing2.id,
+      ]);
+
     expect(getDrawingReferencesFromIterator(ds2.filtered(() => true)))
-      .toEqual([drawing2.id, drawing3.id, drawing4.id]);
+      .toEqual([
+        drawing2.id,
+        drawing3.id,
+        drawing4.id,
+      ]);
+
+    expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
+      .toEqual([
+        drawing3.id,
+        drawing5.id,
+      ]);
 
     interconnect.addDataSource(ds2);
-    expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
-      .toEqual([[ds2.id, drawing3.id], drawing0.id, drawing1.id, drawing2.id]);
-    expect(getDrawingReferencesFromIterator(ds2.filtered(() => true)))
-      .toEqual([[ds1.id, drawing0.id], [ds1.id, drawing1.id], drawing2.id, drawing3.id, drawing4.id]);
 
-    interconnect.removeDataSource(ds1.id);
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
-      .toEqual([drawing0.id, drawing1.id, drawing2.id]);
-    expect(getDrawingReferencesFromIterator(ds2.filtered(() => true)))
-      .toEqual([drawing2.id, drawing3.id, drawing4.id]);
-  });
+      .toEqual([
+        [ds2.id, drawing3.id],
+        drawing0.id,
+        drawing1.id,
+        drawing2.id,
+      ]);
 
-  it('test add new shared entry', () => {
-    interconnect.addDataSource(ds1);
-    interconnect.addDataSource(ds2);
+    expect(getDrawingReferencesFromIterator(ds2.filtered(() => true)))
+      .toEqual([
+        [ds1.id, drawing0.id],
+        [ds1.id, drawing1.id],
+        drawing2.id,
+        drawing3.id,
+        drawing4.id,
+      ]);
+
+    expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
+      .toEqual([
+        drawing3.id,
+        drawing5.id,
+      ]);
+
     interconnect.addDataSource(ds3);
-
-    // let addedEntries: DrawingReference[] = [];
-    // let removedEntries: DrawingReference[] = [];
-    // const options: any = {
-    //   eventListener: (events: DataSourceChangeEventsMap): void => {
-    //     addedEntries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry[0].ref));
-    //     removedEntries = (events.get(DataSourceChangeEventReason.RemoveEntry) || []).map((event) => (event.entry[0].ref));
-    //   },
-    // };
-
-    // const listenerSpy = vi.spyOn(options, 'eventListener');
-    // ds1.addChangeEventListener(options.eventListener);
-    const ds2NewId = ds2.getNewId('HLine');
-    ds2.beginTransaction();
-    ds2.add({
-      id: ds2NewId,
-      title: 'test hline',
-      type: 'HLine',
-      data: { def: 0, style: { lineWidth: 1, fill: 0, color: '#00AA00' } },
-      locked: false,
-      visible: true,
-      shareWith: ['ds1'],
-    });
-    ds2.endTransaction();
 
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([
         [ds3.id, drawing3.id],
         [ds3.id, drawing5.id],
         [ds2.id, drawing3.id],
-        [ds2.id, ds2NewId],
         drawing0.id,
         drawing1.id,
         drawing2.id,
+      ]);
+
+    expect(getDrawingReferencesFromIterator(ds2.filtered(() => true)))
+      .toEqual([
+        [ds3.id, drawing5.id],
+        [ds1.id, drawing0.id],
+        [ds1.id, drawing1.id],
+        drawing2.id,
+        drawing3.id,
+        drawing4.id,
+      ]);
+
+    expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
+      .toEqual([
+        [ds2.id, drawing2.id],
+        [ds2.id, drawing4.id],
+        [ds1.id, drawing0.id],
+        [ds1.id, drawing2.id],
+        drawing3.id,
+        drawing5.id,
+      ]);
+  });
+
+  it('test remove DataSource', () => {
+    interconnect.addDataSource(ds1);
+    interconnect.addDataSource(ds2);
+    interconnect.addDataSource(ds3);
+
+    interconnect.removeDataSource(ds1.id);
+    expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
+      .toEqual([
+        drawing0.id,
+        drawing1.id,
+        drawing2.id,
+      ]);
+
+    expect(getDrawingReferencesFromIterator(ds2.filtered(() => true)))
+      .toEqual([
+        [ds3.id, drawing5.id],
+        drawing2.id,
+        drawing3.id,
+        drawing4.id,
+      ]);
+
+    expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
+      .toEqual([
+        [ds2.id, drawing2.id],
+        [ds2.id, drawing4.id],
+        drawing3.id,
+        drawing5.id,
       ]);
   });
 });

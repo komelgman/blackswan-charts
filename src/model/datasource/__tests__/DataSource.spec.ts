@@ -8,7 +8,8 @@ import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawin
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import IdHelper from '@/model/tools/IdHelper';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceChangeEventsMap } from '../DataSourceChangeEventListener';
+import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
+import { isEqualDrawingReference } from '@/model/datasource/Drawing';
 
 describe('DataSource', () => {
   let ds: DataSource;
@@ -57,7 +58,7 @@ describe('DataSource', () => {
   }
 
   function getDSEntry(ref: DrawingReference): Readonly<DataSourceEntry> {
-    const filtered: IterableIterator<Readonly<DataSourceEntry>> = ds.filtered((p) => p[0].ref === ref);
+    const filtered: IterableIterator<Readonly<DataSourceEntry>> = ds.filtered((p) => isEqualDrawingReference(p[0].ref, ref));
     return filtered.next().value;
   }
 

@@ -60,11 +60,6 @@ export default class DataSourceInvalidator {
       this.invalidate(entries);
       toRaw(this.viewportModel.dataSource).invalidated(entries);
     }
-
-    if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
-      const removedEntries: DataSourceEntry[] = (events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((e) => (e.entry));
-      toRaw(this.viewportModel.dataSource).invalidated(removedEntries);
-    }
   };
 
   private invalidate(entries: DataSourceEntry[]): void {

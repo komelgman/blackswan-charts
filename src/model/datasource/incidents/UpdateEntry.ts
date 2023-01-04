@@ -2,6 +2,7 @@ import { isEmpty, merge } from '@/misc/strict-type-checks';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { isEqualDrawingReference } from '@/model/datasource/Drawing';
 import type { DrawingOptions } from '@/model/datasource/Drawing';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
@@ -49,7 +50,7 @@ export default class UpdateEntry
     const opDescriptor = op.options.entry[0];
     const descriptor = this.options.entry[0];
 
-    if (opDescriptor.ref !== descriptor.ref) {
+    if (!isEqualDrawingReference(opDescriptor.ref, descriptor.ref)) {
       return false; // update for another one drawing
     }
 

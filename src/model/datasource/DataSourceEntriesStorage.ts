@@ -173,6 +173,52 @@ export default class DataSourceEntriesStorage {
     return storageEntry.value;
   }
 
+  public getRange(entryRef: DrawingReference): [DrawingReference?, DrawingReference?] {
+    const result: [DrawingReference?, DrawingReference?] = [undefined, undefined];
+    const { head, tail } = this;
+
+    if (head === undefined) {
+      return result;
+    }
+
+    const isInternal = isString(entryRef);
+
+    let entry: StorageEntry | undefined = head;
+    if (isInternal) {
+      while (entry) {
+        const currentRef: DrawingReference = entry.value[0].ref;
+        entry = entry.next;
+        if (!isString(currentRef)) {
+          continue;
+        }
+
+        result[0] = currentRef;
+        break;
+      }
+
+      result[1] = tail?.value[0].ref;
+    } else {
+      while (entry) {
+        const currentRef: DrawingReference = entry.value[0].ref;
+        if (isString(currentRef)) {
+          break;
+        }
+
+        if (entryRef[0] === currentRef[0]) {
+          if (result[0] === undefined) {
+            result[0] = currentRef;
+          }
+
+          result[1] = currentRef;
+        }
+
+        entry = entry.next;
+      }
+    }
+
+    return result;
+  }
+
   private refToMapId(ref: DrawingReference): string {
     return isString(ref) ? ref : `${ref[0]}:${ref[1]}`;
   }

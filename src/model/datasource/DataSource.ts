@@ -206,16 +206,12 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    // because we want to create new cloned entry
-    // in the same pane which was original for it
-    // but we can't create id for this entry
-    // todo id helper should be shared (or add support for more complex ID)
-    // if (!isString(entry[0].ref)) {
-    //   send change reason
-    // }
-
     const cloned: DrawingDescriptor = clone(entry[0]);
-    cloned.ref = this.getNewId(cloned.options.type);
+    if (isString(cloned.ref)) {
+      cloned.ref = this.getNewId(cloned.options.type);
+    } else {
+      cloned.ref[1] = this.idHelper.forGroup(cloned.ref[0]).getNewId(cloned.options.type);
+    }
 
     this.tvaClerk.processReport({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,

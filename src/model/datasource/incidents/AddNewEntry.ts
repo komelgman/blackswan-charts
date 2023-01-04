@@ -22,7 +22,13 @@ export default class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryO
     const newEntry: DataSourceEntry = [descriptor];
 
     descriptor.valid = false;
-    storage.push(newEntry);
+    const [, tail] = storage.getRange(descriptor.ref);
+
+    if (tail) {
+      storage.insertAfter(tail, newEntry);
+    } else {
+      storage.unshift(newEntry);
+    }
 
     addReason(DataSourceChangeEventReason.AddEntry, [newEntry]);
   }
