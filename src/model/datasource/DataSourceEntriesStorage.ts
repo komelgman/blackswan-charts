@@ -64,10 +64,10 @@ export default class DataSourceEntriesStorage {
     return this.remove(this.head.value[0].ref)[0];
   }
 
-  public insertAfter(prev: DrawingReference, value: DataSourceEntry): void {
-    const prevEntry = this.refToEntry.get(this.refToMapId(prev));
-    if (!prevEntry) {
-      throw new Error(`Illegal argument: prev entry ref not found: ${prev}`);
+  public insertAfter(target: DrawingReference, value: DataSourceEntry): void {
+    const targetEntry = this.refToEntry.get(this.refToMapId(target));
+    if (!targetEntry) {
+      throw new Error(`Illegal argument: prev entry ref not found: ${target}`);
     }
 
     const key: string = this.refToMapId(value[0].ref);
@@ -75,29 +75,29 @@ export default class DataSourceEntriesStorage {
       throw new Error(`Entry already exists: ${key}`);
     }
 
-    const nextEntry = prevEntry.next;
+    const nextEntry = targetEntry.next;
     const newEntry: StorageEntry = {
       value,
-      prev: prevEntry,
+      prev: targetEntry,
       next: nextEntry,
     };
 
-    if (this.tail === prevEntry) {
+    if (this.tail === targetEntry) {
       this.tail = newEntry;
     }
 
-    prevEntry.next = newEntry;
+    targetEntry.next = newEntry;
     if (nextEntry) {
-      newEntry.prev = newEntry;
+      nextEntry.prev = newEntry;
     }
 
     this.refToEntry.set(key, newEntry);
   }
 
-  public insertBefore(next: DrawingReference, value: DataSourceEntry): void {
-    const nextEntry = this.refToEntry.get(this.refToMapId(next));
-    if (!nextEntry) {
-      throw new Error(`Illegal argument: next entry ref not found: ${next}`);
+  public insertBefore(target: DrawingReference, value: DataSourceEntry): void {
+    const targetEntry = this.refToEntry.get(this.refToMapId(target));
+    if (!targetEntry) {
+      throw new Error(`Illegal argument: next entry ref not found: ${target}`);
     }
 
     const key: string = this.refToMapId(value[0].ref);
@@ -105,18 +105,18 @@ export default class DataSourceEntriesStorage {
       throw new Error(`Entry already exists: ${key}`);
     }
 
-    const prevEntry = nextEntry.prev;
+    const prevEntry = targetEntry.prev;
     const newEntry: StorageEntry = {
       value,
       prev: prevEntry,
-      next: nextEntry,
+      next: targetEntry,
     };
 
-    if (this.head === nextEntry) {
+    if (this.head === targetEntry) {
       this.head = newEntry;
     }
 
-    nextEntry.prev = newEntry;
+    targetEntry.prev = newEntry;
     if (prevEntry) {
       prevEntry.next = newEntry;
     }

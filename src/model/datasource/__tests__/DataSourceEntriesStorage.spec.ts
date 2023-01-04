@@ -46,6 +46,17 @@ describe('DataSourceEntriesStorage', () => {
     return result;
   }
 
+  function getDataSourceInvertedEntries(): DataSourceEntry[] {
+    const result: DataSourceEntry[] = [];
+    let item = storage.tail;
+    while (item !== undefined) {
+      result.push(item.value);
+      item = item.prev;
+    }
+
+    return result;
+  }
+
   beforeEach(async () => {
     storage = new DataSourceEntriesStorage();
   });
@@ -60,6 +71,7 @@ describe('DataSourceEntriesStorage', () => {
 
     expect(() => storage.push(entry3)).toThrowError(/^Entry already exists: e3/);
     expect(getDataSourceEntries()).toEqual([entry1, entry2, entry3]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry3, entry2, entry1]);
     expect(storage.head?.value).toEqual(entry1);
     expect(storage.tail?.value).toEqual(entry3);
 
@@ -67,6 +79,7 @@ describe('DataSourceEntriesStorage', () => {
 
     expect(popped).toEqual(entry3);
     expect(getDataSourceEntries()).toEqual([entry1, entry2]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry2, entry1]);
     expect(storage.head?.value).toEqual(entry1);
     expect(storage.tail?.value).toEqual(entry2);
   });
@@ -77,17 +90,20 @@ describe('DataSourceEntriesStorage', () => {
 
     storage.unshift(entry3);
     expect(getDataSourceEntries()).toEqual([entry3, entry1, entry2]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry2, entry1, entry3]);
     expect(storage.head?.value).toEqual(entry3);
     expect(storage.tail?.value).toEqual(entry2);
 
     expect(() => storage.unshift(entry1)).toThrowError(/^Entry already exists: e1/);
     expect(getDataSourceEntries()).toEqual([entry3, entry1, entry2]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry2, entry1, entry3]);
     expect(storage.head?.value).toEqual(entry3);
     expect(storage.tail?.value).toEqual(entry2);
 
     const shifted: DataSourceEntry = storage.shift();
     expect(shifted).toEqual(entry3);
     expect(getDataSourceEntries()).toEqual([entry1, entry2]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry2, entry1]);
     expect(storage.head?.value).toEqual(entry1);
     expect(storage.tail?.value).toEqual(entry2);
   });
@@ -98,12 +114,14 @@ describe('DataSourceEntriesStorage', () => {
     storage.push(entry1);
     expect(() => storage.insertBefore('e1', entry1)).toThrowError(/^Entry already exists: e1/);
     expect(getDataSourceEntries()).toEqual([entry1]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry1]);
     expect(storage.head?.value).toEqual(entry1);
     expect(storage.tail?.value).toEqual(entry1);
 
     storage.insertBefore('e1', entry2);
     storage.insertBefore('e1', entry3);
     expect(getDataSourceEntries()).toEqual([entry2, entry3, entry1]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry1, entry3, entry2]);
     expect(storage.head?.value).toEqual(entry2);
     expect(storage.tail?.value).toEqual(entry1);
   });
@@ -120,6 +138,7 @@ describe('DataSourceEntriesStorage', () => {
     storage.insertAfter('e1', entry2);
     storage.insertAfter('e1', entry3);
     expect(getDataSourceEntries()).toEqual([entry1, entry3, entry2]);
+    expect(getDataSourceInvertedEntries()).toEqual([entry2, entry3, entry1]);
     expect(storage.head?.value).toEqual(entry1);
     expect(storage.tail?.value).toEqual(entry2);
   });

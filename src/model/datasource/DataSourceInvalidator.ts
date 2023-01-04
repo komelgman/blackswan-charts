@@ -10,27 +10,19 @@ import type Sketcher from '@/model/sketchers/Sketcher';
 import type Viewport from '@/model/viewport/Viewport';
 
 export default class DataSourceInvalidator {
-  private readonly viewportModel: Viewport;
-  private contextValue!: LayerContext;
+  public context!: LayerContext;
+  private readonly viewport: Viewport;
   private unwatch!: WatchStopHandle;
 
-  constructor(viewportModel: Viewport) {
-    this.viewportModel = viewportModel;
-  }
-
-  public set context(value: LayerContext) {
-    this.contextValue = value;
-  }
-
-  public get context(): LayerContext {
-    return this.contextValue;
+  constructor(viewport: Viewport) {
+    this.viewport = viewport;
   }
 
   public installListeners(): void {
-    const { dataSource } = this.viewportModel;
+    const { dataSource } = this.viewport;
     dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
 
-    const { priceAxis, timeAxis } = this.viewportModel;
+    const { priceAxis, timeAxis } = this.viewport;
     this.unwatch = watch([
       priceAxis.scale,
       priceAxis.range,
@@ -45,7 +37,7 @@ export default class DataSourceInvalidator {
       this.unwatch();
     }
 
-    const { dataSource } = this.viewportModel;
+    const { dataSource } = this.viewport;
     dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
@@ -58,7 +50,7 @@ export default class DataSourceInvalidator {
 
     if (entries.length) {
       this.invalidate(entries);
-      toRaw(this.viewportModel.dataSource).invalidated(entries);
+      toRaw(this.viewport.dataSource).invalidated(entries);
     }
   };
 
@@ -74,17 +66,17 @@ export default class DataSourceInvalidator {
       }
 
       const drawingType: DrawingType = entry[0].options.type;
-      if (!this.viewportModel.hasSketcher(drawingType)) {
+      if (!this.viewport.hasSketcher(drawingType)) {
         console.warn(`unknown drawing type ${drawingType}`);
         continue;
       }
 
-      const sketcher: Sketcher = this.viewportModel.getSketcher(drawingType) as Sketcher;
-      sketcher.draw(entry, this.viewportModel);
+      const sketcher: Sketcher = this.viewport.getSketcher(drawingType);
+      sketcher.draw(entry, this.viewport);
     }
   }
 
   private resetDataSourceCache(): void {
-    toRaw(this.viewportModel.dataSource).resetCache();
+    toRaw(this.viewport.dataSource).resetCache();
   }
 }
