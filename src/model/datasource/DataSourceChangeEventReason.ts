@@ -1,10 +1,10 @@
 enum DataSourceChangeEventReason {
-  OrderChanged,
-  AddEntry,
-  UpdateEntry,
-  RemoveEntry,
-  CacheReset,
-  CacheInvalidated,
+  OrderChanged = 'OrderChanged',
+  AddEntry = 'AddEntry',
+  UpdateEntry = 'UpdateEntry',
+  RemoveEntry = 'RemoveEntry',
+  CacheReset = 'CacheReset',
+  CacheInvalidated = 'CacheInvalidated',
 }
 
 export default DataSourceChangeEventReason;

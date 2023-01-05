@@ -10,12 +10,25 @@ import type Sketcher from '@/model/sketchers/Sketcher';
 import type Viewport from '@/model/viewport/Viewport';
 
 export default class DataSourceInvalidator {
-  public context!: LayerContext;
+  private contextValue!: LayerContext;
   private readonly viewport: Viewport;
   private unwatch!: WatchStopHandle;
+  private invalid?: DataSourceEntry[];
 
   constructor(viewport: Viewport) {
     this.viewport = viewport;
+  }
+
+  public get context(): LayerContext {
+    return this.contextValue;
+  }
+
+  public set context(value: LayerContext) {
+    this.contextValue = value;
+    if (this.invalid !== undefined) {
+      this.invalidate(this.invalid);
+      this.invalid = undefined;
+    }
   }
 
   public installListeners(): void {
@@ -50,12 +63,12 @@ export default class DataSourceInvalidator {
 
     if (entries.length) {
       this.invalidate(entries);
-      toRaw(this.viewport.dataSource).invalidated(entries);
     }
   };
 
   private invalidate(entries: DataSourceEntry[]): void {
     if (this.context === undefined) {
+      this.invalid = entries;
       return;
     }
 
@@ -74,6 +87,8 @@ export default class DataSourceInvalidator {
       const sketcher: Sketcher = this.viewport.getSketcher(drawingType);
       sketcher.draw(entry, this.viewport);
     }
+
+    toRaw(this.viewport.dataSource).invalidated(entries);
   }
 
   private resetDataSourceCache(): void {

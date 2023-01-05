@@ -44,6 +44,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
 
   public invalidate(): void {
     if (this.context === undefined) {
+      console.warn('this.context === undefined');
       return;
     }
 
