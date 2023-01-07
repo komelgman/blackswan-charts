@@ -30,7 +30,6 @@
     "@types/node": "^18.11.18",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vitejs/plugin-vue-jsx": "^3.0.0",
-    "@vue/babel-plugin-jsx": "^1.1.1",
     "@vue/eslint-config-airbnb-with-typescript": "^7.0.0",
     "@vue/test-utils": "^2.2.7",
     "@vue/tsconfig": "^0.1.3",

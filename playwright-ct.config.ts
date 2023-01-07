@@ -6,7 +6,7 @@ import viteConfig from './vite.config';
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
-  testDir: './',
+  testDir: './src',
   testMatch: '**/__pct__/**',
   testIgnore: '**/__tests__/**',
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
