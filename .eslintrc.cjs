@@ -59,6 +59,17 @@ module.exports = {
     'vuejs-accessibility/click-events-have-key-events': 0,
     'jsx-a11y/no-noninteractive-tabindex': 0,
     'jsx-a11y/no-noninteractive-element-interactions': 0,
+
+    'import/no-extraneous-dependencies': ['error', {
+      devDependencies: [
+        './**.config.ts',
+        '**/__pct__/**', // playwright components tests pattern
+        '**/e2e/**', // playwright e2e tests pattern
+        '**/__tests__/**', // vitest unit tests pattern
+      ],
+      optionalDependencies: false,
+    }],
+
   },
   settings: {
     ...createAliasSetting({

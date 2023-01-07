@@ -1,19 +1,18 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
+    {{ msg }}
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
 
 @Options({
-  props: {
-    msg: String,
-  },
 })
 export default class HelloWorld extends Vue {
-  msg!: string;
+  @Prop({ type: String })
+  public msg!: string;
 
   public created(): void {
     console.log('was created');
