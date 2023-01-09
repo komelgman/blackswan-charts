@@ -28,7 +28,9 @@ coverage
 *.sw?
 
 test-results/
-playwright-report/
 /test-results/
-/playwright-report/
 /playwright/.cache/
+/tests/.e2e-report/
+/tests/.component-report/
+/tests/.component-snapshots/
+/tests/component-template/.cache/

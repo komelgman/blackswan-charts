@@ -1,8 +1,8 @@
+/// <reference types="vitest" />
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import { configDefaults } from 'vitest/config';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,6 +24,6 @@ export default defineConfig({
   },
 
   test: {
-    exclude: [...configDefaults.exclude, '**/__pct__/**'],
+    include: ['../tests/unit/**/*.{test,spec}.{ts,tsx}'],
   },
 });
