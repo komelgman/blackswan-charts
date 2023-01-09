@@ -8,7 +8,9 @@ export interface HasPostConstruct {
 type Constructor<T> = new (...args: any[]) => T;
 
 export default function Reactive<T extends Record<string, any>>(ConstructorFunction: Constructor<T>): Constructor<T> {
+  // eslint-disable-next-line func-names
   const newConstructor = function (...args: any[]): T {
+    // eslint-disable-next-line func-names
     const Proxy = function (): T {
       const result: T = (reactive(new ConstructorFunction(...args)) as any) as T;
 

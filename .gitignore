@@ -29,7 +29,6 @@ coverage
 
 test-results/
 /test-results/
-/playwright/.cache/
 /tests/.e2e-report/
 /tests/.component-report/
 /tests/.component-snapshots/

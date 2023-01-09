@@ -4,6 +4,7 @@ import HelloWorld from '@/components/HelloWorld.vue';
 test.use({ viewport: { width: 500, height: 500 } });
 
 test('should work1', async ({ mount }) => {
+  // @ts-ignore
   const component = await mount(<HelloWorld msg="Greetings" />);
   await expect(component).toContainText('Greetings');
 });

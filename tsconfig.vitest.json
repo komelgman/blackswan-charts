@@ -1,7 +1,5 @@
 {
-  "extends": "./tsconfig.app.json",
-  "include": ["../tests/unit/**/*.{test,spec}.{ts,tsx}"],
-  "exclude": [],
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "lib": [],

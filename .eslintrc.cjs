@@ -63,9 +63,8 @@ module.exports = {
     'import/no-extraneous-dependencies': ['error', {
       devDependencies: [
         './**.config.ts',
-        '**/__pct__/**', // playwright components tests pattern
-        '**/e2e/**', // playwright e2e tests pattern
-        '**/__tests__/**', // vitest unit tests pattern
+        './tests/**',
+        '.eslintrc.cjs',
       ],
       optionalDependencies: false,
     }],

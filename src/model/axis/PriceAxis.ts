@@ -1,5 +1,5 @@
-import type { EntityId } from '@/model/tools/IdBuilder';
 import { reactive } from 'vue';
+import type { EntityId } from '@/model/tools/IdBuilder';
 import Reactive from '@/misc/reactive-decorator';
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import { clone } from '@/misc/strict-type-checks';
