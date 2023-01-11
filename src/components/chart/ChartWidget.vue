@@ -13,7 +13,7 @@
       :items="chart.panes"
       direction="vertical"
       resizable
-      @drag-handle-moved="chart.onPaneSizeChanged.bind(chart)"
+      @drag-handle-moved="onPaneSizeChanged"
     >
       <template v-slot:default="props">
         <box-layout>
@@ -57,10 +57,15 @@
 </template>
 
 <script lang="ts">
-import type { CSSProperties } from 'vue';
+import { computed, reactive, watch } from 'vue';
+import type { CSSProperties, WatchStopHandle } from 'vue';
 import { Prop, Provide } from 'vue-property-decorator';
 import { Options, Vue } from 'vue-class-component';
+import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
+import type { PaneId } from '@/components/layout/PaneDescriptor';
+import PanesSizeChanged from '@/model/incidents/PanesSizeChanged';
 import type Chart from '@/model/Chart';
+import type { PaneRegistrationEvent } from '@/model/Chart';
 import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
 import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
@@ -101,6 +106,7 @@ export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: 
 export default class ChartWidget extends Vue {
   @Prop() chart!: Chart;
 
+  private readonly unwatchers: Map<PaneId, WatchStopHandle[]> = new Map();
   private contextMenuMap: WeakMap<any, ContextMenuOptionsProvider> = new WeakMap<any, ContextMenuOptionsProvider>();
 
   @Provide({ reactive: true })
@@ -109,17 +115,28 @@ export default class ChartWidget extends Vue {
   }
 
   @Provide({ reactive: true })
-  private get chartState(): ChartState {
-    return this.chart.state;
+  private readonly chartState: ChartState = reactive({ priceWidgetWidth: -1, timeWidgetHeight: -1 });
+
+  created(): void {
+    // todo: unwatch all unhandled watchers
+    watch(
+      computed((): number => this.chartStyle.text.fontSize),
+      (v) => {
+        this.chartState.timeWidgetHeight = v + 16;
+      },
+      { immediate: true },
+    );
   }
 
   mounted(): void {
     const htmlBodyElement: HTMLBodyElement = document.querySelector('body') as HTMLBodyElement;
     htmlBodyElement.style.backgroundColor = this.chart.style.backgroundColor;
+    this.chart.addPaneRegistrationEventListener(this.onPaneRegEventListener);
   }
 
   unmounted(): void {
     (document.querySelector('body') as HTMLBodyElement).style.backgroundColor = '';
+    this.chart.removePaneRegistrationEventListener(this.onPaneRegEventListener);
   }
 
   getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
@@ -155,8 +172,48 @@ export default class ChartWidget extends Vue {
     this.$el.blur();
   }
 
-  onPaneSizeChanged(e: PanesSizeChangeEvent): void {
-    this.chart.onPaneSizeChanged(e);
+  onPaneSizeChanged(event: PanesSizeChangeEvent): void {
+    this.chart.tvaClerk
+      .processReport({
+        protocolOptions: { incident: 'chart-pane-size-changed', timeout: 1000 },
+        incident: new PanesSizeChanged({
+          event,
+        }),
+        immediate: false,
+      });
+  }
+
+  onPaneRegEventListener(event: PaneRegistrationEvent): void {
+    const { pane, type } = event;
+    if (type === 'install') {
+      if (!this.unwatchers.has(pane.id)) {
+        this.unwatchers.set(pane.id, []); // why there is used array???
+      }
+
+      (this.unwatchers.get(pane.id) as WatchStopHandle[]).push(
+        watch(pane.model.priceAxis.contentWidth, this.updatePriceAxisWidth, { immediate: true }),
+      );
+    } else {
+      if (!this.unwatchers.has(pane.id)) {
+        throw new Error(`Oops: !this.unwatchers.has(${pane.id})`);
+      }
+
+      for (const unwatch of (this.unwatchers.get(pane.id) as WatchStopHandle[])) {
+        unwatch();
+      }
+    }
+  }
+
+  private updatePriceAxisWidth(): void {
+    let maxLabelWidth = -1;
+    for (const pane of this.chart.panes) {
+      const labelWidth: number = pane.model.priceAxis.contentWidth.value;
+      if (maxLabelWidth < labelWidth) {
+        maxLabelWidth = labelWidth;
+      }
+    }
+
+    this.chartState.priceWidgetWidth = maxLabelWidth + 2 * PRICE_LABEL_PADDING;
   }
 
   onKeyDown(e: KeyboardEvent): void {

@@ -46,16 +46,16 @@ export default class TimeVarianceAuthority {
     return this.current;
   }
 
-  public canUndo(): boolean {
+  public get isCanUndo(): boolean {
     return this.current.prev !== undefined;
   }
 
-  public canRedo(): boolean {
+  public get isCanRedo(): boolean {
     return this.current.next !== undefined;
   }
 
   public redo(): void {
-    if (!this.canRedo()) {
+    if (!this.isCanRedo) {
       console.warn('Illegal state, can\'t do redo');
       return;
     }
@@ -67,7 +67,7 @@ export default class TimeVarianceAuthority {
   }
 
   public undo(): void {
-    if (!this.canUndo()) {
+    if (!this.isCanUndo) {
       console.warn('Illegal state, can\'t do undo');
       return;
     }
@@ -86,7 +86,7 @@ export default class TimeVarianceAuthority {
   }
 
   public clear(): void {
-    while (this.canUndo()) {
+    while (this.isCanUndo) {
       const tmp = this.current;
       this.current = tmp.prev as TVAProtocol;
       this.current.next = undefined;
@@ -105,7 +105,7 @@ export default class TimeVarianceAuthority {
     }
 
     if (report.incident) {
-      protocol.addIncident(report.incident);
+      protocol.addIncident(report.incident, report.immediate);
     }
 
     if (report.lifeHooks) {

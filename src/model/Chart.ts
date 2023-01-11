@@ -1,17 +1,14 @@
-import { computed, reactive, watch } from 'vue';
-import type { WatchStopHandle } from 'vue';
+import { reactive } from 'vue';
+import type TVAClerk from '@/model/history/TVAClerk';
 import type { ChartOptions } from '@/components/chart/ChartWidget.vue';
 import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
 import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
-import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
 import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
-import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import { clone, merge } from '@/misc/strict-type-checks';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
 import TimeAxis from '@/model/axis/TimeAxis';
-import type ChartState from '@/model/ChartState';
 import type { ChartStyle } from '@/model/ChartStyle';
 import type DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
@@ -19,7 +16,6 @@ import type { DrawingType } from '@/model/datasource/Drawing';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import AddNewPane from '@/model/incidents/AddNewPane';
 import InvalidatePanesSizes from '@/model/incidents/InvalidatePanesSizes';
-import PanesSizeChanged from '@/model/incidents/PanesSizeChanged';
 import RemovePane from '@/model/incidents/RemovePane';
 import SwapPanes from '@/model/incidents/SwapPanes';
 import TogglePane from '@/model/incidents/TogglePane';
@@ -28,40 +24,45 @@ import type Sketcher from '@/model/sketchers/Sketcher';
 import type Viewport from '@/model/viewport/Viewport';
 import type { ViewportOptions } from '@/model/viewport/Viewport';
 
+export interface PaneRegistrationEvent {
+  type: 'install' | 'uninstall';
+  pane: PaneDescriptor<Viewport>;
+}
+
+export declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) => void;
+
 export default class Chart {
+  private readonly paneRegEventListeners: PaneRegistrationEventListener[];
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly tva: TimeVarianceAuthority;
-  private readonly unwatchers: Map<PaneId, WatchStopHandle[]> = new Map();
   private readonly dataSourceInterconnect: DataSourceInterconnect;
   public readonly timeAxis: TimeAxis;
-  public readonly state: ChartState;
   public readonly style: ChartStyle;
   public readonly panes: PaneDescriptor<Viewport>[];
 
   constructor(chartOptions?: ChartOptions) {
     const chartStyle = this.createChartStyle(chartOptions?.style);
+    this.paneRegEventListeners = [];
     this.tva = new TimeVarianceAuthority();
     this.panes = reactive([]);
-    this.state = reactive({
-      priceWidgetWidth: -1,
-      timeWidgetHeight: -1,
-    });
     this.style = reactive(chartStyle);
     this.sketchers = this.createSketchers(chartStyle, chartOptions?.sketchers);
-    // todo: waiting for support experimentalDecorators in playwright
-    // this.timeAxis = new TimeAxis(this.tva.clerk, chartStyle.text);
-    this.timeAxis = reactive(new TimeAxis(this.tva.clerk, chartStyle.text)) as TimeAxis;
-    this.timeAxis.postConstruct();
-    // end: todo
+    this.timeAxis = this.createTimeAxis(chartStyle);
     this.dataSourceInterconnect = new DataSourceInterconnect();
+  }
 
-    watch(
-      computed((): number => this.style.text.fontSize),
-      (v) => {
-        this.state.timeWidgetHeight = v + 16;
-      },
-      { immediate: true },
-    );
+  public addPaneRegistrationEventListener(listener: PaneRegistrationEventListener): void {
+    this.paneRegEventListeners.push(listener);
+  }
+
+  public removePaneRegistrationEventListener(listener: PaneRegistrationEventListener): void {
+    const index = this.paneRegEventListeners.findIndex((v) => v === listener);
+    if (index < 0) {
+      console.error('Event listener not found');
+      return;
+    }
+
+    this.paneRegEventListeners.splice(index, 1);
   }
 
   public updateStyle(options: DeepPartial<ChartStyle>): void {
@@ -156,32 +157,28 @@ export default class Chart {
       .trySign();
   }
 
-  public onPaneSizeChanged(event: PanesSizeChangeEvent): void {
-    this.tva
-      .getProtocol({ incident: 'chart-controller-pane-size-changed', timeout: 1000 })
-      .addIncident(new PanesSizeChanged({
-        event,
-      }), false);
-  }
-
   public paneModel(paneId: PaneId): Viewport {
     return this.panes[this.indexByPaneId(paneId)].model;
+  }
+
+  public get tvaClerk(): TVAClerk {
+    return this.tva.clerk;
   }
 
   public clearHistory(): void {
     this.tva.clear();
   }
 
-  public canRedo(): boolean {
-    return this.tva.canRedo();
+  public get isCanRedo(): boolean {
+    return this.tva.isCanRedo;
   }
 
   public redo(): void {
     this.tva.redo();
   }
 
-  public canUndo(): boolean {
-    return this.tva.canUndo();
+  public get isCanUndo(): boolean {
+    return this.tva.isCanUndo;
   }
 
   public undo(): void {
@@ -194,6 +191,16 @@ export default class Chart {
     }
 
     return clone(chartOptionsDefaults);
+  }
+
+  private createTimeAxis(chartStyle: ChartStyle): TimeAxis {
+    // todo: waiting for support experimentalDecorators in playwright
+    // this.timeAxis = new TimeAxis(this.tva.clerk, chartStyle.text);
+    const timeAxis = reactive(new TimeAxis(this.tva.clerk, chartStyle.text)) as TimeAxis;
+    timeAxis.postConstruct();
+    // end: todo
+
+    return timeAxis;
   }
 
   private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {
@@ -215,41 +222,31 @@ export default class Chart {
   private installPane(paneId: PaneId): void {
     console.debug(`ChartController.installPane: ${paneId}`);
 
-    if (!this.unwatchers.has(paneId)) {
-      this.unwatchers.set(paneId, []); // why there is used array???
-    }
-
     const pane = this.panes[this.indexByPaneId(paneId)];
-    const { priceAxis, dataSource } = pane.model;
-    (this.unwatchers.get(paneId) as WatchStopHandle[]).push(
-      watch(priceAxis.contentWidth, this.updatePriceAxisWidth.bind(this), { immediate: true }),
-    );
+    this.firePaneRegistrationEvent({
+      type: 'install',
+      pane,
+    });
 
+    const { dataSource } = pane.model;
     this.dataSourceInterconnect.addDataSource(dataSource);
   }
 
   private uninstallPane(paneId: PaneId): void {
-    if (!this.unwatchers.has(paneId)) {
-      throw new Error(`Oops: !this.unwatchers.has(${paneId})`);
-    }
+    console.debug(`ChartController.uninstallPane: ${paneId}`);
 
     this.dataSourceInterconnect.removeDataSource(paneId);
 
-    for (const unwatch of (this.unwatchers.get(paneId) as WatchStopHandle[])) {
-      unwatch();
-    }
+    this.firePaneRegistrationEvent({
+      type: 'uninstall',
+      pane: this.panes[this.indexByPaneId(paneId)],
+    });
   }
 
-  private updatePriceAxisWidth(): void {
-    let maxLabelWidth = -1;
-    for (const pane of this.panes) {
-      const labelWidth: number = pane.model.priceAxis.contentWidth.value;
-      if (maxLabelWidth < labelWidth) {
-        maxLabelWidth = labelWidth;
-      }
+  private firePaneRegistrationEvent(event: PaneRegistrationEvent): void {
+    for (const listener of this.paneRegEventListeners) {
+      listener.call(listener, event);
     }
-
-    this.state.priceWidgetWidth = maxLabelWidth + 2 * PRICE_LABEL_PADDING;
   }
 
   private indexByPaneId(paneId: PaneId): number {

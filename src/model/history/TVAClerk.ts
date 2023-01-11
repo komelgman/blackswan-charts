@@ -5,6 +5,7 @@ export interface HistoricalIncidentReport {
   protocolOptions: TVAProtocolOptions;
   skipIf?: (incident: HistoricalIncident) => boolean;
   incident?: HistoricalIncident;
+  immediate?: boolean;
   sign?: boolean;
   lifeHooks?: HistoricalIncidentLifeHooks;
 }
