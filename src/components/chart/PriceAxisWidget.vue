@@ -22,7 +22,6 @@ import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import { BoxLayout, Divider } from '@/components/layout';
 import PriceLabelsInvalidator from '@/model/axis/label/PriceLabelsInvalidator';
 import type ChartState from '@/model/ChartState';
-import type { ChartStyle } from '@/model/ChartStyle';
 import type Viewport from '@/model/viewport/Viewport';
 
 @Options({
@@ -33,8 +32,6 @@ export default class PriceAxisWidget extends Vue {
 
   @Prop({ type: Object as PropType<Viewport>, required: true })
   private viewportModel!: Viewport;
-  @Inject()
-  private chartStyle!: ChartStyle;
   @Inject()
   private chartState!: ChartState;
   private labelsInvalidator!: PriceLabelsInvalidator;

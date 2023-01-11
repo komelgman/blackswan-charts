@@ -1,6 +1,5 @@
 import { reactive } from 'vue';
 import type { EntityId } from '@/model/tools/IdBuilder';
-import Reactive from '@/misc/reactive-decorator';
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import { clone } from '@/misc/strict-type-checks';
 import Axis from '@/model/axis/Axis';
@@ -20,7 +19,7 @@ export interface PriceAxisOptions extends AxisOptions<Price> {
   contentWidth?: Wrapped<number>;
 }
 
-@Reactive
+// @Reactive
 export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostConstruct {
   private cache!: [/* virtualFrom */ number, /* scaleK */ number, /* unscaleK */ number];
   private fractionValue: number = 0;

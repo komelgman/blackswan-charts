@@ -1,16 +1,13 @@
 <template>
-  <chart-widget ref="chart" :options="{ style: chartStyle, sketchers: customSketchers }"/>
+  <chart-widget ref="chart" :chart="chartApi"/>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import { Ref } from 'vue-property-decorator';
 import IdHelper from '@/model/tools/IdHelper';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import DataSource from '@/model/datasource/DataSource';
-import type { DeepPartial } from '@/misc/strict-type-checks';
-import type ChartAPI from '@/model/ChartAPI';
-import type { ChartStyle } from '@/model/ChartStyle';
+import Chart from '@/model/Chart';
 import type { DrawingType } from '@/model/datasource/Drawing';
 import type Sketcher from '@/model/sketchers/Sketcher';
 
@@ -20,18 +17,12 @@ import type Sketcher from '@/model/sketchers/Sketcher';
   },
 })
 export default class App extends Vue {
-  chartStyle!: DeepPartial<ChartStyle>;
-  customSketchers!: Map<DrawingType, Sketcher>;
-  @Ref('chart')
-  private chart!: ChartWidget;
+  chartApi!: Chart;
   private idHelper!: IdHelper;
   private mainDs!: DataSource;
 
   created(): void {
-    this.chartStyle = {};
-    this.customSketchers = new Map<DrawingType, Sketcher>([]);
     this.idHelper = new IdHelper();
-
     this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, [
       // {
       //   id: 'hline1',
@@ -83,10 +74,11 @@ export default class App extends Vue {
         shareWith: '*',
       },
     ]);
+    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
   }
 
   mounted(): void {
-    const chartApi: ChartAPI = this.chart.api;
+    const { chartApi } = this;
     chartApi.createPane(this.mainDs, { size: 150 });
     chartApi.clearHistory();
 
@@ -153,7 +145,10 @@ export default class App extends Vue {
     // chartApi.swapPanes('mainPane', secondPane);
 
     // ---------------------------------------------------------------------------------------------
-    // chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
+    setTimeout(() => {
+      chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
+    }, 1000);
+
     // chartApi.updateStyle({ text: { fontSize: 14, fontStyle: 'italic' } });
     // chartApi.updateStyle({ text: { fontSize: 13, fontStyle: 'italic' } });
 

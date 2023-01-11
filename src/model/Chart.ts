@@ -1,10 +1,13 @@
 import { computed, reactive, watch } from 'vue';
 import type { WatchStopHandle } from 'vue';
+import type { ChartOptions } from '@/components/chart/ChartWidget.vue';
+import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
+import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
 import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
 import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
-import { merge } from '@/misc/strict-type-checks';
+import { clone, merge } from '@/misc/strict-type-checks';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
 import TimeAxis from '@/model/axis/TimeAxis';
@@ -25,23 +28,31 @@ import type Sketcher from '@/model/sketchers/Sketcher';
 import type Viewport from '@/model/viewport/Viewport';
 import type { ViewportOptions } from '@/model/viewport/Viewport';
 
-export default class ChartAPI {
+export default class Chart {
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly tva: TimeVarianceAuthority;
-  private readonly state: ChartState;
   private readonly unwatchers: Map<PaneId, WatchStopHandle[]> = new Map();
   private readonly dataSourceInterconnect: DataSourceInterconnect;
   public readonly timeAxis: TimeAxis;
+  public readonly state: ChartState;
   public readonly style: ChartStyle;
   public readonly panes: PaneDescriptor<Viewport>[];
 
-  constructor(state: ChartState, chartOptions: ChartStyle, sketchers: Map<DrawingType, Sketcher>) {
+  constructor(chartOptions?: ChartOptions) {
+    const chartStyle = this.createChartStyle(chartOptions?.style);
     this.tva = new TimeVarianceAuthority();
     this.panes = reactive([]);
-    this.state = state;
-    this.style = reactive(chartOptions);
-    this.sketchers = sketchers;
-    this.timeAxis = new TimeAxis(this.tva.clerk, chartOptions.text);
+    this.state = reactive({
+      priceWidgetWidth: -1,
+      timeWidgetHeight: -1,
+    });
+    this.style = reactive(chartStyle);
+    this.sketchers = this.createSketchers(chartStyle, chartOptions?.sketchers);
+    // todo: waiting for support experimentalDecorators in playwright
+    // this.timeAxis = new TimeAxis(this.tva.clerk, chartStyle.text);
+    this.timeAxis = reactive(new TimeAxis(this.tva.clerk, chartStyle.text)) as TimeAxis;
+    this.timeAxis.postConstruct();
+    // end: todo
     this.dataSourceInterconnect = new DataSourceInterconnect();
 
     watch(
@@ -177,6 +188,26 @@ export default class ChartAPI {
     this.tva.undo();
   }
 
+  private createChartStyle(style?: DeepPartial<ChartStyle>): ChartStyle {
+    if (style) {
+      return merge(clone(chartOptionsDefaults), style)[0] as ChartStyle;
+    }
+
+    return clone(chartOptionsDefaults);
+  }
+
+  private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {
+    const result: Map<DrawingType, Sketcher> = new Map(sketcherDefaults);
+
+    if (sketchers) {
+      sketchers.forEach((value, key) => result.set(key, value));
+    }
+
+    result.forEach((value) => value.setChartStyle(style));
+
+    return result;
+  }
+
   private getPanesSizes(): Record<string, number> {
     return this.panes.reduce((obj, item) => ({ ...obj, [item.id]: item.size }), {});
   }
@@ -185,7 +216,7 @@ export default class ChartAPI {
     console.debug(`ChartController.installPane: ${paneId}`);
 
     if (!this.unwatchers.has(paneId)) {
-      this.unwatchers.set(paneId, []);
+      this.unwatchers.set(paneId, []); // why there is used array???
     }
 
     const pane = this.panes[this.indexByPaneId(paneId)];
