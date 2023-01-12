@@ -21,7 +21,7 @@ const config: PlaywrightTestConfig = {
   use: {
     trace: 'on-first-retry',
     ctPort: 3100,
-    headless: true,
+    headless: false,
     ctTemplateDir: './tests/component-template',
     ctCacheDir: './tests/component-template/.cache',
     ctViteConfig: viteConfig as any,

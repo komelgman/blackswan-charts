@@ -23,6 +23,8 @@ export default class App extends Vue {
 
   created(): void {
     this.idHelper = new IdHelper();
+    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, []);
+    /*
     this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, [
       // {
       //   id: 'hline1',
@@ -74,26 +76,28 @@ export default class App extends Vue {
         shareWith: '*',
       },
     ]);
-    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
+    */
+    this.chartApi = new Chart();
+    // this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
+    this.chartApi.createPane(this.mainDs, { size: 100 });
   }
 
   mounted(): void {
-    const { chartApi } = this;
-    chartApi.createPane(this.mainDs, { size: 150 });
-    chartApi.clearHistory();
+    // const { chartApi } = this;
+    // chartApi.clearHistory();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const secondPane = chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
-      {
-        id: 'hline1',
-        title: 'hline1',
-        type: 'HLine',
-        data: { def: 0.5, style: { lineWidth: 4, fill: 0, color: '#AA0000' } },
-        locked: false,
-        visible: true,
-        shareWith: ['main'],
-      },
-    ]), { size: 150 });
+    // const secondPane = chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
+    //   {
+    //     id: 'hline1',
+    //     title: 'hline1',
+    //     type: 'HLine',
+    //     data: { def: 0.5, style: { lineWidth: 4, fill: 0, color: '#AA0000' } },
+    //     locked: false,
+    //     visible: true,
+    //     shareWith: ['main'],
+    //   },
+    // ]), { size: 150 });
 
     // ---------------------------------------------------------------------------------------------
     // chartApi.clearHistory();
@@ -145,9 +149,9 @@ export default class App extends Vue {
     // chartApi.swapPanes('mainPane', secondPane);
 
     // ---------------------------------------------------------------------------------------------
-    setTimeout(() => {
-      chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
-    }, 1000);
+    // setTimeout(() => {
+    //   chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
+    // }, 1000);
 
     // chartApi.updateStyle({ text: { fontSize: 14, fontStyle: 'italic' } });
     // chartApi.updateStyle({ text: { fontSize: 13, fontStyle: 'italic' } });

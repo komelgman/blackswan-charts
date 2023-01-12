@@ -117,7 +117,10 @@ export default class ChartWidget extends Vue {
   @Provide({ reactive: true })
   private readonly chartState: ChartState = reactive({ priceWidgetWidth: -1, timeWidgetHeight: -1 });
 
-  created(): void {
+  mounted(): void {
+    const htmlBodyElement: HTMLBodyElement = document.querySelector('body') as HTMLBodyElement;
+    htmlBodyElement.style.backgroundColor = this.chart.style.backgroundColor;
+
     // todo: unwatch all unhandled watchers
     watch(
       computed((): number => this.chartStyle.text.fontSize),
@@ -126,17 +129,28 @@ export default class ChartWidget extends Vue {
       },
       { immediate: true },
     );
-  }
 
-  mounted(): void {
-    const htmlBodyElement: HTMLBodyElement = document.querySelector('body') as HTMLBodyElement;
-    htmlBodyElement.style.backgroundColor = this.chart.style.backgroundColor;
     this.chart.addPaneRegistrationEventListener(this.onPaneRegEventListener);
+
+    for (const pane of this.chart.panes) {
+      this.onPaneRegEventListener({
+        type: 'install',
+        pane,
+      });
+    }
   }
 
   unmounted(): void {
     (document.querySelector('body') as HTMLBodyElement).style.backgroundColor = '';
+
     this.chart.removePaneRegistrationEventListener(this.onPaneRegEventListener);
+
+    for (const pane of this.chart.panes) {
+      this.onPaneRegEventListener({
+        type: 'uninstall',
+        pane,
+      });
+    }
   }
 
   getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
@@ -231,7 +245,6 @@ export default class ChartWidget extends Vue {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get cssVars(): any {
     const {
       backgroundColor,
