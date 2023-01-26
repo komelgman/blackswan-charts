@@ -3,16 +3,20 @@ export default class IdBuilder {
   private readonly currentValueForPrefix: Map<string, number> = new Map<string, number>();
   public update(prefix: string, pretender: number): void {
     const loweredPrefix = prefix.toLowerCase();
-    const max = Math.max(this.currentValueForPrefix.get(loweredPrefix) || -1, pretender);
+    const max = Math.max(this.getCurrentValue(loweredPrefix), pretender);
 
     this.currentValueForPrefix.set(loweredPrefix, max);
   }
 
   public getNewId(prefix: string): EntityId {
     const loweredPrefix = prefix.toLowerCase();
-    const current = (this.currentValueForPrefix.get(loweredPrefix) || -1) + 1;
+    const current = this.getCurrentValue(loweredPrefix) + 1;
     this.currentValueForPrefix.set(loweredPrefix, current);
 
     return `${loweredPrefix}${current}`;
+  }
+
+  private getCurrentValue(loweredPrefix: string): number {
+    return this.currentValueForPrefix.has(loweredPrefix) ? this.currentValueForPrefix.get(loweredPrefix) as number : -1;
   }
 }

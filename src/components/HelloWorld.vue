@@ -1,12 +1,12 @@
 <template>
   <div class="hello">
-    {{ msg }}
+    <h1>{{ msg }}</h1>
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+import { Prop, Watch } from 'vue-property-decorator';
 
 @Options({
 })
@@ -15,7 +15,12 @@ export default class HelloWorld extends Vue {
   public msg!: string;
 
   public created(): void {
-    console.log('was created');
+    console.log('was created with message:', this.msg);
+  }
+
+  @Watch('msg')
+  private watch(): void {
+    console.log('message updated:', this.msg);
   }
 }
 </script>

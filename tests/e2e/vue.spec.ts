@@ -1,8 +1,41 @@
 import { test, expect } from '@playwright/test';
+import type { Locator } from '@playwright/test';
+import type AsyncMountOptions from '../../src/components/workaround/AsyncMountOptions';
 
-// See here how to get started:
-// https://playwright.dev/docs/intro
-test('visits the app root url', async ({ page }) => {
+test.describe.configure({ mode: 'parallel' });
+
+test.beforeEach(async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('div.greetings > h1')).toHaveText('You did it!');
+});
+
+test.describe('dynamic component loading', () => {
+  /**
+   * main.ts content for that test sample
+   *
+   * import { createApp } from 'vue';
+   * // eslint-disable-next-line
+   * (window as any).__testing_tools = {
+   *   createApp,
+   *   modules: import.meta.glob('./components/**\/*.vue'), // <-- escaped path
+   * };
+   */
+  test.skip('ComponentWithAsyncChildren.vue', async ({ page }) => {
+    const options: AsyncMountOptions = {
+      component: 'HelloWorld.vue',
+      props: {
+        msg: 'new message',
+      },
+    };
+
+    await page.evaluate((o) => {
+      // eslint-disable-next-line
+      const { createApp, modules } = (window as any).__testing_tools;
+      modules['./components/workaround/ComponentWithAsyncChildren.vue']().then((module: any) => {
+        createApp(module.default, { options: o }).mount('#app');
+      });
+    }, options);
+
+    const app: Locator = await page.locator('#app');
+    await expect(app).toHaveText('new message');
+  });
 });

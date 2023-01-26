@@ -8,8 +8,6 @@ import IdHelper from '@/model/tools/IdHelper';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import DataSource from '@/model/datasource/DataSource';
 import Chart from '@/model/Chart';
-import type { DrawingType } from '@/model/datasource/Drawing';
-import type Sketcher from '@/model/sketchers/Sketcher';
 
 @Options({
   components: {
