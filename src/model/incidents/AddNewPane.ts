@@ -49,7 +49,10 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
     this.paneDescriptor = {
       id: dataSource.id,
       model: new Viewport(dataSource, timeAxis, priceAxis, sketchers),
-      ...paneOptions,
+      initialSize: paneOptions.initialSize,
+      minSize: paneOptions.minSize,
+      maxSize: paneOptions.maxSize,
+      visible: paneOptions.visible,
     };
   }
 

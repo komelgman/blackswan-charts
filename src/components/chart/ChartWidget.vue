@@ -14,6 +14,7 @@
       direction="vertical"
       resizable
       @drag-handle-moved="onPaneSizeChanged"
+      style="height: 100%"
     >
       <template v-slot:default="props">
         <box-layout>
@@ -115,7 +116,10 @@ export default class ChartWidget extends Vue {
   }
 
   @Provide({ reactive: true })
-  private readonly chartState: ChartState = reactive({ priceWidgetWidth: -1, timeWidgetHeight: -1 });
+  private readonly chartState: ChartState = reactive({
+      priceWidgetWidth: -1,
+      timeWidgetHeight: -1,
+    });
 
   mounted(): void {
     const htmlBodyElement: HTMLBodyElement = document.querySelector('body') as HTMLBodyElement;

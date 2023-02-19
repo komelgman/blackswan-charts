@@ -29,7 +29,7 @@ export default class ComponentWithAsyncChildren extends Vue {
     }
 
     console.log('modules', this.modules);
-
+    // @ts-ignore
     this.component = defineAsyncComponent(this.modules[`/src/components/${this.options.component}.vue`]);
     this.props = this.options.props;
   }

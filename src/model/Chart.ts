@@ -1,19 +1,18 @@
 import { reactive } from 'vue';
-import type TVAClerk from '@/model/history/TVAClerk';
 import type { ChartOptions } from '@/components/chart/ChartWidget.vue';
-import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
-import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
 import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
-import { clone, merge } from '@/misc/strict-type-checks';
 import type { DeepPartial } from '@/misc/strict-type-checks';
+import { clone, merge } from '@/misc/strict-type-checks';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
 import TimeAxis from '@/model/axis/TimeAxis';
 import type { ChartStyle } from '@/model/ChartStyle';
+import chartOptionsDefaults from '@/model/ChartStyle.Defaults';
 import type DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/Drawing';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import type TVAClerk from '@/model/history/TVAClerk';
 import AddNewPane from '@/model/incidents/AddNewPane';
 import InvalidatePanesSizes from '@/model/incidents/InvalidatePanesSizes';
 import RemovePane from '@/model/incidents/RemovePane';
@@ -21,6 +20,7 @@ import SwapPanes from '@/model/incidents/SwapPanes';
 import TogglePane from '@/model/incidents/TogglePane';
 import UpdateChartStyle from '@/model/incidents/UpdateChartStyle';
 import type Sketcher from '@/model/sketchers/Sketcher';
+import sketcherDefaults from '@/model/sketchers/Sketcher.Defaults';
 import type Viewport from '@/model/viewport/Viewport';
 import type { ViewportOptions } from '@/model/viewport/Viewport';
 
@@ -76,6 +76,7 @@ export default class Chart {
 
   public createPane(dataSource: DataSource, options?: Partial<PaneOptions<ViewportOptions>>): PaneId {
     const initialSizes = this.getPanesSizes();
+
     const paneOptions: PaneOptions<ViewportOptions> = {
       minSize: 100,
       priceScale: PriceScales.regular,

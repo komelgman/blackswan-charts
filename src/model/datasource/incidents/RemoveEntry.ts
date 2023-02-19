@@ -6,7 +6,7 @@ import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 
 export interface RemoveEntryOptions extends HistoricalIncidentOptions {
-  entry: DataSourceEntry;
+  ref: DrawingReference;
   storage: DataSourceEntriesStorage;
   addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
 }
@@ -20,11 +20,11 @@ export default class RemoveEntry extends AbstractHistoricalIncident<RemoveEntryO
   }
 
   protected applyIncident(): void {
-    const { entry, storage, addReason } = this.options;
+    const { ref, storage, addReason } = this.options;
 
-    this.removedEntry = storage.remove(entry[0].ref);
+    this.removedEntry = storage.remove(ref);
 
-    addReason(DataSourceChangeEventReason.RemoveEntry, [entry]);
+    addReason(DataSourceChangeEventReason.RemoveEntry, [this.removedEntry[0]]);
   }
 
   protected inverseIncident(): void {

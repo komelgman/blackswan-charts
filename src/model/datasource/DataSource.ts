@@ -195,7 +195,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.tvaClerk.processReport({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,
       incident: new RemoveEntry({
-        entry: this.storage.get(ref),
+        ref,
         storage: this.storage,
         addReason: this.addReason.bind(this),
       }),

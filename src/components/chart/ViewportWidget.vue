@@ -27,7 +27,6 @@ import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
@@ -76,7 +75,7 @@ export default class ViewportWidget extends Vue {
     this.viewportModel.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
+  private dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
     if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
       const { selected, highlighted } = this.viewportModel;
       const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
@@ -93,7 +92,7 @@ export default class ViewportWidget extends Vue {
         }
       }
     }
-  };
+  }
 
   private createGridLayer(): ViewportGridLayer {
     const { timeAxis, priceAxis } = this.viewportModel;

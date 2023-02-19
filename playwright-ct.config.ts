@@ -21,7 +21,7 @@ const config: PlaywrightTestConfig = {
   use: {
     trace: 'on-first-retry',
     ctPort: 3100,
-    headless: false,
+    headless: true,
     ctTemplateDir: './tests/component-template',
     ctCacheDir: './tests/component-template/.cache',
     ctViteConfig: viteConfig as any,
@@ -32,6 +32,11 @@ const config: PlaywrightTestConfig = {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+      },
+      expect: {
+        toHaveScreenshot: {
+          threshold: 0.1,
+        },
       },
     },
   ],

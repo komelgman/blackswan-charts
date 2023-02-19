@@ -23,6 +23,10 @@ export default defineConfig({
     },
   },
 
+  build: {
+    sourcemap: true,
+  },
+
   test: {
     include: ['tests/unit/**/*.{test,spec}.{ts,tsx}'],
   },

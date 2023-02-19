@@ -32,12 +32,13 @@ export default class ViewportDataSourceLayer extends Layer {
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
     if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
+      console.debug('ViewportDataSourceLayer dataSourceChangeEventListener', { ds: this.ds.id, events });
       this.invalid = true;
     }
   };
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
-    console.debug('ViewportDataSourceLayer render');
+    console.debug('ViewportDataSourceLayer render', this.ds.id);
 
     const inverted: InvertedValue = this.inverted.value;
     if (inverted < 0) {

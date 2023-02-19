@@ -4,6 +4,8 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+import type { DrawingId, DrawingType } from '@/model/datasource/Drawing';
+import type Sketcher from '@/model/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import DataSource from '@/model/datasource/DataSource';
@@ -21,8 +23,6 @@ export default class App extends Vue {
 
   created(): void {
     this.idHelper = new IdHelper();
-    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, []);
-    /*
     this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, [
       // {
       //   id: 'hline1',
@@ -74,15 +74,14 @@ export default class App extends Vue {
         shareWith: '*',
       },
     ]);
-    */
-    this.chartApi = new Chart();
-    // this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
-    this.chartApi.createPane(this.mainDs, { size: 100 });
+
+    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
+    this.chartApi.createPane(this.mainDs);
   }
 
   mounted(): void {
-    // const { chartApi } = this;
-    // chartApi.clearHistory();
+    const { chartApi } = this;
+    chartApi.clearHistory();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     // const secondPane = chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
@@ -95,41 +94,56 @@ export default class App extends Vue {
     //     visible: true,
     //     shareWith: ['main'],
     //   },
-    // ]), { size: 150 });
+    // ]), { size: 100 });
 
     // ---------------------------------------------------------------------------------------------
     // chartApi.clearHistory();
     //
-    // setTimeout(() => {
-    //   const thirdPane = chartApi.createPane(new DataSource([
-    //     {
-    //       id: 'hline1',
-    //       title: 'hline1',
-    //       type: 'HLine',
-    //       data: { def: 0.2, style: { lineWidth: 1, fill: 2, color: '#00AA00' } },
-    //       locked: false,
-    //       visible: true,
-    //       shared: true,
-    //     },
-    //   ]), { size: 150 });
-    // }, 1000)
+    setTimeout(() => {
+      // chartApi.createPane(this.mainDs, { size: 100 });
+      chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
+        {
+          id: 'hline1',
+          title: 'hline1',
+          type: 'HLine',
+          data: { def: 0.2, style: { lineWidth: 1, fill: 2, color: '#00AA00' } },
+          locked: false,
+          visible: true,
+          shareWith: '*',
+        },
+      ]));
+
+      chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
+        {
+          id: 'hline1',
+          title: 'hline1',
+          type: 'HLine',
+          data: { def: 0.2, style: { lineWidth: 1, fill: 2, color: '#00AA00' } },
+          locked: false,
+          visible: true,
+          shareWith: '*',
+        },
+      ]), { initialSize: 0.01 });
+    }, 1000);
 
     // ---------------------------------------------------------------------------------------------
-    // const newId: DrawingId = this.mainDs.getNewId('HLine');
-    // this.mainDs.beginTransaction();
-    // this.mainDs.add({
-    //   id: newId,
-    //   title: 'test hline',
-    //   type: 'HLine',
-    //   data: { def: 0, style: { lineWidth: 1, fill: 0, color: '#00AA00' } },
-    //   locked: false,
-    //   visible: true,
-    // });
-    // this.mainDs.endTransaction();
-    //
-    // this.mainDs.beginTransaction();
-    // this.mainDs.remove(newId);
-    // this.mainDs.endTransaction();
+    const newId: DrawingId = this.mainDs.getNewId('HLine');
+    this.mainDs.beginTransaction();
+    this.mainDs.add({
+      id: newId,
+      title: 'test hline',
+      type: 'HLine',
+      data: { def: 0, style: { lineWidth: 1, fill: 0, color: '#AA0000' } },
+      locked: false,
+      visible: true,
+    });
+    this.mainDs.endTransaction();
+
+    setTimeout(() => {
+      this.mainDs.beginTransaction();
+      this.mainDs.remove(newId);
+      this.mainDs.endTransaction();
+    }, 2000);
 
     // ---------------------------------------------------------------------------------------------
     // setTimeout(() => {
