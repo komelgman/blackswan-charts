@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isProxy } from 'vue';
+import { isProxy, toRaw } from 'vue';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, isString, merge } from '@/misc/strict-type-checks';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
@@ -181,7 +181,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.tvaClerk.processReport({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,
       incident: new UpdateEntry({
-        entry: this.storage.get(ref),
+        ref,
+        storage: this.storage,
         update: value,
         addReason: this.addReason.bind(this),
       }),
@@ -345,7 +346,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
         .update(type, this.getNumberFromId(type, id));
     }
 
-    return merge({ ref: id, options }, { options: { id: null } })[0] as DrawingDescriptor;
+    return merge({ ref: id, options: { ...options } }, { options: { id: null } })[0] as DrawingDescriptor;
   }
 
   private getNumberFromId(type: string, id: DrawingId): number {
@@ -382,7 +383,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   private toChangeEvents(reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean = false): DataSourceChangeEvent[] {
-    return entries.map((entry) => ({ entry, reason, shared }));
+    return entries.map((entry) => ({ entry: toRaw(entry), reason, shared }));
   }
 
   private getNewTransactionId(): string {

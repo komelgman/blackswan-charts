@@ -17,6 +17,7 @@
 </template>
 
 <script lang="ts">
+import { toRaw } from 'vue';
 import type { PropType } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
@@ -77,7 +78,7 @@ export default class ViewportWidget extends Vue {
 
   private dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
     if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
-      const { selected, highlighted } = this.viewportModel;
+      const { selected, highlighted } = toRaw(this.viewportModel);
       const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
 
       for (const event of removedEntriesEvents) {

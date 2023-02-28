@@ -33,8 +33,6 @@ export default class ContextMenu extends Vue {
   }
 
   public show(event: MouseEvent, items: MenuItem[]): void {
-    // console.debug('context menu show');
-
     this.items.splice(0, this.items.length, ...items);
     this.removeHideListener = onceDocument('mousedown', this.hide);
     this.visible = true;
@@ -45,8 +43,6 @@ export default class ContextMenu extends Vue {
   }
 
   private calcPosition(event: MouseEvent): Point {
-    // console.debug('context menu calcPosition');
-
     const width = this.$el.clientWidth;
     const height = this.$el.clientHeight;
     const result: Point = {
@@ -107,8 +103,6 @@ export default class ContextMenu extends Vue {
   }
 
   render(): any {
-    // console.debug('context menu render');
-
     return (
       <div class="context-menu" style={this.style}>
         <ul>

@@ -75,15 +75,14 @@ export default class VLineSketcher extends AbstractSketcher {
       return undefined;
     }
 
-    const { dataSource, timeAxis } = viewport;
-
     return (e: DragMoveEvent) => {
+      const { dataSource, timeAxis } = viewport;
       const rawDS = toRaw(dataSource);
-      const { options } = entry[0];
+      const { options, ref } = entry[0];
       // only one handle and drag by body equals drag by handles.center
       const def = timeAxis.revert(timeAxis.translate(options.data.def) - e.dx);
 
-      rawDS.update(entry[0].ref, { data: { def } });
+      rawDS.update(ref, { data: { def } });
     };
   }
 

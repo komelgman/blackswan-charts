@@ -221,8 +221,6 @@ export default class Chart {
   }
 
   private installPane(paneId: PaneId): void {
-    console.debug(`ChartController.installPane: ${paneId}`);
-
     const pane = this.panes[this.indexByPaneId(paneId)];
     this.firePaneRegistrationEvent({
       type: 'install',
@@ -234,8 +232,6 @@ export default class Chart {
   }
 
   private uninstallPane(paneId: PaneId): void {
-    console.debug(`ChartController.uninstallPane: ${paneId}`);
-
     this.dataSourceInterconnect.removeDataSource(paneId);
 
     this.firePaneRegistrationEvent({

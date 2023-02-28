@@ -68,6 +68,6 @@ export async function dragMouseFromTo(page: Page, x0: number, y0: number, x1: nu
   await page.mouse.move(x0, y0);
   await page.mouse.down({ button: 'left' });
   // @ts-ignore
-  await page.mouse.move(x1, y1);
+  await page.mouse.move(x1, y1, { steps: Math.sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1)) });
   await page.mouse.up();
 }

@@ -28,8 +28,6 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
   }
 
   private invalidateCache(): void {
-    // console.debug('time axis update cache');
-
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const size = to - from;

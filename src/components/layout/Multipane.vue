@@ -124,17 +124,14 @@ export default class Multipane<T> extends Vue {
 
   @Watch('visibleItems')
   private visibleItemsChanged(): void {
-    console.debug('multipane.visibleItemsChanged');
     this.invalidate();
   }
 
   private resizeObserverCallback(): void {
-    console.debug('multipane.resizeObserverCallback');
     this.invalidate();
   }
 
   public invalidate(): void {
-    console.debug('multipane.invalidate');
     if (this.valid) {
       this.valid = false;
       this.$nextTick(this.adjustPanesSizes);

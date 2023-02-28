@@ -23,8 +23,8 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
 
   for (const src of sources) {
     // eslint-disable-next-line guard-for-in
-    for (const i in src) {
-      items.push([dst, unmerge, src, i]);
+    for (const prop in src) {
+      items.push([dst, unmerge, src, prop]);
     }
   }
 
@@ -40,8 +40,8 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
       oldObj[property] = dstObj[property] === undefined ? null : {};
 
       // eslint-disable-next-line guard-for-in
-      for (const i in srcObj[property]) {
-        items.push([dstObj[property], oldObj[property], srcObj[property], i]);
+      for (const prop in srcObj[property]) {
+        items.push([dstObj[property], oldObj[property], srcObj[property], prop]);
       }
     }
   }

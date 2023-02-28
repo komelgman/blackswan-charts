@@ -1,4 +1,3 @@
-import { nextTick } from 'vue';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import type LayerContextChangeListener from '@/components/layered-canvas/layers/LayerContextChangeListener';
 
@@ -19,7 +18,7 @@ export default abstract class Layer {
 
   set invalid(value: boolean) {
     if (!this.invalidValue && value) {
-      nextTick(() => requestAnimationFrame(this.invalidate.bind(this)));
+      setTimeout(() => requestAnimationFrame(this.invalidate.bind(this)), 0);
     }
 
     this.invalidValue = value;
@@ -54,6 +53,7 @@ export default abstract class Layer {
     if (!this.invalid) {
       return;
     }
+    this.invalid = false;
 
     const { native, width, height, dpr } = this.ctx;
     let isSizeChanged = false;
@@ -69,8 +69,6 @@ export default abstract class Layer {
       native.canvas.height = requestedHeight;
       isSizeChanged = true;
     }
-
-    this.invalid = false;
 
     // sometimes (very often) ctx getContext returns the same context every time
     // and there might be previous transformation

@@ -3,8 +3,11 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable no-plusplus */
+import { isProxy } from 'vue';
 import { Options, Vue } from 'vue-class-component';
-import type { DrawingId, DrawingType } from '@/model/datasource/Drawing';
+import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
+import type { DrawingType } from '@/model/datasource/Drawing';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
@@ -23,127 +26,118 @@ export default class App extends Vue {
 
   created(): void {
     this.idHelper = new IdHelper();
-    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, [
-      // {
-      //   id: 'hline1',
-      //   title: 'hline1',
-      //   type: 'HLine',
-      //   data: { def: -0.5, style: { lineWidth: 1, fill: 0, color: '#AA0000' } },
-      //   locked: true,
-      //   visible: true,
-      // },
-      {
-        id: 'hline2',
-        title: 'hline2',
+    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, []);
+
+    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
+    this.chartApi.createPane(this.mainDs);
+    this.chartApi.clearHistory();
+  }
+
+  mounted(): void {
+    const { chartApi } = this;
+    const drawings = {
+      green025VLineNotShared: {
+        id: 'vline1',
+        title: 'vline1',
+        type: 'VLine',
+        data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
+        locked: false,
+        visible: true,
+      },
+
+      green025HLineNotShared: {
+        id: 'hline1',
+        title: 'hline1',
         type: 'HLine',
         data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
         locked: false,
         visible: true,
       },
-      // {
-      //   id: 'hline3',
-      //   title: 'hline3',
-      //   type: 'HLine',
-      //   data: { def: 0, style: { lineWidth: 3, fill: 2, color: '#0000BB' } },
-      //   locked: false,
-      //   visible: true,
-      // },
-      {
-        id: 'hline4',
-        title: 'hline4',
-        type: 'HLine',
-        data: { def: 0.25, style: { lineWidth: 4, fill: 3, color: '#AA00BB' } },
-        locked: false,
-        visible: true,
-      },
-      // {
-      //   id: 'hline5',
-      //   title: 'hline5',
-      //   type: 'HLine',
-      //   data: { def: 0.5, style: { lineWidth: 5, fill: 4, color: '#AA00BB' } },
-      //   locked: false,
-      //   visible: true,
-      // },
-      {
-        id: 'vline1',
-        title: 'vline1',
+
+      red010VLineShared: {
+        id: 'vline2',
+        title: 'vline2',
         type: 'VLine',
-        data: { def: 0, style: { lineWidth: 3, fill: 2, color: '#AABBCC' } },
+        data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
+        shareWith: '*' as '*',
         locked: false,
         visible: true,
-        shareWith: '*',
       },
-    ]);
 
-    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
-    this.chartApi.createPane(this.mainDs);
-  }
+      red010HLineShared: {
+        id: 'hline2',
+        title: 'hline2',
+        type: 'HLine',
+        data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
+        shareWith: '*' as '*',
+        locked: false,
+        visible: true,
+      },
+    };
 
-  mounted(): void {
-    const { chartApi } = this;
-    chartApi.clearHistory();
+    chartApi.createPane(new DataSource({ id: 'second', idHelper: this.idHelper }, []), { initialSize: 0.3 });
+    let i = 0;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // const secondPane = chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
-    //   {
-    //     id: 'hline1',
-    //     title: 'hline1',
-    //     type: 'HLine',
-    //     data: { def: 0.5, style: { lineWidth: 4, fill: 0, color: '#AA0000' } },
-    //     locked: false,
-    //     visible: true,
-    //     shareWith: ['main'],
-    //   },
-    // ]), { size: 100 });
+    setTimeout(() => {
+      chartApi.undo();
+      chartApi.undo();
+    }, i++);
 
-    // ---------------------------------------------------------------------------------------------
-    // chartApi.clearHistory();
+    setTimeout((j: number) => {
+      console.log(`${j}) chartApi.redo();`);
+      chartApi.redo();
+    }, i++, i);
+
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green025HLineNotShared);`);
     //
-    setTimeout(() => {
-      // chartApi.createPane(this.mainDs, { size: 100 });
-      chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
-        {
-          id: 'hline1',
-          title: 'hline1',
-          type: 'HLine',
-          data: { def: 0.2, style: { lineWidth: 1, fill: 2, color: '#00AA00' } },
-          locked: false,
-          visible: true,
-          shareWith: '*',
-        },
-      ]));
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.green025HLineNotShared);
+    //   this.mainDs.endTransaction();
+    // }, i++, i);
 
-      chartApi.createPane(new DataSource({ idHelper: this.idHelper }, [
-        {
-          id: 'hline1',
-          title: 'hline1',
-          type: 'HLine',
-          data: { def: 0.2, style: { lineWidth: 1, fill: 2, color: '#00AA00' } },
-          locked: false,
-          visible: true,
-          shareWith: '*',
-        },
-      ]), { initialSize: 0.01 });
-    }, 1000);
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green025VLineNotShared);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.green025VLineNotShared);
+    //   this.mainDs.endTransaction();
+    // }, i++, i);
 
-    // ---------------------------------------------------------------------------------------------
-    const newId: DrawingId = this.mainDs.getNewId('HLine');
-    this.mainDs.beginTransaction();
-    this.mainDs.add({
-      id: newId,
-      title: 'test hline',
-      type: 'HLine',
-      data: { def: 0, style: { lineWidth: 1, fill: 0, color: '#AA0000' } },
-      locked: false,
-      visible: true,
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.red010HLineShared);
+    //   this.mainDs.endTransaction();
+    // }, i++, i);
+
+    this.mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
+      for (const [reason, reasonEvents] of events) {
+        for (const dataSourceChangeEvent of reasonEvents) {
+          if (isProxy(dataSourceChangeEvent.entry[0].options)) {
+            console.trace(reason, dataSourceChangeEvent);
+          }
+        }
+      }
     });
-    this.mainDs.endTransaction();
 
-    setTimeout(() => {
+    // todo: highlighted line should hide on undo create
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.red010VLineShared);`);
+
       this.mainDs.beginTransaction();
-      this.mainDs.remove(newId);
+      this.mainDs.add(drawings.red010VLineShared);
       this.mainDs.endTransaction();
-    }, 2000);
+    }, i++, i);
+
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.remove(drawings.red010HLineShared.id);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.remove(drawings.red010HLineShared.id);
+    //   this.mainDs.endTransaction();
+    // }, i++, i);
 
     // ---------------------------------------------------------------------------------------------
     // setTimeout(() => {

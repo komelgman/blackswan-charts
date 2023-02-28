@@ -103,8 +103,6 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
   }
 
   private invalidateCache(): void {
-    // console.debug('price axis update cache');
-
     const virtualFrom = this.scale.func.translate(this.range.from);
     const virtualTo = this.scale.func.translate(this.range.to);
     const virtualSize = virtualTo - virtualFrom;

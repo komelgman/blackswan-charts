@@ -62,8 +62,6 @@ export default class TimeVarianceAuthority {
 
     this.current = this.current.next as TVAProtocol;
     this.current.apply();
-
-    console.debug(`redo: ${this.current.title}`);
   }
 
   public undo(): void {
@@ -79,8 +77,6 @@ export default class TimeVarianceAuthority {
     if (this.current.sign === TVAProtocolSign.Approved) {
       this.current.inverse();
     }
-
-    console.debug(`undo: ${this.current.title}`);
 
     this.current = this.current.prev as TVAProtocol;
   }

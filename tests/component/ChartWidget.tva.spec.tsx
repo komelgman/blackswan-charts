@@ -51,6 +51,8 @@ const drawings = {
   },
 };
 test('check TVA functionality', async ({ page }) => {
+  test.slow();
+
   await createMainPaneAndMountChart(page);
   await clearHistory(page);
   await expect(page).toHaveScreenshot('one pane, no drawings.png');
@@ -95,6 +97,7 @@ test('check TVA functionality', async ({ page }) => {
   // resize panes by mouse
   // @ts-ignore
   await dragMouseFromTo(page, p0Bounds.x + 1, p1Bounds.y - 1, p0Bounds.x + 1, p1Bounds.y - 1 - (p0Bounds.height - p1Bounds.height) / 2);
+  await page.mouse.click(10, 10); // reset divider selection
 
   p0Bounds = await p0.boundingBox();
   p1Bounds = await p1.boundingBox();
@@ -103,7 +106,19 @@ test('check TVA functionality', async ({ page }) => {
   // @ts-ignore
   await expect(p0Bounds.height).toBeCloseTo(p1Bounds.height, 0);
 
+  // move red010VLineShared line
+  // @ts-ignore
+  await dragMouseFromTo(page, 557, p0Bounds.y + 1, 300, p0Bounds.y + 11);
+  await page.mouse.move(10, 10); // reset line selection
+  await page.mouse.click(10, 10); // reset line selection
+  // eslint-disable-next-line max-len, vue/max-len
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized, red line moved.png');
+
   // --------------------------------------------- UNDO ----------------------------------------------------------------
+  // undo red010VLineShared line move
+  await undo(page);
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized.png');
+
   // undo panes resize
   await undo(page);
 
@@ -182,4 +197,9 @@ test('check TVA functionality', async ({ page }) => {
   p1Bounds = await p1.boundingBox();
   // @ts-ignore
   await expect(p0Bounds.height).toBeCloseTo(p1Bounds.height, 0);
+
+  // redo move red line
+  await redo(page);
+  // eslint-disable-next-line max-len, vue/max-len
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized, red line moved.png');
 });
