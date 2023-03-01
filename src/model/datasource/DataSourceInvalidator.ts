@@ -74,7 +74,7 @@ export default class DataSourceInvalidator {
 
     for (const entry of entries) {
       if (entry[0].valid) {
-        console.warn(`Entry ${entry[0].ref} already valid`); // sample: add + update when redo clone entry
+        console.warn(`Entry ${entry[0].ref} already valid`);
         continue;
       }
 
