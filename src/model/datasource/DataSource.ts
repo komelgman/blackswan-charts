@@ -138,8 +138,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.tvaClerk.processReport({
       protocolOptions: this.protocolOptions,
       lifeHooks: {
-        afterInverse: () => this.flush(),
-        afterApply: () => this.flush(),
+        afterInverse: () => toRaw(this).flush(),
+        afterApply: () => toRaw(this).flush(),
       },
     });
   }
@@ -229,14 +229,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: tva
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringToFront(ref: DrawingReference): void {
-    // this.checkWeAreNotInProxy();
-    // this.checkWeAreInTransaction();
-    //
-    // if (!this.has(ref)) {
-    //   console.warn(`reference not found: ${ref}`)
-    //   return;
-    // }
-    //
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
     // const index: number = this.indexByRef(ref);
     // const { orderedEntries } = this;
     //
@@ -250,14 +245,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: tva
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendToBack(ref: DrawingReference): void {
-    // this.checkWeAreNotInProxy();
-    // this.checkWeAreInTransaction();
-    //
-    // if (!this.has(ref)) {
-    //   console.warn(`reference not found: ${ref}`)
-    //   return;
-    // }
-    //
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
     // const index: number = this.indexByRef(ref);
     // if (index === 0) {
     //   console.warn('index === 0')
@@ -275,14 +265,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: tva
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringForward(ref: DrawingReference): void {
-    // this.checkWeAreNotInProxy();
-    // this.checkWeAreInTransaction();
-    //
-    // if (!this.has(ref)) {
-    //   console.warn(`ref not found: ${ref}`)
-    //   return;
-    // }
-    //
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
     // const index: number = this.indexByRef(ref);
     // const { orderedEntries } = this;
     // if (index >= orderedEntries.length - 1) {
@@ -300,14 +285,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: tva
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendBackward(ref: DrawingReference): void {
-    // this.checkWeAreNotInProxy();
-    // this.checkWeAreInTransaction();
-    //
-    // if (!this.has(ref)) {
-    //   console.warn(`ref not found: ${ref}`)
-    //   return;
-    // }
-    //
+    this.checkWeAreNotInProxy();
+    this.checkWeAreInTransaction();
+
     // const index: number = this.indexByRef(ref);
     // if (index === 0) {
     //   console.warn('index === 0')

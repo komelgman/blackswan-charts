@@ -99,7 +99,7 @@ export default class Viewport {
     }
 
     dragHandle(e);
-    dataSource.flush();
+    toRaw(dataSource).flush();
   }
 
   public updateDragHandle(): void {

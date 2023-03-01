@@ -122,7 +122,6 @@ export default class App extends Vue {
       }
     });
 
-    // todo: highlighted line should hide on undo create
     setTimeout((j: number) => {
       console.log(`${j}) this.mainDs.add(drawings.red010VLineShared);`);
 

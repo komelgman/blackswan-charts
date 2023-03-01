@@ -55,14 +55,14 @@ export default class DataSourceInvalidator {
   }
 
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
-    const entries: DataSourceEntry[] = [
+    const entries: Set<DataSourceEntry> = new Set([
       ...((events.get(DataSourceChangeEventReason.CacheReset) || []).map((e) => (e.entry))),
       ...((events.get(DataSourceChangeEventReason.AddEntry) || []).map((e) => (e.entry))),
       ...((events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((e) => (e.entry))),
-    ];
+    ]);
 
-    if (entries.length) {
-      this.invalidate(entries);
+    if (entries.size) {
+      this.invalidate(Array.from(entries.values()));
     }
   };
 
@@ -74,7 +74,7 @@ export default class DataSourceInvalidator {
 
     for (const entry of entries) {
       if (entry[0].valid) {
-        console.warn(`Invalid state: entry ${entry[0].ref} already valid`);
+        console.warn(`Entry ${entry[0].ref} already valid`); // sample: add + update when redo clone entry
         continue;
       }
 

@@ -102,7 +102,8 @@ test('check TVA functionality', async ({ page }) => {
   p0Bounds = await p0.boundingBox();
   p1Bounds = await p1.boundingBox();
 
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized.png');
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
+    + 'main pane moved, panes resized.png');
   // @ts-ignore
   await expect(p0Bounds.height).toBeCloseTo(p1Bounds.height, 0);
 
@@ -111,13 +112,30 @@ test('check TVA functionality', async ({ page }) => {
   await dragMouseFromTo(page, 557, p0Bounds.y + 1, 300, p0Bounds.y + 11);
   await page.mouse.move(10, 10); // reset line selection
   await page.mouse.click(10, 10); // reset line selection
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
+    + 'main pane moved, panes resized, red line moved.png');
+
+  // clone red010VLineShared line
+  await page.keyboard.down('Control');
+  // @ts-ignore
+  await dragMouseFromTo(page, 300, p0Bounds.y + 1, 350, p0Bounds.y + 1);
+  await page.keyboard.up('Control');
+  await page.mouse.move(10, 10); // reset line selection
+  await page.mouse.click(10, 10); // reset line selection
   // eslint-disable-next-line max-len, vue/max-len
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized, red line moved.png');
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
+    + 'main pane moved, panes resized, red line moved and cloned.png');
 
   // --------------------------------------------- UNDO ----------------------------------------------------------------
+  // undo red010VLineShared line clone
+  await undo(page);
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane,'
+    + ' main pane moved, panes resized, red line moved.png');
+
   // undo red010VLineShared line move
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized.png');
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
+    + 'main pane moved, panes resized.png');
 
   // undo panes resize
   await undo(page);
@@ -191,7 +209,8 @@ test('check TVA functionality', async ({ page }) => {
 
   // redo panes resize
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized.png');
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
+    + 'main pane moved, panes resized.png');
 
   p0Bounds = await p0.boundingBox();
   p1Bounds = await p1.boundingBox();
@@ -200,6 +219,11 @@ test('check TVA functionality', async ({ page }) => {
 
   // redo move red line
   await redo(page);
-  // eslint-disable-next-line max-len, vue/max-len
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, panes resized, red line moved.png');
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
+    + 'main pane moved, panes resized, red line moved.png');
+
+  // redo clone red line
+  await redo(page);
+  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, '
+    + 'panes resized, red line moved and cloned.png');
 });

@@ -52,14 +52,14 @@ export default class DataSourceInterconnect {
       this.addEntries(addEntries, srcDs);
     }
 
-    const removeEntries = this.getNotSharedEventEntries(events.get(DataSourceChangeEventReason.RemoveEntry) || []);
-    if (removeEntries.length > 0) {
-      this.removeEntries(removeEntries, srcDs);
-    }
-
     const updateEntries = this.getNotSharedEventEntries(events.get(DataSourceChangeEventReason.UpdateEntry) || []);
     if (updateEntries.length > 0) {
       this.updateEntries(updateEntries, srcDs);
+    }
+
+    const removeEntries = this.getNotSharedEventEntries(events.get(DataSourceChangeEventReason.RemoveEntry) || []);
+    if (removeEntries.length > 0) {
+      this.removeEntries(removeEntries, srcDs);
     }
   };
 
