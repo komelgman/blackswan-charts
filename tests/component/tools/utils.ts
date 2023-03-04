@@ -1,6 +1,8 @@
 import type { Page } from 'playwright';
 import type ChartWidgetTestContext from './ChartWidgetTestContext';
 
+export declare type BoundRect = { x: number, y: number, height: number, width: number };
+
 export async function createMainPaneAndMountChart(page: Page): Promise<void> {
   await page.evaluate(async () => {
     // eslint-disable-next-line
@@ -16,6 +18,30 @@ export async function createPane(page: Page, paneId: string, initialSize: number
     const { chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
     chart.createPane(newDataSource({ id: opts.paneId, idHelper }, []), { initialSize: opts.initialSize });
   }, { paneId, initialSize });
+}
+
+export async function swapPanes(page: Page, paneId1: string, paneId2: string): Promise<void> {
+  await page.evaluate(async (opts) => {
+    // eslint-disable-next-line
+    const { chart } = (window as any).__test_context as ChartWidgetTestContext;
+    chart.swapPanes(opts.paneId1, opts.paneId2);
+  }, { paneId1, paneId2 });
+}
+
+export async function togglePane(page: Page, paneId: string): Promise<void> {
+  await page.evaluate(async (opts) => {
+    // eslint-disable-next-line
+    const { chart } = (window as any).__test_context as ChartWidgetTestContext;
+    chart.togglePane(opts.paneId);
+  }, { paneId });
+}
+
+export async function removePane(page: Page, paneId: string): Promise<void> {
+  await page.evaluate(async (opts) => {
+    // eslint-disable-next-line
+    const { chart } = (window as any).__test_context as ChartWidgetTestContext;
+    chart.removePane(opts.paneId);
+  }, { paneId });
 }
 
 export async function clearHistory(page: Page): Promise<void> {
@@ -80,4 +106,11 @@ export async function invertPriceAxis(page: Page, paneTestId: string): Promise<v
 export async function changePriceAxisScale(page: Page, paneTestId: string, scale: string): Promise<void> {
   await page.getByTestId(paneTestId).locator('.priceline >> canvas').last().click({ button: 'right' });
   await page.getByText(scale).click();
+}
+
+export async function zoomPriceAxisByMouseWheel(page: Page, paneTestId: string, delta: number): Promise<void> {
+  const pa = await page.getByTestId(paneTestId).locator('.priceline >> canvas').last();
+  const paBounds = await pa.boundingBox() as BoundRect;
+  await page.mouse.move(paBounds.x + paBounds.width / 2, paBounds.y + paBounds.height / 2);
+  await page.mouse.wheel(delta, 0);
 }

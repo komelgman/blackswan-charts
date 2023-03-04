@@ -154,10 +154,11 @@ export default class App extends Vue {
     // }, 1000);
 
     // ---------------------------------------------------------------------------------------------
-    // chartApi.removePane('mainPane');
+    // chartApi.swapPanes('mainPane', secondPane);
 
     // ---------------------------------------------------------------------------------------------
-    // chartApi.swapPanes('mainPane', secondPane);
+    // chartApi.removePane('mainPane');
+
 
     // ---------------------------------------------------------------------------------------------
     // setTimeout(() => {

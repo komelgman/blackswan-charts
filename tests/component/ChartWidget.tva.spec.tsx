@@ -5,13 +5,12 @@ import {
   createMainPaneAndMountChart,
   createPane, dragMouseFromTo, invertPriceAxis,
   redo,
-  removeDrawingsFromDataSource,
-  undo,
+  removeDrawingsFromDataSource, swapPanes, togglePane,
+  undo, zoomPriceAxisByMouseWheel,
 } from './tools/utils';
+import type { BoundRect } from './tools/utils';
 
 test.use({ viewport: { width: 1280, height: 720 } });
-
-declare type BoundRect = { x: number, y: number, height: number };
 
 const drawings = {
   green025VLineNotShared: {
@@ -121,16 +120,51 @@ test('check TVA functionality', async ({ page }) => {
   await changePriceAxisScale(page, 'pane0', 'Scale - Log(10)');
   await expect(page).toHaveScreenshot('12 set log10 scale for price axis on main pane.png');
 
-  // todo zoom main pane
-  // todo zoom price axis on main pane
-  // todo swap panes
-  // todo toggle pane
+  // zoom main pane by mouse wheel
+  await page.mouse.move(p0Bounds.x + p0Bounds.width / 2, p0Bounds.y + p0Bounds.height / 2);
+  await page.mouse.wheel(p0Bounds.height * 4, 0);
+  await expect(page).toHaveScreenshot('13 zoom time line by mouse wheel on main pane.png');
+
+  // zoom main pane price axis
+  await zoomPriceAxisByMouseWheel(page, 'pane0', p0Bounds.height * 4);
+  await expect(page).toHaveScreenshot('14 main pane zoom price axis by mouse wheel.png');
+
+  await swapPanes(page, 'main', 'second');
+  await expect(page).toHaveScreenshot('15 swap panes.png');
+
+  await togglePane(page, 'second');
+  await expect(page).toHaveScreenshot('16 toggle second pane.png');
+
+  await togglePane(page, 'second');
+  await expect(page).toHaveScreenshot('15 swap panes.png');
+  await expect(page).toHaveScreenshot('17 toggle second pane again.png');
+
   // todo remove pane
   // todo update styles
   // todo update drawing props
   // todo sendToBack bringToFront etc
 
   // --------------------------------------------- UNDO ----------------------------------------------------------------
+  // undo toggle second pane again
+  await undo(page);
+  await expect(page).toHaveScreenshot('16 toggle second pane.png');
+
+  // undo toggle second pane
+  await undo(page);
+  await expect(page).toHaveScreenshot('15 swap panes.png');
+
+  // undo zoom main pane price axis
+  await undo(page);
+  await expect(page).toHaveScreenshot('14 main pane zoom price axis by mouse wheel.png');
+
+  // undo zoom main pane by mouse wheel
+  await undo(page);
+  await expect(page).toHaveScreenshot('13 zoom time line by mouse wheel on main pane.png');
+
+  // undo zoom main pane by mouse wheel
+  await undo(page);
+  await expect(page).toHaveScreenshot('12 set log10 scale for price axis on main pane.png');
+
   // undo change scale
   await undo(page);
   await expect(page).toHaveScreenshot('11 invert price axis on main pane.png');
@@ -237,4 +271,25 @@ test('check TVA functionality', async ({ page }) => {
   // redo change price axis scale to log10
   await redo(page);
   await expect(page).toHaveScreenshot('12 set log10 scale for price axis on main pane.png');
+
+  // redo zoom main pane by mouse wheel
+  await redo(page);
+  await expect(page).toHaveScreenshot('13 zoom time line by mouse wheel on main pane.png');
+
+  // redo zoom main pane price axis
+  await redo(page);
+  await expect(page).toHaveScreenshot('14 main pane zoom price axis by mouse wheel.png');
+
+  // redo swap panes
+  await redo(page);
+  await expect(page).toHaveScreenshot('15 swap panes.png');
+
+  // redo toggle second pane
+  await redo(page);
+  await expect(page).toHaveScreenshot('16 toggle second pane.png');
+
+  // redo toggle second pane again
+  await redo(page);
+  await expect(page).toHaveScreenshot('15 swap panes.png');
+  await expect(page).toHaveScreenshot('17 toggle second pane again.png');
 });
