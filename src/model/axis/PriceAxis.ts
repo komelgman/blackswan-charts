@@ -1,4 +1,6 @@
 import { reactive } from 'vue';
+import UpdatePriceAxisInverted from '@/model/axis/incidents/UpdatePriceAxisInverted';
+import UpdatePriceAxisScale from '@/model/axis/incidents/UpdatePriceAxisScale';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import { clone } from '@/misc/strict-type-checks';
@@ -15,7 +17,7 @@ export declare type Inverted = Wrapped<InvertedValue>;
 
 export interface PriceAxisOptions extends AxisOptions<Price> {
   scale?: PriceScale;
-  inverted?: Inverted;
+  inverted?: boolean;
   contentWidth?: Wrapped<number>;
 }
 
@@ -43,8 +45,30 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
     return this.invertedValue;
   }
 
+  public invert(): void {
+    this.tvaClerk.processReport({
+      protocolOptions: { incident: 'price-axis-update-inverted' },
+      incident: new UpdatePriceAxisInverted({
+        axis: this,
+        inverted: this.inverted.value < 0,
+      }),
+      sign: true,
+    });
+  }
+
   public get scale(): Readonly<PriceScale> {
     return this.scaleValue;
+  }
+
+  public set scale(value: PriceScale) {
+    this.tvaClerk.processReport({
+      protocolOptions: { incident: 'price-axis-update-scale' },
+      incident: new UpdatePriceAxisScale({
+        axis: this,
+        scale: value,
+      }),
+      sign: true,
+    });
   }
 
   public get fraction(): number {
@@ -58,19 +82,19 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
   public update(options: PriceAxisOptions): void {
     super.update(options);
 
-    if (options.inverted) {
-      Object.assign(this.invertedValue, { ...options.inverted });
+    if (options.inverted !== undefined) {
+      Object.assign(this.invertedValue, { value: options.inverted ? 1 : -1 });
     }
 
-    if (options.contentWidth) {
+    if (options.contentWidth !== undefined) {
       Object.assign(this.contentWidthValue, { ...options.contentWidth });
     }
 
-    if (options.scale) {
+    if (options.scale !== undefined) {
       Object.assign(this.scaleValue, clone(options.scale));
     }
 
-    if (options.range) {
+    if (options.range !== undefined) {
       this.invalidateFraction();
     }
 

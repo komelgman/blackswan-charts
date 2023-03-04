@@ -71,3 +71,13 @@ export async function dragMouseFromTo(page: Page, x0: number, y0: number, x1: nu
   await page.mouse.move(x1, y1, { steps: Math.sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1)) });
   await page.mouse.up();
 }
+
+export async function invertPriceAxis(page: Page, paneTestId: string): Promise<void> {
+  await page.getByTestId(paneTestId).locator('.priceline >> canvas').last().click({ button: 'right' });
+  await page.getByText('Invert scale').click();
+}
+
+export async function changePriceAxisScale(page: Page, paneTestId: string, scale: string): Promise<void> {
+  await page.getByTestId(paneTestId).locator('.priceline >> canvas').last().click({ button: 'right' });
+  await page.getByText(scale).click();
+}

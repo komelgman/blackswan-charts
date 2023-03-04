@@ -1,8 +1,6 @@
 import { reactive, watch } from 'vue';
 import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { merge } from '@/misc/strict-type-checks';
-import UpdatePriceAxisInverted from '@/model/axis/incidents/UpdatePriceAxisInverted';
-import UpdatePriceAxisScale from '@/model/axis/incidents/UpdatePriceAxisScale';
 import type PriceAxis from '@/model/axis/PriceAxis';
 import type PriceScale from '@/model/axis/scaling/PriceScale';
 import { PriceScales } from '@/model/axis/scaling/PriceScale';
@@ -57,26 +55,10 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
   }
 
   private updateInvertedHandler(): void {
-    const { axis } = this;
-    axis.tvaClerk.processReport({
-      protocolOptions: { incident: 'price-axis-update-inverted' },
-      incident: new UpdatePriceAxisInverted({
-        axis,
-        inverted: { value: axis.inverted.value > 0 ? -1 : 1 },
-      }),
-      sign: true,
-    });
+    this.axis.invert();
   }
 
   private updateScaleHandler(scale: PriceScale): void {
-    const { axis } = this;
-    axis.tvaClerk.processReport({
-      protocolOptions: { incident: 'price-axis-update-scale' },
-      incident: new UpdatePriceAxisScale({
-        axis,
-        scale,
-      }),
-      sign: true,
-    });
+    this.axis.scale = scale;
   }
 }

@@ -22,7 +22,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
   public update(options: AxisOptions<UTCTimestamp>): void {
     super.update(options);
 
-    if (options.range || options.screenSize?.main) {
+    if (options.range !== undefined || options.screenSize?.main !== undefined) {
       this.invalidateCache();
     }
   }

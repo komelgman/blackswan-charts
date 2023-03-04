@@ -1,15 +1,17 @@
 import { test, expect } from '@playwright/experimental-ct-vue';
 import {
-  addDrawingToDataSource,
+  addDrawingToDataSource, changePriceAxisScale,
   clearHistory,
   createMainPaneAndMountChart,
-  createPane, dragMouseFromTo,
+  createPane, dragMouseFromTo, invertPriceAxis,
   redo,
   removeDrawingsFromDataSource,
   undo,
 } from './tools/utils';
 
 test.use({ viewport: { width: 1280, height: 720 } });
+
+declare type BoundRect = { x: number, y: number, height: number };
 
 const drawings = {
   green025VLineNotShared: {
@@ -55,175 +57,184 @@ test('check TVA functionality', async ({ page }) => {
 
   await createMainPaneAndMountChart(page);
   await clearHistory(page);
-  await expect(page).toHaveScreenshot('one pane, no drawings.png');
+  await expect(page).toHaveScreenshot('0 one pane, no drawings.png');
 
   await createPane(page, 'second', 0.3);
-  await expect(page).toHaveScreenshot('two panes, no drawings.png');
+  await expect(page).toHaveScreenshot('1 two panes, no drawings.png');
 
   await undo(page); // undo create second pane
   await undo(page); // try to undo create main pane (shouldn't do that, because history was cleaned)
-  await expect(page).toHaveScreenshot('one pane, no drawings.png');
+  await expect(page).toHaveScreenshot('0 one pane, no drawings.png');
 
   await redo(page); // reapply create second pane
-  await expect(page).toHaveScreenshot('two panes, no drawings.png');
+  await expect(page).toHaveScreenshot('1 two panes, no drawings.png');
 
   await addDrawingToDataSource(page, 'main', drawings.green025HLineNotShared);
-  await expect(page).toHaveScreenshot('two panes, green025HLineNotShared on main pane.png');
+  await expect(page).toHaveScreenshot('2 add green025HLineNotShared on main pane.png');
 
   await addDrawingToDataSource(page, 'main', drawings.green025VLineNotShared);
-  await expect(page).toHaveScreenshot('two panes, green025HLineNotShared and green025VLineNotShared on main pane.png');
+  await expect(page).toHaveScreenshot('3 add green025VLineNotShared on main pane.png');
 
   await addDrawingToDataSource(page, 'main', drawings.red010VLineShared);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane.png');
+  await expect(page).toHaveScreenshot('4 add red010VLineShared on main pane.png');
 
   await addDrawingToDataSource(page, 'main', drawings.red010HLineShared);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and both red Shared on main pane.png');
+  await expect(page).toHaveScreenshot('5 add red010HLineShared on main pane.png');
 
   await removeDrawingsFromDataSource(page, 'main', drawings.red010HLineShared.id);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane.png');
-
-  const p0 = await page.getByTestId('pane0');
-  const p1 = await page.getByTestId('pane1');
-  let p0Bounds = await p0.boundingBox();
-  let p1Bounds = await p1.boundingBox();
+  await expect(page).toHaveScreenshot('6 remove red010HLineShared on main pane.png');
 
   // move main pane
-  // @ts-ignore
+  const p0 = await page.getByTestId('pane0');
+  const p1 = await page.getByTestId('pane1');
+  let p0Bounds = await p0.boundingBox() as BoundRect;
+  let p1Bounds = await p1.boundingBox() as BoundRect;
   await dragMouseFromTo(page, p0Bounds.x + 1, p0Bounds.y + 1, p0Bounds.x + 11, p0Bounds.y + 11);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved.png');
-  // @ts-ignore
+  await expect(page).toHaveScreenshot('7 move main pane.png');
   await expect(p0Bounds.height).toBeCloseTo((0.7 / 0.3) * p1Bounds.height, 4);
 
   // resize panes by mouse
-  // @ts-ignore
   await dragMouseFromTo(page, p0Bounds.x + 1, p1Bounds.y - 1, p0Bounds.x + 1, p1Bounds.y - 1 - (p0Bounds.height - p1Bounds.height) / 2);
   await page.mouse.click(10, 10); // reset divider selection
-
-  p0Bounds = await p0.boundingBox();
-  p1Bounds = await p1.boundingBox();
-
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
-    + 'main pane moved, panes resized.png');
-  // @ts-ignore
+  p0Bounds = await p0.boundingBox() as BoundRect;
+  p1Bounds = await p1.boundingBox() as BoundRect;
+  await expect(page).toHaveScreenshot('8 resize panes, should be equal height.png');
   await expect(p0Bounds.height).toBeCloseTo(p1Bounds.height, 0);
 
   // move red010VLineShared line
-  // @ts-ignore
   await dragMouseFromTo(page, 557, p0Bounds.y + 1, 300, p0Bounds.y + 11);
   await page.mouse.move(10, 10); // reset line selection
   await page.mouse.click(10, 10); // reset line selection
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
-    + 'main pane moved, panes resized, red line moved.png');
+  await expect(page).toHaveScreenshot('9 move red010VLineShared line.png');
 
   // clone red010VLineShared line
   await page.keyboard.down('Control');
-  // @ts-ignore
   await dragMouseFromTo(page, 300, p0Bounds.y + 1, 350, p0Bounds.y + 1);
   await page.keyboard.up('Control');
   await page.mouse.move(10, 10); // reset line selection
   await page.mouse.click(10, 10); // reset line selection
-  // eslint-disable-next-line max-len, vue/max-len
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
-    + 'main pane moved, panes resized, red line moved and cloned.png');
+  await expect(page).toHaveScreenshot('10 clone red010VLineShared line.png');
+
+  await invertPriceAxis(page, 'pane0');
+  await expect(page).toHaveScreenshot('11 invert price axis on main pane.png');
+
+  await changePriceAxisScale(page, 'pane0', 'Scale - Log(10)');
+  await expect(page).toHaveScreenshot('12 set log10 scale for price axis on main pane.png');
+
+  // todo zoom main pane
+  // todo zoom price axis on main pane
+  // todo swap panes
+  // todo toggle pane
+  // todo remove pane
+  // todo update styles
+  // todo update drawing props
+  // todo sendToBack bringToFront etc
 
   // --------------------------------------------- UNDO ----------------------------------------------------------------
+  // undo change scale
+  await undo(page);
+  await expect(page).toHaveScreenshot('11 invert price axis on main pane.png');
+
+  // undo invert main pane
+  await undo(page);
+  await expect(page).toHaveScreenshot('10 clone red010VLineShared line.png');
+
   // undo red010VLineShared line clone
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane,'
-    + ' main pane moved, panes resized, red line moved.png');
+  await expect(page).toHaveScreenshot('9 move red010VLineShared line.png');
 
   // undo red010VLineShared line move
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
-    + 'main pane moved, panes resized.png');
+  await expect(page).toHaveScreenshot('8 resize panes, should be equal height.png');
 
   // undo panes resize
   await undo(page);
-
-  p0Bounds = await p0.boundingBox();
-  p1Bounds = await p1.boundingBox();
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved.png');
-  // @ts-ignore
+  p0Bounds = await p0.boundingBox() as BoundRect;
+  p1Bounds = await p1.boundingBox() as BoundRect;
+  await expect(page).toHaveScreenshot('7 move main pane.png');
   await expect(p0Bounds.height).toBeCloseTo((0.7 / 0.3) * p1Bounds.height, 4);
 
   // undo move main pane
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('6 remove red010HLineShared on main pane.png', { maxDiffPixels: 5 });
 
   // undo remove red010HLineShared
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and both red Shared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('5 add red010HLineShared on main pane.png', { maxDiffPixels: 5 });
 
   // undo add red010HLineShared
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('4 add red010VLineShared on main pane.png', { maxDiffPixels: 5 });
 
   // undo add red010VLineShared
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, green025HLineNotShared and green025VLineNotShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('3 add green025VLineNotShared on main pane.png', { maxDiffPixels: 5 });
 
   // undo add green025VLineNotShared
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, green025HLineNotShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('2 add green025HLineNotShared on main pane.png', { maxDiffPixels: 5 });
 
   // undo add green025HLineNotShared
   await undo(page);
-  await expect(page).toHaveScreenshot('two panes, no drawings.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('1 two panes, no drawings.png', { maxDiffPixels: 5 });
 
   // undo create second pane
   await undo(page);
-  await expect(page).toHaveScreenshot('one pane, no drawings.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('0 one pane, no drawings.png', { maxDiffPixels: 5 });
 
   // try undo create main pane
   await undo(page);
-  await expect(page).toHaveScreenshot('one pane, no drawings.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('0 one pane, no drawings.png', { maxDiffPixels: 5 });
 
   // --------------------------------------------- REDO ----------------------------------------------------------------
   // redo create second pane
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, no drawings.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('1 two panes, no drawings.png', { maxDiffPixels: 5 });
 
   // redo add green025HLineNotShared
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, green025HLineNotShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('2 add green025HLineNotShared on main pane.png', { maxDiffPixels: 5 });
 
   // redo add green025VLineNotShared
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, green025HLineNotShared and green025VLineNotShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('3 add green025VLineNotShared on main pane.png', { maxDiffPixels: 5 });
 
   // redo add red010VLineShared
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('4 add red010VLineShared on main pane.png', { maxDiffPixels: 5 });
 
   // redo add red010HLineShared
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and both red Shared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('5 add red010HLineShared on main pane.png', { maxDiffPixels: 5 });
 
   // redo remove red010HLineShared
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane.png', { maxDiffPixels: 5 });
+  await expect(page).toHaveScreenshot('6 remove red010HLineShared on main pane.png', { maxDiffPixels: 5 });
 
   // redo main pane move
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved.png');
+  await expect(page).toHaveScreenshot('7 move main pane.png');
 
   // redo panes resize
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
-    + 'main pane moved, panes resized.png');
-
-  p0Bounds = await p0.boundingBox();
-  p1Bounds = await p1.boundingBox();
-  // @ts-ignore
+  await expect(page).toHaveScreenshot('8 resize panes, should be equal height.png');
+  p0Bounds = await p0.boundingBox() as BoundRect;
+  p1Bounds = await p1.boundingBox() as BoundRect;
   await expect(p0Bounds.height).toBeCloseTo(p1Bounds.height, 0);
 
   // redo move red line
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, '
-    + 'main pane moved, panes resized, red line moved.png');
+  await expect(page).toHaveScreenshot('9 move red010VLineShared line.png');
 
   // redo clone red line
   await redo(page);
-  await expect(page).toHaveScreenshot('two panes, both green NotShared and red010VLineShared on main pane, main pane moved, '
-    + 'panes resized, red line moved and cloned.png');
+  await expect(page).toHaveScreenshot('10 clone red010VLineShared line.png');
+
+  // redo invert main pane price axis
+  await redo(page);
+  await expect(page).toHaveScreenshot('11 invert price axis on main pane.png');
+
+  // redo change price axis scale to log10
+  await redo(page);
+  await expect(page).toHaveScreenshot('12 set log10 scale for price axis on main pane.png');
 });

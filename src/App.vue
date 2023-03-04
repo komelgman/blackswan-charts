@@ -34,7 +34,7 @@ export default class App extends Vue {
   }
 
   mounted(): void {
-    const { chartApi } = this;
+    const { chartApi, mainDs } = this;
     const drawings = {
       green025VLineNotShared: {
         id: 'vline1',
@@ -75,6 +75,16 @@ export default class App extends Vue {
       },
     };
 
+    mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
+      for (const [reason, reasonEvents] of events) {
+        for (const dataSourceChangeEvent of reasonEvents) {
+          if (isProxy(dataSourceChangeEvent.entry[0].options)) {
+            console.trace(reason, dataSourceChangeEvent);
+          }
+        }
+      }
+    });
+
     chartApi.createPane(new DataSource({ id: 'second', idHelper: this.idHelper }, []), { initialSize: 0.3 });
     let i = 0;
 
@@ -86,41 +96,31 @@ export default class App extends Vue {
     setTimeout((j: number) => {
       console.log(`${j}) chartApi.redo();`);
       chartApi.redo();
-    }, i++, i);
+    }, 100 * i++, i);
 
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green025HLineNotShared);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.green025HLineNotShared);
-    //   this.mainDs.endTransaction();
-    // }, i++, i);
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.green025HLineNotShared);`);
 
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green025VLineNotShared);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.green025VLineNotShared);
-    //   this.mainDs.endTransaction();
-    // }, i++, i);
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.green025HLineNotShared);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
 
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.red010HLineShared);
-    //   this.mainDs.endTransaction();
-    // }, i++, i);
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.green025VLineNotShared);`);
 
-    this.mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
-      for (const [reason, reasonEvents] of events) {
-        for (const dataSourceChangeEvent of reasonEvents) {
-          if (isProxy(dataSourceChangeEvent.entry[0].options)) {
-            console.trace(reason, dataSourceChangeEvent);
-          }
-        }
-      }
-    });
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.green025VLineNotShared);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.red010HLineShared);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
 
     setTimeout((j: number) => {
       console.log(`${j}) this.mainDs.add(drawings.red010VLineShared);`);
@@ -128,15 +128,21 @@ export default class App extends Vue {
       this.mainDs.beginTransaction();
       this.mainDs.add(drawings.red010VLineShared);
       this.mainDs.endTransaction();
-    }, i++, i);
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.remove(drawings.red010HLineShared.id);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.remove(drawings.red010HLineShared.id);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
 
     // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.remove(drawings.red010HLineShared.id);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.remove(drawings.red010HLineShared.id);
-    //   this.mainDs.endTransaction();
-    // }, i++, i);
+    //   console.log(`${j}) chartApi.paneModel('main').priceAxis.update({ inverted: true });`);
+    //   // warn !!! it's low level access, TVA not used
+    //   chartApi.paneModel('main').priceAxis.update({ inverted: true });
+    // }, 100 * i++, i);
 
     // ---------------------------------------------------------------------------------------------
     // setTimeout(() => {
@@ -158,48 +164,8 @@ export default class App extends Vue {
     //   chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
     // }, 1000);
 
-    // chartApi.updateStyle({ text: { fontSize: 14, fontStyle: 'italic' } });
-    // chartApi.updateStyle({ text: { fontSize: 13, fontStyle: 'italic' } });
-
-    //* sample 0
-    setTimeout(() => {
-      // Object.assign(chartApi.paneModel('mainPane').priceAxis.range, {
-      //   from: -2000000 as Price,
-      //   to: 500 as Price,
-      // });
-      //
-      // Object.assign(chartApi.paneModel(secondPane).priceAxis.range, {
-      //   from: 200 as Price,
-      //   to: 5000 as Price,
-      // });
-      //
-      // Object.assign(chartApi.paneModel(thirdPane).priceAxis.range, {
-      //   from: 300 as Price,
-      //   to: 50000 as Price,
-      // });
-
-      // chartApi.paneModel(thirdPane).priceAxis.marks.push({
-      //   value: 2500 as Price,
-      //   lineStyle: {
-      //     fill: LineFillStyle.LargeDashed,
-      //     color: '#00FFFF',
-      //     lineWidth: 1,
-      //   },
-      // });
-      //
-      // chartApi.paneModel(thirdPane).priceAxis.marks.push({
-      //   value: 100 as Price,
-      //   lineStyle: {
-      //     fill: LineFillStyle.LargeDashed,
-      //     color: '#00FF00',
-      //     lineWidth: 1,
-      //   },
-      // });
-    }, 3000);
-
-    //* sample 1
+    // todo add entry processing, no tva, used for system changes (like current tick changes)
     // setTimeout(() => {
-    //   // mainDs.processEntry(0, (entry) => ({ ...entry, visible: false }));
     //   this.mainDs.processEntry(0, (entry: DataSourceEntry<number[][]>) => {
     //     // eslint-disable-next-line
     //     entry.visible = false;
@@ -209,29 +175,6 @@ export default class App extends Vue {
     //   });
     // }, 5000);
 
-    //* sample 2
-    // setTimeout(() => {
-    //   this.chart.updateOptions({ text: { fontSize: 20, fontStyle: 'italic' } });
-    // }, 3000);
-
-    //* sample 3
-    // setTimeout(() => {
-    //   this.chart.swapPanes(0, 2);
-    // }, 3000);
-
-    //* sample 4
-    // setTimeout(() => {
-    //   // this.chart.removePane(1);
-    //   this.chart.hidePane(this.chart.panes[1].id);
-    // }, 5000);
-
-    //* sample 5
-    // setTimeout(() => {
-    //   this.mainDs.setVisible(false, [1]);
-    //   this.mainDs.remove(new Set([2]));
-    // }, 5000);
-
-    //* sample 6
     // setTimeout(() => {
     //   this.mainDs.processEntry(1, (entry: DataSourceEntry<number[][]>) => {
     //     // replace
@@ -243,30 +186,9 @@ export default class App extends Vue {
     //   });
     // }, 5000);
 
-    //* sample 7
-    // setTimeout(() => {
-    //   this.chart.panes[1].model.priceAxis.inverted.value = 1;
-    // }, 2000);
-
-    //* sample 8
     // setTimeout(() => {
     //   this.chartModel.timeAxis.range = { from: 2 as UTCTimestamp, to: 6 as UTCTimestamp };
     // }, 5000);
-
-    //* sample 9
-    // setTimeout(() => {
-    //   mainDs.bringToFront(0);
-    //   console.log('mainDs.entries', mainDs.entries);
-    // }, 8000);
-
-    //* sample 10
-    // setTimeout(() => {
-    //   console.log('this.chartModel.panes[0].model.timeAxis.scale = 3;');
-    //   this.chartModel.panes[0].model.timeAxis.scale = 3;
-    //
-    //   console.log('this.chartModel.panes[0].model.priceAxis.scale = 3;');
-    //   this.chartModel.panes[0].model.priceAxis.scale = 3;
-    // }, 10000);
   }
 }
 </script>

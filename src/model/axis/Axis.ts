@@ -22,15 +22,15 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   public update(options: Options): void {
-    if (options.range) {
+    if (options.range !== undefined) {
       merge(this.rangeValue, { ...options.range });
     }
 
-    if (options.textStyle) {
+    if (options.textStyle !== undefined) {
       merge(this.textStyleValue, clone(options.textStyle));
     }
 
-    if (options.screenSize) {
+    if (options.screenSize !== undefined) {
       merge(this.screenSizeValue, { ...options.screenSize });
     }
   }
