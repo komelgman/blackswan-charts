@@ -1,11 +1,12 @@
-import type { PlaywrightTestConfig } from '@playwright/experimental-ct-vue';
-import { devices } from '@playwright/experimental-ct-vue';
-import viteConfig from './vite.config';
+import { defineConfig, devices } from '@playwright/experimental-ct-vue';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import { resolve } from 'path';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-const config: PlaywrightTestConfig = {
+export default defineConfig({
   testDir: './tests/component',
   snapshotDir: './tests/.component-snapshots',
   timeout: 10 * 1000,
@@ -24,7 +25,23 @@ const config: PlaywrightTestConfig = {
     headless: true,
     ctTemplateDir: './tests/component-template',
     ctCacheDir: './tests/component-template/.cache',
-    ctViteConfig: viteConfig as any,
+    ctViteConfig: {
+      plugins: [
+        vue(),
+        vueJsx({
+          babelPlugins: [
+            ['@babel/plugin-proposal-decorators', { legacy: true }],
+            ['@babel/plugin-transform-flow-strip-types'],
+            ['@babel/plugin-proposal-class-properties', { loose: true }],
+          ],
+        }),
+      ],
+      resolve: {
+        alias: {
+          '@': resolve(__dirname, './src'),
+        },
+      },
+    },
   },
 
   projects: [
@@ -40,6 +57,4 @@ const config: PlaywrightTestConfig = {
       },
     },
   ],
-};
-
-export default config;
+});

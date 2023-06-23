@@ -1,4 +1,4 @@
-import { toRaw } from 'vue';
+import { createApp, toRaw } from 'vue';
 import Chart from '@/model/Chart';
 import IdHelper from '@/model/tools/IdHelper';
 import DataSource from '@/model/datasource/DataSource';
