@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import type TVAProtocol from '@/model/history/TVAProtocol';
 import type { ChartOptions } from '@/components/chart/ChartWidget.vue';
 import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
@@ -142,20 +143,34 @@ export default class Chart {
   }
 
   public togglePane(paneId: PaneId): void {
+    const paneIndex = this.indexByPaneId(paneId);
+    const pane = this.panes[paneIndex];
     const initialSizes = this.getPanesSizes();
+    const tvaProtocol: TVAProtocol = this.tva
+      .getProtocol({ incident: 'chart-controller-toggle-pane' });
 
-    this.tva
-      .getProtocol({ incident: 'chart-controller-toggle-pane' })
-      .addIncident(new TogglePane({
-        panes: this.panes,
-        paneIndex: this.indexByPaneId(paneId),
-      }))
-      .addIncident(new InvalidatePanesSizes({
-        panes: this.panes,
-        initial: initialSizes,
-        changed: initialSizes,
-      }))
-      .trySign();
+    tvaProtocol.addIncident(new TogglePane({
+      panes: this.panes,
+      paneIndex,
+    }));
+
+    if (!pane.visible) {
+      tvaProtocol
+        .addIncident(new InvalidatePanesSizes({
+          panes: this.panes,
+          initial: initialSizes,
+          changed: this.getPanesSizes(),
+        }));
+    } else {
+      tvaProtocol
+        .addIncident(new InvalidatePanesSizes({
+          panes: this.panes,
+          initial: initialSizes,
+          changed: this.getPanesSizes(),
+        }));
+    }
+
+    tvaProtocol.trySign();
   }
 
   public paneModel(paneId: PaneId): Viewport {

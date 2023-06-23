@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/experimental-ct-vue';
+import type { Page } from 'playwright';
+import type { PaneOptions } from '@/components/layout';
+import type { ViewportOptions } from '@/model/viewport/Viewport';
 import type ChartWidgetTestContext from './tools/ChartWidgetTestContext';
+import { delay } from './tools/utils';
+import type { BoundRect } from './tools/utils';
 
 test.use({ viewport: { width: 1280, height: 720 } });
 
@@ -185,15 +190,14 @@ test.describe('two panes', () => {
       // eslint-disable-next-line
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       chart.createPane(newDataSource({ id: 'main', idHelper }, []));
-      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { initialSize: 0.5 });
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { preferredSize: 0.5 });
 
       return mount();
     });
 
-    const pane0 = await page.getByTestId('pane0').boundingBox();
-    const pane1 = await page.getByTestId('pane1').boundingBox();
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
 
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo(pane1.height, 4);
     await expect(page).toHaveScreenshot('two panes, no drawings.png');
   });
@@ -210,15 +214,14 @@ test.describe('two panes', () => {
     await page.evaluate(() => {
       // eslint-disable-next-line
       const { chart, idHelper, newDataSource, delay } = (window as any).__test_context as ChartWidgetTestContext;
-      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { initialSize: 0.5 });
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { preferredSize: 0.5 });
 
       return delay();
     });
 
-    const pane0 = await page.getByTestId('pane0').boundingBox();
-    const pane1 = await page.getByTestId('pane1').boundingBox();
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
 
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo(pane1.height, 4);
     await expect(page).toHaveScreenshot('two panes, no drawings.png');
   });
@@ -235,21 +238,67 @@ test.describe('two panes', () => {
       const { chart, idHelper, newDataSource, delay } = (window as any).__test_context as ChartWidgetTestContext;
 
       chart.createPane(newDataSource({ id: 'main', idHelper }, []));
-      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { initialSize: 0.5 });
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { preferredSize: 0.5 });
 
       return delay();
     });
 
-    const pane0 = await page.getByTestId('pane0').boundingBox();
-    const pane1 = await page.getByTestId('pane1').boundingBox();
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
 
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo(pane1.height, 4);
     await expect(page).toHaveScreenshot('two panes, no drawings.png');
   });
 });
 
 test.describe('three panes', () => {
+  async function installPanesInOneTime(page: Page, [first, second, third]: Partial<PaneOptions<ViewportOptions>>[]) {
+    await page.evaluate(([firstOptions, secondOptions, thirdOptions]: Partial<PaneOptions<ViewportOptions>>[]) => {
+      // eslint-disable-next-line
+      const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
+      mount();
+
+      chart.createPane(newDataSource({ id: 'main', idHelper }, []), firstOptions);
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []), secondOptions);
+      chart.createPane(newDataSource({ id: 'third', idHelper }, []), thirdOptions);
+    }, [first, second, third]);
+  }
+  async function installPanesStepByStep(page: Page, [first, second, third]: Partial<PaneOptions<ViewportOptions>>[]) {
+    await page.evaluate((options : Partial<PaneOptions<ViewportOptions>>) => {
+      // eslint-disable-next-line
+      const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
+      mount();
+
+      chart.createPane(newDataSource({ id: 'main', idHelper }, []), options);
+    }, first);
+
+    await delay(10);
+
+    await page.evaluate((options : Partial<PaneOptions<ViewportOptions>>) => {
+      // eslint-disable-next-line
+      const { chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
+
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []), options);
+    }, second);
+
+    await delay(10);
+
+    await page.evaluate((options : Partial<PaneOptions<ViewportOptions>>) => {
+      // eslint-disable-next-line
+      const { chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
+
+      chart.createPane(newDataSource({ id: 'third', idHelper }, []), options);
+    }, third);
+  }
+
+  async function getPanesBounds(page: Page): Promise<[BoundRect, BoundRect, BoundRect]> {
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
+    const pane2 = await page.getByTestId('pane2').boundingBox() as BoundRect;
+
+    return [pane0, pane1, pane2];
+  }
+
   test('vertical line (pane: main, shared: none)', async ({ page }) => {
     await page.evaluate((d) => {
       // eslint-disable-next-line
@@ -261,13 +310,11 @@ test.describe('three panes', () => {
       chart.createPane(newDataSource({ id: 'third', idHelper }, []));
     }, drawings);
 
-    const pane0 = await page.getByTestId('pane0').boundingBox();
-    const pane1 = await page.getByTestId('pane1').boundingBox();
-    const pane2 = await page.getByTestId('pane2').boundingBox();
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
+    const pane2 = await page.getByTestId('pane2').boundingBox() as BoundRect;
 
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo(pane1.height, 4);
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo(pane2.height, 4);
     await expect(page).toHaveScreenshot();
   });
@@ -278,18 +325,16 @@ test.describe('three panes', () => {
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
-      chart.createPane(newDataSource({ id: 'main', idHelper }, [{ ...d.green025VLine, shareWith: '*' }]), { initialSize: 0.5 });
-      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { initialSize: 0.25 });
-      chart.createPane(newDataSource({ id: 'third', idHelper }, []), { initialSize: 0.25 });
+      chart.createPane(newDataSource({ id: 'main', idHelper }, [{ ...d.green025VLine, shareWith: '*' }]), { preferredSize: 0.5 });
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { preferredSize: 0.25 });
+      chart.createPane(newDataSource({ id: 'third', idHelper }, []), { preferredSize: 0.25 });
     }, drawings);
 
-    const pane0 = await page.getByTestId('pane0').boundingBox();
-    const pane1 = await page.getByTestId('pane1').boundingBox();
-    const pane2 = await page.getByTestId('pane2').boundingBox();
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
+    const pane2 = await page.getByTestId('pane2').boundingBox() as BoundRect;
 
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo(2 * pane1.height, 4);
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo(2 * pane2.height, 4);
     await expect(page).toHaveScreenshot();
   });
@@ -301,18 +346,96 @@ test.describe('three panes', () => {
       mount();
 
       chart.createPane(newDataSource({ id: 'main', idHelper }, []));
-      chart.createPane(newDataSource({ id: 'second', idHelper }, [{ ...d.green025VLine, shareWith: ['third'] }]), { initialSize: 0.2 });
-      chart.createPane(newDataSource({ id: 'third', idHelper }, []), { initialSize: 0.2 });
+      chart.createPane(newDataSource({ id: 'second', idHelper }, [{ ...d.green025VLine, shareWith: ['third'] }]), { preferredSize: 0.2 });
+      chart.createPane(newDataSource({ id: 'third', idHelper }, []), { preferredSize: 0.2 });
     }, drawings);
 
-    const pane0 = await page.getByTestId('pane0').boundingBox();
-    const pane1 = await page.getByTestId('pane1').boundingBox();
-    const pane2 = await page.getByTestId('pane2').boundingBox();
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
+    const pane2 = await page.getByTestId('pane2').boundingBox() as BoundRect;
 
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo((0.6 / 0.2) * pane1.height, 4);
-    // @ts-ignore
     await expect(pane0.height).toBeCloseTo((0.6 / 0.2) * pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed in one time, sum ps less than 1', async ({ page }) => {
+    await installPanesInOneTime(page, [{ preferredSize: 0.2 }, { preferredSize: 0.2 }, { preferredSize: 0.2 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toBeCloseTo(pane1.height, 4);
+    await expect(pane0.height).toBeCloseTo(pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed in one time, sum ps greater than 1', async ({ page }) => {
+    await installPanesInOneTime(page, [{ preferredSize: 0.8 }, { preferredSize: 0.4 }, { preferredSize: 0.4 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toBeCloseTo(2 * pane1.height, 4);
+    await expect(pane0.height).toBeCloseTo(2 * pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed in one time, one pane ps undefined and sum other ps greater than 1', async ({ page }) => {
+    await installPanesInOneTime(page, [{ minSize: 100 }, { preferredSize: 0.6 }, { preferredSize: 0.6 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toEqual(100);
+    await expect(pane1.height).toBeCloseTo(pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed in one time, one pane ps undefined and sum other ps less than free space', async ({ page }) => {
+    await installPanesInOneTime(page, [{ maxSize: 200 }, { preferredSize: 0.1 }, { preferredSize: 0.1 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toEqual(200);
+    await expect(pane1.height).toBeCloseTo(pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed step by step, sum ps less than 1', async ({ page }) => {
+    await installPanesStepByStep(page, [{ preferredSize: 0.2 }, { preferredSize: 0.2 }, { preferredSize: 0.2 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toBeCloseTo(pane1.height, 4);
+    await expect(pane0.height).toBeCloseTo(pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed step by step, sum ps greater than 1', async ({ page }) => {
+    await installPanesStepByStep(page, [{ preferredSize: 0.8 }, { preferredSize: 0.4 }, { preferredSize: 0.4 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toBeCloseTo(2 * pane1.height, 4);
+    await expect(pane0.height).toBeCloseTo(2 * pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed step by step, one pane ps undefined and sum other ps greater than 1', async ({ page }) => {
+    await installPanesStepByStep(page, [{ minSize: 100 }, { preferredSize: 0.6 }, { preferredSize: 0.6 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toEqual(100);
+    await expect(pane1.height).toBeCloseTo(pane2.height, 4);
+    await expect(page).toHaveScreenshot();
+  });
+
+  test('installed step by step, one pane ps undefined and sum other ps less than free space', async ({ page }) => {
+    await installPanesStepByStep(page, [{ maxSize: 200 }, { preferredSize: 0.1 }, { preferredSize: 0.1 }]);
+
+    const [pane0, pane1, pane2] = await getPanesBounds(page);
+
+    await expect(pane0.height).toEqual(200);
+    await expect(pane1.height).toBeCloseTo(pane2.height, 4);
     await expect(page).toHaveScreenshot();
   });
 });

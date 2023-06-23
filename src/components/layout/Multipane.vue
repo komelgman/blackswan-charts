@@ -22,18 +22,22 @@ import type { PaneDescriptor, ResizeHandleMoveEvent } from '@/components/layout'
 import { BoxLayout, Direction, Divider, ResizeHandle } from '@/components/layout';
 import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 
-interface PaneSize {
+interface PaneInfo {
+  paneDesc: PaneDescriptor<any>;
   min: number;
   max: number;
-  elementSize: number;
   targetSize: number;
+  retrievedSize: number;
 }
 
 interface InitialParamsForVisiblePanes {
-  panesInfo: PaneSize[];
-  minimumSize: number;
-  maximumSize: number;
-  retrievedSize: number;
+  suPanes: PaneInfo[];
+  suMin: number;
+  suMax: number;
+  snuPanes: PaneInfo[];
+  snuRetrieved: number;
+  snuMin: number;
+  snuMax: number;
   availableSize: number;
   bordersSize: number;
 }
@@ -141,19 +145,87 @@ export default class Multipane<T> extends Vue {
   private adjustPanesSizes(): void {
     this.valid = true;
 
-    const { panesInfo, minimumSize, maximumSize, retrievedSize, availableSize, bordersSize } = this.getInitialParamsForVisiblePanes();
+    const {
+      suPanes,
+      suMin,
+      suMax,
+      snuPanes,
+      snuRetrieved,
+      snuMin,
+      snuMax,
+      availableSize,
+      bordersSize,
+    } = this.getInitialParamsForVisiblePanes();
 
-    if ((minimumSize + bordersSize) > availableSize) {
-      throw new Error('minimumSize + bordersSize > availableSize');
+    const targetSize = availableSize - bordersSize;
+    if ((suMin + snuMin) > targetSize) {
+      throw new Error('No enough space for panes');
     }
 
-    const scale = (availableSize - bordersSize) / retrievedSize;
-    let sizeThatShouldBeDistributed: number = 0;
-    let panesAvailableForStretch = panesInfo.length;
-    let panesAvailableForShrink = panesInfo.length;
+    if ((suMax + snuMax) < targetSize) {
+      throw new Error('Maximum panes size less than available size');
+    }
 
-    for (const info of panesInfo) {
-      let size = info.targetSize * scale;
+    let snuSize = snuRetrieved;
+    if (snuRetrieved + suMin > targetSize) {
+      snuSize = this.resize(snuPanes, snuSize, targetSize - suMin);
+    }
+
+    if (snuRetrieved + suMax < targetSize) {
+      snuSize = this.resize(snuPanes, snuSize, targetSize - suMax);
+    }
+
+    const suRetrieved = targetSize - snuSize;
+    for (const pane of suPanes) {
+      pane.retrievedSize = suRetrieved / suPanes.length;
+    }
+
+    this.resize(suPanes, suRetrieved, suRetrieved);
+
+    // update layout min|max size options
+    const minimumSize = snuMin + suMin;
+    if (minimumSize > 0) {
+      this.layout.minSize = (minimumSize + bordersSize) * Multipane.getDPR();
+    } else {
+      this.layout.minSize = undefined;
+    }
+
+    const maximumSize = snuMax + suMax;
+    if (maximumSize > 0 && maximumSize < Number.MAX_VALUE) {
+      this.layout.maxSize = (maximumSize + bordersSize) * Multipane.getDPR();
+    } else {
+      this.layout.maxSize = undefined;
+    }
+
+    // fix inaccuracy and apply size
+    let computedSize = 0;
+    const panes = [...suPanes, ...snuPanes];
+    for (const info of panes) {
+      computedSize += info.targetSize;
+    }
+
+    let fix = targetSize - computedSize;
+    for (const info of panes) {
+      let size = info.targetSize;
+
+      if ((size + fix) >= info.min && (size + fix) <= info.max) {
+        size += fix;
+        fix = 0;
+      }
+
+      info.paneDesc.size = size;
+    }
+  }
+
+  private resize(paneInfos: PaneInfo[], retrievedSize: number, targetSize: number) {
+    const scale = targetSize / retrievedSize;
+    let sizeThatShouldBeDistributed: number = 0;
+    let panesAvailableForStretch = paneInfos.length;
+    let panesAvailableForShrink = paneInfos.length;
+
+    // scale elements size to screen size
+    for (const info of paneInfos) {
+      let size = info.retrievedSize * scale;
 
       if (size > info.max) {
         sizeThatShouldBeDistributed += size - info.max;
@@ -173,7 +245,7 @@ export default class Multipane<T> extends Vue {
         panesAvailableForShrink -= 1;
       }
 
-      info.elementSize = size;
+      info.targetSize = size;
     }
 
     // stretch/shrink not distributed space
@@ -184,19 +256,19 @@ export default class Multipane<T> extends Vue {
     while ((sizeThatShouldBeDistributed + eps) < 0 && panesAvailableForShrink > 0) {
       const dSize = -sizeThatShouldBeDistributed / panesAvailableForShrink;
 
-      for (const info of panesInfo) {
-        if (info.min === info.elementSize) {
+      for (const info of paneInfos) {
+        if (info.min === info.targetSize) {
           continue;
         }
 
-        let size = info.elementSize - dSize;
+        let size = info.targetSize - dSize;
         if (size <= info.min) {
           size = info.min;
           panesAvailableForShrink -= 1;
         }
 
-        sizeThatShouldBeDistributed += info.elementSize - size;
-        info.elementSize = size;
+        sizeThatShouldBeDistributed += info.targetSize - size;
+        info.targetSize = size;
       }
 
       circleBreaker -= 1;
@@ -210,19 +282,19 @@ export default class Multipane<T> extends Vue {
     while ((sizeThatShouldBeDistributed - eps) > 0 && panesAvailableForStretch > 0) {
       const dSize = sizeThatShouldBeDistributed / panesAvailableForStretch;
 
-      for (const info of panesInfo) {
-        if (info.max === info.elementSize) {
+      for (const info of paneInfos) {
+        if (info.max === info.targetSize) {
           continue;
         }
 
-        let size = info.elementSize + dSize;
+        let size = info.targetSize + dSize;
         if (size >= info.max) {
           size = info.max;
           panesAvailableForStretch -= 1;
         }
 
-        sizeThatShouldBeDistributed -= size - info.elementSize;
-        info.elementSize = size;
+        sizeThatShouldBeDistributed -= size - info.targetSize;
+        info.targetSize = size;
       }
 
       circleBreaker -= 1;
@@ -231,88 +303,27 @@ export default class Multipane<T> extends Vue {
       }
     }
 
-    // fix inaccuracy and apply size to property and elements
-    let computedSize = 0;
-    for (const info of panesInfo) {
-      computedSize += info.elementSize;
+    let result = 0;
+    for (const info of paneInfos) {
+      result += info.targetSize;
     }
 
-    let fix = availableSize - computedSize - bordersSize;
-    if (minimumSize > 0) {
-      this.layout.minSize = (minimumSize + bordersSize) * Multipane.getDPR();
-    } else {
-      this.layout.minSize = undefined;
-    }
-
-    if (maximumSize > 0 && maximumSize < Number.MAX_VALUE) {
-      this.layout.maxSize = (maximumSize + bordersSize) * Multipane.getDPR();
-    } else {
-      this.layout.maxSize = undefined;
-    }
-
-    for (let i = 0; i < panesInfo.length; i += 1) {
-      const info: PaneSize = panesInfo[i];
-      let size = info.elementSize;
-      if ((size + fix) >= info.min && (size + fix) <= info.max) {
-        size += fix;
-        fix = 0;
-      }
-
-      this.visibleItems[i].size = size;
-    }
+    return result;
   }
 
   private getInitialParamsForVisiblePanes(): InitialParamsForVisiblePanes {
     const visibleItems = toRaw(this.visibleItems);
-    let installedPanesCount = 0;
-    let notInitializedPanesFactor = 1;
-
-    for (const visibleItem of visibleItems) {
-      if (visibleItem.size !== undefined) {
-        installedPanesCount += 1;
-      }
-    }
-
-    let notInitializedPaneSizeCount = 0;
-    for (const visibleItem of visibleItems) {
-      if (visibleItem.size !== undefined) {
-        continue;
-      }
-
-      if (visibleItem.initialSize === undefined) {
-        notInitializedPaneSizeCount += 1;
-      } else {
-        notInitializedPanesFactor -= visibleItem.initialSize;
-      }
-    }
-
-    if (notInitializedPanesFactor < 0) {
-      throw new Error('Illegal state "installedPanesFactor < 0"');
-    }
-
-    if (notInitializedPaneSizeCount > 0) {
-      for (const visibleItem of visibleItems) {
-        if (visibleItem.size !== undefined) {
-          continue;
-        }
-
-        if (visibleItem.initialSize === undefined) {
-          visibleItem.initialSize = notInitializedPanesFactor / notInitializedPaneSizeCount;
-        }
-      }
-    }
-
-    if (installedPanesCount > 0 && notInitializedPanesFactor === 0) {
-      throw new Error('Illegal state "installedPanesCount > 0 && installedPanesFactor === 0"');
-    }
-
     const availableSize = this.getSize(this.$el);
     const bordersSize = this.getBordersSize();
-    const occupiedSize = notInitializedPanesFactor === 0 ? availableSize - bordersSize : (availableSize - bordersSize) / notInitializedPanesFactor;
-    const panesInfo: PaneSize[] = [];
-    let minimumSize = 0;
-    let maximumSize = 0;
-    let retrievedSize = 0;
+    const size = availableSize - bordersSize;
+    const suPanes: PaneInfo[] = [];
+    const snuPanes: PaneInfo[] = [];
+
+    let snuRetrieved = 0;
+    let suMin = 0;
+    let snuMin = 0;
+    let suMax = 0;
+    let snuMax = 0;
 
     for (let i = 0; i < visibleItems?.length || 0; i += 1) {
       const paneDesc = visibleItems[i];
@@ -321,45 +332,59 @@ export default class Multipane<T> extends Vue {
         paneDesc.minSize = 1;
       }
 
-      if (paneDesc.size === undefined) {
-        paneDesc.size = paneDesc.initialSize as number * occupiedSize;
-
-        if (isNaN(paneDesc.size)) {
-          throw new Error('isNaN(paneDesc.size)');
-        }
-      }
-
       if (paneDesc.maxSize === undefined) {
         paneDesc.maxSize = Number.MAX_VALUE;
       }
 
-      panesInfo.push({
-        min: paneDesc.minSize,
-        max: paneDesc.maxSize,
-        elementSize: 0,
-        targetSize: paneDesc.size,
-      });
+      if (paneDesc.preferredSize) {
+        const retrievedSize = size * paneDesc.preferredSize;
+        snuRetrieved += retrievedSize;
+        snuMin += paneDesc.minSize;
+        snuMax = paneDesc.maxSize === Number.MAX_VALUE ? Number.MAX_VALUE : snuMax + paneDesc.maxSize;
 
-      minimumSize += paneDesc.minSize;
-      retrievedSize += paneDesc.size;
+        snuPanes.push({
+          paneDesc,
+          min: paneDesc.minSize,
+          max: paneDesc.maxSize,
+          retrievedSize,
+          targetSize: retrievedSize,
+        });
+      } else {
+        suMin += paneDesc.minSize;
+        suMax = paneDesc.maxSize === Number.MAX_VALUE ? Number.MAX_VALUE : suMax + paneDesc.maxSize;
 
-      if (maximumSize < Number.MAX_VALUE) {
-        maximumSize = paneDesc.maxSize === Number.MAX_VALUE
-          ? Number.MAX_VALUE
-          : maximumSize + paneDesc.maxSize;
+        suPanes.push({
+          paneDesc,
+          min: paneDesc.minSize,
+          max: paneDesc.maxSize,
+          retrievedSize: 0,
+          targetSize: 0,
+        });
       }
     }
 
-    return { panesInfo, minimumSize, maximumSize, retrievedSize, availableSize, bordersSize };
+    return {
+      suPanes,
+      suMax,
+      suMin,
+      snuPanes,
+      snuRetrieved,
+      snuMax,
+      snuMin,
+      availableSize,
+      bordersSize,
+    };
   }
 
   onResizeHandleMove(e: ResizeHandleMoveEvent): void {
+    const availableSize = this.getSize(this.$el);
+    const bordersSize = this.getBordersSize();
     const items = this.visibleItems;
+    const initialSizes = items.map((v) => v.size);
     const dsize = (this.direction === Direction.Vertical ? e.dy : e.dx) * Multipane.getDPR();
     const deltaSign = Math.sign(dsize);
     const paneElements = this.sortedPaneElements();
     let deltaSize = Math.abs(dsize);
-    const initialSizes = items.map((v) => v.size);
 
     while (deltaSize > 0) {
       const decPaneIndex: number | undefined = this.getDecPaneIndex(deltaSign, e.index, items);
@@ -391,6 +416,15 @@ export default class Multipane<T> extends Vue {
 
       decItem.size -= deltaSize;
       incItem.size += deltaSize;
+
+      if (decItem.preferredSize !== undefined) {
+        decItem.preferredSize = decItem.size / (availableSize - bordersSize);
+      }
+
+      if (incItem.preferredSize !== undefined) {
+        incItem.preferredSize = incItem.size / (availableSize - bordersSize);
+      }
+
       this.setSize(paneElements[decPaneIndex], decItem.size);
       this.setSize(paneElements[incPaneIndex], incItem.size);
 

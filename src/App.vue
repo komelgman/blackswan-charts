@@ -29,12 +29,13 @@ export default class App extends Vue {
     this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, []);
 
     this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
-    this.chartApi.createPane(this.mainDs);
+    this.chartApi.createPane(this.mainDs, {});
     this.chartApi.clearHistory();
   }
 
   mounted(): void {
     const { chartApi, mainDs } = this;
+
     const drawings = {
       green025VLineNotShared: {
         id: 'vline1',
@@ -85,13 +86,28 @@ export default class App extends Vue {
       }
     });
 
-    chartApi.createPane(new DataSource({ id: 'second', idHelper: this.idHelper }, []), { initialSize: 0.3 });
+    // sample 1
     let i = 0;
 
-    setTimeout(() => {
+    setTimeout((j: number) => {
+      console.log(`${j}) chartApi.clearHistory();`);
+      chartApi.clearHistory();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) chartApi.createPane(~second);`);
+      chartApi.createPane(new DataSource({ id: 'second', idHelper: this.idHelper }, []), { preferredSize: 0.3 });
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) chartApi.undo();`);
       chartApi.undo();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) chartApi.undo();`);
       chartApi.undo();
-    }, i++);
+    }, 100 * i++, i);
 
     setTimeout((j: number) => {
       console.log(`${j}) chartApi.redo();`);
@@ -115,18 +131,18 @@ export default class App extends Vue {
     }, 100 * i++, i);
 
     setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.red010HLineShared);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
       console.log(`${j}) this.mainDs.add(drawings.red010VLineShared);`);
 
       this.mainDs.beginTransaction();
       this.mainDs.add(drawings.red010VLineShared);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.red010HLineShared);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
@@ -158,7 +174,6 @@ export default class App extends Vue {
 
     // ---------------------------------------------------------------------------------------------
     // chartApi.removePane('mainPane');
-
 
     // ---------------------------------------------------------------------------------------------
     // setTimeout(() => {

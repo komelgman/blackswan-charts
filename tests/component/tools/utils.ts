@@ -3,6 +3,12 @@ import type ChartWidgetTestContext from './ChartWidgetTestContext';
 
 export declare type BoundRect = { x: number, y: number, height: number, width: number };
 
+export async function delay(time: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
+}
+
 export async function createMainPaneAndMountChart(page: Page): Promise<void> {
   await page.evaluate(async () => {
     // eslint-disable-next-line
@@ -12,12 +18,12 @@ export async function createMainPaneAndMountChart(page: Page): Promise<void> {
   });
 }
 
-export async function createPane(page: Page, paneId: string, initialSize: number): Promise<void> {
+export async function createPane(page: Page, paneId: string, preferredSize: number): Promise<void> {
   await page.evaluate(async (opts) => {
     // eslint-disable-next-line
     const { chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
-    chart.createPane(newDataSource({ id: opts.paneId, idHelper }, []), { initialSize: opts.initialSize });
-  }, { paneId, initialSize });
+    chart.createPane(newDataSource({ id: opts.paneId, idHelper }, []), { preferredSize: opts.preferredSize });
+  }, { paneId, preferredSize });
 }
 
 export async function swapPanes(page: Page, paneId1: string, paneId2: string): Promise<void> {

@@ -17,11 +17,13 @@ export default class InvalidatePanesSizes extends AbstractHistoricalIncident<Inv
 
   protected applyIncident(): void {
     const { changed } = this.options;
+    console.log('changed', changed);
     this.setPanesSizes(changed);
   }
 
   protected inverseIncident(): void {
     const { initial } = this.options;
+    console.log('initial', initial);
     this.setPanesSizes(initial);
   }
 

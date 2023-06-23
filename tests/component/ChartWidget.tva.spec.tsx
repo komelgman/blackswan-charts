@@ -53,6 +53,8 @@ const drawings = {
 };
 test('check TVA functionality', async ({ page }) => {
   test.slow();
+  // Listen for all console logs
+  page.on('console', (msg) => console.log(msg.text()));
 
   await createMainPaneAndMountChart(page);
   await clearHistory(page);
@@ -88,6 +90,7 @@ test('check TVA functionality', async ({ page }) => {
   const p1 = await page.getByTestId('pane1');
   let p0Bounds = await p0.boundingBox() as BoundRect;
   let p1Bounds = await p1.boundingBox() as BoundRect;
+  console.log({ p0Bounds, p1Bounds });
   await dragMouseFromTo(page, p0Bounds.x + 1, p0Bounds.y + 1, p0Bounds.x + 11, p0Bounds.y + 11);
   await expect(page).toHaveScreenshot('7 move main pane.png');
   await expect(p0Bounds.height).toBeCloseTo((0.7 / 0.3) * p1Bounds.height, 4);
