@@ -19,7 +19,7 @@ test.describe('dynamic component loading', () => {
    *   modules: import.meta.glob('./components/**\/*.vue'), // <-- escaped path
    * };
    */
-  test.skip('ComponentWithAsyncChildren.vue', async ({ page }) => {
+  test('ComponentWithAsyncChildren.vue', async ({ page }) => {
     const options: AsyncMountOptions = {
       component: 'HelloWorld.vue',
       props: {

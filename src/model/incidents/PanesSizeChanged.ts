@@ -1,5 +1,5 @@
 import type { PaneDescriptor } from '@/components/layout';
-import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
+import type { PaneSize, PanesSizeChangeEvent } from "@/components/layout/PanesSizeChangedEvent";
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import type { CanMergeWith } from '@/model/options/CanMergeWith';
@@ -29,7 +29,7 @@ export default class PanesSizeChanged
     this.setPanesSizes(initial);
   }
 
-  private setPanesSizes(sizes: number[]): void {
+  private setPanesSizes(sizes: PaneSize[]): void {
     const { source: multipane } = this.options.event;
     const panes: PaneDescriptor<any>[] = multipane.visibleItems;
 
@@ -38,7 +38,8 @@ export default class PanesSizeChanged
     }
 
     for (let i = 0; i < panes.length; i += 1) {
-      panes[i].size = sizes[i];
+      panes[i].preferredSize = sizes[i].preferred;
+      panes[i].size = sizes[i].current;
     }
 
     multipane.invalidate();

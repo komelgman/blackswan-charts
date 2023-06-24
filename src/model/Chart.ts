@@ -144,31 +144,20 @@ export default class Chart {
 
   public togglePane(paneId: PaneId): void {
     const paneIndex = this.indexByPaneId(paneId);
-    const pane = this.panes[paneIndex];
     const initialSizes = this.getPanesSizes();
     const tvaProtocol: TVAProtocol = this.tva
       .getProtocol({ incident: 'chart-controller-toggle-pane' });
 
-    tvaProtocol.addIncident(new TogglePane({
-      panes: this.panes,
-      paneIndex,
-    }));
-
-    if (!pane.visible) {
-      tvaProtocol
-        .addIncident(new InvalidatePanesSizes({
-          panes: this.panes,
-          initial: initialSizes,
-          changed: this.getPanesSizes(),
-        }));
-    } else {
-      tvaProtocol
-        .addIncident(new InvalidatePanesSizes({
-          panes: this.panes,
-          initial: initialSizes,
-          changed: this.getPanesSizes(),
-        }));
-    }
+    tvaProtocol
+      .addIncident(new TogglePane({
+        panes: this.panes,
+        paneIndex,
+      }))
+      .addIncident(new InvalidatePanesSizes({
+        panes: this.panes,
+        initial: initialSizes,
+        changed: this.getPanesSizes(),
+      }));
 
     tvaProtocol.trySign();
   }
@@ -232,7 +221,10 @@ export default class Chart {
   }
 
   private getPanesSizes(): Record<string, number> {
-    return this.panes.reduce((obj, item) => ({ ...obj, [item.id]: item.size }), {});
+    return this.panes.reduce((obj, item) => ({
+      ...obj,
+      [item.id]: item.size,
+    }), {});
   }
 
   private installPane(paneId: PaneId): void {

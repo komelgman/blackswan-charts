@@ -380,7 +380,7 @@ export default class Multipane<T> extends Vue {
     const availableSize = this.getSize(this.$el);
     const bordersSize = this.getBordersSize();
     const items = this.visibleItems;
-    const initialSizes = items.map((v) => v.size);
+    const initialSizes = items.map((v) => ({ preferred: v.preferredSize, current: v.size }));
     const dsize = (this.direction === Direction.Vertical ? e.dy : e.dx) * Multipane.getDPR();
     const deltaSign = Math.sign(dsize);
     const paneElements = this.sortedPaneElements();
@@ -417,13 +417,8 @@ export default class Multipane<T> extends Vue {
       decItem.size -= deltaSize;
       incItem.size += deltaSize;
 
-      if (decItem.preferredSize !== undefined) {
-        decItem.preferredSize = decItem.size / (availableSize - bordersSize);
-      }
-
-      if (incItem.preferredSize !== undefined) {
-        incItem.preferredSize = incItem.size / (availableSize - bordersSize);
-      }
+      decItem.preferredSize = decItem.size / (availableSize - bordersSize);
+      incItem.preferredSize = incItem.size / (availableSize - bordersSize);
 
       this.setSize(paneElements[decPaneIndex], decItem.size);
       this.setSize(paneElements[incPaneIndex], incItem.size);
@@ -431,7 +426,7 @@ export default class Multipane<T> extends Vue {
       deltaSize = shouldBeDistributed;
     }
 
-    const changedSizes = items.map((v) => v.size);
+    const changedSizes = items.map((v) => ({ preferred: v.preferredSize, current: v.size }));
 
     this.$emit('drag-handle-moved', {
       source: this,

@@ -1,7 +1,12 @@
 import type Multipane from '@/components/layout/Multipane.vue';
 
+export interface PaneSize {
+  preferred?: number;
+  current: number;
+}
+
 export interface PanesSizeChangeEvent {
   source: Multipane<any>,
-  initial: number[];
-  changed: number[];
+  initial: PaneSize[];
+  changed: PaneSize[];
 }
