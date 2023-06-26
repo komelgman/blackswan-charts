@@ -3,22 +3,16 @@ import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { HLine } from '@/model/datasource/line/type-defs';
 import type { HandleId } from '@/model/datasource/Drawing';
-import type { LineStyle } from '@/model/datasource/line/type-defs';
 import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
-import HLine from '@/model/sketchers/graphics/HLine';
+import HLineGraphics from '@/model/sketchers/graphics/HLineGraphics';
 import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
-import type { Price } from '@/model/type-defs';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
-export interface HLineOptions {
-  def: Price;
-  style: LineStyle;
-}
-
 export default class HLineSketcher extends AbstractSketcher {
-  public draw(entry: DataSourceEntry<HLineOptions>, viewport: Viewport): void {
+  public draw(entry: DataSourceEntry<HLine>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
@@ -39,11 +33,11 @@ export default class HLineSketcher extends AbstractSketcher {
     const y = priceAxis.translate(line.def);
     if (drawing === undefined) {
       entry[1] = {
-        parts: [new HLine(y, 0, width, line.style)],
+        parts: [new HLineGraphics(y, 0, width, line.style)],
         handles: { center: new SquareHandle(width / 2, y, locked, this.chartStyle.handleStyle, 'ns-resize') },
       };
     } else {
-      (drawing.parts[0] as HLine).invalidate(y, 0, width, line.style);
+      (drawing.parts[0] as HLineGraphics).invalidate(y, 0, width, line.style);
       (drawing.handles.center as SquareHandle).invalidate(width / 2, y, locked);
     }
 

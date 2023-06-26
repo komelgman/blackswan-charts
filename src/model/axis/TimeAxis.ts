@@ -1,7 +1,7 @@
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import Axis from '@/model/axis/Axis';
 import type AxisOptions from '@/model/axis/AxisOptions';
-import { ZoomType } from '@/model/axis/scaling/ScalingFunction';
+import { ZoomType } from '@/model/axis/AxisOptions';
 import type { TextStyle } from '@/model/ChartStyle';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { UTCTimestamp } from '@/model/type-defs';

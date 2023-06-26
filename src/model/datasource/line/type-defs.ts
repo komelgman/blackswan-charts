@@ -34,3 +34,12 @@ export interface LineOptions {
   bounds?: Range<UTCTimestamp>,
   scalingFunction?: ScalingFunction<Price>,
 }
+
+interface AbstractLine<D> {
+  def: D;
+  style: LineStyle;
+}
+
+export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Price]> & LineOptions;
+export declare type HLine = AbstractLine<Price>;
+export declare type VLine = AbstractLine<UTCTimestamp>;

@@ -3,7 +3,7 @@ import { setLineStyle } from '@/model/datasource/line/line-functions';
 import type { LineStyle } from '@/model/datasource/line/type-defs';
 import type { Point } from '@/model/type-defs';
 
-export default class HLine implements Graphics {
+export default class HLineGraphics implements Graphics {
   private path!: Path2D;
   private style!: LineStyle;
 

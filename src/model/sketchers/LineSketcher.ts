@@ -3,33 +3,41 @@ import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { VLine } from '@/model/datasource/line/type-defs';
 import type { HandleId } from '@/model/datasource/Drawing';
+import type { LineStyle } from '@/model/datasource/line/type-defs';
 import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
 import VLineGraphics from '@/model/sketchers/graphics/VLineGraphics';
+import type { UTCTimestamp } from '@/model/type-defs';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
+export interface LineOptions {
+  def: UTCTimestamp;
+  style: LineStyle;
+}
+
 export default class VLineSketcher extends AbstractSketcher {
-  public draw(entry: DataSourceEntry<VLine>, viewport: Viewport): void {
+  public draw(entry: DataSourceEntry<LineOptions>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    const [descriptor, drawing, timeMark] = entry;
+    const [descriptor, drawing] = entry;
+
     const { data: line, locked } = descriptor.options;
     const { timeAxis } = viewport;
     const { main: height } = viewport.priceAxis.screenSize;
     const { range } = timeAxis;
 
-    descriptor.visibleInViewport = line.def >= range.from && line.def <= range.to;
+    descriptor.visibleInViewport = line.def >= range.from && line.def <= range.to; // todo
     descriptor.valid = descriptor.visibleInViewport;
 
     if (!descriptor.visibleInViewport) {
       return;
     }
 
+    // todo
     const x = timeAxis.translate(line.def);
     if (drawing === undefined) {
       entry[1] = {
@@ -40,28 +48,12 @@ export default class VLineSketcher extends AbstractSketcher {
       (drawing.parts[0] as VLineGraphics).invalidate(x, 0, height, line.style);
       (drawing.handles.center as SquareHandle).invalidate(x, height / 2, locked);
     }
-
-    const markText: string = `${line.def}`;
-    if (timeMark === undefined) {
-      entry[2] = {
-        screenPos: x,
-        textColor: invertColor(line.style.color),
-        text: markText,
-      };
-    } else {
-      Object.assign(timeMark, {
-        screenPos: x,
-        textColor: invertColor(line.style.color),
-        text: markText,
-        invalid: false,
-      });
-    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
-      || entry[0].options.type !== 'VLine'
+      || entry[0].options.type !== 'Line'
       || entry[0].options.locked
       || entry[1] === undefined
     ) {
@@ -69,6 +61,7 @@ export default class VLineSketcher extends AbstractSketcher {
       return undefined;
     }
 
+    // todo
     return (e: DragMoveEvent) => {
       const { dataSource, timeAxis } = viewport;
       const rawDS = toRaw(dataSource);

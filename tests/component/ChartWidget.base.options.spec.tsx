@@ -249,6 +249,71 @@ test.describe('two panes', () => {
     await expect(pane0.height).toBeCloseTo(pane1.height, 4);
     await expect(page).toHaveScreenshot('two panes, no drawings.png');
   });
+
+  test('create panes before mount, no drawings, no pref size', async ({ page }) => {
+    await page.evaluate(async () => {
+      // eslint-disable-next-line
+      const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
+      chart.createPane(newDataSource({ id: 'main', idHelper }, []));
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []));
+
+      return mount();
+    });
+
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
+
+    await expect(pane0.height).toBeCloseTo(pane1.height, 4);
+    await expect(page).toHaveScreenshot('two panes, no drawings.png');
+  });
+
+  test('create panes, one before and one after mount, no drawings, no pref size', async ({ page }) => {
+    await page.evaluate(() => {
+      // eslint-disable-next-line
+      const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
+      chart.createPane(newDataSource({ id: 'main', idHelper }, []));
+
+      return mount();
+    });
+
+    await page.evaluate(() => {
+      // eslint-disable-next-line
+      const { chart, idHelper, newDataSource, delay } = (window as any).__test_context as ChartWidgetTestContext;
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []));
+
+      return delay();
+    });
+
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
+
+    await expect(pane0.height).toBeCloseTo(pane1.height, 4);
+    await expect(page).toHaveScreenshot('two panes, no drawings.png');
+  });
+
+  test('create panes after mount, no drawings, no pref size', async ({ page }) => {
+    await page.evaluate(() => {
+      // eslint-disable-next-line
+      const { mount } = (window as any).__test_context as ChartWidgetTestContext;
+      return mount();
+    });
+
+    await page.evaluate(() => {
+      // eslint-disable-next-line
+      const { chart, idHelper, newDataSource, delay } = (window as any).__test_context as ChartWidgetTestContext;
+
+      chart.createPane(newDataSource({ id: 'main', idHelper }, []));
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []));
+
+      return delay();
+    });
+
+    const pane0 = await page.getByTestId('pane0').boundingBox() as BoundRect;
+    const pane1 = await page.getByTestId('pane1').boundingBox() as BoundRect;
+
+    await expect(pane0.height).toBeCloseTo(pane1.height, 4);
+    await expect(page).toHaveScreenshot('two panes, no drawings.png');
+  });
 });
 
 test.describe('three panes', () => {

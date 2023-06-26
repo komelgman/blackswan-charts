@@ -22,7 +22,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     ctPort: 3100,
-    headless: false,
+    headless: true,
     ctTemplateDir: './tests/component-template',
     ctCacheDir: './tests/component-template/.cache',
     ctViteConfig: {
