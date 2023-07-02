@@ -2,8 +2,8 @@ import { reactive, watch } from 'vue';
 import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import { merge } from '@/misc/strict-type-checks';
 import type PriceAxis from '@/model/axis/PriceAxis';
-import type PriceScale from '@/model/axis/scaling/PriceScale';
-import { PriceScales } from '@/model/axis/scaling/PriceScale';
+import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
+import { PriceScales } from '@/model/axis/scaling/PriceAxisScale';
 
 export default class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private readonly axis: PriceAxis;
@@ -58,7 +58,7 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
     this.axis.invert();
   }
 
-  private updateScaleHandler(scale: PriceScale): void {
+  private updateScaleHandler(scale: PriceAxisScale): void {
     this.axis.scale = scale;
   }
 }

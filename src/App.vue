@@ -3,16 +3,18 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable no-plusplus */
 import { isProxy } from 'vue';
 import { Options, Vue } from 'vue-class-component';
+import ChartWidget from '@/components/chart/ChartWidget.vue';
+import { PriceScales } from '@/model/axis/scaling/PriceAxisScale';
+import Chart from '@/model/Chart';
+import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import type { DrawingType } from '@/model/datasource/Drawing';
+import { LineBound } from '@/model/type-defs';
+import type { Line } from '@/model/type-defs';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
-import ChartWidget from '@/components/chart/ChartWidget.vue';
-import DataSource from '@/model/datasource/DataSource';
-import Chart from '@/model/Chart';
 
 @Options({
   components: {
@@ -37,6 +39,21 @@ export default class App extends Vue {
     const { chartApi, mainDs } = this;
 
     const drawings = {
+      green0to1Line: {
+        id: 'line1',
+        title: 'line1',
+        type: 'Line',
+        data: {
+          def: [0, 0, 1, 1],
+          boundType: LineBound.NoBound,
+          scale: PriceScales.regular,
+          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+        } as Line,
+        locked: false,
+        visible: true,
+        shareWith: '*',
+      },
+
       green025VLineNotShared: {
         id: 'vline1',
         title: 'vline1',
@@ -60,7 +77,7 @@ export default class App extends Vue {
         title: 'vline2',
         type: 'VLine',
         data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-        shareWith: '*' as '*',
+        shareWith: '*',
         locked: false,
         visible: true,
       },
@@ -70,7 +87,7 @@ export default class App extends Vue {
         title: 'hline2',
         type: 'HLine',
         data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-        shareWith: '*' as '*',
+        shareWith: '*',
         locked: false,
         visible: true,
       },
@@ -151,6 +168,14 @@ export default class App extends Vue {
 
       this.mainDs.beginTransaction();
       this.mainDs.remove(drawings.red010HLineShared.id);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.green0to1Line);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.green0to1Line);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 

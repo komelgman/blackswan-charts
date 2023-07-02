@@ -1,16 +1,16 @@
 import { clone } from '@/misc/strict-type-checks';
 import type PriceAxis from '@/model/axis/PriceAxis';
-import type PriceScale from '@/model/axis/scaling/PriceScale';
+import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 
 export interface UpdatePriceAxisScaleOptions extends HistoricalIncidentOptions {
   axis: PriceAxis;
-  scale: PriceScale;
+  scale: PriceAxisScale;
 }
 
 export default class UpdatePriceAxisScale extends AbstractHistoricalIncident<UpdatePriceAxisScaleOptions> {
-  private readonly initial: PriceScale;
+  private readonly initial: PriceAxisScale;
 
   public constructor(options: UpdatePriceAxisScaleOptions) {
     super(options);

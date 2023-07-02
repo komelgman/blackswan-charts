@@ -3,10 +3,10 @@ import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { HLine } from '@/model/datasource/line/type-defs';
+import type { HLine } from '@/model/type-defs';
 import type { HandleId } from '@/model/datasource/Drawing';
 import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
-import HLineGraphics from '@/model/sketchers/graphics/HLineGraphics';
+import LineGraphics from '@/model/sketchers/graphics/LineGraphics';
 import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
@@ -33,11 +33,11 @@ export default class HLineSketcher extends AbstractSketcher {
     const y = priceAxis.translate(line.def);
     if (drawing === undefined) {
       entry[1] = {
-        parts: [new HLineGraphics(y, 0, width, line.style)],
+        parts: [new LineGraphics(0, y, width, y, line.style)],
         handles: { center: new SquareHandle(width / 2, y, locked, this.chartStyle.handleStyle, 'ns-resize') },
       };
     } else {
-      (drawing.parts[0] as HLineGraphics).invalidate(y, 0, width, line.style);
+      (drawing.parts[0] as LineGraphics).invalidate({ x0: 0, y0: y, x1: width, y1: y, lineStyle: line.style });
       (drawing.handles.center as SquareHandle).invalidate(width / 2, y, locked);
     }
 

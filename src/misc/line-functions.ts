@@ -1,5 +1,5 @@
-import { LineFillStyle } from '@/model/datasource/line/type-defs';
-import type { LineStyle } from '@/model/datasource/line/type-defs';
+import { Line, LineFillStyle } from '@/model/type-defs';
+import type { LineStyle, LineDef, Price, Range, UTCTimestamp } from '@/model/type-defs';
 
 export function setLineStyle(ctx: CanvasRenderingContext2D, style: LineStyle): void {
   let dashPattern: number[];
@@ -56,4 +56,12 @@ export function strokeInPixel(ctx: CanvasRenderingContext2D, drawFunction: () =>
   }
   drawFunction();
   ctx.restore();
+}
+
+export function inRange<T>(p: T, range: Range<T>): boolean {
+  return p >= range.from && p <= range.to;
+}
+
+export function lineCrossPoint(line1: Line, line2: Line): [boolean, UTCTimestamp, Price] {
+  return [false, 0 as UTCTimestamp, 0 as Price];
 }

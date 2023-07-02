@@ -1,4 +1,4 @@
-import type { RectStyle } from '@/model/datasource/line/type-defs';
+import type { RectStyle } from '@/model/type-defs';
 
 export interface TextStyle {
   color: string;

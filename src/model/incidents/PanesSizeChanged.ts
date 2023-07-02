@@ -1,5 +1,5 @@
 import type { PaneDescriptor } from '@/components/layout';
-import type { PaneSize, PanesSizeChangeEvent } from "@/components/layout/PanesSizeChangedEvent";
+import type { PaneSize, PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import type { CanMergeWith } from '@/model/options/CanMergeWith';

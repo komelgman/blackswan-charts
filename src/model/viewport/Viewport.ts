@@ -2,7 +2,7 @@ import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import type PriceAxis from '@/model/axis/PriceAxis';
 import type { Inverted } from '@/model/axis/PriceAxis';
-import type PriceScale from '@/model/axis/scaling/PriceScale';
+import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/axis/TimeAxis';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
@@ -11,7 +11,7 @@ import type Sketcher from '@/model/sketchers/Sketcher';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 
 export interface ViewportOptions {
-  priceScale: PriceScale;
+  priceScale: PriceAxisScale;
   priceInverted: Inverted;
 }
 

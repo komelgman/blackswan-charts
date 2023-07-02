@@ -3,11 +3,11 @@ import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { VLine } from '@/model/datasource/line/type-defs';
 import type { HandleId } from '@/model/datasource/Drawing';
+import type { VLine } from '@/model/type-defs';
 import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 import SquareHandle from '@/model/sketchers/graphics/SquareHandle';
-import VLineGraphics from '@/model/sketchers/graphics/VLineGraphics';
+import LineGraphics from '@/model/sketchers/graphics/LineGraphics';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
@@ -33,11 +33,11 @@ export default class VLineSketcher extends AbstractSketcher {
     const x = timeAxis.translate(line.def);
     if (drawing === undefined) {
       entry[1] = {
-        parts: [new VLineGraphics(x, 0, height, line.style)],
+        parts: [new LineGraphics(x, 0, x, height, line.style)],
         handles: { center: new SquareHandle(x, height / 2, locked, this.chartStyle.handleStyle, 'ew-resize') },
       };
     } else {
-      (drawing.parts[0] as VLineGraphics).invalidate(x, 0, height, line.style);
+      (drawing.parts[0] as LineGraphics).invalidate({ x0: x, y0: 0, x1: x, y1: height, lineStyle: line.style });
       (drawing.handles.center as SquareHandle).invalidate(x, height / 2, locked);
     }
 

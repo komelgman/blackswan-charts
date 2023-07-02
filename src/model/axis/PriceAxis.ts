@@ -7,7 +7,7 @@ import { clone } from '@/misc/strict-type-checks';
 import Axis from '@/model/axis/Axis';
 import type AxisOptions from '@/model/axis/AxisOptions';
 import { ZoomType } from '@/model/axis/AxisOptions';
-import type PriceScale from '@/model/axis/scaling/PriceScale';
+import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
 import type { TextStyle } from '@/model/ChartStyle';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { Price, Wrapped } from '@/model/type-defs';
@@ -16,7 +16,7 @@ export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;
 
 export interface PriceAxisOptions extends AxisOptions<Price> {
-  scale?: PriceScale;
+  scale?: PriceAxisScale;
   inverted?: boolean;
   contentWidth?: Wrapped<number>;
 }
@@ -26,11 +26,11 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
   private cache!: [/* virtualFrom */ number, /* scaleK */ number, /* unscaleK */ number];
   private fractionValue: number = 0;
 
-  protected scaleValue: PriceScale;
+  protected scaleValue: PriceAxisScale;
   protected invertedValue: Inverted;
   protected contentWidthValue: Wrapped<number> = { value: -1 }; // watch doesn't work with scalar
 
-  public constructor(id: EntityId, tvaClerk: TVAClerk, textStyle: TextStyle, scale: PriceScale, inverted: Inverted) {
+  public constructor(id: EntityId, tvaClerk: TVAClerk, textStyle: TextStyle, scale: PriceAxisScale, inverted: Inverted) {
     super(`${id}-price`, tvaClerk, textStyle);
     this.scaleValue = reactive(clone(scale));
     this.invertedValue = reactive(clone(inverted));
@@ -56,11 +56,11 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
     });
   }
 
-  public get scale(): Readonly<PriceScale> {
+  public get scale(): Readonly<PriceAxisScale> {
     return this.scaleValue;
   }
 
-  public set scale(value: PriceScale) {
+  public set scale(value: PriceAxisScale) {
     this.tvaClerk.processReport({
       protocolOptions: { incident: 'price-axis-update-scale' },
       incident: new UpdatePriceAxisScale({

@@ -5,7 +5,7 @@ import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, merge } from '@/misc/strict-type-checks';
-import { PriceScales } from '@/model/axis/scaling/PriceScale';
+import { PriceScales } from '@/model/axis/scaling/PriceAxisScale';
 import TimeAxis from '@/model/axis/TimeAxis';
 import type { ChartStyle } from '@/model/ChartStyle';
 import chartOptionsDefaults from '@/model/ChartStyle.Defaults';

@@ -2,12 +2,12 @@ import PriceLog10Scaling from '@/model/axis/scaling/PriceLog10Scaling';
 import PriceRegularScaling from '@/model/axis/scaling/PriceRegularScaling';
 import type { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
 
-export default interface PriceScale {
+export default interface PriceAxisScale {
   title: string;
   func: PriceScalingFunction;
 }
 
-export const PriceScales: Record<string, PriceScale> = {
+export const PriceScales: Record<string, PriceAxisScale> = {
   regular: {
     title: 'Regular',
     func: new PriceRegularScaling(),

@@ -1,3 +1,5 @@
+import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
+
 export const enum RegularTimePeriod {
   m1 = 1 * 60 * 1000,
   m5 = 5 * 60 * 1000,
@@ -22,3 +24,47 @@ export declare type Price = Nominal<number, 'Price'>;
 export declare type Range<T> = { from: T, to: T };
 export declare type Point = { x: number, y: number };
 export declare type LogicSize = { main: number, second: number };
+
+export declare type LineWidth = 1 | 2 | 3 | 4;
+
+export const enum LineBound {
+  NoBound,
+  BoundStart,
+  BoundEnd,
+  Both,
+}
+
+export const enum LineFillStyle {
+  Solid = 0,
+  Dotted = 1,
+  Dashed = 2,
+  LargeDashed = 3,
+  SparseDotted = 4,
+}
+
+export interface LineStyle {
+  lineWidth: LineWidth;
+  fill: LineFillStyle;
+  color: string;
+}
+
+export interface RectStyle {
+  color: string;
+  border?: LineStyle;
+}
+
+interface AbstractLine<D> {
+  def: D;
+  style: LineStyle;
+}
+
+export declare type HLine = AbstractLine<Price>;
+export declare type VLine = AbstractLine<UTCTimestamp>;
+export declare type LineDef = [UTCTimestamp, Price, UTCTimestamp, Price];
+
+export declare type Line = AbstractLine<LineDef> & {
+  boundType: LineBound;
+  startBound?: [UTCTimestamp, Price];
+  endBound?: [UTCTimestamp, Price];
+  scale: PriceAxisScale;
+};

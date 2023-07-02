@@ -1,5 +1,3 @@
-
-
 /**
  * World coordinates: domain model values;
  * Scaled coordinates: coordinates which were translated by scale function;
