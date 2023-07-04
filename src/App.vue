@@ -47,14 +47,14 @@ export default class App extends Vue {
           def: [0.25, 0, 0.75, 1],
           boundType: LineBound.NoBound,
           scale: PriceScales.regular,
-          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+          style: { lineWidth: 2, fill: 1, color: '#AA0000' },
         } as Line,
         locked: false,
         visible: true,
         shareWith: '*' as '*',
       },
 
-      green0to1Line: {
+      green0to1LineBoundBoth: {
         id: 'line2',
         title: 'line2',
         type: 'Line',
@@ -69,6 +69,35 @@ export default class App extends Vue {
         shareWith: '*' as '*',
       },
 
+      green0to1LineBoundStart: {
+        id: 'line3',
+        title: 'line3',
+        type: 'Line',
+        data: {
+          def: [0 + 0.25, 0, 1 + 0.25, 1],
+          boundType: LineBound.BoundStart,
+          scale: PriceScales.regular,
+          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+        } as Line,
+        locked: false,
+        visible: true,
+        shareWith: '*' as '*',
+      },
+
+      green0to1LineBoundEnd: {
+        id: 'line4',
+        title: 'line4',
+        type: 'Line',
+        data: {
+          def: [0 - 0.25, 0, 1 - 0.25, 1],
+          boundType: LineBound.BoundStart,
+          scale: PriceScales.regular,
+          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+        } as Line,
+        locked: false,
+        visible: true,
+        shareWith: '*' as '*',
+      },
 
       green025VLineNotShared: {
         id: 'vline1',
@@ -188,10 +217,34 @@ export default class App extends Vue {
     }, 100 * i++, i);
 
     setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green0to1Line);`);
+      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundBoth);`);
 
       this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.green0to1Line);
+      this.mainDs.add(drawings.green0to1LineBoundBoth);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundStart);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.green0to1LineBoundStart);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundEnd);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.green0to1LineBoundEnd);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.green025to075Line);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.green025to075Line);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 

@@ -273,6 +273,8 @@ export default class LineSketcher extends AbstractSketcher {
           break;
         }
       }
+    } else {
+      [p0, p1] = points;
     }
 
     if (p0 && p1) {
