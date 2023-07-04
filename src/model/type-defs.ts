@@ -64,7 +64,5 @@ export declare type LineDef = [UTCTimestamp, Price, UTCTimestamp, Price];
 
 export declare type Line = AbstractLine<LineDef> & {
   boundType: LineBound;
-  startBound?: [UTCTimestamp, Price];
-  endBound?: [UTCTimestamp, Price];
   scale: PriceAxisScale;
 };

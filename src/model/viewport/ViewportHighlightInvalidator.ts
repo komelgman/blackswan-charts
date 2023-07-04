@@ -20,8 +20,8 @@ export default class ViewportHighlightInvalidator {
     }
 
     const { native, width, height, dpr } = this.layerContext;
-    const currentHighlighted = this.viewportModel.highlighted;
     const inverted = this.viewportModel.priceAxis.inverted.value;
+    const { highlighted, selected } = this.viewportModel;
     this.viewportModel.highlighted = undefined;
     this.viewportModel.highlightedHandleId = undefined;
     this.viewportModel.cursor = undefined;
@@ -42,7 +42,8 @@ export default class ViewportHighlightInvalidator {
         continue;
       }
 
-      if (currentHighlighted !== undefined && isEqualDrawingReference(entry[0].ref, currentHighlighted[0].ref)) {
+      if (selected.has(entry as DataSourceEntry)
+        || (highlighted !== undefined && isEqualDrawingReference(entry[0].ref, highlighted[0].ref))) {
         for (const [handleId, graphics] of Object.entries(entry[1].handles)) {
           if (graphics.hitTest(native, screenPos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;

@@ -8,6 +8,7 @@ import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 import LineGraphics from '@/model/sketchers/graphics/LineGraphics';
 import RoundHandle from '@/model/sketchers/graphics/RoundHandle';
 import type { Line, LineStyle, Price, Range, UTCTimestamp } from '@/model/type-defs';
+import { LineBound } from '@/model/type-defs';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
@@ -15,6 +16,9 @@ export interface LineOptions {
   def: UTCTimestamp;
   style: LineStyle;
 }
+
+export declare type VisiblePoints = [boolean, UTCTimestamp, Price, UTCTimestamp, Price];
+declare type VisiblePoint = [UTCTimestamp, Price, 'Side' | 'StartBound' | 'EndBound'];
 
 export default class LineSketcher extends AbstractSketcher {
   public draw(entry: DataSourceEntry<Line>, viewport: Viewport): void {
@@ -100,11 +104,11 @@ export default class LineSketcher extends AbstractSketcher {
       return undefined;
     }
 
-    // todo
     return (e: DragMoveEvent) => {
       const { dataSource, timeAxis, priceAxis } = viewport;
       const rawDS = toRaw(dataSource);
       const { options, ref } = entry[0];
+      let update;
 
       if (handle === undefined) {
         const [x0, y0, x1, y1] = options.data.def;
@@ -112,21 +116,25 @@ export default class LineSketcher extends AbstractSketcher {
         const ny0 = priceAxis.revert(priceAxis.translate(y0) - priceAxis.inverted.value * e.dy);
         const nx1 = timeAxis.revert(timeAxis.translate(x1) - e.dx);
         const ny1 = priceAxis.revert(priceAxis.translate(y1) - priceAxis.inverted.value * e.dy);
-        rawDS.update(ref, { data: { def: [nx0, ny0, nx1, ny1] } });
+        update = { data: { def: [nx0, ny0, nx1, ny1] } };
       }
 
       if (handle === 'lineStart') {
         const [x0, y0, x1, y1] = options.data.def;
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
         const ny0 = priceAxis.revert(priceAxis.translate(y0) - priceAxis.inverted.value * e.dy);
-        rawDS.update(ref, { data: { def: [nx0, ny0, x1, y1] } });
+        update = { data: { def: [nx0, ny0, x1, y1] } };
       }
 
       if (handle === 'lineEnd') {
         const [x0, y0, x1, y1] = options.data.def;
         const nx1 = timeAxis.revert(timeAxis.translate(x1) - e.dx);
         const ny1 = priceAxis.revert(priceAxis.translate(y1) - priceAxis.inverted.value * e.dy);
-        rawDS.update(ref, { data: { def: [x0, y0, nx1, ny1] } });
+        update = { data: { def: [x0, y0, nx1, ny1] } };
+      }
+
+      if (update) {
+        rawDS.update(ref, update);
       }
     };
   }
@@ -140,7 +148,7 @@ export default class LineSketcher extends AbstractSketcher {
     line: Line,
     timeRange: Readonly<Range<UTCTimestamp>>,
     priceRange: Readonly<Range<Price>>,
-  ): [boolean, UTCTimestamp, Price, UTCTimestamp, Price] {
+  ): VisiblePoints {
     const [lx0, ly0, lx1, ly1] = line.def;
     const ldx = lx1 - lx0;
     const ldy = ly1 - ly0;
@@ -148,7 +156,7 @@ export default class LineSketcher extends AbstractSketcher {
     if (ldx === 0) {
       // line is parallel to 0Y
       if (inRange(lx0, timeRange)) {
-        return [true, ...this.applyLineBounds(line, lx0, priceRange.from, lx1, priceRange.to)];
+        return this.applyLineBounds(line, lx0, priceRange.from, lx1, priceRange.to);
       }
 
       return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
@@ -157,13 +165,13 @@ export default class LineSketcher extends AbstractSketcher {
     if (ldy === 0) {
       // line is parallel 0X
       if (inRange(ly0, priceRange)) {
-        return [true, ...this.applyLineBounds(line, timeRange.from, ly0, timeRange.to, ly1)];
+        return this.applyLineBounds(line, timeRange.from, ly0, timeRange.to, ly1);
       }
 
       return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
     }
 
-    let result = [];
+    let result: any[] = [];
 
     const dydx = ldy / ldx;
     const leftSideCross = ly0 + dydx * (timeRange.from - lx0);
@@ -177,7 +185,7 @@ export default class LineSketcher extends AbstractSketcher {
     }
 
     if (result.length === 4) {
-      return [true, ...this.applyLineBounds(line, ...result)];
+      return this.applyLineBounds(line, result[0], result[1], result[2], result[3]);
     }
 
     const dxdy = ldx / ldy;
@@ -187,7 +195,7 @@ export default class LineSketcher extends AbstractSketcher {
     }
 
     if (result.length === 4) {
-      return [true, ...this.applyLineBounds(line, ...result)];
+      return this.applyLineBounds(line, result[0], result[1], result[2], result[3]);
     }
 
     const topSideCross = lx0 + dxdy * (priceRange.to - ly0);
@@ -196,14 +204,81 @@ export default class LineSketcher extends AbstractSketcher {
     }
 
     if (result.length === 4) {
-      return [true, ...this.applyLineBounds(line, ...result)];
+      return this.applyLineBounds(line, result[0], result[1], result[2], result[3]);
     }
 
     return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
   }
 
-  private applyLineBounds(line: Line, lx0: UTCTimestamp, ly0: Price, lx1: UTCTimestamp, ly1: Price): [UTCTimestamp, Price, UTCTimestamp, Price] {
-    // todo apply line bounds
-    return [lx0, ly0, lx1, ly1];
+  private applyLineBounds(line: Line, x0: UTCTimestamp, y0: Price, x1: UTCTimestamp, y1: Price): VisiblePoints {
+    const [lx0, ly0, lx1, ly1] = line.def;
+    const points: VisiblePoint[] = [];
+
+    points.push(
+      [(x0 - lx0) as UTCTimestamp, (y0 - ly0) as Price, 'Side'],
+      [(x1 - lx0) as UTCTimestamp, (y1 - ly0) as Price, 'Side'],
+    );
+
+    if (line.boundType === LineBound.BoundStart || line.boundType === LineBound.Both) {
+      points.push([0 as UTCTimestamp, 0 as Price, 'StartBound']);
+    }
+
+    if (line.boundType === LineBound.BoundEnd || line.boundType === LineBound.Both) {
+      points.push([(lx1 - lx0) as UTCTimestamp, (ly1 - ly0) as Price, 'EndBound']);
+    }
+
+    const sortBy = x0 === x1 ? 1 : 0;
+    points.sort((a, b) => {
+      if (a[sortBy] < b[sortBy]) {
+        return -1;
+      }
+
+      if (a[sortBy] > b[sortBy]) {
+        return 1;
+      }
+
+      return 0;
+    });
+
+    let p0: VisiblePoint | undefined;
+    let p1: VisiblePoint | undefined;
+
+    if (points.length > 2) {
+      const dir = line.def[sortBy + 2] - line.def[sortBy];
+
+      for (const point of points) {
+        if (p0 === undefined) {
+          if ((point[2] === 'StartBound' && dir > 0) || (point[2] === 'EndBound' && dir < 0)) {
+            // check that all points after this first point is visible, so just skip it
+            continue;
+          }
+
+          p0 = point;
+        } else if (p1 === undefined) {
+          if ((point[2] === 'StartBound' && dir > 0) || (point[2] === 'EndBound' && dir < 0)) {
+            // check that all points before this point isn't visible, so override p0
+            p0 = point;
+            continue;
+          }
+
+          p1 = point;
+        } else if ((point[2] === 'StartBound' && dir > 0) || (point[2] === 'EndBound' && dir < 0)) {
+          // check that all points before this point isn't visible, so reset p0, p1
+          p0 = undefined;
+          p1 = undefined;
+        }
+
+        // check that all points after this point isn't visible, so break
+        if ((point[2] === 'StartBound' && dir < 0) || (point[2] === 'EndBound' && dir > 0)) {
+          break;
+        }
+      }
+    }
+
+    if (p0 && p1) {
+      return [true, lx0 + p0[0] as UTCTimestamp, ly0 + p0[1] as Price, lx0 + p1[0] as UTCTimestamp, ly0 + p1[1] as Price];
+    }
+
+    return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
   }
 }

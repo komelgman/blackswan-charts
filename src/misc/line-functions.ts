@@ -1,5 +1,5 @@
-import { Line, LineFillStyle } from '@/model/type-defs';
-import type { LineStyle, LineDef, Price, Range, UTCTimestamp } from '@/model/type-defs';
+import { LineFillStyle } from '@/model/type-defs';
+import type { Line, LineStyle, Price, Range, UTCTimestamp } from '@/model/type-defs';
 
 export function setLineStyle(ctx: CanvasRenderingContext2D, style: LineStyle): void {
   let dashPattern: number[];

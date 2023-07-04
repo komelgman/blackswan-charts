@@ -39,20 +39,36 @@ export default class App extends Vue {
     const { chartApi, mainDs } = this;
 
     const drawings = {
-      green0to1Line: {
+      green025to075Line: {
         id: 'line1',
         title: 'line1',
         type: 'Line',
         data: {
-          def: [0, 0, 1, 1],
+          def: [0.25, 0, 0.75, 1],
           boundType: LineBound.NoBound,
           scale: PriceScales.regular,
           style: { lineWidth: 2, fill: 1, color: '#00AA00' },
         } as Line,
         locked: false,
         visible: true,
-        shareWith: '*',
+        shareWith: '*' as '*',
       },
+
+      green0to1Line: {
+        id: 'line2',
+        title: 'line2',
+        type: 'Line',
+        data: {
+          def: [0, 0, 1, 1],
+          boundType: LineBound.Both,
+          scale: PriceScales.regular,
+          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+        } as Line,
+        locked: false,
+        visible: true,
+        shareWith: '*' as '*',
+      },
+
 
       green025VLineNotShared: {
         id: 'vline1',
@@ -77,7 +93,7 @@ export default class App extends Vue {
         title: 'vline2',
         type: 'VLine',
         data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-        shareWith: '*',
+        shareWith: '*' as '*',
         locked: false,
         visible: true,
       },
@@ -87,7 +103,7 @@ export default class App extends Vue {
         title: 'hline2',
         type: 'HLine',
         data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-        shareWith: '*',
+        shareWith: '*' as '*',
         locked: false,
         visible: true,
       },
