@@ -39,12 +39,12 @@ export default class App extends Vue {
     const { chartApi, mainDs } = this;
 
     const drawings = {
-      green025to075Line: {
+      redLineNoBound: {
         id: 'line1',
         title: 'line1',
         type: 'Line',
         data: {
-          def: [0.25, 0, 0.75, 1],
+          def: [0, 0, 0.75, 0.75],
           boundType: LineBound.NoBound,
           scale: PriceScales.regular,
           style: { lineWidth: 2, fill: 1, color: '#AA0000' },
@@ -54,12 +54,12 @@ export default class App extends Vue {
         shareWith: '*' as '*',
       },
 
-      green0to1LineBoundBoth: {
+      greenLineBoundBoth: {
         id: 'line2',
         title: 'line2',
         type: 'Line',
         data: {
-          def: [0, 0, 1, 1],
+          def: [0 - 0.25, 0, 0.75 - 0.25, 0.75],
           boundType: LineBound.Both,
           scale: PriceScales.regular,
           style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -69,12 +69,12 @@ export default class App extends Vue {
         shareWith: '*' as '*',
       },
 
-      green0to1LineBoundStart: {
+      greenLineBoundStart: {
         id: 'line3',
         title: 'line3',
         type: 'Line',
         data: {
-          def: [0 + 0.25, 0, 1 + 0.25, 1],
+          def: [0 + 0.25, 0, 0.75 + 0.25, 0.75],
           boundType: LineBound.BoundStart,
           scale: PriceScales.regular,
           style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -84,13 +84,13 @@ export default class App extends Vue {
         shareWith: '*' as '*',
       },
 
-      green0to1LineBoundEnd: {
+      greenLineBoundEnd: {
         id: 'line4',
         title: 'line4',
         type: 'Line',
         data: {
-          def: [0 - 0.25, 0, 1 - 0.25, 1],
-          boundType: LineBound.BoundStart,
+          def: [0 + 0.5, 0, 0.75 + 0.5, 0.75],
+          boundType: LineBound.BoundEnd,
           scale: PriceScales.regular,
           style: { lineWidth: 2, fill: 1, color: '#00AA00' },
         } as Line,
@@ -220,7 +220,7 @@ export default class App extends Vue {
       console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundBoth);`);
 
       this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.green0to1LineBoundBoth);
+      this.mainDs.add(drawings.greenLineBoundBoth);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
@@ -228,7 +228,7 @@ export default class App extends Vue {
       console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundStart);`);
 
       this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.green0to1LineBoundStart);
+      this.mainDs.add(drawings.greenLineBoundStart);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
@@ -236,7 +236,7 @@ export default class App extends Vue {
       console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundEnd);`);
 
       this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.green0to1LineBoundEnd);
+      this.mainDs.add(drawings.greenLineBoundEnd);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
@@ -244,7 +244,7 @@ export default class App extends Vue {
       console.log(`${j}) this.mainDs.add(drawings.green025to075Line);`);
 
       this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.green025to075Line);
+      this.mainDs.add(drawings.redLineNoBound);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
