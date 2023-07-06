@@ -1,5 +1,6 @@
-import type { LineStyle } from '@/model/type-defs';
 import AbstractLineGraphics from '@/model/sketchers/graphics/AbstractLineGraphics';
+import type { LineStyle } from '@/model/type-defs';
+import { LineFillStyle } from '@/model/type-defs';
 
 export interface SplineGraphicsOptions {
   points: number[];
@@ -7,14 +8,15 @@ export interface SplineGraphicsOptions {
 }
 
 export default class SplineGraphics extends AbstractLineGraphics<SplineGraphicsOptions> {
+  public static readonly TYPE: string = 'spline';
   constructor(points: number[], lineStyle: LineStyle) {
-    super();
+    super(SplineGraphics.TYPE);
     this.invalidate({ points, lineStyle });
   }
 
   public invalidate(options: SplineGraphicsOptions): void {
     const { points, lineStyle } = options;
-    this.style = lineStyle;
+    this.style = lineStyle; // { lineWidth: 1, fill: LineFillStyle.Solid, color: 'red' }
     this.path = new Path2D();
 
     const f = -0.3;
@@ -49,5 +51,10 @@ export default class SplineGraphics extends AbstractLineGraphics<SplineGraphicsO
       preDx = curDx;
       preDy = curDy;
     }
+
+    // debug
+    // for (let i = 0; i < points.length; i += 2) {
+    //   this.path.arc(points[i], points[i + 1], 2, 0, 2 * Math.PI);
+    // }
   }
 }

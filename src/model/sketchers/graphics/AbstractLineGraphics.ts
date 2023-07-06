@@ -5,6 +5,11 @@ import type { LineStyle, Point } from '@/model/type-defs';
 export default abstract class AbstractLineGraphics<GraphicOptions> implements Graphics {
   protected path!: Path2D;
   protected style!: LineStyle;
+  public type: string;
+
+  protected constructor(type: string) {
+    this.type = type;
+  }
 
   public abstract invalidate(options: GraphicOptions): void;
 

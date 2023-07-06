@@ -16,6 +16,7 @@ module.exports = {
   },
   rules: {
     'no-shadow': 0,
+    'no-plusplus': 0,
     'no-param-reassign': 0,
     'class-methods-use-this': 0,
     'no-continue': 0,

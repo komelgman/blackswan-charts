@@ -10,8 +10,10 @@ export interface LineGraphicsOptions {
 }
 
 export default class LineGraphics extends AbstractLineGraphics<LineGraphicsOptions> {
+  public static readonly TYPE: string = 'line';
   constructor(x0: number, y0: number, x1: number, y1: number, lineStyle: LineStyle) {
-    super();
+    super(LineGraphics.TYPE);
+
     this.invalidate({ x0, y0, x1, y1, lineStyle });
   }
 

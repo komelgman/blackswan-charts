@@ -44,9 +44,9 @@ export default class App extends Vue {
         title: 'line1',
         type: 'Line',
         data: {
-          def: [0, 0, 0.75, 0.75],
+          def: [-1, -0.25, 1, 0.75],
           boundType: LineBound.NoBound,
-          scale: PriceScales.regular,
+          scale: PriceScales.log10,
           style: { lineWidth: 2, fill: 1, color: '#AA0000' },
         } as Line,
         locked: false,
@@ -59,7 +59,7 @@ export default class App extends Vue {
         title: 'line2',
         type: 'Line',
         data: {
-          def: [0 - 0.25, 0, 0.75 - 0.25, 0.75],
+          def: [-0.25, -0.25, 0.75, 0.75],
           boundType: LineBound.Both,
           scale: PriceScales.regular,
           style: { lineWidth: 2, fill: 1, color: '#00AA00' },

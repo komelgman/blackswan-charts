@@ -1,4 +1,6 @@
 import { toRaw } from 'vue';
+import AbstractLineGraphics from '@/model/sketchers/graphics/AbstractLineGraphics';
+import SplineGraphics from '@/model/sketchers/graphics/SplineGraphics';
 import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { inRange } from '@/misc/line-functions';
@@ -17,7 +19,7 @@ export interface LineOptions {
   style: LineStyle;
 }
 
-export declare type VisiblePoints = [boolean, UTCTimestamp, Price, UTCTimestamp, Price];
+export declare type VisiblePoints = [boolean, UTCTimestamp, Price, UTCTimestamp, Price, (x: UTCTimestamp) => Price];
 declare type VisiblePoint = [UTCTimestamp, Price, 'Side' | 'StartBound' | 'EndBound'];
 
 export default class LineSketcher extends AbstractSketcher {
@@ -32,7 +34,7 @@ export default class LineSketcher extends AbstractSketcher {
     const { timeAxis, priceAxis } = viewport;
     const { range: priceRange, scale: priceScale } = priceAxis;
     const { range: timeRange } = timeAxis;
-    const [visible, x0, y0, x1, y1] = this.visiblePoints(line, timeRange, priceRange);
+    const [visible, x0, y0, x1, y1, lineFunc] = this.visiblePoints(line, timeRange, priceRange);
 
     descriptor.visibleInViewport = visible;
     descriptor.valid = descriptor.visibleInViewport;
@@ -41,55 +43,116 @@ export default class LineSketcher extends AbstractSketcher {
       return;
     }
 
-    if (priceScale.title === line.scale.title) {
-      // draw straight line
-      const vpX0 = timeAxis.translate(x0);
-      const vpY0 = priceAxis.translate(y0);
-      const vpX1 = timeAxis.translate(x1);
-      const vpY1 = priceAxis.translate(y1);
+    let installHandles = false;
+    const vpX0 = timeAxis.translate(x0);
+    const vpY0 = priceAxis.translate(y0);
+    const vpX1 = timeAxis.translate(x1);
+    const vpY1 = priceAxis.translate(y1);
 
-      if (drawing === undefined) {
+    if (priceScale.title === line.scale.title || x1 - x0 === 0 || y1 - y0 === 0) {
+      // draw straight line
+      if (drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== LineGraphics.TYPE) {
+        installHandles = true;
         entry[1] = {
           parts: [new LineGraphics(vpX0, vpY0, vpX1, vpY1, line.style)],
-          handles: {
-            lineStart: new RoundHandle(
-              timeAxis.translate(line.def[0]),
-              priceAxis.translate(line.def[1]),
-              locked,
-              this.chartStyle.handleStyle,
-              'move',
-            ),
-            lineEnd: new RoundHandle(
-              timeAxis.translate(line.def[2]),
-              priceAxis.translate(line.def[3]),
-              locked,
-              this.chartStyle.handleStyle,
-              'move',
-            ),
-          },
+          handles: {},
         };
       } else {
-        (drawing.parts[0] as LineGraphics).invalidate({
-          x0: vpX0,
-          y0: vpY0,
-          x1: vpX1,
-          y1: vpY1,
-          lineStyle: line.style,
-        });
-        (drawing.handles.lineStart as RoundHandle).invalidate(
-          timeAxis.translate(line.def[0]),
-          priceAxis.translate(line.def[1]),
-          locked,
-        );
-        (drawing.handles.lineEnd as RoundHandle).invalidate(
-          timeAxis.translate(line.def[2]),
-          priceAxis.translate(line.def[3]),
-          locked,
-        );
+        (drawing.parts[0] as LineGraphics)
+          .invalidate({ x0: vpX0, y0: vpY0, x1: vpX1, y1: vpY1, lineStyle: line.style });
       }
     } else {
       // draw spline
-      throw new Error('Oops');
+      const points: number[] = [];
+      const MAGIC_CONST = 24;
+      let step = ((x1 - x0) * MAGIC_CONST) / Math.sqrt((vpX1 - vpX0) ** 2 + (vpY1 - vpY0) ** 2);
+      let curX: UTCTimestamp = x0;
+      let curY: Price = y0;
+      let nextX: UTCTimestamp;
+      let nextY: Price;
+      do {
+        nextX = curX + step as UTCTimestamp;
+        nextY = lineFunc(nextX);
+
+        const chunkSize = Math.sqrt(
+          (timeAxis.translate(nextX) - timeAxis.translate(curX)) ** 2
+          + (priceAxis.translate(nextY) - priceAxis.translate(curY)) ** 2,
+        );
+
+        if (chunkSize > MAGIC_CONST) {
+          step /= (chunkSize / MAGIC_CONST);
+          continue;
+        } else if (chunkSize < MAGIC_CONST / 2) {
+          step *= 2;
+          continue;
+        }
+
+        points.push(timeAxis.translate(curX), priceAxis.translate(curY));
+        if (curX === x1 && curY === y1) {
+          break;
+        }
+
+        if (nextX > x1) {
+          nextX = x1;
+          nextY = y1;
+        }
+
+        curX = nextX;
+        curY = nextY;
+      } while (true);
+
+      // eslint-disable-next-line no-lonely-if
+      if (drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== SplineGraphics.TYPE) {
+        installHandles = true;
+        entry[1] = {
+          parts: [new SplineGraphics(points, line.style)],
+          handles: {},
+        };
+      } else {
+        (drawing.parts[0] as SplineGraphics).invalidate({
+          points,
+          lineStyle: line.style,
+        });
+      }
+    }
+
+    const [lx0, ly0, lx1, ly1] = line.def;
+    if (installHandles) {
+      if (entry[1]?.handles === undefined) {
+        throw new Error('Oops.');
+      }
+
+      entry[1].handles = {
+        lineStart: new RoundHandle(
+          timeAxis.translate(lx0),
+          priceAxis.translate(ly0),
+          locked,
+          this.chartStyle.handleStyle,
+          'move',
+        ),
+        lineEnd: new RoundHandle(
+          timeAxis.translate(lx1),
+          priceAxis.translate(ly1),
+          locked,
+          this.chartStyle.handleStyle,
+          'move',
+        ),
+      };
+    } else {
+      if (drawing?.handles === undefined) {
+        throw new Error('Oops.');
+      }
+
+      (drawing.handles.lineStart as RoundHandle).invalidate(
+        timeAxis.translate(lx0),
+        priceAxis.translate(ly0),
+        locked,
+      );
+      (drawing.handles.lineEnd as RoundHandle).invalidate(
+        timeAxis.translate(lx1),
+        priceAxis.translate(ly1),
+        locked,
+      );
     }
   }
 
@@ -149,68 +212,71 @@ export default class LineSketcher extends AbstractSketcher {
     timeRange: Readonly<Range<UTCTimestamp>>,
     priceRange: Readonly<Range<Price>>,
   ): VisiblePoints {
+    const lineScale = line.scale.func;
     const [lx0, ly0, lx1, ly1] = line.def;
     const ldx = lx1 - lx0;
-    const ldy = ly1 - ly0;
+    const ldy = lineScale.translate(ly1) - lineScale.translate(ly0);
 
+    const noVisiblePoints: VisiblePoints = [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price, () => -1 as Price];
     if (ldx === 0) {
       // line is parallel to 0Y
       if (inRange(lx0, timeRange)) {
-        return this.applyLineBounds(line, lx0, priceRange.from, lx1, priceRange.to);
+        return this.applyLineBounds(line, lx0, priceRange.from, lx1, priceRange.to, () => { throw new Error('Line is || OY'); });
       }
 
-      return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
+      return noVisiblePoints;
     }
 
     if (ldy === 0) {
       // line is parallel 0X
       if (inRange(ly0, priceRange)) {
-        return this.applyLineBounds(line, timeRange.from, ly0, timeRange.to, ly1);
+        return this.applyLineBounds(line, timeRange.from, ly0, timeRange.to, ly1, () => { throw new Error('Line is || OX'); });
       }
 
-      return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
+      return noVisiblePoints;
     }
 
     let result: any[] = [];
 
     const dydx = ldy / ldx;
-    const leftSideCross = ly0 + dydx * (timeRange.from - lx0);
+    const lineFunc = (x: UTCTimestamp) => (line.scale.func.revert(line.scale.func.translate(ly0) + dydx * (x - lx0)));
+    const leftSideCross = lineFunc(timeRange.from);
     if (inRange(leftSideCross, priceRange)) {
       result = [...result, timeRange.from, leftSideCross];
     }
 
-    const rightSideCross = ly0 + dydx * (timeRange.to - lx0);
+    const rightSideCross = lineFunc(timeRange.to);
     if (inRange(rightSideCross, priceRange)) {
       result = [...result, timeRange.to, rightSideCross];
     }
 
     if (result.length === 4) {
-      return this.applyLineBounds(line, result[0], result[1], result[2], result[3]);
+      return this.applyLineBounds(line, result[0], result[1], result[2], result[3], lineFunc);
     }
 
     const dxdy = ldx / ldy;
-    const botSideCross = lx0 + dxdy * (priceRange.from - ly0);
+    const botSideCross = lx0 + dxdy * (lineScale.translate(priceRange.from) - lineScale.translate(ly0));
     if (inRange(botSideCross, timeRange)) {
       result = [...result, botSideCross, priceRange.from];
     }
 
     if (result.length === 4) {
-      return this.applyLineBounds(line, result[0], result[1], result[2], result[3]);
+      return this.applyLineBounds(line, result[0], result[1], result[2], result[3], lineFunc);
     }
 
-    const topSideCross = lx0 + dxdy * (priceRange.to - ly0);
+    const topSideCross = lx0 + dxdy * (lineScale.translate(priceRange.to) - lineScale.translate(ly0));
     if (inRange(topSideCross, timeRange)) {
       result = [...result, topSideCross, priceRange.to];
     }
 
     if (result.length === 4) {
-      return this.applyLineBounds(line, result[0], result[1], result[2], result[3]);
+      return this.applyLineBounds(line, result[0], result[1], result[2], result[3], lineFunc);
     }
 
-    return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
+    return noVisiblePoints;
   }
 
-  private applyLineBounds(line: Line, x0: UTCTimestamp, y0: Price, x1: UTCTimestamp, y1: Price): VisiblePoints {
+  private applyLineBounds(line: Line, x0: UTCTimestamp, y0: Price, x1: UTCTimestamp, y1: Price, lineFunc: (x: UTCTimestamp) => Price): VisiblePoints {
     const [lx0, ly0, lx1, ly1] = line.def;
     const points: VisiblePoint[] = [];
 
@@ -278,9 +344,16 @@ export default class LineSketcher extends AbstractSketcher {
     }
 
     if (p0 && p1) {
-      return [true, lx0 + p0[0] as UTCTimestamp, ly0 + p0[1] as Price, lx0 + p1[0] as UTCTimestamp, ly0 + p1[1] as Price];
+      return [
+        true,
+        lx0 + p0[0] as UTCTimestamp,
+        ly0 + p0[1] as Price,
+        lx0 + p1[0] as UTCTimestamp,
+        ly0 + p1[1] as Price,
+        lineFunc,
+      ];
     }
 
-    return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price];
+    return [false, -1 as UTCTimestamp, -1 as Price, -1 as UTCTimestamp, -1 as Price, () => -1 as Price];
   }
 }
