@@ -174,11 +174,13 @@ export default class LineSketcher extends AbstractSketcher {
       let update;
 
       if (handle === undefined) {
+        const lineScale = (options.data as Line).scale.func;
         const [x0, y0, x1, y1] = options.data.def;
+        const dy = lineScale.translate(priceAxis.revert(e.y  - priceAxis.inverted.value * e.dy)) - lineScale.translate(priceAxis.revert(e.y));
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
-        const ny0 = priceAxis.revert(priceAxis.translate(y0) - priceAxis.inverted.value * e.dy);
+        const ny0 = lineScale.revert(lineScale.translate(y0) + dy);
         const nx1 = timeAxis.revert(timeAxis.translate(x1) - e.dx);
-        const ny1 = priceAxis.revert(priceAxis.translate(y1) - priceAxis.inverted.value * e.dy);
+        const ny1 = lineScale.revert(lineScale.translate(y1) + dy);
         update = { data: { def: [nx0, ny0, nx1, ny1] } };
       }
 
