@@ -16,6 +16,7 @@ export default class ViewportHighlightingLayer extends Layer {
     this.viewport = viewport;
 
     watch([
+      computed(() => this.viewport.priceAxis.inverted),
       computed(() => this.viewport.highlighted),
       computed(() => this.viewport.selected),
     ], () => {
