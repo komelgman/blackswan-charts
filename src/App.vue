@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts">
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import { isProxy } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
@@ -12,7 +13,7 @@ import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import type { DrawingType } from '@/model/datasource/Drawing';
 import { LineBound } from '@/model/type-defs';
-import type { Line } from '@/model/type-defs';
+import type { Line, UTCTimestamp, HLOC, Price } from '@/model/type-defs';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
 
@@ -39,6 +40,23 @@ export default class App extends Vue {
     const { chartApi, mainDs } = this;
 
     const drawings = {
+      hlocBTCUSDT: {
+        id: "hloc1",
+        title: "BTCUSDT",
+        type: "HLOC",
+        data: {
+          from: 0 as UTCTimestamp,
+          step: 0.01 as UTCTimestamp,
+          values: [
+            [0.5, 0.1, 0.3, 0.15],
+            [0.6, 0.0, 0.15, 0.45],
+            [0.7, 0.3, 0.35, 0.55]
+          ] as [Price, Price, Price, Price][],
+        } as HLOC,
+        locked: false,
+        visible: true,
+      },
+
       redLineNoBound: {
         id: 'line1',
         title: 'line1',
@@ -248,6 +266,32 @@ export default class App extends Vue {
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.hlocBTCUSDT);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.hlocBTCUSDT);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.process('hloc1', ...);`);
+
+      const process = () => {
+        this.mainDs.process('hloc1', (e: DataSourceEntry<HLOC>) => {
+          const values = e[0].options.data.values;
+          const lastBar = values[values.length - 1];
+          const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
+          const h = Math.max(lastBar[0], c);
+          const l = Math.min(lastBar[1], c);
+          values.splice(-1, 1, [h, l, lastBar[2], c] as [Price, Price, Price, Price]);
+        });
+      };
+
+      setInterval(process, 500);
+    }, 100 * i++, i);
+
+
     // setTimeout((j: number) => {
     //   console.log(`${j}) chartApi.paneModel('main').priceAxis.update({ inverted: true });`);
     //   // warn !!! it's low level access, TVA not used
@@ -276,7 +320,7 @@ export default class App extends Vue {
 
     // todo add entry processing, no tva, used for system changes (like current tick changes)
     // setTimeout(() => {
-    //   this.mainDs.processEntry(0, (entry: DataSourceEntry<number[][]>) => {
+    //   this.mainDs.processEntry(ref, (entry: DataSourceEntry<number[][]>) => {
     //     // eslint-disable-next-line
     //     entry.visible = false;
     //

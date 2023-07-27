@@ -66,3 +66,9 @@ export declare type Line = AbstractLine<LineDef> & {
   boundType: LineBound;
   scale: PriceAxisScale;
 };
+
+export declare type HLOC = {
+  from: UTCTimestamp,
+  step: UTCTimestamp,
+  values: [h: Price, l: Price, o: Price, c: Price, v?: number][],
+}

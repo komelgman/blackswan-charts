@@ -55,7 +55,7 @@ export default class Viewport {
     const { selected } = this;
 
     for (const entry of selected) {
-      if (!entry[0].options.locked) {
+      if (!entry[0].options.locked && entry[1] !== undefined && Object.keys(entry[1].handles).length > 0) {
         return true;
       }
     }

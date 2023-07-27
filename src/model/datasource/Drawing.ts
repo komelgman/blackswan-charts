@@ -39,7 +39,7 @@ export interface DrawingDescriptor<DataType = any> {
 
 export interface Graphics {
   type?: string;
-  render(ctx: CanvasRenderingContext2D, inverted: InvertedValue): void;
+  render(ctx: CanvasRenderingContext2D): void;
 
   hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean;
 }

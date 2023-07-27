@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isProxy, toRaw } from 'vue';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, isString, merge } from '@/misc/strict-type-checks';
+import type {
+  DataSourceChangeEvent,
+  DataSourceChangeEventsMap,
+} from '@/model/datasource/DataSourceChangeEventListener';
 import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import type { DataSourceChangeEventsMap, DataSourceChangeEvent } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
@@ -17,6 +19,7 @@ import type TVAClerk from '@/model/history/TVAClerk';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type IdHelper from '@/model/tools/IdHelper';
 import type { Predicate } from '@/model/type-defs';
+import { isProxy, toRaw } from 'vue';
 
 export declare type DataSourceId = EntityId;
 export interface DataSourceOptions {
@@ -187,6 +190,16 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
         addReason: this.addReason.bind(this),
       }),
     });
+  }
+
+  public process<T>(ref: DrawingReference, processor: (entry: DataSourceEntry<T>) => void): void {
+    this.checkWeAreNotInProxy();
+
+    const entry: DataSourceEntry<T> = this.storage.get(ref);
+    processor(entry);
+    entry[0].valid = false;
+    this.addReason(DataSourceChangeEventReason.UpdateEntry, [entry]);
+    this.flush();
   }
 
   public remove(ref: DrawingReference): void {

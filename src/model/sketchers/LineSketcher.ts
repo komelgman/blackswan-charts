@@ -176,6 +176,7 @@ export default class LineSketcher extends AbstractSketcher {
       if (handle === undefined) {
         const lineScale = (options.data as Line).scale.func;
         const [x0, y0, x1, y1] = options.data.def;
+        // todo: fix, now it's parallel but delta isn't matched to actual move, point on line should move with mouse pointer
         const dy = lineScale.translate(priceAxis.revert(e.y  - priceAxis.inverted.value * e.dy)) - lineScale.translate(priceAxis.revert(e.y));
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
         const ny0 = lineScale.revert(lineScale.translate(y0) + dy);
