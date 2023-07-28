@@ -123,7 +123,7 @@ export default class ViewportWidget extends Vue {
   onLeftMouseBtnDoubleClick(): void {
     const { highlighted } = this.viewportModel;
     if (highlighted !== undefined) {
-      console.log(`double click on element: ${highlighted[0].ref}`);
+      console.log(`double click on element: ${highlighted.descriptor.ref}`);
     } else {
       console.log('double click on viewport');
     }

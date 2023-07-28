@@ -38,13 +38,13 @@ export default class ViewportHighlightInvalidator {
 
     const { dataSource } = this.viewportModel;
     for (const entry of toRaw(dataSource).visible(true)) {
-      if (entry[1] === undefined) {
+      if (entry.drawing === undefined) {
         continue;
       }
 
       if (selected.has(entry as DataSourceEntry)
-        || (highlighted !== undefined && isEqualDrawingReference(entry[0].ref, highlighted[0].ref))) {
-        for (const [handleId, graphics] of Object.entries(entry[1].handles)) {
+        || (highlighted !== undefined && isEqualDrawingReference(entry.descriptor.ref, highlighted.descriptor.ref))) {
+        for (const [handleId, graphics] of Object.entries(entry.drawing.handles)) {
           if (graphics.hitTest(native, screenPos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;
             this.viewportModel.highlightedHandleId = handleId;
@@ -55,7 +55,7 @@ export default class ViewportHighlightInvalidator {
       }
 
       if (this.viewportModel.highlighted === undefined) {
-        for (const graphics of entry[1].parts) {
+        for (const graphics of entry.drawing.parts) {
           if (graphics.hitTest(native, screenPos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;
             this.viewportModel.cursor = 'pointer';

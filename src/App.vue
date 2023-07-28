@@ -55,6 +55,7 @@ export default class App extends Vue {
         } as HLOC,
         locked: false,
         visible: true,
+        shareWith: '*' as '*',
       },
 
       redLineNoBound: {
@@ -159,7 +160,7 @@ export default class App extends Vue {
     mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
       for (const [reason, reasonEvents] of events) {
         for (const dataSourceChangeEvent of reasonEvents) {
-          if (isProxy(dataSourceChangeEvent.entry[0].options)) {
+          if (isProxy(dataSourceChangeEvent.entry.descriptor.options)) {
             console.trace(reason, dataSourceChangeEvent);
           }
         }
@@ -279,12 +280,20 @@ export default class App extends Vue {
 
       const process = () => {
         this.mainDs.process('hloc1', (e: DataSourceEntry<HLOC>) => {
-          const values = e[0].options.data.values;
+          const values = e.descriptor.options.data.values;
           const lastBar = values[values.length - 1];
           const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
           const h = Math.max(lastBar[0], c);
           const l = Math.min(lastBar[1], c);
+
+          // add new
+          // values.push(lastBar);
+
+          // update last
           values.splice(-1, 1, [h, l, lastBar[2], c] as [Price, Price, Price, Price]);
+
+          // replace all
+          // values.splice(0, values.length, newItems);
         });
       };
 
@@ -317,28 +326,6 @@ export default class App extends Vue {
     // setTimeout(() => {
     //   chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
     // }, 1000);
-
-    // todo add entry processing, no tva, used for system changes (like current tick changes)
-    // setTimeout(() => {
-    //   this.mainDs.processEntry(ref, (entry: DataSourceEntry<number[][]>) => {
-    //     // eslint-disable-next-line
-    //     entry.visible = false;
-    //
-    //     // add
-    //     entry.data.push([1, 2, 3], [4, 5, 6]);
-    //   });
-    // }, 5000);
-
-    // setTimeout(() => {
-    //   this.mainDs.processEntry(1, (entry: DataSourceEntry<number[][]>) => {
-    //     // replace
-    //     entry.data.splice(0, entry.data.length, [1, 2, 3], [4, 5, 6]);
-    //   });
-    //   this.mainDs.processEntry(2, (entry: DataSourceEntry<number[][]>) => {
-    //     // update last
-    //     entry.data.splice(-1, 1, [7, 8, 9]);
-    //   });
-    // }, 5000);
 
     // setTimeout(() => {
     //   this.chartModel.timeAxis.range = { from: 2 as UTCTimestamp, to: 6 as UTCTimestamp };

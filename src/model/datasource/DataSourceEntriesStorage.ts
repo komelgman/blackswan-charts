@@ -22,7 +22,7 @@ export default class DataSourceEntriesStorage {
       value,
     };
 
-    const key: string = this.refToMapId(value[0].ref);
+    const key: string = this.refToMapId(value.descriptor.ref);
     if (this.refToEntry.has(key)) {
       throw new Error(`Entry already exists: ${key}`);
     }
@@ -45,12 +45,12 @@ export default class DataSourceEntriesStorage {
       throw new Error('Illegal state: this.tail is empty');
     }
 
-    return this.remove(this.tail.value[0].ref)[0];
+    return this.remove(this.tail.value.descriptor.ref)[0];
   }
 
   public unshift(value: DataSourceEntry): void {
     if (this.head !== undefined) {
-      this.insertBefore(this.head.value[0].ref, value);
+      this.insertBefore(this.head.value.descriptor.ref, value);
     } else {
       this.push(value);
     }
@@ -61,7 +61,7 @@ export default class DataSourceEntriesStorage {
       throw new Error('Illegal state: this.head is empty');
     }
 
-    return this.remove(this.head.value[0].ref)[0];
+    return this.remove(this.head.value.descriptor.ref)[0];
   }
 
   public insertAfter(target: DrawingReference, value: DataSourceEntry): void {
@@ -70,7 +70,7 @@ export default class DataSourceEntriesStorage {
       throw new Error(`Illegal argument: prev entry ref not found: ${target}`);
     }
 
-    const key: string = this.refToMapId(value[0].ref);
+    const key: string = this.refToMapId(value.descriptor.ref);
     if (this.refToEntry.has(key)) {
       throw new Error(`Entry already exists: ${key}`);
     }
@@ -100,7 +100,7 @@ export default class DataSourceEntriesStorage {
       throw new Error(`Illegal argument: next entry ref not found: ${target}`);
     }
 
-    const key: string = this.refToMapId(value[0].ref);
+    const key: string = this.refToMapId(value.descriptor.ref);
     if (this.refToEntry.has(key)) {
       throw new Error(`Entry already exists: ${key}`);
     }
@@ -157,7 +157,7 @@ export default class DataSourceEntriesStorage {
     tmp.prev = undefined;
     tmp.next = undefined;
 
-    return [result, tmpPrev ? tmpPrev.value[0].ref : undefined, tmpNext ? tmpNext.value[0].ref : undefined];
+    return [result, tmpPrev ? tmpPrev.value.descriptor.ref : undefined, tmpNext ? tmpNext.value.descriptor.ref : undefined];
   }
 
   public has(ref: DrawingReference): boolean {
@@ -186,7 +186,7 @@ export default class DataSourceEntriesStorage {
     let entry: StorageEntry | undefined = head;
     if (isInternal) {
       while (entry) {
-        const currentRef: DrawingReference = entry.value[0].ref;
+        const currentRef: DrawingReference = entry.value.descriptor.ref;
         entry = entry.next;
         if (!isString(currentRef)) {
           continue;
@@ -196,10 +196,10 @@ export default class DataSourceEntriesStorage {
         break;
       }
 
-      result[1] = tail?.value[0].ref;
+      result[1] = tail?.value.descriptor.ref;
     } else {
       while (entry) {
-        const currentRef: DrawingReference = entry.value[0].ref;
+        const currentRef: DrawingReference = entry.value.descriptor.ref;
         if (isString(currentRef)) {
           break;
         }

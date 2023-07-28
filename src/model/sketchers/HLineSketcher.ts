@@ -17,7 +17,7 @@ export default class HLineSketcher extends AbstractSketcher {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    const [descriptor, drawing, priceMark] = entry;
+    const { descriptor, drawing, mark: priceMark } = entry;
     const { data: line, locked } = descriptor.options;
     const { priceAxis } = viewport;
     const { main: width } = viewport.timeAxis.screenSize;
@@ -32,7 +32,7 @@ export default class HLineSketcher extends AbstractSketcher {
 
     const y = priceAxis.translate(line.def);
     if (drawing === undefined) {
-      entry[1] = {
+      entry.drawing = {
         parts: [new LineGraphics(0, y, width, y, line.style)],
         handles: { center: new SquareHandle(width / 2, y, locked, this.chartStyle.handleStyle, 'ns-resize') },
       };
@@ -47,7 +47,7 @@ export default class HLineSketcher extends AbstractSketcher {
     });
 
     if (priceMark === undefined) {
-      entry[2] = {
+      entry.mark = {
         screenPos: y,
         textColor: invertColor(line.style.color),
         text: markText,
@@ -65,9 +65,9 @@ export default class HLineSketcher extends AbstractSketcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
-      || entry[0].options.type !== 'HLine'
-      || entry[0].options.locked
-      || entry[1] === undefined
+      || entry.descriptor.options.type !== 'HLine'
+      || entry.descriptor.options.locked
+      || entry.drawing === undefined
     ) {
       console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
       return undefined;
@@ -76,11 +76,11 @@ export default class HLineSketcher extends AbstractSketcher {
     const { dataSource, priceAxis } = viewport;
     return (e: DragMoveEvent) => {
       const rawDS = toRaw(dataSource);
-      const { options } = entry[0];
+      const { options } = entry.descriptor;
       // only one handle and drag by body equals drag by handles.center
       const def = priceAxis.revert(priceAxis.translate(options.data.def) - priceAxis.inverted.value * e.dy);
 
-      rawDS.update(entry[0].ref, { data: { def } });
+      rawDS.update(entry.descriptor.ref, { data: { def } });
     };
   }
 

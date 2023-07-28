@@ -53,7 +53,7 @@ export default class PriceAxisMarksLayer extends Layer {
     native.textAlign = 'end';
     native.font = makeFont(textStyle);
 
-    const validMarks: Predicate<DataSourceEntry> = ([descriptor, , mark]): boolean => {
+    const validMarks: Predicate<DataSourceEntry> = ({ descriptor, mark}): boolean => {
       const { options } = descriptor;
 
       return options.type === 'HLine'
@@ -64,7 +64,7 @@ export default class PriceAxisMarksLayer extends Layer {
     };
 
     const x = width - PRICE_LABEL_PADDING;
-    for (const [descriptor, drawing, mark] of toRaw(this.viewport.dataSource).filtered(validMarks)) {
+    for (const { descriptor, drawing, mark } of toRaw(this.viewport.dataSource).filtered(validMarks)) {
       if (mark === undefined || drawing === undefined) {
         continue;
       }

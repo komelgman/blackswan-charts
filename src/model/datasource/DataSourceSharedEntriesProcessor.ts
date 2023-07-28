@@ -27,7 +27,7 @@ export default class DataSourceSharedEntriesProcessor {
     let entry = this.storage.head;
     while (entry !== undefined) {
       const entryValue: DataSourceEntry = entry.value;
-      const [descriptor] = entryValue;
+      const { descriptor } = entryValue;
       const { shareWith } = descriptor.options;
 
       if (isString(descriptor.ref) && (shareWith === '*' || (shareWith !== undefined && shareWith.indexOf(externalDataSourceId) > -1))) {
@@ -42,9 +42,9 @@ export default class DataSourceSharedEntriesProcessor {
     // this.checkWeAreNotInProxy();
 
     const { storage } = this;
-    const headref = storage.head?.value[0].ref;
+    const headref = storage.head?.value.descriptor.ref;
     for (const entry of source.sharedProcessor.shared(this.dataSource.id)) {
-      const { ref, options } = entry[0];
+      const { ref, options } = entry.descriptor;
       if (!isString(ref)) {
         throw new Error('Illegal state: try to attach external entry as shared');
       }
@@ -63,7 +63,7 @@ export default class DataSourceSharedEntriesProcessor {
 
     let entry = this.storage.head;
     while (entry !== undefined) {
-      const [descriptor] = entry.value;
+      const { descriptor } = entry.value;
       if (isString(descriptor.ref)) {
         break;
       }
@@ -77,7 +77,7 @@ export default class DataSourceSharedEntriesProcessor {
 
   public update(ref: DrawingReference): void {
     const entry: DataSourceEntry = this.storage.get(ref);
-    entry[0].valid = false;
+    entry.descriptor.valid = false;
     this.addReason(DataSourceChangeEventReason.UpdateEntry, [entry], true);
   }
 
@@ -102,13 +102,13 @@ export default class DataSourceSharedEntriesProcessor {
 
   private createEntry(ref: DrawingReference, options: Omit<DrawingOptions, 'id'>): DataSourceEntry {
     if (isString(ref)) {
-      return [{ ref, options }];
+      return { descriptor: { ref, options } };
     }
 
     if (ref[0] === this.dataSource.id) {
       throw new Error('Illegal argument: ref[0] === this.dataSource.id');
     }
 
-    return [{ ref: clone(ref), options }];
+    return { descriptor: { ref: clone(ref), options } };
   }
 }

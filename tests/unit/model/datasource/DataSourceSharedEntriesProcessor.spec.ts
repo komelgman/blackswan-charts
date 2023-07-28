@@ -58,7 +58,7 @@ describe('DataSourceSharedEntriesProcessor', () => {
   function getDrawingReferencesFromIterator(ii: IterableIterator<Readonly<DataSourceEntry>>): DrawingReference[] {
     const result: DrawingReference[] = [];
     for (const item of ii) {
-      result.push(item[0].ref);
+      result.push(item.descriptor.ref);
     }
     return result;
   }
@@ -82,15 +82,15 @@ describe('DataSourceSharedEntriesProcessor', () => {
 
     // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
     const storage = ds1['storage'];
-    expect(storage.head?.value[0].ref).toEqual([ds2.id, drawing2.id]);
-    expect(storage.tail?.value[0].ref).toEqual(drawing2.id);
+    expect(storage.head?.value.descriptor.ref).toEqual([ds2.id, drawing2.id]);
+    expect(storage.tail?.value.descriptor.ref).toEqual(drawing2.id);
 
     ds1.sharedProcessor.detachSharedEntries(ds2.id);
 
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([drawing0.id, drawing1.id, drawing2.id]);
-    expect(storage.head?.value[0].ref).toEqual(drawing0.id);
-    expect(storage.tail?.value[0].ref).toEqual(drawing2.id);
+    expect(storage.head?.value.descriptor.ref).toEqual(drawing0.id);
+    expect(storage.tail?.value.descriptor.ref).toEqual(drawing2.id);
   });
 
   it('test attach/detach shared entries to empty data source', () => {
@@ -101,14 +101,14 @@ describe('DataSourceSharedEntriesProcessor', () => {
 
     expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
       .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing4.id]]);
-    expect(storage.head?.value[0].ref).toEqual([ds2.id, drawing2.id]);
-    expect(storage.tail?.value[0].ref).toEqual([ds2.id, drawing4.id]);
+    expect(storage.head?.value.descriptor.ref).toEqual([ds2.id, drawing2.id]);
+    expect(storage.tail?.value.descriptor.ref).toEqual([ds2.id, drawing4.id]);
 
     ds3.sharedProcessor.detachSharedEntries(ds2.id);
 
     expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
       .toEqual([]);
-    expect(storage.head?.value[0].ref).toBeUndefined();
-    expect(storage.tail?.value[0].ref).toBeUndefined();
+    expect(storage.head?.value.descriptor.ref).toBeUndefined();
+    expect(storage.tail?.value.descriptor.ref).toBeUndefined();
   });
 });

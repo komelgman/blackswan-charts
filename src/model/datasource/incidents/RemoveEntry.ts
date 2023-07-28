@@ -31,7 +31,7 @@ export default class RemoveEntry extends AbstractHistoricalIncident<RemoveEntryO
     const { storage, addReason } = this.options;
     const [entry, prevRef, nextRef] = this.removedEntry;
 
-    entry[0].valid = false;
+    entry.descriptor.valid = false;
 
     if (prevRef) {
       storage.insertAfter(prevRef, entry);

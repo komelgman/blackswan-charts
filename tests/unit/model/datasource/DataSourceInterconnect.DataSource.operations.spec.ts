@@ -71,7 +71,7 @@ describe('DataSourceSharedEntriesProcessor | DataSource operations', () => {
   function getDrawingReferencesFromIterator(ii: IterableIterator<Readonly<DataSourceEntry>>): DrawingReference[] {
     const result: DrawingReference[] = [];
     for (const item of ii) {
-      result.push(item[0].ref);
+      result.push(item.descriptor.ref);
     }
     return result;
   }

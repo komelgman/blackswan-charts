@@ -55,7 +55,11 @@ export default class Viewport {
     const { selected } = this;
 
     for (const entry of selected) {
-      if (!entry[0].options.locked && entry[1] !== undefined && Object.keys(entry[1].handles).length > 0) {
+      if (
+        !entry.descriptor.options.locked
+        && entry.drawing !== undefined
+        && Object.keys(entry.drawing.handles).length > 0
+      ) {
         return true;
       }
     }
@@ -78,7 +82,7 @@ export default class Viewport {
     const tmp: Set<DataSourceEntry> = new Set();
 
     for (const entry of selected) {
-      if (entry[0].options.locked) {
+      if (entry.descriptor.options.locked) {
         continue;
       }
 
@@ -110,16 +114,16 @@ export default class Viewport {
     const { highlighted, selected, highlightedHandleId } = this;
 
     // case when we drag some handle
-    if (highlighted !== undefined && !highlighted[0].options.locked && highlightedHandleId !== undefined) {
-      const sketcher: Sketcher = this.getSketcher(highlighted[0].options.type);
+    if (highlighted !== undefined && !highlighted.descriptor.options.locked && highlightedHandleId !== undefined) {
+      const sketcher: Sketcher = this.getSketcher(highlighted.descriptor.options.type);
       return sketcher.dragHandle(this, highlighted, highlightedHandleId);
     }
 
     // case when we drag several (mb one) element by body picking
     const dragHandles: DragHandle[] = [];
     for (const entry of selected) {
-      if (!entry[0].options.locked) {
-        const sketcher: Sketcher = this.getSketcher(entry[0].options.type);
+      if (!entry.descriptor.options.locked) {
+        const sketcher: Sketcher = this.getSketcher(entry.descriptor.options.type);
         const dragHandle: DragHandle | undefined = sketcher.dragHandle(this, entry);
         if (dragHandle !== undefined) {
           dragHandles.push(dragHandle);

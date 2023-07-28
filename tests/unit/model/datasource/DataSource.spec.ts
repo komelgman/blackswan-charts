@@ -42,7 +42,7 @@ describe('DataSource', () => {
     const result: DrawingReference[] = [];
     let item = storage.head;
     while (item !== undefined) {
-      result.push(item.value[0].ref);
+      result.push(item.value.descriptor.ref);
       item = item.next;
     }
 
@@ -52,13 +52,13 @@ describe('DataSource', () => {
   function getDrawingReferencesFromIterator(ii: IterableIterator<Readonly<DataSourceEntry>>): DrawingReference[] {
     const result: DrawingReference[] = [];
     for (const item of ii) {
-      result.push(item[0].ref);
+      result.push(item.descriptor.ref);
     }
     return result;
   }
 
   function getDSEntry(ref: DrawingReference): Readonly<DataSourceEntry> {
-    const filtered: IterableIterator<Readonly<DataSourceEntry>> = ds.filtered((p) => isEqualDrawingReference(p[0].ref, ref));
+    const filtered: IterableIterator<Readonly<DataSourceEntry>> = ds.filtered((p) => isEqualDrawingReference(p.descriptor.ref, ref));
     return filtered.next().value;
   }
 
@@ -81,7 +81,7 @@ describe('DataSource', () => {
   it('test default iterator', () => {
     const references: DrawingReference[] = [];
     for (const dse of ds) {
-      references.push(dse[0].ref);
+      references.push(dse.descriptor.ref);
     }
 
     expect(references).toEqual([drawing1.id, drawing2.id, drawing3.id]);
@@ -90,7 +90,7 @@ describe('DataSource', () => {
   it('test visible() iterator', () => {
     function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
       for (const event of events.get(DataSourceChangeEventReason.CacheReset) || []) {
-        event.entry[0].visibleInViewport = true;
+        event.entry.descriptor.visibleInViewport = true;
       }
     }
 
@@ -103,7 +103,7 @@ describe('DataSource', () => {
   });
 
   it('test filtered() iterator', () => {
-    const drawingReferencesFromIterator: DrawingReference[] = getDrawingReferencesFromIterator(ds.filtered((p) => p[0].ref !== drawing3.id));
+    const drawingReferencesFromIterator: DrawingReference[] = getDrawingReferencesFromIterator(ds.filtered((p) => p.descriptor.ref !== drawing3.id));
     expect(drawingReferencesFromIterator).toEqual([drawing1.id, drawing2.id]);
   });
 
@@ -122,7 +122,7 @@ describe('DataSource', () => {
     ds.resetCache();
 
     expect(listenerSpy).toHaveBeenCalledOnce();
-    expect(entries.map((e) => e[0].ref)).toEqual([drawing1.id, drawing2.id, drawing3.id]);
+    expect(entries.map((e) => e.descriptor.ref)).toEqual([drawing1.id, drawing2.id, drawing3.id]);
 
     listenerSpy.mockClear();
     ds.removeChangeEventListener(options.eventListener);
@@ -146,13 +146,13 @@ describe('DataSource', () => {
     ds.resetCache();
 
     expect(listenerSpy).toHaveBeenCalled();
-    expect(entriesWhichWasInvalidated.map((e) => e[0].ref)).toEqual([]);
+    expect(entriesWhichWasInvalidated.map((e) => e.descriptor.ref)).toEqual([]);
 
     listenerSpy.mockClear();
     ds.invalidated(entriesWhichWasReset);
 
     expect(listenerSpy).toHaveBeenCalled();
-    expect(entriesWhichWasInvalidated.map((e) => e[0].ref)).toEqual([drawing1.id, drawing2.id, drawing3.id]);
+    expect(entriesWhichWasInvalidated.map((e) => e.descriptor.ref)).toEqual([drawing1.id, drawing2.id, drawing3.id]);
   });
 
   it('test (begin|end)Transaction()', () => {
@@ -183,8 +183,8 @@ describe('DataSource', () => {
     let removedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
-        addedEntries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry[0].ref));
-        removedEntries = (events.get(DataSourceChangeEventReason.RemoveEntry) || []).map((event) => (event.entry[0].ref));
+        addedEntries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry.descriptor.ref));
+        removedEntries = (events.get(DataSourceChangeEventReason.RemoveEntry) || []).map((event) => (event.entry.descriptor.ref));
       },
     };
     const listenerSpy = vi.spyOn(options, 'eventListener');
@@ -202,8 +202,8 @@ describe('DataSource', () => {
 
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([drawing1.id, drawing2.id, drawing3.id, newId]);
-    expect(storage.head?.value[0].ref).toEqual(drawing1.id);
-    expect(storage.tail?.value[0].ref).toEqual(newId);
+    expect(storage.head?.value.descriptor.ref).toEqual(drawing1.id);
+    expect(storage.tail?.value.descriptor.ref).toEqual(newId);
     expect(tva['current'].sign).toBeFalsy();
 
     ds.endTransaction();
@@ -222,8 +222,8 @@ describe('DataSource', () => {
     expect(tva['current'].sign).toBeTruthy();
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([drawing2.id, drawing3.id]);
-    expect(storage.head?.value[0].ref).toEqual(drawing2.id);
-    expect(storage.tail?.value[0].ref).toEqual(drawing3.id);
+    expect(storage.head?.value.descriptor.ref).toEqual(drawing2.id);
+    expect(storage.tail?.value.descriptor.ref).toEqual(drawing3.id);
 
     ds.beginTransaction();
     ds.remove(drawing2.id);
@@ -245,15 +245,15 @@ describe('DataSource', () => {
     let updatedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
-        updatedEntries = (events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((event) => (event.entry[0].ref));
+        updatedEntries = (events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((event) => (event.entry.descriptor.ref));
       },
     };
 
     const listenerSpy = vi.spyOn(options, 'eventListener');
     ds.addChangeEventListener(options.eventListener);
-    storage.get(drawing1.id)[0].valid = true;
+    storage.get(drawing1.id).descriptor.valid = true;
 
-    expect(getDSEntry(drawing1.id)[0].valid).toBeTruthy();
+    expect(getDSEntry(drawing1.id).descriptor.valid).toBeTruthy();
 
     ds.beginTransaction();
     ds.update(drawing1.id, {
@@ -261,8 +261,8 @@ describe('DataSource', () => {
     });
 
     const updated = getDSEntry(drawing1.id);
-    expect(updated[0].options.title).toEqual('test hline - updated');
-    expect(updated[0].valid).toBeFalsy();
+    expect(updated.descriptor.options.title).toEqual('test hline - updated');
+    expect(updated.descriptor.valid).toBeFalsy();
     expect(tva['current'].sign).toBeFalsy();
 
     ds.endTransaction();
@@ -277,7 +277,7 @@ describe('DataSource', () => {
     let clonedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
-        clonedEntries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry[0].ref));
+        clonedEntries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry.descriptor.ref));
       },
     };
 
@@ -286,14 +286,14 @@ describe('DataSource', () => {
 
     ds.tvaClerk = tva.clerk;
     ds.addChangeEventListener(options.eventListener);
-    entry[0].valid = true;
+    entry.descriptor.valid = true;
 
     ds.beginTransaction();
     const cloned = ds.clone(entry);
 
-    expect(cloned[0].ref).toEqual('test4');
-    expect(cloned[0].options).toEqual(entry[0].options);
-    expect(cloned[0].valid).toBeFalsy();
+    expect(cloned.descriptor.ref).toEqual('test4');
+    expect(cloned.descriptor.options).toEqual(entry.descriptor.options);
+    expect(cloned.descriptor.valid).toBeFalsy();
     expect(tva['current'].sign).toBeFalsy();
 
     ds.endTransaction();

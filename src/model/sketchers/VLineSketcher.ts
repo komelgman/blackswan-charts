@@ -17,7 +17,7 @@ export default class VLineSketcher extends AbstractSketcher {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    const [descriptor, drawing, timeMark] = entry;
+    const { descriptor, drawing, mark: timeMark } = entry;
     const { data: line, locked } = descriptor.options;
     const { timeAxis } = viewport;
     const { main: height } = viewport.priceAxis.screenSize;
@@ -32,7 +32,7 @@ export default class VLineSketcher extends AbstractSketcher {
 
     const x = timeAxis.translate(line.def);
     if (drawing === undefined) {
-      entry[1] = {
+      entry.drawing = {
         parts: [new LineGraphics(x, 0, x, height, line.style)],
         handles: { center: new SquareHandle(x, height / 2, locked, this.chartStyle.handleStyle, 'ew-resize') },
       };
@@ -43,7 +43,7 @@ export default class VLineSketcher extends AbstractSketcher {
 
     const markText: string = `${line.def}`;
     if (timeMark === undefined) {
-      entry[2] = {
+      entry.mark = {
         screenPos: x,
         textColor: invertColor(line.style.color),
         text: markText,
@@ -61,9 +61,9 @@ export default class VLineSketcher extends AbstractSketcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
-      || entry[0].options.type !== 'VLine'
-      || entry[0].options.locked
-      || entry[1] === undefined
+      || entry.descriptor.options.type !== 'VLine'
+      || entry.descriptor.options.locked
+      || entry.drawing === undefined
     ) {
       console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
       return undefined;
@@ -72,7 +72,7 @@ export default class VLineSketcher extends AbstractSketcher {
     return (e: DragMoveEvent) => {
       const { dataSource, timeAxis } = viewport;
       const rawDS = toRaw(dataSource);
-      const { options, ref } = entry[0];
+      const { options, ref } = entry.descriptor;
       // only one handle and drag by body equals drag by handles.center
       const def = timeAxis.revert(timeAxis.translate(options.data.def) - e.dx);
 

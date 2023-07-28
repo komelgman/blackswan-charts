@@ -32,8 +32,8 @@ export default class UpdateEntry
   protected applyIncident(): void {
     const { storage, ref, update, addReason } = this.options;
     const entry = storage.get(ref);
-    [, this.unmerge] = merge(entry[0].options, update);
-    entry[0].valid = false;
+    [, this.unmerge] = merge(entry.descriptor.options, update);
+    entry.descriptor.valid = false;
 
     addReason(DataSourceChangeEventReason.UpdateEntry, [entry]);
   }
@@ -41,7 +41,7 @@ export default class UpdateEntry
   protected inverseIncident(): void {
     const { storage, ref, addReason } = this.options;
     const entry = storage.get(ref);
-    merge(entry[0], { options: this.unmerge, valid: false });
+    merge(entry.descriptor, { options: this.unmerge, valid: false });
 
     addReason(DataSourceChangeEventReason.UpdateEntry, [entry]);
   }
@@ -51,8 +51,8 @@ export default class UpdateEntry
       return false; // isn't update incident
     }
 
-    const opDescriptor = op.options.storage.get(op.options.ref)[0];
-    const descriptor = this.options.storage.get(this.options.ref)[0];
+    const opDescriptor = op.options.storage.get(op.options.ref).descriptor;
+    const descriptor = this.options.storage.get(this.options.ref).descriptor;
 
     if (!isEqualDrawingReference(opDescriptor.ref, descriptor.ref)) {
       return false; // update for another one drawing

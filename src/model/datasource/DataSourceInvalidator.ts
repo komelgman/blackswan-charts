@@ -73,12 +73,12 @@ export default class DataSourceInvalidator {
     }
 
     for (const entry of entries) {
-      if (entry[0].valid) {
-        console.warn(`Entry ${entry[0].ref} already valid`);
+      if (entry.descriptor.valid) {
+        console.warn(`Entry ${entry.descriptor.ref} already valid`);
         continue;
       }
 
-      const drawingType: DrawingType = entry[0].options.type;
+      const drawingType: DrawingType = entry.descriptor.options.type;
       if (!this.viewport.hasSketcher(drawingType)) {
         console.warn(`unknown drawing type ${drawingType}`);
         continue;

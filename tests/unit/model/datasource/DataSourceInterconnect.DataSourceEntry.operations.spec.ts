@@ -82,7 +82,7 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
   function getDrawingReferencesFromIterator(ii: IterableIterator<Readonly<DataSourceEntry>>): DrawingReference[] {
     const result: DrawingReference[] = [];
     for (const item of ii) {
-      result.push(item[0].ref);
+      result.push(item.descriptor.ref);
     }
     return result;
   }
@@ -92,11 +92,11 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
       return [];
     }
 
-    return (events.get(reason) || []).map((event) => (event.entry[0].ref));
+    return (events.get(reason) || []).map((event) => (event.entry.descriptor.ref));
   }
 
   function getDSEntry(ds: DataSource, ref: DrawingReference): Readonly<DataSourceEntry> {
-    const filtered: IterableIterator<Readonly<DataSourceEntry>> = ds.filtered((p) => isEqualDrawingReference(p[0].ref, ref));
+    const filtered: IterableIterator<Readonly<DataSourceEntry>> = ds.filtered((p) => isEqualDrawingReference(p.descriptor.ref, ref));
     return filtered.next().value;
   }
 
@@ -288,17 +288,17 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
 
   it('test update shared entry', () => {
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    ds1['storage'].get(drawing1.id)[0].valid = true;
+    ds1['storage'].get(drawing1.id).descriptor.valid = true;
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    ds2['storage'].get([ds1.id, drawing1.id])[0].valid = true;
+    ds2['storage'].get([ds1.id, drawing1.id]).descriptor.valid = true;
 
     const ds1Entry = getDSEntry(ds1, drawing1.id);
-    expect(ds1Entry[0].valid).toBeTruthy();
-    expect(ds1Entry[0].options.title).toEqual('test title');
+    expect(ds1Entry.descriptor.valid).toBeTruthy();
+    expect(ds1Entry.descriptor.options.title).toEqual('test title');
 
     const ds2Entry = getDSEntry(ds2, [ds1.id, drawing1.id]);
-    expect(ds2Entry[0].valid).toBeTruthy();
-    expect(ds2Entry[0].options.title).toEqual('test title');
+    expect(ds2Entry.descriptor.valid).toBeTruthy();
+    expect(ds2Entry.descriptor.options.title).toEqual('test title');
 
     ds1.beginTransaction();
     ds1.update(drawing1.id, {
@@ -318,12 +318,12 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
       .toEqual([]);
 
     const updatedDs1Entry = getDSEntry(ds1, drawing1.id);
-    expect(updatedDs1Entry[0].valid).toBeFalsy();
-    expect(updatedDs1Entry[0].options.title).toEqual('test hline - updated');
+    expect(updatedDs1Entry.descriptor.valid).toBeFalsy();
+    expect(updatedDs1Entry.descriptor.options.title).toEqual('test hline - updated');
 
     const updatedDs2Entry = getDSEntry(ds2, [ds1.id, drawing1.id]);
-    expect(updatedDs2Entry[0].valid).toBeFalsy();
-    expect(updatedDs2Entry[0].options.title).toEqual('test hline - updated');
+    expect(updatedDs2Entry.descriptor.valid).toBeFalsy();
+    expect(updatedDs2Entry.descriptor.options.title).toEqual('test hline - updated');
 
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([
@@ -358,17 +358,17 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
 
   it('test update external shared entry', () => {
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    ds1['storage'].get(drawing1.id)[0].valid = true;
+    ds1['storage'].get(drawing1.id).descriptor.valid = true;
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    ds2['storage'].get([ds1.id, drawing1.id])[0].valid = true;
+    ds2['storage'].get([ds1.id, drawing1.id]).descriptor.valid = true;
 
     const ds1Entry = getDSEntry(ds1, drawing1.id);
-    expect(ds1Entry[0].valid).toBeTruthy();
-    expect(ds1Entry[0].options.title).toEqual('test title');
+    expect(ds1Entry.descriptor.valid).toBeTruthy();
+    expect(ds1Entry.descriptor.options.title).toEqual('test title');
 
     const ds2Entry = getDSEntry(ds2, [ds1.id, drawing1.id]);
-    expect(ds2Entry[0].valid).toBeTruthy();
-    expect(ds2Entry[0].options.title).toEqual('test title');
+    expect(ds2Entry.descriptor.valid).toBeTruthy();
+    expect(ds2Entry.descriptor.options.title).toEqual('test title');
 
     ds2.beginTransaction();
     ds2.update([ds1.id, drawing1.id], {
@@ -388,12 +388,12 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
       .toEqual([]);
 
     const updatedDs1Entry = getDSEntry(ds1, drawing1.id);
-    expect(updatedDs1Entry[0].valid).toBeFalsy();
-    expect(updatedDs1Entry[0].options.title).toEqual('test hline - updated');
+    expect(updatedDs1Entry.descriptor.valid).toBeFalsy();
+    expect(updatedDs1Entry.descriptor.options.title).toEqual('test hline - updated');
 
     const updatedDs2Entry = getDSEntry(ds2, [ds1.id, drawing1.id]);
-    expect(updatedDs2Entry[0].valid).toBeFalsy();
-    expect(updatedDs2Entry[0].options.title).toEqual('test hline - updated');
+    expect(updatedDs2Entry.descriptor.valid).toBeFalsy();
+    expect(updatedDs2Entry.descriptor.options.title).toEqual('test hline - updated');
 
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([
@@ -429,7 +429,7 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
   it('test clone shared entry', () => {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     const originalEntry: DataSourceEntry = ds1['storage'].get(drawing1.id);
-    originalEntry[0].valid = true;
+    originalEntry.descriptor.valid = true;
 
     ds1.beginTransaction();
     // eslint-disable-next-line @typescript-eslint/dot-notation
@@ -440,9 +440,9 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
     expect(ds2Spy).toHaveBeenCalledOnce();
     expect(ds3Spy).toHaveBeenCalledTimes(0);
 
-    expect(clonedEntry[0].ref).toEqual('test3');
-    expect(clonedEntry[0].options).toEqual(originalEntry[0].options);
-    expect(clonedEntry[0].valid).toBeFalsy();
+    expect(clonedEntry.descriptor.ref).toEqual('test3');
+    expect(clonedEntry.descriptor.options).toEqual(originalEntry.descriptor.options);
+    expect(clonedEntry.descriptor.valid).toBeFalsy();
 
     expect(toRefsFromEventsMap(ds1Events, DataSourceChangeEventReason.AddEntry))
       .toEqual(['test3']);
@@ -487,7 +487,7 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
   it('test clone external shared entry', () => {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     const originalEntry: DataSourceEntry = ds1['storage'].get(drawing1.id);
-    originalEntry[0].valid = true;
+    originalEntry.descriptor.valid = true;
 
     ds2.beginTransaction();
     // eslint-disable-next-line @typescript-eslint/dot-notation
@@ -498,9 +498,9 @@ describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () 
     expect(ds2Spy).toHaveBeenCalledOnce();
     expect(ds3Spy).toHaveBeenCalledTimes(0);
 
-    expect(clonedEntry[0].ref).toEqual([ds1.id, 'test3']);
-    expect(clonedEntry[0].options).toEqual(originalEntry[0].options);
-    expect(clonedEntry[0].valid).toBeFalsy();
+    expect(clonedEntry.descriptor.ref).toEqual([ds1.id, 'test3']);
+    expect(clonedEntry.descriptor.options).toEqual(originalEntry.descriptor.options);
+    expect(clonedEntry.descriptor.valid).toBeFalsy();
 
     expect(toRefsFromEventsMap(ds1Events, DataSourceChangeEventReason.AddEntry))
       .toEqual(['test3']);

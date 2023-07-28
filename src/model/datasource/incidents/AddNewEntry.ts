@@ -19,8 +19,8 @@ export default class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryO
 
   protected applyIncident(): void {
     const { descriptor, addReason, storage } = this.options;
-    const newEntry: DataSourceEntry = [descriptor];
-    newEntry[0].valid = false;
+    const newEntry: DataSourceEntry = { descriptor };
+    newEntry.descriptor.valid = false;
     const [, tail] = storage.getRange(descriptor.ref);
 
     if (tail) {

@@ -28,7 +28,7 @@ export default class LineSketcher extends AbstractSketcher {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    const [descriptor, drawing] = entry;
+    const { descriptor, drawing } = entry;
 
     const { data: line, locked } = descriptor.options;
     const { timeAxis, priceAxis } = viewport;
@@ -53,7 +53,7 @@ export default class LineSketcher extends AbstractSketcher {
       // draw straight line
       if (drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== LineGraphics.TYPE) {
         installHandles = true;
-        entry[1] = {
+        entry.drawing = {
           parts: [new LineGraphics(vpX0, vpY0, vpX1, vpY1, line.style)],
           handles: {},
         };
@@ -104,7 +104,7 @@ export default class LineSketcher extends AbstractSketcher {
       // eslint-disable-next-line no-lonely-if
       if (drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== SplineGraphics.TYPE) {
         installHandles = true;
-        entry[1] = {
+        entry.drawing = {
           parts: [new SplineGraphics(points, line.style)],
           handles: {},
         };
@@ -118,11 +118,11 @@ export default class LineSketcher extends AbstractSketcher {
 
     const [lx0, ly0, lx1, ly1] = line.def;
     if (installHandles) {
-      if (entry[1]?.handles === undefined) {
+      if (entry.drawing?.handles === undefined) {
         throw new Error('Oops.');
       }
 
-      entry[1].handles = {
+      entry.drawing.handles = {
         lineStart: new RoundHandle(
           timeAxis.translate(lx0),
           priceAxis.translate(ly0),
@@ -159,9 +159,9 @@ export default class LineSketcher extends AbstractSketcher {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
-      || entry[0].options.type !== 'Line'
-      || entry[0].options.locked
-      || entry[1] === undefined
+      || entry.descriptor.options.type !== 'Line'
+      || entry.descriptor.options.locked
+      || entry.drawing === undefined
     ) {
       console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
       return undefined;
@@ -170,7 +170,7 @@ export default class LineSketcher extends AbstractSketcher {
     return (e: DragMoveEvent) => {
       const { dataSource, timeAxis, priceAxis } = viewport;
       const rawDS = toRaw(dataSource);
-      const { options, ref } = entry[0];
+      const { options, ref } = entry.descriptor;
       let update;
 
       if (handle === undefined) {

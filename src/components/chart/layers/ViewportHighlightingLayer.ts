@@ -54,24 +54,24 @@ export default class ViewportHighlightingLayer extends Layer {
     }
 
     for (const entry of selected) {
-      this.highlight(entry, native, inverted);
+      this.highlight(entry, native);
     }
 
     if (highlighted !== undefined && !selected.has(highlighted)) {
-      this.highlight(highlighted, native, inverted);
+      this.highlight(highlighted, native);
     }
   }
 
-  private highlight(entry: DataSourceEntry, native: CanvasRenderingContext2D, inverted: InvertedValue): void {
-    const [descriptor, drawing] = entry;
+  private highlight(entry: DataSourceEntry, native: CanvasRenderingContext2D): void {
+    const { descriptor, drawing } = entry;
 
     if (descriptor.options.visible && descriptor.visibleInViewport && drawing !== undefined) {
       for (const part of drawing.parts) {
-        part.render(native, inverted);
+        part.render(native);
       }
 
       for (const [, handle] of Object.entries(drawing.handles)) {
-        handle.render(native, inverted);
+        handle.render(native);
       }
     }
   }

@@ -75,7 +75,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     let entry = inverse ? this.storage.tail : this.storage.head;
     while (entry !== undefined) {
       const entryValue: DataSourceEntry = entry.value;
-      const [descriptor] = entryValue;
+      const { descriptor } = entryValue;
 
       if (descriptor.visibleInViewport && descriptor.options.visible) {
         yield entryValue;
@@ -122,7 +122,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public resetCache(): void {
     const entries: DataSourceEntry[] = [];
     for (const entry of this) {
-      entry[0].valid = false;
+      entry.descriptor.valid = false;
       entries[entries.length] = entry as DataSourceEntry;
     }
 
@@ -197,7 +197,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
     const entry: DataSourceEntry<T> = this.storage.get(ref);
     processor(entry);
-    entry[0].valid = false;
+    entry.descriptor.valid = false;
     this.addReason(DataSourceChangeEventReason.UpdateEntry, [entry]);
     this.flush();
   }
@@ -220,7 +220,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    const cloned: DrawingDescriptor = clone(entry[0]);
+    const cloned: DrawingDescriptor = clone(entry.descriptor);
     if (isString(cloned.ref)) {
       cloned.ref = this.getNewId(cloned.options.type);
     } else {
@@ -327,7 +327,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
   private initEntries(drawings: DrawingOptions[]): void {
     for (const drawingOptions of drawings) {
-      this.storage.push([this.createDescriptor(drawingOptions)]);
+      this.storage.push({ descriptor: this.createDescriptor(drawingOptions) });
     }
   }
 

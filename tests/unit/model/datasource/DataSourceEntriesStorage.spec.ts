@@ -5,35 +5,41 @@ import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 
 describe('DataSourceEntriesStorage', () => {
   let storage: DataSourceEntriesStorage;
-  const entry1: DataSourceEntry<string> = [{
-    ref: 'e1',
-    options: {
-      data: 'test entry1',
-      type: 't1',
-      locked: false,
-      visible: true,
+  const entry1: DataSourceEntry<string> = {
+    descriptor: {
+      ref: 'e1',
+      options: {
+        data: 'test entry1',
+        type: 't1',
+        locked: false,
+        visible: true,
+      },
     },
-  }];
+  };
 
-  const entry2: DataSourceEntry<string> = [{
-    ref: 'e2',
-    options: {
-      data: 'test entry2',
-      type: 't1',
-      locked: false,
-      visible: true,
+  const entry2: DataSourceEntry<string> = {
+    descriptor: {
+      ref: 'e2',
+      options: {
+        data: 'test entry2',
+        type: 't1',
+        locked: false,
+        visible: true,
+      },
     },
-  }];
+  };
 
-  const entry3: DataSourceEntry<string> = [{
-    ref: 'e3',
-    options: {
-      data: 'test entry3',
-      type: 't1',
-      locked: false,
-      visible: true,
+  const entry3: DataSourceEntry<string> = {
+    descriptor: {
+      ref: 'e3',
+      options: {
+        data: 'test entry3',
+        type: 't1',
+        locked: false,
+        visible: true,
+      },
     },
-  }];
+  };
 
   function getDataSourceEntries(): DataSourceEntry[] {
     const result: DataSourceEntry[] = [];
@@ -148,14 +154,14 @@ describe('DataSourceEntriesStorage', () => {
     storage.push(entry2);
     storage.push(entry3);
 
-    expect(storage.has(entry1[0].ref)).toBeTruthy();
-    expect(storage.has(entry2[0].ref)).toBeTruthy();
-    expect(storage.has(entry3[0].ref)).toBeTruthy();
+    expect(storage.has(entry1.descriptor.ref)).toBeTruthy();
+    expect(storage.has(entry2.descriptor.ref)).toBeTruthy();
+    expect(storage.has(entry3.descriptor.ref)).toBeTruthy();
     expect(storage.has('wrongref')).toBeFalsy();
 
-    expect(storage.get(entry1[0].ref)).toEqual(entry1);
-    expect(storage.get(entry2[0].ref)).toEqual(entry2);
-    expect(storage.get(entry3[0].ref)).toEqual(entry3);
+    expect(storage.get(entry1.descriptor.ref)).toEqual(entry1);
+    expect(storage.get(entry2.descriptor.ref)).toEqual(entry2);
+    expect(storage.get(entry3.descriptor.ref)).toEqual(entry3);
     expect(() => storage.get('wrongref')).toThrowError(/^Illegal argument: ref not found: wrongref/);
   });
 });

@@ -24,7 +24,7 @@ export default class CandleChartSketcher extends AbstractSketcher {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    let [descriptor, drawing] = entry;
+    let { descriptor, drawing } = entry;
     const { data: hloc } = descriptor.options;
     const { priceAxis, timeAxis } = viewport;
     const { range: priceRange } = priceAxis;
@@ -40,12 +40,12 @@ export default class CandleChartSketcher extends AbstractSketcher {
     }
 
     if (drawing === undefined) {
-      entry[1] = {
+      entry.drawing = {
         parts: [],
         handles: {},
       } as Drawing;
 
-      drawing = entry[1];
+      drawing = entry.drawing;
     }
 
     const parts = resizeArray(drawing?.parts, bars.length);

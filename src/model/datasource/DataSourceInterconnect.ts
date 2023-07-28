@@ -69,7 +69,7 @@ export default class DataSourceInterconnect {
 
   private addEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
     for (const entry of entries) {
-      const [descriptor] = entry;
+      const { descriptor } = entry;
       const { shareWith } = descriptor.options;
       if (shareWith === undefined) {
         continue;
@@ -84,7 +84,7 @@ export default class DataSourceInterconnect {
         for (const [cid, dssp] of this.sharedProcessors) {
           if (srcDs.id !== cid) {
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.addEntry(entryRef, entry[0].options);
+            dssp.addEntry(entryRef, entry.descriptor.options);
             needUpdate.add(dssp.dataSource);
           }
         }
@@ -93,7 +93,7 @@ export default class DataSourceInterconnect {
           if (srcDs.id !== cid) {
             const dssp: DataSourceSharedEntriesProcessor = this.sharedProcessors.get(cid) as DataSourceSharedEntriesProcessor;
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.addEntry(entryRef, entry[0].options);
+            dssp.addEntry(entryRef, entry.descriptor.options);
             needUpdate.add(dssp.dataSource);
           }
         }
@@ -106,7 +106,7 @@ export default class DataSourceInterconnect {
   }
 
   private removeEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    for (const [descriptor] of entries) {
+    for (const { descriptor } of entries) {
       const { shareWith } = descriptor.options;
       if (shareWith === undefined) {
         continue;
@@ -143,7 +143,7 @@ export default class DataSourceInterconnect {
   }
 
   private updateEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    for (const [descriptor] of entries) {
+    for (const { descriptor } of entries) {
       const { shareWith } = descriptor.options;
       if (shareWith === undefined) {
         continue;
