@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, isString, merge } from '@/misc/strict-type-checks';
+import type DataProvider from '@/model/datasource/DataProvider';
 import type {
   DataSourceChangeEvent,
+  DataSourceChangeEventListener,
   DataSourceChangeEventsMap,
 } from '@/model/datasource/DataSourceChangeEventListener';
-import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
@@ -32,6 +33,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly sharedProcessor: DataSourceSharedEntriesProcessor;
   private readonly storage: DataSourceEntriesStorage;
   private readonly changeEvents: DataSourceChangeEventsMap = new Map();
+  private readonly dataProviders: Map<string, DataProvider> = new Map();
+  private readonly entriesThatUsedDataProvider: Map<string, DataSourceEntry[]> = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private readonly idHelper: IdHelper;
   private tvaClerkValue: TVAClerk | undefined;
@@ -119,6 +122,40 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.eventListeners.splice(index, 1);
   }
 
+  public registerDataProvider(dataProvider: DataProvider): void {
+    this.dataProviders.set(dataProvider.name, dataProvider);
+
+    dataProvider.addOnChangeListener(this.dataProviderOnChangeListener.bind(this));
+  }
+
+  public unregisterDataProvider(name: string): void {
+    if (this.dataProviders.has(name)) {
+      const dataProvider: DataProvider | undefined = this.dataProviders.get(name);
+
+      if (dataProvider !== undefined) {
+        dataProvider.removeOnChangeListener(this.dataProviderOnChangeListener.bind(this));
+      }
+
+      this.dataProviders.delete(name);
+    }
+  }
+
+  private dataProviderOnChangeListener(dataProvider: DataProvider): void {
+    this.checkWeAreNotInProxy();
+    const entries = this.entriesThatUsedDataProvider.get(dataProvider.name);
+
+    if (entries === undefined) {
+      return;
+    }
+
+    for (const entry of entries) {
+      entry.descriptor.valid = false;
+    }
+
+    this.addReason(DataSourceChangeEventReason.UpdateEntry, entries);
+    this.flush();
+  }
+
   public resetCache(): void {
     const entries: DataSourceEntry[] = [];
     for (const entry of this) {
@@ -159,6 +196,14 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.flush();
   }
 
+  public get<T>(ref: DrawingReference): DataSourceEntry<T> {
+    if (!isString(ref) && ref[0] === this.id) {
+      return this.storage.get(ref[1]);
+    }
+
+    return this.storage.get(ref);
+  }
+
   public add<T>(options: DrawingOptions<T>): void {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
@@ -172,6 +217,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       incident: new AddNewEntry({
         descriptor: this.createDescriptor(options),
         storage: this.storage,
+        entriesThatUsedDataProvider: this.entriesThatUsedDataProvider,
         addReason: this.addReason.bind(this),
       }),
     });
@@ -232,6 +278,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       incident: new AddNewEntry({
         descriptor: cloned,
         storage: this.storage,
+        entriesThatUsedDataProvider: this.entriesThatUsedDataProvider,
         addReason: this.addReason.bind(this),
       }),
     });
@@ -387,5 +434,9 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     for (const listener of this.eventListeners) {
       listener.call(listener, events, this);
     }
+  }
+
+  public getDataProvider(name: string): DataProvider | undefined {
+    return this.dataProviders.get(name);
   }
 }

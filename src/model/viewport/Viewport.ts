@@ -16,7 +16,7 @@ export interface ViewportOptions {
 }
 
 export default class Viewport {
-  private readonly sketchers!: Map<DrawingType, Sketcher<any>>;
+  private readonly sketchers!: Map<DrawingType, Sketcher>;
 
   public readonly timeAxis: TimeAxis;
   public readonly priceAxis: PriceAxis;
@@ -32,7 +32,7 @@ export default class Viewport {
     dataSource: DataSource,
     timeAxis: TimeAxis,
     priceAxis: PriceAxis,
-    sketchers: Map<DrawingType, Sketcher<any>>
+    sketchers: Map<DrawingType, Sketcher>
   ) {
     this.dataSource = dataSource;
     this.timeAxis = timeAxis;
@@ -120,7 +120,7 @@ export default class Viewport {
 
     // case when we drag some handle
     if (highlighted !== undefined && !highlighted.descriptor.options.locked && highlightedHandleId !== undefined) {
-      const sketcher: Sketcher<any> = this.getSketcher(highlighted.descriptor.options.type);
+      const sketcher: Sketcher = this.getSketcher(highlighted.descriptor.options.type);
       return sketcher.dragHandle(this, highlighted, highlightedHandleId);
     }
 
@@ -128,7 +128,7 @@ export default class Viewport {
     const dragHandles: DragHandle[] = [];
     for (const entry of selected) {
       if (!entry.descriptor.options.locked) {
-        const sketcher: Sketcher<any> = this.getSketcher(entry.descriptor.options.type);
+        const sketcher: Sketcher = this.getSketcher(entry.descriptor.options.type);
         const dragHandle: DragHandle | undefined = sketcher.dragHandle(this, entry);
         if (dragHandle !== undefined) {
           dragHandles.push(dragHandle);
@@ -150,8 +150,8 @@ export default class Viewport {
     return this.sketchers.has(type);
   }
 
-  public getSketcher(type: DrawingType): Sketcher<any> {
-    const sketcher: Sketcher<any> | undefined = this.sketchers.get(type);
+  public getSketcher(type: DrawingType): Sketcher {
+    const sketcher: Sketcher | undefined = this.sketchers.get(type);
 
     if (sketcher === undefined) {
       throw new Error(`OOPS, sketcher wasn't found for type ${type}`);

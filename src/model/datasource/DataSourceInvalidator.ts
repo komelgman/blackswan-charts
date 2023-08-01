@@ -1,8 +1,8 @@
 import type { WatchStopHandle } from 'vue';
 import { computed, toRaw, watch } from 'vue';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
+import type { DataSourceChangeEventListener, DataSourceChangeEventsMap }
+  from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingType } from '@/model/datasource/Drawing';
@@ -84,7 +84,7 @@ export default class DataSourceInvalidator {
         continue;
       }
 
-      const sketcher: Sketcher<any> = this.viewport.getSketcher(drawingType);
+      const sketcher: Sketcher = this.viewport.getSketcher(drawingType);
       sketcher.draw(entry, this.viewport);
     }
 

@@ -8,6 +8,7 @@ import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncide
 export interface AddNewEntryOptions extends HistoricalIncidentOptions {
   descriptor: DrawingDescriptor<unknown>;
   storage: DataSourceEntriesStorage;
+  entriesThatUsedDataProvider: Map<string, DataSourceEntry[]>;
   addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
 }
 
@@ -18,10 +19,21 @@ export default class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryO
   }
 
   protected applyIncident(): void {
-    const { descriptor, addReason, storage } = this.options;
+    const { descriptor, addReason, storage, entriesThatUsedDataProvider } = this.options;
     const newEntry: DataSourceEntry = { descriptor };
     newEntry.descriptor.valid = false;
     const [, tail] = storage.getRange(descriptor.ref);
+
+    const dataProvider: string = newEntry.descriptor.options.data.dataProvider;
+    if (dataProvider !== undefined) {
+      let entries: DataSourceEntry[] | undefined = entriesThatUsedDataProvider.get(dataProvider);
+      if (entries === undefined) {
+        entries = [];
+        entriesThatUsedDataProvider.set(dataProvider, entries);
+      }
+
+      entries.push(newEntry);
+    }
 
     if (tail) {
       storage.insertAfter(tail, newEntry);
@@ -33,8 +45,14 @@ export default class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryO
   }
 
   protected inverseIncident(): void {
-    const { addReason, storage } = this.options;
+    const { addReason, storage, entriesThatUsedDataProvider } = this.options;
     const deletedEntry: DataSourceEntry = storage.pop();
+
+    const dataProvider: string = deletedEntry.descriptor.options.data.dataProvider;
+    if (dataProvider !== undefined) {
+      let entries: DataSourceEntry[] | undefined = entriesThatUsedDataProvider.get(dataProvider);
+      entries?.splice(0, -1);
+    }
 
     addReason(DataSourceChangeEventReason.RemoveEntry, [deletedEntry]);
   }

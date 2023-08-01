@@ -3,8 +3,8 @@ import type DataSourceSharedEntriesProcessor from '@/model/datasource/DataSource
 import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceId } from '@/model/datasource/DataSource';
-import type DataSourceChangeEventListener from '@/model/datasource/DataSourceChangeEventListener';
-import type { DataSourceChangeEvent, DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
+import type { DataSourceChangeEventListener, DataSourceChangeEvent, DataSourceChangeEventsMap }
+  from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingId, DrawingReference } from '@/model/datasource/Drawing';

@@ -9,7 +9,4 @@ export interface DataSourceChangeEvent {
 }
 
 export declare type DataSourceChangeEventsMap = Map<DataSourceChangeEventReason, DataSourceChangeEvent[]>;
-
-export default interface DataSourceChangeEventListener {
-  (events: DataSourceChangeEventsMap, ds: DataSource): void;
-}
+export declare type DataSourceChangeEventListener = (events: DataSourceChangeEventsMap, ds: DataSource) => void;

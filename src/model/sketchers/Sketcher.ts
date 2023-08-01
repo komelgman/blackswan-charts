@@ -5,7 +5,7 @@ import type { HandleId } from '@/model/datasource/Drawing';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
-export default interface Sketcher<T> {
+export default interface Sketcher<T = any> {
   setChartStyle(chartStyle: ChartStyle): void;
 
   draw(entry: DataSourceEntry<T>, viewport: Viewport): void;

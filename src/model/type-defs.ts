@@ -1,4 +1,5 @@
 import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
+import type { DrawingReference } from '@/model/datasource/Drawing';
 
 export const enum RegularTimePeriod {
   m1 = 1 * 60 * 1000,
@@ -71,11 +72,22 @@ export declare type SubtypedData = {
   subtype: string;
 }
 
-export declare type OHLCv = SubtypedData & {
-  from: UTCTimestamp,
-  step: UTCTimestamp,
-  values: [o: Price, h: Price, l: Price, c: Price, v?: number][],
-  style: any,
+export declare type DependsOnDataProvider = {
+  dataProvider: string;
+}
+
+export declare type OHLCv = {
+  from: UTCTimestamp;
+  step: UTCTimestamp;
+  values: [o: Price, h: Price, l: Price, c: Price, v?: number][];
+}
+
+export declare type OHLCvChart = SubtypedData & DependsOnDataProvider & {
+  style: any;
+}
+
+export declare type VolumeIndicator = SubtypedData & DependsOnDataProvider & {
+  style: any;
 }
 
 export interface CandleColors {

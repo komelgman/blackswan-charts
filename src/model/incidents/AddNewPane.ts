@@ -12,7 +12,7 @@ import type { ViewportOptions } from '@/model/viewport/Viewport';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;
-  sketchers: Map<DrawingType, Sketcher<any>>;
+  sketchers: Map<DrawingType, Sketcher>;
   paneOptions: PaneOptions<ViewportOptions>;
   style: ChartStyle;
   timeAxis: TimeAxis;

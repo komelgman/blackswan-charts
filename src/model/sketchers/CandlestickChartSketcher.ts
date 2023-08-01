@@ -1,10 +1,11 @@
+import { toRaw } from 'vue';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { Graphics } from '@/model/datasource/Drawing';
 import type Drawing from '@/model/datasource/Drawing';
 import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 import type { CandleGraphicsOptions } from '@/model/sketchers/graphics/CandleGraphics';
 import CandleGraphics from '@/model/sketchers/graphics/CandleGraphics';
-import type { OHLCv, Price, Range, UTCTimestamp } from '@/model/type-defs';
+import type { OHLCvChart, OHLCv, Price, Range, UTCTimestamp } from '@/model/type-defs';
 import type Viewport from '@/model/viewport/Viewport';
 
 const resizeArray = (array: Graphics[], newSize: number): Graphics[] => {
@@ -16,20 +17,26 @@ const resizeArray = (array: Graphics[], newSize: number): Graphics[] => {
   return array.slice(0, newSize);
 };
 
-export default class CandlestickChartSketcher extends AbstractSketcher<OHLCv> {
+export default class CandlestickChartSketcher extends AbstractSketcher<OHLCvChart> {
   public static readonly NAME: string = 'Candlestick';
 
-  public draw(entry: DataSourceEntry<OHLCv>, viewport: Viewport): void {
+  public draw(entry: DataSourceEntry<OHLCvChart>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
     let { descriptor, drawing } = entry;
-    const { data: ohlc } = descriptor.options;
-    const { priceAxis, timeAxis } = viewport;
+    const { priceAxis, timeAxis, dataSource } = viewport;
+    const dataProvider = dataSource.getDataProvider(descriptor.options.data.dataProvider);
+
+    if (dataProvider === undefined) {
+      console.warn(`DataSource ${dataSource.id} hasn\'t have dataProvider ${descriptor.options.data.dataProvider}`);
+      return;
+    }
+
+    const ohlc = toRaw(dataProvider?.data) as OHLCv;
     const { range: priceRange } = priceAxis;
     const { range: timeRange } = timeAxis;
-
     const bars: [UTCTimestamp, Price, Price, Price, Price, number?][] = this.visibleBars(ohlc, priceRange, timeRange);
 
     descriptor.visibleInViewport = bars.length > 0;
@@ -61,7 +68,7 @@ export default class CandlestickChartSketcher extends AbstractSketcher<OHLCv> {
         yh: priceAxis.translate(bars[i][2]),
         yl: priceAxis.translate(bars[i][3]),
         yc: priceAxis.translate(bars[i][4]),
-        style: ohlc.style
+        style: descriptor.options.data.style
       };
 
       if (parts[i] === undefined) {

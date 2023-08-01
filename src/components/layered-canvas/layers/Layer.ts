@@ -1,5 +1,5 @@
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import type LayerContextChangeListener from '@/components/layered-canvas/layers/LayerContextChangeListener';
+import type { LayerContextChangeListener } from '@/components/layered-canvas/layers/LayerContextChangeListener';
 
 export default abstract class Layer {
   private static sharedId: number = 0;
