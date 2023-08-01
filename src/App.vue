@@ -13,9 +13,18 @@ import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import type { DrawingType } from '@/model/datasource/Drawing';
 import { LineBound } from '@/model/type-defs';
-import type { Line, UTCTimestamp, HLOC, Price } from '@/model/type-defs';
+import type { Line, UTCTimestamp, OHLCv, Price, CandlestickChartStyle } from '@/model/type-defs';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
+
+/**
+ * todo
+ * ?need check, that is actually needed! Separate line bounds and line definition, snap definition to high timeframe, to eliminate rounding issues
+ * Time axis marks
+ * Price axis marks
+ * Moving lines in scale that's different to line scale (mouse point should keep on line)
+ */
+
 
 @Options({
   components: {
@@ -31,7 +40,7 @@ export default class App extends Vue {
     this.idHelper = new IdHelper();
     this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, []);
 
-    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
+    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher<any>>([]), style: {} });
     this.chartApi.createPane(this.mainDs, {});
     this.chartApi.clearHistory();
   }
@@ -40,22 +49,54 @@ export default class App extends Vue {
     const { chartApi, mainDs } = this;
 
     const drawings = {
-      hlocBTCUSDT: {
-        id: "hloc1",
+      ohlcvBTCUSDT: {
+        id: "ohlcv1",
         title: "BTCUSDT",
-        type: "HLOC",
+        type: "OHLCv",
         data: {
           from: 0 as UTCTimestamp,
           step: 0.01 as UTCTimestamp,
           values: [
-            [0.5, 0.1, 0.3, 0.15],
-            [0.6, 0.0, 0.15, 0.45],
-            [0.7, 0.3, 0.35, 0.55]
-          ] as [Price, Price, Price, Price][],
-        } as HLOC,
+            [0.3, 0.5, 0.1, 0.15, 1000],
+            [0.15, 0.6, 0.0, 0.45, 1500],
+            [0.35, 0.7, 0.3, 0.55, 300]
+          ] as [Price, Price, Price, Price, number][],
+          subtype: 'Candlestick',
+          style: {
+            showBody: true,
+            showBorder: true,
+            showWick: true,
+            bearish: {
+              wick: '#EF5350',
+              body: '#EF5350',
+              border: '#EF5350',
+            },
+            bullish: {
+              wick: '#26A29A',
+              body: '#26A29A',
+              border: '#26A29A',
+            }
+          } as CandlestickChartStyle,
+        } as OHLCv,
         locked: false,
         visible: true,
         shareWith: '*' as '*',
+      },
+
+      volumeBTCUSDT: {
+        id: "volume1",
+        title: "BTCUSDT Volume",
+        type: "Volume",
+        data: {
+          ref: ["main", "ohlcv1"],
+          subtype: 'Columns',
+          style: {
+            bearish: '#EF5350',
+            bullish: '#26A29A',
+          }
+        },
+        locked: false,
+        visible: true,
       },
 
       redLineNoBound: {
@@ -180,117 +221,118 @@ export default class App extends Vue {
       chartApi.createPane(new DataSource({ id: 'second', idHelper: this.idHelper }, []), { preferredSize: 0.3 });
     }, 100 * i++, i);
 
-    setTimeout((j: number) => {
-      console.log(`${j}) chartApi.undo();`);
-      chartApi.undo();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) chartApi.undo();`);
-      chartApi.undo();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) chartApi.redo();`);
-      chartApi.redo();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green025HLineNotShared);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.green025HLineNotShared);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green025VLineNotShared);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.green025VLineNotShared);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.red010VLineShared);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.red010VLineShared);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.red010HLineShared);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.remove(drawings.red010HLineShared.id);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.remove(drawings.red010HLineShared.id);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundBoth);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.greenLineBoundBoth);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundStart);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.greenLineBoundStart);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundEnd);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.greenLineBoundEnd);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green025to075Line);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.redLineNoBound);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) chartApi.undo();`);
+    //   chartApi.undo();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) chartApi.undo();`);
+    //   chartApi.undo();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) chartApi.redo();`);
+    //   chartApi.redo();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green025HLineNotShared);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.green025HLineNotShared);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green025VLineNotShared);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.green025VLineNotShared);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.red010VLineShared);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.red010VLineShared);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.red010HLineShared);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.remove(drawings.red010HLineShared.id);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.remove(drawings.red010HLineShared.id);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundBoth);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.greenLineBoundBoth);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundStart);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.greenLineBoundStart);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundEnd);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.greenLineBoundEnd);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.mainDs.add(drawings.green025to075Line);`);
+    //
+    //   this.mainDs.beginTransaction();
+    //   this.mainDs.add(drawings.redLineNoBound);
+    //   this.mainDs.endTransaction();
+    // }, 100 * i++, i);
 
     setTimeout((j: number) => {
       console.log(`${j}) this.mainDs.add(drawings.hlocBTCUSDT);`);
 
       this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.hlocBTCUSDT);
+      this.mainDs.add(drawings.ohlcvBTCUSDT);
+      this.mainDs.add(drawings.volumeBTCUSDT);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
     setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.process('hloc1', ...);`);
+      console.log(`${j}) this.mainDs.process('hlocv1', ...);`);
 
       const process = () => {
-        this.mainDs.process('hloc1', (e: DataSourceEntry<HLOC>) => {
+        this.mainDs.process('ohlcv1', (e: DataSourceEntry<OHLCv>) => {
           const values = e.descriptor.options.data.values;
           const lastBar = values[values.length - 1];
           const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
-          const h = Math.max(lastBar[0], c);
-          const l = Math.min(lastBar[1], c);
+          const h = Math.max(lastBar[1], c);
+          const l = Math.min(lastBar[2], c);
 
           // add new
           // values.push(lastBar);
 
           // update last
-          values.splice(-1, 1, [h, l, lastBar[2], c] as [Price, Price, Price, Price]);
+          values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
 
           // replace all
           // values.splice(0, values.length, newItems);
@@ -300,36 +342,21 @@ export default class App extends Vue {
       setInterval(process, 500);
     }, 100 * i++, i);
 
-
+    // watch([chartApi.timeAxis.range, chartApi.timeAxis.requestedDataRange], (range) => {
+    //   console.log(JSON.stringify(range));
+    // });
+    //
     // setTimeout((j: number) => {
-    //   console.log(`${j}) chartApi.paneModel('main').priceAxis.update({ inverted: true });`);
+    //   console.log(`${j}) chartApi.paneModel('main').timeAxis.requestDataRange("xxx", {from: -1, to: 0 });`);
     //   // warn !!! it's low level access, TVA not used
-    //   chartApi.paneModel('main').priceAxis.update({ inverted: true });
+    //   chartApi.paneModel('main').timeAxis.requestDataRange("xxx1", {from: -1, to: 0 });
     // }, 100 * i++, i);
 
-    // ---------------------------------------------------------------------------------------------
-    // setTimeout(() => {
-    //   chartApi.togglePane(secondPane);
-    //
-    //   setTimeout(() => {
-    //     chartApi.togglePane(secondPane);
-    //   }, 1000);
-    // }, 1000);
-
-    // ---------------------------------------------------------------------------------------------
-    // chartApi.swapPanes('mainPane', secondPane);
-
-    // ---------------------------------------------------------------------------------------------
-    // chartApi.removePane('mainPane');
 
     // ---------------------------------------------------------------------------------------------
     // setTimeout(() => {
     //   chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
     // }, 1000);
-
-    // setTimeout(() => {
-    //   this.chartModel.timeAxis.range = { from: 2 as UTCTimestamp, to: 6 as UTCTimestamp };
-    // }, 5000);
   }
 }
 </script>

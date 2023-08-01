@@ -84,7 +84,7 @@ export default class DataSourceInvalidator {
         continue;
       }
 
-      const sketcher: Sketcher = this.viewport.getSketcher(drawingType);
+      const sketcher: Sketcher<any> = this.viewport.getSketcher(drawingType);
       sketcher.draw(entry, this.viewport);
     }
 

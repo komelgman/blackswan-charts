@@ -21,7 +21,6 @@ export interface PriceAxisOptions extends AxisOptions<Price> {
   contentWidth?: Wrapped<number>;
 }
 
-// @Reactive
 export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostConstruct {
   private cache!: [/* virtualFrom */ number, /* scaleK */ number, /* unscaleK */ number];
   private fractionValue: number = 0;
@@ -166,7 +165,7 @@ export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements 
     });
   }
 
-  protected updatePosition(screenDelta: number): void {
+  protected updateRange(screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const { func: scalingFunction } = this.scale;

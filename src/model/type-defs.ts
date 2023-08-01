@@ -67,8 +67,27 @@ export declare type Line = AbstractLine<LineDef> & {
   scale: PriceAxisScale;
 };
 
-export declare type HLOC = {
+export declare type SubtypedData = {
+  subtype: string;
+}
+
+export declare type OHLCv = SubtypedData & {
   from: UTCTimestamp,
   step: UTCTimestamp,
-  values: [h: Price, l: Price, o: Price, c: Price, v?: number][],
+  values: [o: Price, h: Price, l: Price, c: Price, v?: number][],
+  style: any,
+}
+
+export interface CandleColors {
+  wick: string;
+  body: string;
+  border: string;
+}
+
+export declare type CandleType = 'bearish' | 'bullish';
+
+export interface CandlestickChartStyle extends Record<CandleType, CandleColors> {
+  showWick: boolean;
+  showBody: boolean;
+  showBorder: boolean;
 }

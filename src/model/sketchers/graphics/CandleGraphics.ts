@@ -1,21 +1,20 @@
-import type { CandleColors, CandleStyle } from '@/model/ChartStyle';
 import type { Graphics } from '@/model/datasource/Drawing';
-import type { Point } from '@/model/type-defs';
+import type { Point, CandleColors, CandlestickChartStyle } from '@/model/type-defs';
 
 export interface CandleGraphicsOptions {
   x: number;
   width: number;
+  yo: number;
   yh: number;
   yl: number;
-  yo: number;
   yc: number;
-  style: CandleStyle;
+  style: CandlestickChartStyle;
 }
 
 export default class CandleGraphics implements Graphics {
   private barPath!: Path2D;
   private wickPath!: Path2D;
-  private style!: CandleStyle;
+  private style!: CandlestickChartStyle;
   private colors!: CandleColors;
 
   constructor(options: CandleGraphicsOptions) {
@@ -23,8 +22,8 @@ export default class CandleGraphics implements Graphics {
   }
 
   public invalidate(options: CandleGraphicsOptions): void {
-    const { x, width, yo, yc, yh, yl, style } = options;
-    const candleType = yo > yc ? 'bear' : 'bull';
+    const { x, width, yo, yh, yl, yc, style } = options;
+    const candleType = yo > yc ? 'bearish' : 'bullish';
 
     this.style = style;
     this.colors = this.style[candleType];

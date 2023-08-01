@@ -19,23 +19,6 @@ export default {
       LineFillStyle.Solid,
     },
   },
-  hloc: {
-    candleStyle: {
-      showBody: true,
-      showBorder: true,
-      showWick: true,
-      bear: {
-        wick: '#EF5350',
-        body: '#EF5350',
-        border: '#EF5350',
-      },
-      bull: {
-        wick: '#26A29A',
-        body: '#26A29A',
-        border: '#26A29A',
-      }
-    }
-  },
   backgroundColor: '#131722',
   menuBackgroundColor: '#1e222d',
   menuBackgroundColorOnHover: '#2e323d',

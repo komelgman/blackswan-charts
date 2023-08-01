@@ -21,7 +21,7 @@ export function isEqualDrawingReference(ref1: DrawingReference, ref2: DrawingRef
 }
 
 export interface DrawingOptions<DataType = any> {
-  id: DrawingId; // todo: think about remove
+  id: DrawingId; // todo: think about remove from options
   type: DrawingType;
   data: DataType;
   locked: boolean;
@@ -32,9 +32,9 @@ export interface DrawingOptions<DataType = any> {
 
 export interface DrawingDescriptor<DataType = any> {
   ref: DrawingReference;
+  options: Omit<DrawingOptions<DataType>, 'id'>;
   valid?: boolean;
   visibleInViewport?: boolean;
-  options: Omit<DrawingOptions<DataType>, 'id'>;
 }
 
 export interface Graphics {

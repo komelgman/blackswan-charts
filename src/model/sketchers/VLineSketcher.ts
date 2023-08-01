@@ -1,5 +1,4 @@
 import { toRaw } from 'vue';
-import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
@@ -11,7 +10,7 @@ import LineGraphics from '@/model/sketchers/graphics/LineGraphics';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
-export default class VLineSketcher extends AbstractSketcher {
+export default class VLineSketcher extends AbstractSketcher<VLine> {
   public draw(entry: DataSourceEntry<VLine>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
@@ -59,7 +58,7 @@ export default class VLineSketcher extends AbstractSketcher {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
+  public dragHandle(viewport: Viewport, entry: DataSourceEntry<VLine>, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
       || entry.descriptor.options.type !== 'VLine'
       || entry.descriptor.options.locked
@@ -78,10 +77,5 @@ export default class VLineSketcher extends AbstractSketcher {
 
       rawDS.update(ref, { data: { def } });
     };
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public contextmenu(dataSourceEntry: DataSourceEntry): MenuItem[] {
-    return [];
   }
 }

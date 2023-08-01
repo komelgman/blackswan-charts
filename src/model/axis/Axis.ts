@@ -6,18 +6,19 @@ import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/type-defs';
+import { reactive } from 'vue';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
-  private readonly rangeValue: Range<T> = { from: -1 as T, to: 1 as T };
+  private readonly rangeValue: Range<T> = reactive({ from: -1 as T, to: 1 as T }) as Range<T>;
   private readonly textStyleValue: TextStyle;
-  private readonly screenSizeValue: LogicSize = { main: -1, second: -1 };
+  private readonly screenSizeValue: LogicSize = reactive({ main: -1, second: -1 });
   private readonly id: EntityId;
   public readonly tvaClerk: TVAClerk;
-  public readonly labels: Map<number, string> = new Map<number, string>();
+  public readonly labels: Map<number, string> = reactive(new Map<number, string>());
 
   protected constructor(id: EntityId, tvaClerk: TVAClerk, textStyle: TextStyle) {
     this.tvaClerk = tvaClerk;
-    this.textStyleValue = textStyle;
+    this.textStyleValue = reactive(textStyle);
     this.id = id;
   }
 
@@ -63,7 +64,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
       }),
     });
 
-    this.updatePosition(screenDelta);
+    this.updateRange(screenDelta);
 
     this.tvaClerk.processReport({
       protocolOptions,
@@ -100,7 +101,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     });
   }
 
-  protected abstract updatePosition(screenDelta: number): void;
+  protected abstract updateRange(screenDelta: number): void;
 
   protected abstract updateZoom(screenPivot: number, screenDelta: number): void;
 }

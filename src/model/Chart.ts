@@ -34,7 +34,7 @@ export declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) =
 
 export default class Chart {
   private readonly paneRegEventListeners: PaneRegistrationEventListener[];
-  private readonly sketchers: Map<DrawingType, Sketcher>;
+  private readonly sketchers: Map<DrawingType, Sketcher<any>>;
   private readonly tva: TimeVarianceAuthority;
   private readonly dataSourceInterconnect: DataSourceInterconnect;
   public readonly timeAxis: TimeAxis;
@@ -199,17 +199,14 @@ export default class Chart {
   }
 
   private createTimeAxis(chartStyle: ChartStyle): TimeAxis {
-    // todo: waiting for support experimentalDecorators in playwright
-    // this.timeAxis = new TimeAxis(this.tva.clerk, chartStyle.text);
-    const timeAxis = reactive(new TimeAxis(this.tva.clerk, chartStyle.text)) as TimeAxis;
+    const timeAxis = new TimeAxis(this.tva.clerk, chartStyle.text);
     timeAxis.postConstruct();
-    // end: todo
 
     return timeAxis;
   }
 
-  private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {
-    const result: Map<DrawingType, Sketcher> = new Map(sketcherDefaults);
+  private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher<any>>): Map<DrawingType, Sketcher<any>> {
+    const result: Map<DrawingType, Sketcher<any>> = new Map(sketcherDefaults);
 
     if (sketchers) {
       sketchers.forEach((value, key) => result.set(key, value));

@@ -1,7 +1,6 @@
 import { toRaw } from 'vue';
 import AbstractLineGraphics from '@/model/sketchers/graphics/AbstractLineGraphics';
 import SplineGraphics from '@/model/sketchers/graphics/SplineGraphics';
-import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { inRange } from '@/misc/line-functions';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
@@ -22,7 +21,7 @@ export interface LineOptions {
 export declare type VisiblePoints = [boolean, UTCTimestamp, Price, UTCTimestamp, Price, (x: UTCTimestamp) => Price];
 declare type VisiblePoint = [UTCTimestamp, Price, 'Side' | 'StartBound' | 'EndBound'];
 
-export default class LineSketcher extends AbstractSketcher {
+export default class LineSketcher extends AbstractSketcher<Line> {
   public draw(entry: DataSourceEntry<Line>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
@@ -156,7 +155,6 @@ export default class LineSketcher extends AbstractSketcher {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
       || entry.descriptor.options.type !== 'Line'
@@ -203,11 +201,6 @@ export default class LineSketcher extends AbstractSketcher {
         rawDS.update(ref, update);
       }
     };
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public contextmenu(dataSourceEntry: DataSourceEntry): MenuItem[] {
-    return [];
   }
 
   private visiblePoints(

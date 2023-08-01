@@ -6,14 +6,20 @@ import type Sketcher from '@/model/sketchers/Sketcher';
 import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
-export default abstract class AbstractSketcher implements Sketcher {
+export default abstract class AbstractSketcher<T> implements Sketcher<T> {
   protected chartStyle: ChartStyle | undefined;
 
   public setChartStyle(chartStyle: ChartStyle): void {
     this.chartStyle = chartStyle;
   }
 
-  public abstract draw(entry: DataSourceEntry, viewport: Viewport): void;
-  public abstract dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined;
-  public abstract contextmenu(dataSourceEntry: DataSourceEntry): MenuItem[];
+  public abstract draw(entry: DataSourceEntry<T>, viewport: Viewport): void;
+  public dragHandle(viewport: Viewport, entry: DataSourceEntry<T>, handle?: HandleId): DragHandle | undefined {
+    return undefined;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public contextmenu(dataSourceEntry: DataSourceEntry<T>): MenuItem[] {
+    return [];
+  }
 }

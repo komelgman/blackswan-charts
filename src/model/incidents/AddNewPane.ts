@@ -1,4 +1,3 @@
-import { reactive } from 'vue';
 import type { PaneDescriptor, PaneOptions } from '@/components/layout';
 import PriceAxis from '@/model/axis/PriceAxis';
 import type TimeAxis from '@/model/axis/TimeAxis';
@@ -13,7 +12,7 @@ import type { ViewportOptions } from '@/model/viewport/Viewport';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;
-  sketchers: Map<DrawingType, Sketcher>;
+  sketchers: Map<DrawingType, Sketcher<any>>;
   paneOptions: PaneOptions<ViewportOptions>;
   style: ChartStyle;
   timeAxis: TimeAxis;
@@ -27,24 +26,15 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
     super(options);
 
     const { dataSource, paneOptions, style, timeAxis, sketchers } = this.options;
-    // todo: waiting for support experimentalDecorators in playwright
-    // const priceAxis: PriceAxis = new PriceAxis(
-    //   dataSource.id,
-    //   dataSource.tvaClerk,
-    //   style.text,
-    //   paneOptions.priceScale,
-    //   paneOptions.priceInverted,
-    // );
 
-    const priceAxis: PriceAxis = reactive<PriceAxis>(new PriceAxis(
+    const priceAxis: PriceAxis = new PriceAxis(
       dataSource.id,
       dataSource.tvaClerk,
       style.text,
       paneOptions.priceScale,
       paneOptions.priceInverted,
-    )) as PriceAxis;
+    );
     priceAxis.postConstruct();
-    // end: todo
 
     this.paneDescriptor = {
       id: dataSource.id,
