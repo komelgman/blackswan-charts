@@ -70,7 +70,7 @@ export default class DataSourceSharedEntriesProcessor {
 
       entry = entry.next;
       if (descriptor.ref[0] === dsId) {
-        this.storage.remove(descriptor.ref); // todo add method removeEntry
+        this.storage.remove(descriptor.ref);
       }
     }
   }
