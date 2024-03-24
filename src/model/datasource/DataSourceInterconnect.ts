@@ -18,14 +18,14 @@ export default class DataSourceInterconnect {
       throw new Error(`Illegal state: dataSource with Id=${dsId} already exists`);
     }
 
-    const { sharedProcessor } = toRaw(dataSource);
-    sharedProcessor.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
+    const { sharedEntriesProcessor } = toRaw(dataSource);
+    sharedEntriesProcessor.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
     for (const [, dssp] of this.sharedProcessors) {
-      sharedProcessor.attachSharedEntriesFrom(dssp.dataSource);
-      dssp.attachSharedEntriesFrom(sharedProcessor.dataSource);
+      sharedEntriesProcessor.attachSharedEntriesFrom(dssp.dataSource);
+      dssp.attachSharedEntriesFrom(sharedEntriesProcessor.dataSource);
     }
 
-    this.sharedProcessors.set(dsId, sharedProcessor);
+    this.sharedProcessors.set(dsId, sharedEntriesProcessor);
   }
 
   public removeDataSource(dsId: DataSourceId): void {

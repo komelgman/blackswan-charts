@@ -43,7 +43,7 @@ export default class DataSourceSharedEntriesProcessor {
 
     const { storage } = this;
     const headref = storage.head?.value.descriptor.ref;
-    for (const entry of source.sharedProcessor.shared(this.dataSource.id)) {
+    for (const entry of source.sharedEntriesProcessor.shared(this.dataSource.id)) {
       const { ref, options } = entry.descriptor;
       if (!isString(ref)) {
         throw new Error('Illegal state: try to attach external entry as shared');

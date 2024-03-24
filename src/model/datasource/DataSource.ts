@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, isString, merge } from '@/misc/strict-type-checks';
 import type DataProvider from '@/model/datasource/DataProvider';
@@ -30,7 +29,7 @@ export interface DataSourceOptions {
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;
-  public readonly sharedProcessor: DataSourceSharedEntriesProcessor;
+  public readonly sharedEntriesProcessor: DataSourceSharedEntriesProcessor;
   private readonly storage: DataSourceEntriesStorage;
   private readonly changeEvents: DataSourceChangeEventsMap = new Map();
   private readonly dataProviders: Map<string, DataProvider> = new Map();
@@ -44,7 +43,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
     this.storage = new DataSourceEntriesStorage();
     this.idHelper = options.idHelper;
-    this.sharedProcessor = new DataSourceSharedEntriesProcessor(this, this.storage, this.addReason);
+    this.sharedEntriesProcessor = new DataSourceSharedEntriesProcessor(this, this.storage, this.addReason);
 
     this.initEntries(drawings);
   }
@@ -173,7 +172,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
-    this.protocolOptions = options || { incident: this.getNewTransactionId() };
+    this.protocolOptions = options ?? { incident: this.getNewTransactionId() };
 
     this.tvaClerk.processReport({
       protocolOptions: this.protocolOptions,
