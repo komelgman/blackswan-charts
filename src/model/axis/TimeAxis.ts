@@ -1,43 +1,16 @@
-import { merge } from '@/misc/strict-type-checks';
-import type { ComputedRef, Ref } from 'vue';
-import { computed, reactive, ref, watch } from 'vue';
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import Axis from '@/model/axis/Axis';
 import type AxisOptions from '@/model/axis/AxisOptions';
 import { ZoomType } from '@/model/axis/AxisOptions';
 import type { TextStyle } from '@/model/ChartStyle';
 import type TVAClerk from '@/model/history/TVAClerk';
-import type { UTCTimestamp, Range } from '@/model/type-defs';
+import type { UTCTimestamp } from '@/model/type-defs';
 
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
-  private requestedDataRanges: Record<string, Range<number>> = reactive({ def: { from: 0, to: 0 }});
 
-  /**
-   * This data interval should be presented in dataSource for draw particular entry, for example for Moving Average indicator
-   * |<--- range.form * data.step --->|<--- timeAxis.range --->|<--- range.to * data.step --->|
-   */
-  public requestedDataRange: ComputedRef<Range<number>>;
-
-  // eslint-disable-next-line no-useless-constructor
   public constructor(tvaClerk: TVAClerk, textOptions: TextStyle) {
     super('time', tvaClerk, textOptions);
-
-    this.requestedDataRange  = computed(() => {
-      const result: Range<number> = { from: 0, to: 0 };
-
-      for (const value of Object.values(this.requestedDataRanges)) {
-        if (value.from < result.from) {
-          result.from = value.from;
-        }
-
-        if (value.to > result.to) {
-          result.to = value.to;
-        }
-      }
-
-      return result;
-    });
   }
 
   public postConstruct(): void {
@@ -72,14 +45,6 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
     const { from } = this.range;
     const [, unscaleK] = this.cache;
     return (from + unscaleK * screenPos) as UTCTimestamp;
-  }
-
-  public requestDataRange(name: string, range: Range<number>): void {
-    merge(this.requestedDataRanges, { [name]: range });
-  }
-
-  public removeDataRange(name: string): void {
-    delete this.requestedDataRanges[name];
   }
 
   protected updateZoom(screenPivot: number, screenDelta: number): void {
