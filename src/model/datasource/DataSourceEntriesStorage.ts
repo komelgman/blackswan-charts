@@ -173,7 +173,7 @@ export default class DataSourceEntriesStorage {
     return storageEntry.value;
   }
 
-  public getHeadTailForEntry(entryRef: DrawingReference): [DrawingReference?, DrawingReference?] {
+  public getHeadTailForEntry(entryRef: DrawingReference): [head?: DrawingReference, tail?: DrawingReference] {
     const result: [DrawingReference?, DrawingReference?] = [undefined, undefined];
     const { head, tail } = this;
 
