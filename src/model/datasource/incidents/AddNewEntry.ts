@@ -22,7 +22,7 @@ export default class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryO
     const { descriptor, addReason, storage, entriesThatUsedDataProvider } = this.options;
     const newEntry: DataSourceEntry = { descriptor };
     newEntry.descriptor.valid = false;
-    const [, tail] = storage.getRange(descriptor.ref);
+    const [, tail] = storage.getHeadTailForEntry(descriptor.ref);
 
     const dataProvider: string = newEntry.descriptor.options.data.dataProvider;
     if (dataProvider !== undefined) {

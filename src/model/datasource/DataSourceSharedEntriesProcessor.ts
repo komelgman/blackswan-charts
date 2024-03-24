@@ -83,7 +83,7 @@ export default class DataSourceSharedEntriesProcessor {
 
   public addEntry(entryRef: DrawingReference, options: Omit<DrawingOptions, 'id'>) {
     const { storage } = this;
-    const [, tail] = storage.getRange(entryRef);
+    const [, tail] = storage.getHeadTailForEntry(entryRef);
     const entry = this.createEntry(entryRef, options);
 
     if (tail) {
