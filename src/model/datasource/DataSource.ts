@@ -237,13 +237,18 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     });
   }
 
-  public process<T>(ref: DrawingReference, processor: (entry: DataSourceEntry<T>) => void): void {
+  public process<T>(refs: DrawingReference[], processor: (entry: DataSourceEntry<T>) => void): void {
     this.checkWeAreNotInProxy();
+    const entries: DataSourceEntry[] = [];
 
-    const entry: DataSourceEntry<T> = this.storage.get(ref);
-    processor(entry);
-    entry.descriptor.valid = false;
-    this.addReason(DataSourceChangeEventReason.UpdateEntry, [entry]);
+    for (const ref of refs) {
+      const entry: DataSourceEntry<T> = this.storage.get(ref);
+      processor(entry);
+      entry.descriptor.valid = false;
+      entries.push(entry);
+    }
+
+    this.addReason(DataSourceChangeEventReason.UpdateEntry, entries);
     this.flush();
   }
 
