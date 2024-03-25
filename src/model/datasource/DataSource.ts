@@ -1,6 +1,5 @@
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import { clone, isString, merge } from '@/misc/strict-type-checks';
-import type DataProvider from '@/model/datasource/DataProvider';
 import type {
   DataSourceChangeEvent,
   DataSourceChangeEventListener,
@@ -32,8 +31,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly sharedEntriesProcessor: DataSourceSharedEntriesProcessor;
   private readonly storage: DataSourceEntriesStorage;
   private readonly changeEvents: DataSourceChangeEventsMap = new Map();
-  private readonly dataProviders: Map<string, DataProvider> = new Map();
-  private readonly entriesThatUsedDataProvider: Map<string, DataSourceEntry[]> = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private readonly idHelper: IdHelper;
   private tvaClerkValue: TVAClerk | undefined;
@@ -121,40 +118,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.eventListeners.splice(index, 1);
   }
 
-  public registerDataProvider(dataProvider: DataProvider): void {
-    this.dataProviders.set(dataProvider.name, dataProvider);
-
-    dataProvider.addOnChangeListener(this.dataProviderOnChangeListener.bind(this));
-  }
-
-  public unregisterDataProvider(name: string): void {
-    if (this.dataProviders.has(name)) {
-      const dataProvider: DataProvider | undefined = this.dataProviders.get(name);
-
-      if (dataProvider !== undefined) {
-        dataProvider.removeOnChangeListener(this.dataProviderOnChangeListener.bind(this));
-      }
-
-      this.dataProviders.delete(name);
-    }
-  }
-
-  private dataProviderOnChangeListener(dataProvider: DataProvider): void {
-    this.checkWeAreNotInProxy();
-    const entries = this.entriesThatUsedDataProvider.get(dataProvider.name);
-
-    if (entries === undefined) {
-      return;
-    }
-
-    for (const entry of entries) {
-      entry.descriptor.valid = false;
-    }
-
-    this.addReason(DataSourceChangeEventReason.UpdateEntry, entries);
-    this.flush();
-  }
-
   public resetCache(): void {
     const entries: DataSourceEntry[] = [];
     for (const entry of this) {
@@ -216,7 +179,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       incident: new AddNewEntry({
         descriptor: this.createDescriptor(options),
         storage: this.storage,
-        entriesThatUsedDataProvider: this.entriesThatUsedDataProvider,
         addReason: this.addReason.bind(this),
       }),
     });
@@ -282,7 +244,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       incident: new AddNewEntry({
         descriptor: cloned,
         storage: this.storage,
-        entriesThatUsedDataProvider: this.entriesThatUsedDataProvider,
         addReason: this.addReason.bind(this),
       }),
     });
@@ -395,7 +356,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
   private getNumberFromId(type: string, id: DrawingId): number {
     const regex = new RegExp(`${type}(\\d+)`, 'i');
-    const matches = id.match(regex);
+    const matches = regex.exec(id);
 
     if (matches == null || matches.length > 2) {
       throw new Error(`Unsupported DrawingId template, use 'drawing.type + Number'. 
@@ -438,9 +399,5 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     for (const listener of this.eventListeners) {
       listener.call(listener, events, this);
     }
-  }
-
-  public getDataProvider(name: string): DataProvider | undefined {
-    return this.dataProviders.get(name);
   }
 }
