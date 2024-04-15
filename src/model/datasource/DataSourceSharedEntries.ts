@@ -6,7 +6,7 @@ import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesS
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 
-export default class DataSourceSharedEntriesProcessor {
+export default class DataSourceSharedEntries {
   public readonly dataSource: DataSource;
   private readonly storage: DataSourceEntriesStorage;
   private readonly addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean) => void;
@@ -21,7 +21,7 @@ export default class DataSourceSharedEntriesProcessor {
     this.addReason = addReason.bind(dataSource);
   }
 
-  * shared(externalDataSourceId: DataSourceId): IterableIterator<Readonly<DataSourceEntry>> {
+  * sharedWith(externalDataSourceId: DataSourceId): IterableIterator<Readonly<DataSourceEntry>> {
     // this.checkWeAreNotInProxy();
 
     let entry = this.storage.head;
@@ -43,7 +43,7 @@ export default class DataSourceSharedEntriesProcessor {
 
     const { storage } = this;
     const headref = storage.head?.value.descriptor.ref;
-    for (const entry of source.sharedEntriesProcessor.shared(this.dataSource.id)) {
+    for (const entry of source.sharedEntries.sharedWith(this.dataSource.id)) {
       const { ref, options } = entry.descriptor;
       if (!isString(ref)) {
         throw new Error('Illegal state: try to attach external entry as shared');

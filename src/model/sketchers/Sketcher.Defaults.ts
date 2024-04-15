@@ -8,9 +8,7 @@ import VLineSketcher from '@/model/sketchers/VLineSketcher';
 import SubtypedSketcher from '@/model/sketchers/SubtypedSketcher';
 
 export default new Map<DrawingType, Sketcher>([
-  ['OHLCv', new SubtypedSketcher({
-    [CandlestickChartSketcher.NAME]: new CandlestickChartSketcher(),
-  })],
+  ["OHLCv", new CandlestickChartSketcher()],
   ['Volume', new SubtypedSketcher({
     [VolumeIndicatorAsColumnsSketcher.NAME]: new VolumeIndicatorAsColumnsSketcher(),
   })],

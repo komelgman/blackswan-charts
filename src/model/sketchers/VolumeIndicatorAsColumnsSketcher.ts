@@ -13,8 +13,8 @@ export default class VolumeIndicatorAsColumnsSketcher extends AbstractSketcher<V
     }
 
     // todo
-    const dataProvider = viewport.dataSource.getDataProvider(entry.descriptor.options.data.dataProvider);
-    const data = toRaw(dataProvider?.data) as OHLCv;
+    // const dataProvider = viewport.dataSource.getDataProvider(entry.descriptor.options.data.dataProvider);
+    // const data = toRaw(dataProvider?.data) as OHLCv;
 
     // console.log(data);
   }

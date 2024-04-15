@@ -27,14 +27,8 @@ export default class CandlestickChartSketcher extends AbstractSketcher<OHLCvChar
 
     let { descriptor, drawing } = entry;
     const { priceAxis, timeAxis, dataSource } = viewport;
-    const dataProvider = dataSource.getDataProvider(descriptor.options.data.dataProvider);
 
-    if (dataProvider === undefined) {
-      console.warn(`DataSource ${dataSource.id} hasn\'t have dataProvider ${descriptor.options.data.dataProvider}`);
-      return;
-    }
-
-    const ohlc = toRaw(dataProvider?.data) as OHLCv;
+    const ohlc = toRaw(descriptor?.options.data);
     const { range: priceRange } = priceAxis;
     const { range: timeRange } = timeAxis;
     const bars: [UTCTimestamp, Price, Price, Price, Price, number?][] = this.visibleBars(ohlc, priceRange, timeRange);
@@ -68,7 +62,7 @@ export default class CandlestickChartSketcher extends AbstractSketcher<OHLCvChar
         yh: priceAxis.translate(bars[i][2]),
         yl: priceAxis.translate(bars[i][3]),
         yc: priceAxis.translate(bars[i][4]),
-        style: descriptor.options.data.style
+        style: ohlc.style
       };
 
       if (parts[i] === undefined) {

@@ -11,7 +11,7 @@ import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEven
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import { isEqualDrawingReference } from '@/model/datasource/Drawing';
 
-describe('DataSourceSharedEntriesProcessor | DataSource entries operations', () => {
+describe('DataSourceSharedEntries | DataSource entries operations', () => {
   let interconnect: DataSourceInterconnect;
   let ds1: DataSource;
   let ds2: DataSource;

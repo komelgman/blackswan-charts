@@ -82,7 +82,7 @@ export declare type OHLCv = {
   values: [o: Price, h: Price, l: Price, c: Price, v?: number][];
 }
 
-export declare type OHLCvChart = SubtypedData & DependsOnDataProvider & {
+export declare type OHLCvChart = OHLCv & {
   style: any;
 }
 

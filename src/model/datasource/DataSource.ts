@@ -8,7 +8,7 @@ import type {
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import DataSourceSharedEntriesProcessor from '@/model/datasource/DataSourceSharedEntriesProcessor';
+import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import type { DrawingDescriptor, DrawingId, DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
 import RemoveEntry from '@/model/datasource/incidents/RemoveEntry';
@@ -28,7 +28,7 @@ export interface DataSourceOptions {
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;
-  public readonly sharedEntriesProcessor: DataSourceSharedEntriesProcessor;
+  public readonly sharedEntries: DataSourceSharedEntries;
   private readonly storage: DataSourceEntriesStorage;
   private readonly changeEvents: DataSourceChangeEventsMap = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
@@ -40,7 +40,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
     this.storage = new DataSourceEntriesStorage();
     this.idHelper = options.idHelper;
-    this.sharedEntriesProcessor = new DataSourceSharedEntriesProcessor(this, this.storage, this.addReason);
+    this.sharedEntries = new DataSourceSharedEntries(this, this.storage, this.addReason);
 
     this.initEntries(drawings);
   }

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import DataProvider from '@/model/datasource/DataProvider';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import { isProxy } from 'vue';
 import { Options, Vue } from 'vue-class-component';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
@@ -13,7 +13,7 @@ import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import type { DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
 import { LineBound } from '@/model/type-defs';
-import type { Line, UTCTimestamp, OHLCvChart, Price, CandlestickChartStyle, VolumeIndicator, OHLCv } from '@/model/type-defs';
+import type { Line, UTCTimestamp, OHLCvChart, Price, CandlestickChartStyle, VolumeIndicator } from '@/model/type-defs';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
 
@@ -35,23 +35,10 @@ export default class App extends Vue {
   chartApi!: Chart;
   private idHelper!: IdHelper;
   private mainDs!: DataSource;
-  private dataProvider!: DataProvider<OHLCv>;
 
   created(): void {
     this.idHelper = new IdHelper();
     this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, []);
-
-    this.dataProvider = new DataProvider('ohlcvBTCUSDT', 'DataProvider_OHLCv', {
-      from: 0 as UTCTimestamp,
-      step: 0.01 as UTCTimestamp,
-      values: [
-        [0.3, 0.5, 0.1, 0.15, 1000],
-        [0.15, 0.6, 0.0, 0.45, 1500],
-        [0.35, 0.7, 0.3, 0.55, 300]
-      ] as [Price, Price, Price, Price, number][]
-    });
-
-    this.mainDs.registerDataProvider(this.dataProvider);
 
     this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
     this.chartApi.createPane(this.mainDs, {});
@@ -67,8 +54,13 @@ export default class App extends Vue {
         title: 'BTCUSDT',
         type: 'OHLCv',
         data: {
-          dataProvider: 'ohlcvBTCUSDT',
-          subtype: 'Candlestick',
+          from: 0 as UTCTimestamp,
+          step: 0.01 as UTCTimestamp,
+          values: [
+            [0.3, 0.5, 0.1, 0.15, 1000],
+            [0.15, 0.6, 0.0, 0.45, 1500],
+            [0.35, 0.7, 0.3, 0.55, 300]
+          ] as [Price, Price, Price, Price, number][],
           style: {
             showBody: true,
             showBorder: true,
@@ -226,7 +218,6 @@ export default class App extends Vue {
     setTimeout((j: number) => {
       console.log(`${j}) chartApi.createPane(~second);`);
       const dataSource: DataSource = new DataSource({ id: 'second', idHelper: this.idHelper }, []);
-      dataSource.registerDataProvider(this.dataProvider);
       chartApi.createPane(dataSource, { preferredSize: 0.3 });
     }, 100 * i++, i);
 
@@ -285,14 +276,14 @@ export default class App extends Vue {
     //   this.mainDs.endTransaction();
     // }, 100 * i++, i);
     //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundBoth);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.greenLineBoundBoth);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundBoth);`);
+
+      this.mainDs.beginTransaction();
+      this.mainDs.add(drawings.greenLineBoundBoth);
+      this.mainDs.endTransaction();
+    }, 100 * i++, i);
+
     // setTimeout((j: number) => {
     //   console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundStart);`);
     //
@@ -330,20 +321,22 @@ export default class App extends Vue {
       console.log(`${j}) this.mainDs.process('hlocv1', ...);`);
 
       const process = () => {
-        const values = this.dataProvider.data.values;
-        const lastBar = values[values.length - 1];
-        const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
-        const h = Math.max(lastBar[1], c);
-        const l = Math.min(lastBar[2], c);
+        this.mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart>) => {
+          const values = e.descriptor.options.data.values;
+          const lastBar = values[values.length - 1];
+          const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
+          const h = Math.max(lastBar[1], c);
+          const l = Math.min(lastBar[2], c);
 
-        // add new
-        // values.push(lastBar);
+          // add new
+          // values.push(lastBar);
 
-        // update last
-        values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
+          // update last
+          values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
 
-        // replace all
-        // values.splice(0, values.length, newItems);
+          // replace all
+          // values.splice(0, values.length, newItems);
+        });
       };
 
       setInterval(process, 500);

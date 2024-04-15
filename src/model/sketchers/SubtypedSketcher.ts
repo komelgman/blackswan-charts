@@ -29,22 +29,23 @@ export default class SubtypedSketcher<T extends SubtypedData> extends AbstractSk
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    this.getChartSketcher(entry.descriptor.options.data.subtype).draw(entry, viewport);
+    this.getSketcher(entry.descriptor.options.data.subtype).draw(entry, viewport);
   }
 
   public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
-    return this.getChartSketcher(entry.descriptor.options.data.chartType).dragHandle(viewport, entry, handle);
+    return this.getSketcher(entry.descriptor.options.data.subtype).dragHandle(viewport, entry, handle);
   }
 
   public contextmenu(entry: DataSourceEntry): MenuItem[] {
-    return this.getChartSketcher(entry.descriptor.options.data.chartType).contextmenu(entry);
+    return this.getSketcher(entry.descriptor.options.data.subtype).contextmenu(entry);
   }
 
-  private getChartSketcher(chartType: string): Sketcher<T> {
-    if (chartType in this.sketchers) {
-      return this.sketchers[chartType];
+  private getSketcher(sybtype: string): Sketcher<T> {
+    const result = this.sketchers[sybtype];
+    if (!result) {
+      throw new Error(`Oops. Illegal argument: subtype ${sybtype} was not found in this.sketchers ${JSON.stringify(this.sketchers)}`);
     }
 
-    throw new Error(`Oops. Illegal argument: chartType ${chartType} was not found in this.sketchers ${JSON.stringify(this.sketchers)}`);
+    return result;
   }
 }

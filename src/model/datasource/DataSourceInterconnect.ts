@@ -1,5 +1,5 @@
 import { toRaw } from 'vue';
-import type DataSourceSharedEntriesProcessor from '@/model/datasource/DataSourceSharedEntriesProcessor';
+import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceId } from '@/model/datasource/DataSource';
@@ -10,7 +10,7 @@ import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingId, DrawingReference } from '@/model/datasource/Drawing';
 
 export default class DataSourceInterconnect {
-  private readonly sharedProcessors: Map<DataSourceId, DataSourceSharedEntriesProcessor> = new Map();
+  private readonly sharedProcessors: Map<DataSourceId, DataSourceSharedEntries> = new Map();
 
   public addDataSource(dataSource: DataSource): void {
     const dsId = dataSource.id;
@@ -18,14 +18,14 @@ export default class DataSourceInterconnect {
       throw new Error(`Illegal state: dataSource with Id=${dsId} already exists`);
     }
 
-    const { sharedEntriesProcessor } = toRaw(dataSource);
-    sharedEntriesProcessor.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
+    const { sharedEntries } = toRaw(dataSource);
+    sharedEntries.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
     for (const [, dssp] of this.sharedProcessors) {
-      sharedEntriesProcessor.attachSharedEntriesFrom(dssp.dataSource);
-      dssp.attachSharedEntriesFrom(sharedEntriesProcessor.dataSource);
+      sharedEntries.attachSharedEntriesFrom(dssp.dataSource);
+      dssp.attachSharedEntriesFrom(sharedEntries.dataSource);
     }
 
-    this.sharedProcessors.set(dsId, sharedEntriesProcessor);
+    this.sharedProcessors.set(dsId, sharedEntries);
   }
 
   public removeDataSource(dsId: DataSourceId): void {
@@ -33,7 +33,7 @@ export default class DataSourceInterconnect {
       throw new Error(`Illegal state: dataSource with Id=${dsId} doesn't exists`);
     }
 
-    const sharedProcessor: DataSourceSharedEntriesProcessor = this.sharedProcessors.get(dsId) as DataSourceSharedEntriesProcessor;
+    const sharedProcessor: DataSourceSharedEntries = this.sharedProcessors.get(dsId) as DataSourceSharedEntries;
     sharedProcessor.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
     this.sharedProcessors.delete(dsId);
 
@@ -91,7 +91,7 @@ export default class DataSourceInterconnect {
       } else {
         for (const cid of [...shareWith, externalRef[0]]) {
           if (srcDs.id !== cid) {
-            const dssp: DataSourceSharedEntriesProcessor = this.sharedProcessors.get(cid) as DataSourceSharedEntriesProcessor;
+            const dssp: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;
             dssp.addEntry(entryRef, entry.descriptor.options);
             needUpdate.add(dssp.dataSource);
@@ -128,7 +128,7 @@ export default class DataSourceInterconnect {
       } else {
         for (const cid of [...shareWith, externalRef[0]]) {
           if (srcDs.id !== cid) {
-            const dssp: DataSourceSharedEntriesProcessor = this.sharedProcessors.get(cid) as DataSourceSharedEntriesProcessor;
+            const dssp: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;
             dssp.removeEntry(entryRef);
             needUpdate.add(dssp.dataSource);
@@ -165,7 +165,7 @@ export default class DataSourceInterconnect {
       } else {
         for (const cid of [...shareWith, externalRef[0]]) {
           if (srcDs.id !== cid) {
-            const dssp: DataSourceSharedEntriesProcessor = this.sharedProcessors.get(cid) as DataSourceSharedEntriesProcessor;
+            const dssp: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;
             dssp.update(entryRef);
             needUpdate.add(dssp.dataSource);

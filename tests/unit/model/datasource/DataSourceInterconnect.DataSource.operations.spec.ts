@@ -7,7 +7,7 @@ import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 
-describe('DataSourceSharedEntriesProcessor | DataSource operations', () => {
+describe('DataSourceSharedEntries | DataSource operations', () => {
   let interconnect: DataSourceInterconnect;
   let ds1: DataSource;
   let ds2: DataSource;

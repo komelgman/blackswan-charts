@@ -5,7 +5,7 @@ import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 
-describe('DataSourceSharedEntriesProcessor', () => {
+describe('DataSourceSharedEntries', () => {
   let ds1: DataSource;
   let ds2: DataSource;
   let idHelper: IdHelper;
@@ -70,12 +70,12 @@ describe('DataSourceSharedEntriesProcessor', () => {
   });
 
   it('test shared() iterator', () => {
-    const drawingReferencesFromIterator: DrawingReference[] = getDrawingReferencesFromIterator(ds2.sharedEntriesProcessor.shared('ds1'));
+    const drawingReferencesFromIterator: DrawingReference[] = getDrawingReferencesFromIterator(ds2.sharedEntries.sharedWith('ds1'));
     expect(drawingReferencesFromIterator).toEqual([drawing2.id, drawing3.id]);
   });
 
   it('test attach/detach shared entries to filled data source', () => {
-    ds1.sharedEntriesProcessor.attachSharedEntriesFrom(ds2);
+    ds1.sharedEntries.attachSharedEntriesFrom(ds2);
 
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing3.id], drawing0.id, drawing1.id, drawing2.id]);
@@ -85,7 +85,7 @@ describe('DataSourceSharedEntriesProcessor', () => {
     expect(storage.head?.value.descriptor.ref).toEqual([ds2.id, drawing2.id]);
     expect(storage.tail?.value.descriptor.ref).toEqual(drawing2.id);
 
-    ds1.sharedEntriesProcessor.detachSharedEntries(ds2.id);
+    ds1.sharedEntries.detachSharedEntries(ds2.id);
 
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([drawing0.id, drawing1.id, drawing2.id]);
@@ -97,14 +97,14 @@ describe('DataSourceSharedEntriesProcessor', () => {
     const ds3 = new DataSource({ id: 'ds3', idHelper }, []);
     // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
     const storage = ds3['storage'];
-    ds3.sharedEntriesProcessor.attachSharedEntriesFrom(ds2);
+    ds3.sharedEntries.attachSharedEntriesFrom(ds2);
 
     expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
       .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing4.id]]);
     expect(storage.head?.value.descriptor.ref).toEqual([ds2.id, drawing2.id]);
     expect(storage.tail?.value.descriptor.ref).toEqual([ds2.id, drawing4.id]);
 
-    ds3.sharedEntriesProcessor.detachSharedEntries(ds2.id);
+    ds3.sharedEntries.detachSharedEntries(ds2.id);
 
     expect(getDrawingReferencesFromIterator(ds3.filtered(() => true)))
       .toEqual([]);
