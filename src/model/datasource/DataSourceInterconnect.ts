@@ -7,7 +7,9 @@ import type { DataSourceChangeEventListener, DataSourceChangeEvent, DataSourceCh
   from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingId, DrawingReference } from '@/model/datasource/Drawing';
+import type { DrawingId, DrawingReference, DrawingDescriptor } from '@/model/datasource/Drawing';
+
+declare type Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference, descriptor: DrawingDescriptor) => void;
 
 export default class DataSourceInterconnect {
   private readonly sharedProcessors: Map<DataSourceId, DataSourceSharedEntries> = new Map();
@@ -20,9 +22,9 @@ export default class DataSourceInterconnect {
 
     const { sharedEntries } = toRaw(dataSource);
     sharedEntries.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
-    for (const [, dssp] of this.sharedProcessors) {
-      sharedEntries.attachSharedEntriesFrom(dssp.dataSource);
-      dssp.attachSharedEntriesFrom(sharedEntries.dataSource);
+    for (const [, dsse] of this.sharedProcessors) {
+      sharedEntries.attachSharedEntriesFrom(dsse.dataSource);
+      dsse.attachSharedEntriesFrom(sharedEntries.dataSource);
     }
 
     this.sharedProcessors.set(dsId, sharedEntries);
@@ -68,114 +70,59 @@ export default class DataSourceInterconnect {
   }
 
   private addEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    for (const entry of entries) {
-      const { descriptor } = entry;
-      const { shareWith } = descriptor.options;
-      if (shareWith === undefined) {
-        continue;
-      }
+    const action: Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference, descriptor: DrawingDescriptor) =>
+        dsse.addEntry(entryRef, descriptor.options);
 
-      const needUpdate: Set<DataSource> = new Set<DataSource>();
-      const isInternal: boolean = isString(descriptor.ref);
-      const externalRef: DrawingReference = isInternal ? [srcDs.id, descriptor.ref as DrawingId] : descriptor.ref;
-      const internalRef: DrawingReference = isInternal ? descriptor.ref : descriptor.ref[1];
-
-      if (shareWith === '*') {
-        for (const [cid, dssp] of this.sharedProcessors) {
-          if (srcDs.id !== cid) {
-            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.addEntry(entryRef, entry.descriptor.options);
-            needUpdate.add(dssp.dataSource);
-          }
-        }
-      } else {
-        for (const cid of [...shareWith, externalRef[0]]) {
-          if (srcDs.id !== cid) {
-            const dssp: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
-            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.addEntry(entryRef, entry.descriptor.options);
-            needUpdate.add(dssp.dataSource);
-          }
-        }
-      }
-
-      for (const ds of needUpdate) {
-        ds.flush();
-      }
-    }
+    this.applyActionToSharedEntries(entries, srcDs, action);
   }
 
   private removeEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    for (const { descriptor } of entries) {
-      const { shareWith } = descriptor.options;
-      if (shareWith === undefined) {
-        continue;
-      }
+    const action: Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference) => dsse.removeEntry(entryRef);
 
-      const needUpdate: Set<DataSource> = new Set<DataSource>();
-      const isInternal: boolean = isString(descriptor.ref);
-      const externalRef: DrawingReference = isInternal ? [srcDs.id, descriptor.ref as DrawingId] : descriptor.ref;
-      const internalRef: DrawingReference = isInternal ? descriptor.ref : descriptor.ref[1];
-
-      if (shareWith === '*') {
-        for (const [cid, dssp] of this.sharedProcessors) {
-          if (srcDs.id !== cid) {
-            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.removeEntry(entryRef);
-            needUpdate.add(dssp.dataSource);
-          }
-        }
-      } else {
-        for (const cid of [...shareWith, externalRef[0]]) {
-          if (srcDs.id !== cid) {
-            const dssp: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
-            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.removeEntry(entryRef);
-            needUpdate.add(dssp.dataSource);
-          }
-        }
-      }
-
-      for (const ds of needUpdate) {
-        ds.flush();
-      }
-    }
+    this.applyActionToSharedEntries(entries, srcDs, action);
   }
 
   private updateEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
+    const action: Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference) => dsse.update(entryRef);
+
+    this.applyActionToSharedEntries(entries, srcDs, action);
+  }
+
+  private applyActionToSharedEntries(entries: DataSourceEntry[], srcDs: DataSource, action: Action): void {
+    const needUpdate: Set<DataSource> = new Set<DataSource>();
+
     for (const { descriptor } of entries) {
       const { shareWith } = descriptor.options;
       if (shareWith === undefined) {
         continue;
       }
 
-      const needUpdate: Set<DataSource> = new Set<DataSource>();
       const isInternal: boolean = isString(descriptor.ref);
       const externalRef: DrawingReference = isInternal ? [srcDs.id, descriptor.ref as DrawingId] : descriptor.ref;
       const internalRef: DrawingReference = isInternal ? descriptor.ref : descriptor.ref[1];
 
       if (shareWith === '*') {
-        for (const [cid, dssp] of this.sharedProcessors) {
+        for (const [cid, dsse] of this.sharedProcessors) {
           if (srcDs.id !== cid) {
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.update(entryRef);
-            needUpdate.add(dssp.dataSource);
+            action(dsse, entryRef, descriptor);
+            needUpdate.add(dsse.dataSource);
           }
         }
       } else {
         for (const cid of [...shareWith, externalRef[0]]) {
           if (srcDs.id !== cid) {
-            const dssp: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
+            const dsse: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
             const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            dssp.update(entryRef);
-            needUpdate.add(dssp.dataSource);
+            action(dsse, entryRef, descriptor);
+            needUpdate.add(dsse.dataSource);
           }
         }
       }
+    }
 
-      for (const ds of needUpdate) {
-        ds.flush();
-      }
+    for (const ds of needUpdate) {
+      ds.flush();
     }
   }
 }

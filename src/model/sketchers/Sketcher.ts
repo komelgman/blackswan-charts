@@ -6,6 +6,8 @@ import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
 export default interface Sketcher<T = any> {
+  invalidate(entry: DataSourceEntry<T>, viewport: Viewport): boolean;
+
   setChartStyle(chartStyle: ChartStyle): void;
 
   draw(entry: DataSourceEntry<T>, viewport: Viewport): void;

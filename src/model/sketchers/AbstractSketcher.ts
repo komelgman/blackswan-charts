@@ -22,4 +22,9 @@ export default abstract class AbstractSketcher<T> implements Sketcher<T> {
   public contextmenu(dataSourceEntry: DataSourceEntry<T>): MenuItem[] {
     return [];
   }
+
+  public invalidate(entry: DataSourceEntry<T>, viewport: Viewport): boolean {
+    this.draw(entry, viewport);
+    return true;
+  }
 }

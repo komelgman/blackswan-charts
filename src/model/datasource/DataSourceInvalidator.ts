@@ -72,6 +72,8 @@ export default class DataSourceInvalidator {
       return;
     }
 
+    const invalidated: DataSourceEntry[] = [];
+
     for (const entry of entries) {
       if (entry.descriptor.valid) {
         console.warn(`Entry ${entry.descriptor.ref} already valid`);
@@ -85,10 +87,12 @@ export default class DataSourceInvalidator {
       }
 
       const sketcher: Sketcher = this.viewport.getSketcher(drawingType);
-      sketcher.draw(entry, this.viewport);
+      if (sketcher.invalidate(entry, this.viewport)) {
+        invalidated.push(entry);
+      }
     }
 
-    toRaw(this.viewport.dataSource).invalidated(entries);
+    toRaw(this.viewport.dataSource).invalidated(invalidated);
   }
 
   private resetDataSourceCache(): void {
