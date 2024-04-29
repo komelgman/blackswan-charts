@@ -1,6 +1,6 @@
 import type { SpyInstance } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clone } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
@@ -540,5 +540,35 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
         drawing3.id,
         drawing5.id,
       ]);
+  });
+
+  it('test requestDataUpdate shared entry', () => {
+    ds1.requestDataUpdate(ds1['storage'].get(drawing1.id));
+
+    expect(ds1Spy).toHaveBeenCalledOnce();
+    expect(ds2Spy).toHaveBeenCalledOnce();
+    expect(ds3Spy).toHaveBeenCalledTimes(0);
+
+    expect(toRefsFromEventsMap(ds1Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([drawing1.id]);
+    expect(toRefsFromEventsMap(ds2Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([[ds1.id, drawing1.id]]);
+    expect(toRefsFromEventsMap(ds3Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([]);
+  });
+
+  it('test requestDataUpdate external shared entry', () => {
+    ds2.requestDataUpdate(ds2['storage'].get([ds1.id, drawing1.id]));
+
+    expect(ds1Spy).toHaveBeenCalledOnce();
+    expect(ds2Spy).toHaveBeenCalledOnce();
+    expect(ds3Spy).toHaveBeenCalledTimes(0);
+
+    expect(toRefsFromEventsMap(ds1Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([drawing1.id]);
+    expect(toRefsFromEventsMap(ds2Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([[ds1.id, drawing1.id]]);
+    expect(toRefsFromEventsMap(ds3Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([]);
   });
 });

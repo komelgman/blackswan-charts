@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clone } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import IdHelper from '@/model/tools/IdHelper';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
@@ -94,7 +94,7 @@ describe('DataSourceSharedEntries', () => {
   });
 
   it('test attach/detach shared entries to empty data source', () => {
-    const ds3 = new DataSource({ id: 'ds3', idHelper }, []);
+    const ds3 = new DataSource({ id: 'ds3', idHelper });
     // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
     const storage = ds3['storage'];
     ds3.sharedEntries.attachSharedEntriesFrom(ds2);

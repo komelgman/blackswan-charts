@@ -1,4 +1,4 @@
-import { clone } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import DataBinding from '@/model/databinding/DataBinding';
 import type { ExternalDrawingId } from '@/model/datasource/Drawing';
 import type { Range, UTCTimestamp } from '@/model/type-defs';

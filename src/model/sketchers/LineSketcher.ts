@@ -22,7 +22,7 @@ export declare type VisiblePoints = [boolean, UTCTimestamp, Price, UTCTimestamp,
 declare type VisiblePoint = [UTCTimestamp, Price, 'Side' | 'StartBound' | 'EndBound'];
 
 export default class LineSketcher extends AbstractSketcher<Line> {
-  public draw(entry: DataSourceEntry<Line>, viewport: Viewport): void {
+  protected draw(entry: DataSourceEntry<Line>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }

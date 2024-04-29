@@ -87,7 +87,10 @@ import type { DrawingType } from '@/model/datasource/Drawing';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import type Viewport from '@/model/viewport/Viewport';
 
-export declare type ChartOptions = { style: DeepPartial<ChartStyle>, sketchers: Map<DrawingType, Sketcher> };
+export declare type ChartOptions = {
+  style: DeepPartial<ChartStyle>,
+  sketchers: Map<DrawingType, Sketcher>
+};
 
 @Options({
   components: {

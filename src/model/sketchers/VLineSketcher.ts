@@ -11,7 +11,7 @@ import type { DragHandle } from '@/model/viewport/DragHandle';
 import type Viewport from '@/model/viewport/Viewport';
 
 export default class VLineSketcher extends AbstractSketcher<VLine> {
-  public draw(entry: DataSourceEntry<VLine>, viewport: Viewport): void {
+  protected draw(entry: DataSourceEntry<VLine>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }

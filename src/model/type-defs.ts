@@ -1,6 +1,11 @@
 import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
 import type { DrawingReference } from '@/model/datasource/Drawing';
 
+export declare type Nominal<T, Name extends string> = T & { [Symbol.species]: Name; };
+export declare type Wrapped<T> = { value: T };
+export declare type Predicate<T> = (factor: T) => boolean;
+export declare type Processor<T> = (value: T) => void;
+
 export const enum RegularTimePeriod {
   m1 = 1 * 60 * 1000,
   m5 = 5 * 60 * 1000,
@@ -11,11 +16,6 @@ export const enum RegularTimePeriod {
   day = 24 * 60 * 60 * 1000,
   week = 7 * 24 * 60 * 60 * 1000,
 }
-
-export declare type Nominal<T, Name extends string> = T & { [Symbol.species]: Name; };
-export declare type Wrapped<T> = { value: T };
-export declare type Predicate<T> = (factor: T) => boolean;
-export declare type Processor<T> = (value: T) => void;
 
 export declare type NameTimedPeriod = 'Month' | 'Year';
 export declare type TimePeriod = RegularTimePeriod | NameTimedPeriod;
@@ -61,34 +61,28 @@ interface AbstractLine<D> {
 
 export declare type HLine = AbstractLine<Price>;
 export declare type VLine = AbstractLine<UTCTimestamp>;
-export declare type LineDef = [UTCTimestamp, Price, UTCTimestamp, Price];
-
-export declare type Line = AbstractLine<LineDef> & {
+export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Price]> & {
   boundType: LineBound;
   scale: PriceAxisScale;
 };
 
-export declare type SubtypedData = {
-  subtype: string;
-}
-
-export declare type DependsOnDataProvider = {
-  dataProvider: string;
+export declare type HasStyle<T> = {
+  style: T;
 }
 
 export declare type OHLCv = {
-  from: UTCTimestamp;
-  step: UTCTimestamp;
+  loaded: Range<UTCTimestamp>;
+  available: Range<UTCTimestamp>;
+  visible?: Range<UTCTimestamp>;
+  step: UTCTimestamp; // todo: TimePeriod;
   values: [o: Price, h: Price, l: Price, c: Price, v?: number][];
 }
 
-export declare type OHLCvChart = OHLCv & {
-  style: any;
-}
-
-export declare type VolumeIndicator = SubtypedData & DependsOnDataProvider & {
-  style: any;
-}
+export declare type VolumeIndicator<Style> = HasStyle<Style> & {
+  from: UTCTimestamp;
+  step: UTCTimestamp;
+  values: number[];
+};
 
 export interface CandleColors {
   wick: string;
@@ -99,6 +93,7 @@ export interface CandleColors {
 export declare type CandleType = 'bearish' | 'bullish';
 
 export interface CandlestickChartStyle extends Record<CandleType, CandleColors> {
+  type: "Candlestick";
   showWick: boolean;
   showBody: boolean;
   showBorder: boolean;

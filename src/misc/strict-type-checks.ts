@@ -10,45 +10,6 @@ export type DeepPartial<T> = {
       : DeepPartial<T[P]>
 };
 
-export interface Cloneable<T> {
-  clone(): T;
-}
-
-// todo: add test for merge
-declare type Item = [Record<string, any>, Record<string, any>, Record<string, any>, string];
-
-export function merge(dst: Record<string, any>, ...sources: Record<string, any>[]): [Record<string, any>, Record<string, any>] {
-  const items: Item[] = [];
-  const unmerge: Record<string, any> = {};
-
-  for (const src of sources) {
-    // eslint-disable-next-line guard-for-in
-    for (const prop in src) {
-      items.push([dst, unmerge, src, prop]);
-    }
-  }
-
-  while (items.length > 0) {
-    const [dstObj, oldObj, srcObj, property] = items.shift() as Item;
-    if (Array.isArray(srcObj[property]) || srcObj[property] === null || typeof srcObj[property] !== 'object' || dstObj[property] === undefined) {
-      if (oldObj !== undefined && dstObj[property] !== srcObj[property]) {
-        oldObj[property] = dstObj[property] === undefined ? null : dstObj[property];
-      }
-
-      dstObj[property] = srcObj[property] === null ? undefined : srcObj[property];
-    } else {
-      oldObj[property] = dstObj[property] === undefined ? null : {};
-
-      // eslint-disable-next-line guard-for-in
-      for (const prop in srcObj[property]) {
-        items.push([dstObj[property], oldObj[property], srcObj[property], prop]);
-      }
-    }
-  }
-
-  return [dst, unmerge];
-}
-
 export function isEmpty(obj: Record<string, unknown> | undefined): boolean {
   if (obj === undefined) {
     return true;
@@ -90,33 +51,6 @@ export function isString(value: unknown): value is string {
 
 export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
-}
-
-export function clone<T>(object: T): T {
-  const source = object as any;
-  if ((source as Cloneable<T>).clone !== undefined) {
-    return (source as Cloneable<T>).clone();
-  }
-
-  if (!source || typeof source !== 'object') {
-    return source;
-  }
-
-  const cloned: any = Array.isArray(source) ? [] : {};
-  // eslint-disable-next-line no-restricted-syntax
-  for (const property in source) {
-    // eslint-disable-next-line no-prototype-builtins
-    if (source.hasOwnProperty(property)) {
-      const propertyValue = source[property];
-      if (propertyValue && typeof propertyValue === 'object') {
-        cloned[property] = clone(propertyValue);
-      } else {
-        cloned[property] = propertyValue;
-      }
-    }
-  }
-
-  return cloned;
 }
 
 export function notNull<T>(t: T | null): t is T {

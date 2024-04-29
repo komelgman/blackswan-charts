@@ -1,4 +1,5 @@
-import { isEmpty, merge } from '@/misc/strict-type-checks';
+import { isEmpty } from '@/misc/strict-type-checks';
+import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import type { ChartStyle } from '@/model/ChartStyle';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';

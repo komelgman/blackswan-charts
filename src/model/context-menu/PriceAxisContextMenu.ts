@@ -1,6 +1,5 @@
 import { reactive, watch } from 'vue';
 import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import { merge } from '@/misc/strict-type-checks';
 import type PriceAxis from '@/model/axis/PriceAxis';
 import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
 import { PriceScales } from '@/model/axis/scaling/PriceAxisScale';
@@ -17,7 +16,7 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
     watch(
       [this.axis.inverted, this.axis.scale],
       () => {
-        merge(this.menu, this.createMenu());
+        Object.assign(this.menu, this.createMenu());
       },
     );
   }

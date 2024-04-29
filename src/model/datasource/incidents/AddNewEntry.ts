@@ -6,7 +6,7 @@ import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 
 export interface AddNewEntryOptions extends HistoricalIncidentOptions {
-  descriptor: DrawingDescriptor<unknown>;
+  descriptor: DrawingDescriptor;
   storage: DataSourceEntriesStorage;
   addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
 }

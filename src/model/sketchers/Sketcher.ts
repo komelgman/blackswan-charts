@@ -10,8 +10,6 @@ export default interface Sketcher<T = any> {
 
   setChartStyle(chartStyle: ChartStyle): void;
 
-  draw(entry: DataSourceEntry<T>, viewport: Viewport): void;
-
   contextmenu(dataSourceEntry: DataSourceEntry<T>): MenuItem[];
 
   dragHandle(viewport: Viewport, entry: DataSourceEntry<T>, handle?: HandleId): DragHandle | undefined;

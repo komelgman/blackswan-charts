@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clone } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';

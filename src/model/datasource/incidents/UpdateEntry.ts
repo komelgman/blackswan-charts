@@ -1,4 +1,5 @@
-import { isEmpty, merge } from '@/misc/strict-type-checks';
+import { isEmpty } from '@/misc/strict-type-checks';
+import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/misc/strict-type-checks';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';

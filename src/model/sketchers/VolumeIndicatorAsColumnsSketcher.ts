@@ -4,10 +4,9 @@ import AbstractSketcher from '@/model/sketchers/AbstractSketcher';
 import type { OHLCv, VolumeIndicator } from '@/model/type-defs';
 import type Viewport from '@/model/viewport/Viewport';
 
-export default class VolumeIndicatorAsColumnsSketcher extends AbstractSketcher<VolumeIndicator> {
-  public static readonly NAME: string = 'Columns';
+export default class VolumeIndicatorAsColumnsSketcher extends AbstractSketcher<VolumeIndicator<any>> {
 
-  public draw(entry: DataSourceEntry<VolumeIndicator>, viewport: Viewport): void {
+  protected draw(entry: DataSourceEntry<VolumeIndicator<any>>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }

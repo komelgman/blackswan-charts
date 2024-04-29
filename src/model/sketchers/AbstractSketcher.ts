@@ -13,7 +13,14 @@ export default abstract class AbstractSketcher<T> implements Sketcher<T> {
     this.chartStyle = chartStyle;
   }
 
-  public abstract draw(entry: DataSourceEntry<T>, viewport: Viewport): void;
+  public invalidate(entry: DataSourceEntry<T>, viewport: Viewport): boolean {
+    this.draw(entry, viewport);
+
+    return entry.descriptor.valid || false;
+  }
+
+  protected abstract draw(entry: DataSourceEntry<T>, viewport: Viewport): void;
+
   public dragHandle(viewport: Viewport, entry: DataSourceEntry<T>, handle?: HandleId): DragHandle | undefined {
     return undefined;
   }
@@ -21,10 +28,5 @@ export default abstract class AbstractSketcher<T> implements Sketcher<T> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public contextmenu(dataSourceEntry: DataSourceEntry<T>): MenuItem[] {
     return [];
-  }
-
-  public invalidate(entry: DataSourceEntry<T>, viewport: Viewport): boolean {
-    this.draw(entry, viewport);
-    return true;
   }
 }

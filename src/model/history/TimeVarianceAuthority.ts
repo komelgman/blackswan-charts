@@ -1,4 +1,4 @@
-import BigBoom from '@/model/history/BigBoom';
+import BigBoom from '@/model/history/incidents/BigBoom';
 import TVAClerk from '@/model/history/TVAClerk';
 import type { HistoricalIncidentReport } from '@/model/history/TVAClerk';
 import TVAProtocol, { TVAProtocolSign } from '@/model/history/TVAProtocol';
@@ -100,12 +100,12 @@ export default class TimeVarianceAuthority {
       return;
     }
 
-    if (report.incident) {
-      protocol.addIncident(report.incident, report.immediate);
-    }
-
     if (report.lifeHooks) {
       protocol.setLifeHooks(report.lifeHooks);
+    }
+
+    if (report.incident) {
+      protocol.addIncident(report.incident, report.immediate);
     }
 
     if (report.sign) {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clone } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import IdHelper from '@/model/tools/IdHelper';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';

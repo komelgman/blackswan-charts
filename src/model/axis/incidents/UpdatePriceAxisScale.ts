@@ -1,4 +1,4 @@
-import { clone } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import type PriceAxis from '@/model/axis/PriceAxis';
 import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';

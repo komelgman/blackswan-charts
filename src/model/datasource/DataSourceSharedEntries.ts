@@ -1,4 +1,5 @@
-import { clone, isString } from '@/misc/strict-type-checks';
+import { isString } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceId } from '@/model/datasource/DataSource';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
@@ -8,6 +9,7 @@ import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawin
 
 export default class DataSourceSharedEntries {
   public readonly dataSource: DataSource;
+
   private readonly storage: DataSourceEntriesStorage;
   private readonly addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean) => void;
 
@@ -98,6 +100,11 @@ export default class DataSourceSharedEntries {
   public removeEntry(ref: DrawingReference): void {
     const entry: DataSourceEntry = this.storage.remove(ref)[0];
     this.addReason(DataSourceChangeEventReason.RemoveEntry, [entry], true);
+  }
+
+  public requestDataUpdate(ref: DrawingReference): void {
+    const entry: DataSourceEntry = this.storage.get(ref);
+    this.addReason(DataSourceChangeEventReason.DataInvalid, [entry], true);
   }
 
   private createEntry(ref: DrawingReference, options: Omit<DrawingOptions, 'id'>): DataSourceEntry {

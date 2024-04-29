@@ -9,37 +9,37 @@ import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEven
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingId, DrawingReference, DrawingDescriptor } from '@/model/datasource/Drawing';
 
-declare type Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference, descriptor: DrawingDescriptor) => void;
+declare type Action = (dsse: DataSourceSharedEntries, ref: DrawingReference, descriptor: DrawingDescriptor) => void;
 
 export default class DataSourceInterconnect {
-  private readonly sharedProcessors: Map<DataSourceId, DataSourceSharedEntries> = new Map();
+  private readonly dsSharedEntries: Map<DataSourceId, DataSourceSharedEntries> = new Map();
 
   public addDataSource(dataSource: DataSource): void {
     const dsId = dataSource.id;
-    if (this.sharedProcessors.has(dsId)) {
+    if (this.dsSharedEntries.has(dsId)) {
       throw new Error(`Illegal state: dataSource with Id=${dsId} already exists`);
     }
 
     const { sharedEntries } = toRaw(dataSource);
     sharedEntries.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
-    for (const [, dsse] of this.sharedProcessors) {
+    for (const [, dsse] of this.dsSharedEntries) {
       sharedEntries.attachSharedEntriesFrom(dsse.dataSource);
       dsse.attachSharedEntriesFrom(sharedEntries.dataSource);
     }
 
-    this.sharedProcessors.set(dsId, sharedEntries);
+    this.dsSharedEntries.set(dsId, sharedEntries);
   }
 
   public removeDataSource(dsId: DataSourceId): void {
-    if (!this.sharedProcessors.has(dsId)) {
+    if (!this.dsSharedEntries.has(dsId)) {
       throw new Error(`Illegal state: dataSource with Id=${dsId} doesn't exists`);
     }
 
-    const sharedProcessor: DataSourceSharedEntries = this.sharedProcessors.get(dsId) as DataSourceSharedEntries;
+    const sharedProcessor: DataSourceSharedEntries = this.dsSharedEntries.get(dsId) as DataSourceSharedEntries;
     sharedProcessor.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
-    this.sharedProcessors.delete(dsId);
+    this.dsSharedEntries.delete(dsId);
 
-    for (const [id, ds] of this.sharedProcessors) {
+    for (const [id, ds] of this.dsSharedEntries) {
       sharedProcessor.detachSharedEntries(id);
       ds.detachSharedEntries(dsId);
     }
@@ -63,6 +63,11 @@ export default class DataSourceInterconnect {
     if (removeEntries.length > 0) {
       this.removeEntries(removeEntries, srcDs);
     }
+
+    const updateDataRequestEntries = this.getNotSharedEventEntries(events.get(DataSourceChangeEventReason.DataInvalid) || []);
+    if (updateDataRequestEntries.length > 0) {
+      this.requestDataUpdateForEntries(updateDataRequestEntries, srcDs);
+    }
   };
 
   private getNotSharedEventEntries(events: DataSourceChangeEvent[]): DataSourceEntry[] {
@@ -70,20 +75,26 @@ export default class DataSourceInterconnect {
   }
 
   private addEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    const action: Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference, descriptor: DrawingDescriptor) =>
-        dsse.addEntry(entryRef, descriptor.options);
+    const action: Action = (dsse: DataSourceSharedEntries, ref: DrawingReference, descriptor: DrawingDescriptor) =>
+        dsse.addEntry(ref, descriptor.options);
 
     this.applyActionToSharedEntries(entries, srcDs, action);
   }
 
   private removeEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    const action: Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference) => dsse.removeEntry(entryRef);
+    const action: Action = (dsse: DataSourceSharedEntries, ref: DrawingReference) => dsse.removeEntry(ref);
 
     this.applyActionToSharedEntries(entries, srcDs, action);
   }
 
   private updateEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    const action: Action = (dsse: DataSourceSharedEntries, entryRef: DrawingReference) => dsse.update(entryRef);
+    const action: Action = (dsse: DataSourceSharedEntries, ref: DrawingReference) => dsse.update(ref);
+
+    this.applyActionToSharedEntries(entries, srcDs, action);
+  }
+
+  private requestDataUpdateForEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
+    const action: Action = (dsse: DataSourceSharedEntries, ref: DrawingReference) => dsse.requestDataUpdate(ref);
 
     this.applyActionToSharedEntries(entries, srcDs, action);
   }
@@ -102,19 +113,19 @@ export default class DataSourceInterconnect {
       const internalRef: DrawingReference = isInternal ? descriptor.ref : descriptor.ref[1];
 
       if (shareWith === '*') {
-        for (const [cid, dsse] of this.sharedProcessors) {
+        for (const [cid, dsse] of this.dsSharedEntries) {
           if (srcDs.id !== cid) {
-            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            action(dsse, entryRef, descriptor);
+            const ref = externalRef[0] === cid ? internalRef : externalRef;
+            action(dsse, ref, descriptor);
             needUpdate.add(dsse.dataSource);
           }
         }
       } else {
         for (const cid of [...shareWith, externalRef[0]]) {
           if (srcDs.id !== cid) {
-            const dsse: DataSourceSharedEntries = this.sharedProcessors.get(cid) as DataSourceSharedEntries;
-            const entryRef = externalRef[0] === cid ? internalRef : externalRef;
-            action(dsse, entryRef, descriptor);
+            const dsse: DataSourceSharedEntries = this.dsSharedEntries.get(cid) as DataSourceSharedEntries;
+            const ref = externalRef[0] === cid ? internalRef : externalRef;
+            action(dsse, ref, descriptor);
             needUpdate.add(dsse.dataSource);
           }
         }

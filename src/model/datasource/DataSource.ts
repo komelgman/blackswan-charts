@@ -1,5 +1,7 @@
 import type { DeepPartial } from '@/misc/strict-type-checks';
-import { clone, isString, merge } from '@/misc/strict-type-checks';
+import { isString } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
+import { merge } from '@/misc/object.merge';
 import type {
   DataSourceChangeEvent,
   DataSourceChangeEventListener,
@@ -17,7 +19,7 @@ import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type IdHelper from '@/model/tools/IdHelper';
-import type { Predicate } from '@/model/type-defs';
+import type { Predicate} from '@/model/type-defs';
 import { isProxy, toRaw } from 'vue';
 
 export declare type DataSourceId = EntityId;
@@ -29,6 +31,7 @@ export interface DataSourceOptions {
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;
   public readonly sharedEntries: DataSourceSharedEntries;
+
   private readonly storage: DataSourceEntriesStorage;
   private readonly changeEvents: DataSourceChangeEventsMap = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
@@ -36,7 +39,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private tvaClerkValue: TVAClerk | undefined;
   private protocolOptions: TVAProtocolOptions | undefined = undefined;
 
-  public constructor(options: DataSourceOptions, drawings: DrawingOptions[]) {
+  public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
     this.storage = new DataSourceEntriesStorage();
     this.idHelper = options.idHelper;
@@ -134,6 +137,12 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.fire(new Map([[CacheInvalidated, this.toChangeEvents(CacheInvalidated, entries)]]));
   }
 
+  public requestDataUpdate(entry: DataSourceEntry): void {
+    const { DataInvalid } = DataSourceChangeEventReason;
+
+    this.fire(new Map([[DataInvalid, this.toChangeEvents(DataInvalid, [entry])]]));
+  }
+
   public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
     this.protocolOptions = options ?? { incident: this.getNewTransactionId() };
 
@@ -199,6 +208,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     });
   }
 
+  // Note: this changes won't store in TVA
   public process<T>(refs: DrawingReference[], processor: (entry: DataSourceEntry<T>) => void): void {
     this.checkWeAreNotInProxy();
     const entries: DataSourceEntry[] = [];

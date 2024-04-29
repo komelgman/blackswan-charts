@@ -1,4 +1,5 @@
-import { clone, merge } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
+import { merge } from '@/misc/object.merge';
 import type AxisOptions from '@/model/axis/AxisOptions';
 import UpdateAxisRange from '@/model/axis/incidents/UpdateAxisRange';
 import type { TextStyle } from '@/model/ChartStyle';

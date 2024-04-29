@@ -1,4 +1,4 @@
-import type { Cloneable } from '@/misc/strict-type-checks';
+import type { Cloneable } from '@/misc/object.clone';
 import type { PriceScalingFunction } from '@/model/axis/scaling/PriceScalingFunction';
 import type { Price } from '@/model/type-defs';
 

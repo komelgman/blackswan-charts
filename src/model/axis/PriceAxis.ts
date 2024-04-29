@@ -3,7 +3,7 @@ import UpdatePriceAxisInverted from '@/model/axis/incidents/UpdatePriceAxisInver
 import UpdatePriceAxisScale from '@/model/axis/incidents/UpdatePriceAxisScale';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { HasPostConstruct } from '@/misc/reactive-decorator';
-import { clone } from '@/misc/strict-type-checks';
+import { clone } from '@/misc/object.clone';
 import Axis from '@/model/axis/Axis';
 import type AxisOptions from '@/model/axis/AxisOptions';
 import { ZoomType } from '@/model/axis/AxisOptions';

@@ -3,23 +3,26 @@
 </template>
 
 <script lang="ts">
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import { isProxy } from 'vue';
-import { Options, Vue } from 'vue-class-component';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import { PriceScales } from '@/model/axis/scaling/PriceAxisScale';
 import Chart from '@/model/Chart';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
+import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
-import { LineBound } from '@/model/type-defs';
-import type { Line, UTCTimestamp, OHLCvChart, Price, CandlestickChartStyle, VolumeIndicator } from '@/model/type-defs';
+import type { OHLCvChart } from '@/model/sketchers/OHLCvChartSketcher';
 import type Sketcher from '@/model/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
+import type { CandlestickChartStyle, Line, Price, UTCTimestamp, VolumeIndicator } from '@/model/type-defs';
+import { LineBound, RegularTimePeriod } from '@/model/type-defs';
+import { isProxy } from 'vue';
+import { Options, Vue } from 'vue-class-component';
 
 /**
  * todo
- * ?need check, that is actually needed! Separate line bounds and line definition, snap definition to high timeframe, to eliminate rounding issues
+ * ?need check, that is actually needed!
+ * Separate line bounds and line definition, snap definition to high timeframe, to eliminate rounding issues
  * Time axis marks
  * Price axis marks
  * Moving lines in scale that's different to line scale (mouse point should keep on line)
@@ -38,9 +41,12 @@ export default class App extends Vue {
 
   created(): void {
     this.idHelper = new IdHelper();
-    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper }, []);
+    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper });
 
-    this.chartApi = new Chart({ sketchers: new Map<DrawingType, Sketcher>([]), style: {} });
+    this.chartApi = new Chart({
+      sketchers: new Map<DrawingType, Sketcher>([]),
+      style: {}
+    });
     this.chartApi.createPane(this.mainDs, {});
     this.chartApi.clearHistory();
   }
@@ -54,14 +60,12 @@ export default class App extends Vue {
         title: 'BTCUSDT',
         type: 'OHLCv',
         data: {
-          from: 0 as UTCTimestamp,
-          step: 0.01 as UTCTimestamp,
-          values: [
-            [0.3, 0.5, 0.1, 0.15, 1000],
-            [0.15, 0.6, 0.0, 0.45, 1500],
-            [0.35, 0.7, 0.3, 0.55, 300]
-          ] as [Price, Price, Price, Price, number][],
+          pipeOptions: {
+            symbol: "BINANCE:BTCUSDT",
+            step: RegularTimePeriod.m5,
+          },
           style: {
+            type: "Candlestick",
             showBody: true,
             showBorder: true,
             showWick: true,
@@ -75,28 +79,30 @@ export default class App extends Vue {
               body: '#26A29A',
               border: '#26A29A',
             }
-          } as CandlestickChartStyle,
+          },
         },
         locked: false,
         visible: true,
         shareWith: '*' as '*',
-      } as DrawingOptions<OHLCvChart>,
+      } as DrawingOptions<OHLCvChart<CandlestickChartStyle>>,
 
       volumeBTCUSDT: {
         id: 'volume1',
         title: 'BTCUSDT Volume',
         type: 'Volume',
         data: {
-          dataProvider: 'ohlcvBTCUSDT',
-          subtype: 'Columns',
+          from: 0 as UTCTimestamp,
+          step: 0.01 as UTCTimestamp,
+          values: [1000, 1500, 300],
           style: {
+            type: "Columns",
             bearish: '#EF5350',
             bullish: '#26A29A',
           }
         },
         locked: false,
         visible: true,
-      } as DrawingOptions<VolumeIndicator>,
+      } as DrawingOptions<VolumeIndicator<any>>,
 
       redLineNoBound: {
         id: 'line1',
@@ -217,7 +223,7 @@ export default class App extends Vue {
 
     setTimeout((j: number) => {
       console.log(`${j}) chartApi.createPane(~second);`);
-      const dataSource: DataSource = new DataSource({ id: 'second', idHelper: this.idHelper }, []);
+      const dataSource: DataSource = new DataSource({ id: 'second', idHelper: this.idHelper });
       chartApi.createPane(dataSource, { preferredSize: 0.3 });
     }, 100 * i++, i);
 
@@ -313,16 +319,45 @@ export default class App extends Vue {
 
       this.mainDs.beginTransaction();
       this.mainDs.add(drawings.ohlcvBTCUSDT);
-      this.mainDs.add(drawings.volumeBTCUSDT);
+      //this.mainDs.add(drawings.volumeBTCUSDT);
       this.mainDs.endTransaction();
     }, 100 * i++, i);
 
     setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.process('hlocv1', ...);`);
+      console.log(`${j}) this.mainDs.process(['hlocv1'], ...); // init`);
+
+      this.mainDs.addChangeEventListener((events, ds) => {
+        if (events.has(DataSourceChangeEventReason.DataInvalid)) {
+          const event = (events.get(DataSourceChangeEventReason.DataInvalid) || [])
+              .find(e => e.entry.descriptor.ref == 'ohlcv1');
+
+          if (event) {
+            console.log(event);
+          }
+        }
+      });
+
+      this.mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+        e.descriptor.options.data.content = {
+          available: { from: 0  as UTCTimestamp, to: 1  as UTCTimestamp },
+          loaded: { from: 0  as UTCTimestamp, to: 0.02  as UTCTimestamp },
+          step: 0.01 as UTCTimestamp,
+          values: [
+            [0.3, 0.5, 0.1, 0.15, 1000],
+            [0.15, 0.6, 0.0, 0.45, 1500],
+            [0.35, 0.7, 0.3, 0.55, 300]
+          ] as [Price, Price, Price, Price, number][],
+        };
+      });
+
+    }, 100 * i++, i);
+
+    setTimeout((j: number) => {
+      console.log(`${j}) this.mainDs.process('hlocv1', ...); // update`);
 
       const process = () => {
-        this.mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart>) => {
-          const values = e.descriptor.options.data.values;
+        this.mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+          const values = e.descriptor.options.data.content?.values || [];
           const lastBar = values[values.length - 1];
           const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
           const h = Math.max(lastBar[1], c);
@@ -339,17 +374,21 @@ export default class App extends Vue {
         });
       };
 
-      setInterval(process, 500);
+      setInterval(process, 1000);
     }, 100 * i++, i);
 
-    // watch([chartApi.timeAxis.range, chartApi.timeAxis.requestedDataRange], (range) => {
-    //   console.log(JSON.stringify(range));
-    // });
+    // i += 50;
     //
     // setTimeout((j: number) => {
-    //   console.log(`${j}) chartApi.paneModel('main').timeAxis.requestDataRange("xxx", {from: -1, to: 0 });`);
-    //   // warn !!! it's low level access, TVA not used
-    //   chartApi.paneModel('main').timeAxis.requestDataRange("xxx1", {from: -1, to: 0 });
+    //   console.log(`${j}) this.chartApi.togglePane(this.mainDs.id);`);
+    //   this.chartApi.togglePane(this.mainDs.id);
+    // }, 100 * i++, i);
+    //
+    // i += 50;
+    //
+    // setTimeout((j: number) => {
+    //   console.log(`${j}) this.chartApi.togglePane(this.mainDs.id);`);
+    //   this.chartApi.togglePane(this.mainDs.id);
     // }, 100 * i++, i);
 
 
