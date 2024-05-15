@@ -20,9 +20,9 @@ import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import { BoxLayout, Divider } from '@/components/layout';
-import PriceLabelsInvalidator from '@/model/axis/label/PriceLabelsInvalidator';
+import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
 import type ChartState from '@/model/ChartState';
-import type Viewport from '@/model/viewport/Viewport';
+import type Viewport from '@/model/chart/viewport/Viewport';
 
 @Options({
   components: { LayeredCanvas, Divider, BoxLayout },

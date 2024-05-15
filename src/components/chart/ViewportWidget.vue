@@ -31,8 +31,8 @@ import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
-import type Viewport from '@/model/viewport/Viewport';
-import ViewportHighlightInvalidator from '@/model/viewport/ViewportHighlightInvalidator';
+import type Viewport from '@/model/chart/viewport/Viewport';
+import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
 
 @Options({
   components: { LayeredCanvas },

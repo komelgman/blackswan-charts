@@ -4,15 +4,15 @@
 
 <script lang="ts">
 import ChartWidget from '@/components/chart/ChartWidget.vue';
-import { PriceScales } from '@/model/axis/scaling/PriceAxisScale';
+import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import Chart from '@/model/Chart';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
-import type { OHLCvChart } from '@/model/sketchers/OHLCvChartSketcher';
-import type Sketcher from '@/model/sketchers/Sketcher';
+import type { OHLCvChart } from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
+import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import IdHelper from '@/model/tools/IdHelper';
 import type { CandlestickChartStyle, Line, Price, UTCTimestamp, VolumeIndicator } from '@/model/type-defs';
 import { LineBound, RegularTimePeriod } from '@/model/type-defs';
@@ -61,11 +61,12 @@ export default class App extends Vue {
         type: 'OHLCv',
         data: {
           pipeOptions: {
+            type: "OHLCvPipeOptions",
             symbol: "BINANCE:BTCUSDT",
             step: RegularTimePeriod.m5,
           },
           style: {
-            type: "Candlestick",
+            type: "CandlestickChartStyle",
             showBody: true,
             showBorder: true,
             showWick: true,
@@ -84,7 +85,7 @@ export default class App extends Vue {
         locked: false,
         visible: true,
         shareWith: '*' as '*',
-      } as DrawingOptions<OHLCvChart<CandlestickChartStyle>>,
+      } as DrawingOptions<OHLCvChart<CandlestickChartStyle>>, // DO<HasPipeOptions<OHLCvPipeOptions> & HasStyle<CandlestickChartStyle>>
 
       volumeBTCUSDT: {
         id: 'volume1',
@@ -315,7 +316,7 @@ export default class App extends Vue {
     // }, 100 * i++, i);
 
     setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.hlocBTCUSDT);`);
+      console.log(`${j}) this.mainDs.add(drawings.ohlcvBTCUSDT);`);
 
       this.mainDs.beginTransaction();
       this.mainDs.add(drawings.ohlcvBTCUSDT);

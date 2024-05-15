@@ -1,4 +1,4 @@
-import type PriceAxisScale from '@/model/axis/scaling/PriceAxisScale';
+import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { DrawingReference } from '@/model/datasource/Drawing';
 
 export declare type Nominal<T, Name extends string> = T & { [Symbol.species]: Name; };
@@ -93,7 +93,7 @@ export interface CandleColors {
 export declare type CandleType = 'bearish' | 'bullish';
 
 export interface CandlestickChartStyle extends Record<CandleType, CandleColors> {
-  type: "Candlestick";
+  type: "CandlestickChartStyle";
   showWick: boolean;
   showBody: boolean;
   showBorder: boolean;

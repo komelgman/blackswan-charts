@@ -11,7 +11,7 @@ export default function Reactive<T extends Record<string, any>>(ConstructorFunct
   // eslint-disable-next-line func-names
   const newConstructor = function (...args: any[]): T {
     // eslint-disable-next-line func-names
-    const Proxy = function (): T {
+    const ClassProxy = function (): T {
       const result: T = (reactive(new ConstructorFunction(...args)) as any) as T;
 
       if ((result as any as HasPostConstruct).postConstruct !== undefined) {
@@ -21,8 +21,8 @@ export default function Reactive<T extends Record<string, any>>(ConstructorFunct
       return result;
     } as any as { new(): T };
 
-    Proxy.prototype = ConstructorFunction.prototype;
-    return new Proxy();
+    ClassProxy.prototype = ConstructorFunction.prototype;
+    return new ClassProxy();
   } as any as Constructor<T>;
 
   newConstructor.prototype = ConstructorFunction.prototype;

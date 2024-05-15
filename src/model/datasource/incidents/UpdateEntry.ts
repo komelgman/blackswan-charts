@@ -9,7 +9,7 @@ import { isEqualDrawingReference } from '@/model/datasource/Drawing';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
-import type { CanMergeWith } from '@/model/options/CanMergeWith';
+import type { CanMergeWith } from '@/model/type-defs/options/CanMergeWith';
 
 export interface UpdateOptions extends HistoricalIncidentOptions {
   ref: DrawingReference,

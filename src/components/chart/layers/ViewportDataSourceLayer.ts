@@ -1,7 +1,7 @@
 import { toRaw, watch } from 'vue';
 import type { DataSourceChangeEventListener, DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import Layer from '@/components/layered-canvas/layers/Layer';
-import type { Inverted, InvertedValue } from '@/model/axis/PriceAxis';
+import type { Inverted, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 

@@ -1,5 +1,5 @@
 import type { HistoricalIncident, HistoricalIncidentLifeHooks } from '@/model/history/HistoricalIncident';
-import type { CanMergeWith } from '@/model/options/CanMergeWith';
+import type { CanMergeWith } from '@/model/type-defs/options/CanMergeWith';
 import type { Predicate } from '@/model/type-defs';
 
 export interface IsNexusIncident {
@@ -105,8 +105,7 @@ export default class TVAProtocol {
     this.signValue = TVAProtocolSign.Approved;
 
     this.incidents.forEach((incident, index) => {
-      if ((incident as unknown as IsNexusIncident).isNexusIncident !== undefined
-        && (incident as unknown as IsNexusIncident).isNexusIncident()) {
+      if ((incident as unknown as IsNexusIncident)?.isNexusIncident?.()) {
         this.incidents.splice(index, 1);
       }
     });
@@ -161,9 +160,7 @@ export default class TVAProtocol {
   private wasMerged(incident: HistoricalIncident, immediate: boolean): boolean {
     for (let i = this.incidents.length - 1; i >= 0; i -= 1) {
       const applicant = this.incidents[i];
-      const isWasMerged: boolean = applicant !== undefined
-        && (applicant as unknown as CanMergeWith<HistoricalIncident>).mergeWith !== undefined
-        && (applicant as unknown as CanMergeWith<HistoricalIncident>).mergeWith(incident);
+      const isWasMerged: boolean = (applicant as unknown as CanMergeWith<HistoricalIncident>)?.mergeWith?.(incident);
 
       if (isWasMerged) {
         if (immediate) {

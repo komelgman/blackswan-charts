@@ -6,8 +6,8 @@ import type { DataSourceChangeEventListener, DataSourceChangeEventsMap }
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { DrawingType } from '@/model/datasource/Drawing';
-import type Sketcher from '@/model/sketchers/Sketcher';
-import type Viewport from '@/model/viewport/Viewport';
+import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type Viewport from '@/model/chart/viewport/Viewport';
 
 export default class DataSourceInvalidator {
   private contextValue!: LayerContext;

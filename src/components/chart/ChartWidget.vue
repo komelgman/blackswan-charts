@@ -64,7 +64,7 @@ import { Prop, Provide } from 'vue-property-decorator';
 import { Options, Vue } from 'vue-class-component';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
 import type { PaneId } from '@/components/layout/PaneDescriptor';
-import PanesSizeChanged from '@/model/incidents/PanesSizeChanged';
+import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import type Chart from '@/model/Chart';
 import type { PaneRegistrationEvent } from '@/model/Chart';
 import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
@@ -77,15 +77,15 @@ import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import { BoxLayout, Divider, Multipane } from '@/components/layout';
 import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
 import type { DeepPartial } from '@/misc/strict-type-checks';
-import type PriceAxis from '@/model/axis/PriceAxis';
+import type PriceAxis from '@/model/chart/axis/PriceAxis';
 import type ChartState from '@/model/ChartState';
 import type { ChartStyle } from '@/model/ChartStyle';
-import PriceAxisContextMenu from '@/model/context-menu/PriceAxisContextMenu';
-import TimeAxisContextMenu from '@/model/context-menu/TimeAxisContextMenu';
-import ViewportContextMenu from '@/model/context-menu/ViewportContextMenu';
+import PriceAxisContextMenu from '@/model/chart/context-menu/PriceAxisContextMenu';
+import TimeAxisContextMenu from '@/model/chart/context-menu/TimeAxisContextMenu';
+import ViewportContextMenu from '@/model/chart/context-menu/ViewportContextMenu';
 import type { DrawingType } from '@/model/datasource/Drawing';
-import type Sketcher from '@/model/sketchers/Sketcher';
-import type Viewport from '@/model/viewport/Viewport';
+import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type Viewport from '@/model/chart/viewport/Viewport';
 
 export declare type ChartOptions = {
   style: DeepPartial<ChartStyle>,
