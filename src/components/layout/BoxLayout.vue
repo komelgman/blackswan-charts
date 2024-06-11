@@ -4,21 +4,21 @@
   </div>
 </template>
 
-<script lang="ts">
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
-import { Direction } from '@/components/layout';
+<script setup lang="ts">
+import Direction from '@/components/layout/Direction';
+import { computed } from 'vue';
 
-@Options({})
-export default class BoxLayout extends Vue {
-  @Prop({ type: String as PropType<Direction>, default: Direction.Horizontal })
-  protected direction!: Direction;
-
-  get classnames(): string[] {
-    return ['boxlayout', `layout-${this.direction}`];
-  }
+interface Props {
+  direction?: Direction;
 }
+
+const { direction } = withDefaults(defineProps<Props>(), {
+  direction: Direction.Horizontal
+});
+
+const classnames = computed(() => {
+  return ['boxlayout', `layout-${direction}`];
+});
 </script>
 
 <style lang="scss">

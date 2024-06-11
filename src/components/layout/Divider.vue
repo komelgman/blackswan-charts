@@ -4,21 +4,21 @@
   </div>
 </template>
 
-<script lang="ts">
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+<script setup lang="ts">
+import { computed } from 'vue';
 import { Thickness } from '@/components/layout';
 
-@Options({})
-export default class Divider extends Vue {
-  @Prop({ type: String as PropType<Thickness>, default: Thickness.Thin })
-  protected thickness!: Thickness;
-
-  get classnames(): string[] {
-    return ['divider', `divider-${this.thickness}`];
-  }
+interface Props {
+  thickness?: Thickness;
 }
+
+const { thickness } = withDefaults(defineProps<Props>(), {
+  thickness: Thickness.Thin
+});
+
+const classnames = computed(() => {
+  return ['divider', `divider-${thickness}`];
+});
 </script>
 
 <style lang="scss">

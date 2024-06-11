@@ -1,98 +1,82 @@
 <template>
-  <div class="priceline pane" :style="cssVars">
+  <div ref="rootElement" class="priceline pane" :style="cssVars">
     <layered-canvas
-      :options="canvasOptions"
-      @drag-move="onDrag"
-      @zoom="onZoom"
-      @resize="onResize"
+        :options="canvasOptions"
+        @drag-move="onDrag"
+        @zoom="onZoom"
+        @resize="onResize"
     />
   </div>
 </template>
 
-<script lang="ts">
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Inject, Prop } from 'vue-property-decorator';
+<script setup lang="ts">
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
 import PriceAxisLabelsLayer from '@/components/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisMarksLayer from '@/components/chart/layers/PriceAxisMarksLayer';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import { BoxLayout, Divider } from '@/components/layout';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
 import type ChartState from '@/model/ChartState';
 import type Viewport from '@/model/chart/viewport/Viewport';
 
-@Options({
-  components: { LayeredCanvas, Divider, BoxLayout },
-})
-export default class PriceAxisWidget extends Vue {
-  canvasOptions: LayeredCanvasOptions = { layers: [] };
-
-  @Prop({ type: Object as PropType<Viewport>, required: true })
-  private viewportModel!: Viewport;
-  @Inject()
-  private chartState!: ChartState;
-  private labelsInvalidator!: PriceLabelsInvalidator;
-  private marksLayer!: PriceAxisMarksLayer;
-
-  created(): void {
-    const { priceAxis } = this.viewportModel;
-    this.labelsInvalidator = new PriceLabelsInvalidator(priceAxis);
-    this.marksLayer = this.createMarksLayer();
-
-    this.canvasOptions.layers.push(
-      this.createLabelsLayer(),
-      this.marksLayer,
-      // priceline mark renderer
-      // tool/cross hair label renderer
-    );
-  }
-
-  mounted(): void {
-    this.marksLayer.installListeners();
-  }
-
-  unmounted(): void {
-    this.marksLayer.uninstallListeners();
-  }
-
-  private createLabelsLayer(): PriceAxisLabelsLayer {
-    const { priceAxis } = this.viewportModel;
-    const result: PriceAxisLabelsLayer = new PriceAxisLabelsLayer(priceAxis);
-
-    result.addContextChangeListener((newCtx: LayerContext) => {
-      this.labelsInvalidator.context = newCtx;
-    });
-
-    return result;
-  }
-
-  private createMarksLayer(): PriceAxisMarksLayer {
-    return new PriceAxisMarksLayer(this.viewportModel);
-  }
-
-  onDrag(e: DragMoveEvent): void {
-    this.viewportModel.priceAxis.zoom(this.$el.getBoundingClientRect().height / 2, -e.dy);
-  }
-
-  onZoom(e: ZoomEvent): void {
-    this.viewportModel.priceAxis.zoom(e.pivot.y, e.delta);
-  }
-
-  onResize(e: ResizeEvent): void {
-    this.viewportModel.priceAxis.update({ screenSize: { main: e.height, second: e.width } });
-  }
-
-  get cssVars(): any {
-    const widgetWidth = this.chartState.priceWidgetWidth;
-
-    return {
-      '--widgetWidth': `${(widgetWidth)}px`,
-    };
-  }
+interface Props {
+  viewportModel: Viewport;
 }
+
+const { viewportModel } = defineProps<Props>();
+const rootElement = ref<HTMLElement>();
+const chartState = inject<ChartState>('chartState');
+const labelsInvalidator = new PriceLabelsInvalidator(viewportModel.priceAxis);
+const marksLayer = new PriceAxisMarksLayer(viewportModel);
+const canvasOptions: LayeredCanvasOptions = {
+  layers: [
+    createLabelsLayer(),
+    marksLayer,
+    // priceline mark renderer
+    // tool/cross hair label renderer
+  ],
+};
+
+onMounted(() => {
+  marksLayer.installListeners();
+});
+
+onUnmounted(() => {
+  marksLayer.uninstallListeners();
+});
+
+function onDrag(e: DragMoveEvent): void {
+  viewportModel.priceAxis.zoom(rootElement.value!.getBoundingClientRect().height / 2, -e.dy);
+}
+
+function onZoom(e: ZoomEvent): void {
+  viewportModel.priceAxis.zoom(e.pivot.y, e.delta);
+}
+
+function onResize(e: ResizeEvent): void {
+  viewportModel.priceAxis.update({ screenSize: { main: e.height, second: e.width } });
+}
+
+function createLabelsLayer(): PriceAxisLabelsLayer {
+  const { priceAxis } = viewportModel;
+  const result: PriceAxisLabelsLayer = new PriceAxisLabelsLayer(priceAxis);
+
+  result.addContextChangeListener((newCtx: LayerContext) => {
+    labelsInvalidator.context = newCtx;
+  });
+
+  return result;
+}
+
+const cssVars = computed(() => {
+  const widgetWidth = chartState!.priceWidgetWidth;
+
+  return {
+    '--widgetWidth': `${(widgetWidth)}px`,
+  };
+});
 </script>
 
 <style scoped>

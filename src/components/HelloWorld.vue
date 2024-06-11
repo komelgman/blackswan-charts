@@ -4,25 +4,20 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop, Watch } from 'vue-property-decorator';
+<script setup lang="ts">
+import { watch } from 'vue';
 
-@Options({
-})
-export default class HelloWorld extends Vue {
-  @Prop({ type: String })
-  public msg!: string;
-
-  public created(): void {
-    console.log('was created with message:', this.msg);
-  }
-
-  @Watch('msg')
-  private watch(): void {
-    console.log('message updated:', this.msg);
-  }
+interface Props {
+  msg: string;
 }
+
+const { msg } = defineProps<Props>();
+
+console.log('was created with message:', msg);
+
+watch(() => msg, (newMsg) => {
+  console.log('message updated:', newMsg);
+});
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

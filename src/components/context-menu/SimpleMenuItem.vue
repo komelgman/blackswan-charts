@@ -1,42 +1,36 @@
-<script lang="tsx">
-import type { VNode } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+<template>
+  <a
+      tabindex="0"
+      class="simple-menu-item"
+      :style="model.style"
+      @click="model.onclick"
+      @keypress="onKeyPress"
+  >
+    <renderIcon />
+    {{ model.title }}
+  </a>
+</template>
+
+<script setup lang="ts">
+import { type VNode } from 'vue';
 import type { SimpleMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
 
-@Options({
-  components: {},
-})
-export default class SimpleMenuItem extends Vue {
-  @Prop()
-  private model!: SimpleMenuItemModel;
+interface Props {
+  model: SimpleMenuItemModel;
+}
 
-  private onKeyPress(e: KeyboardEvent): void {
-    if (e.code === 'Enter' || e.code === 'Space') {
-      if ((e.target as any).click !== undefined) {
-        (e.target as any).click();
-      }
+defineProps<Props>();
+
+function onKeyPress(e: KeyboardEvent): void {
+  if (e.code === 'Enter' || e.code === 'Space') {
+    if ((e.target as any).click !== undefined) {
+      (e.target as any).click();
     }
   }
+}
 
-  private renderIcon(): VNode | null {
-    return null;
-  }
-
-  render(): VNode {
-    return (
-      <li
-        tabindex="0"
-        class="simple-menu-item"
-        style={this.model.style}
-        onClick={() => this.model.onclick()}
-        onKeypress={this.onKeyPress}
-      >
-        {this.renderIcon()}
-        {this.model.title}
-      </li>
-    );
-  }
+function renderIcon(): VNode | null {
+  return null;
 }
 </script>
 

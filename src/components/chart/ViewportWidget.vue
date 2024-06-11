@@ -1,186 +1,180 @@
 <template>
   <div
-    class="viewport"
-    :style="cssVars"
+      class="viewport"
+      :style="cssVars"
   >
     <layered-canvas
-      :options="canvasOptions"
-      @drag-start="onDragStart"
-      @drag-end="onDragEnd"
-      @drag-move="onDrag"
-      @mouse-move="onMouseMove"
-      @zoom="onZoom"
-      @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
-      @left-mouse-btn-click="onLeftMouseBtnClick"
+        :options="canvasOptions"
+        @drag-start="onDragStart"
+        @drag-end="onDragEnd"
+        @drag-move="onDrag"
+        @mouse-move="onMouseMove"
+        @zoom="onZoom"
+        @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
+        @left-mouse-btn-click="onLeftMouseBtnClick"
     />
   </div>
 </template>
 
-<script lang="ts">
-import { toRaw } from 'vue';
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+<script setup lang="ts">
 import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
 import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
+import type {
+  DragMoveEvent,
+  MouseClickEvent,
+  MousePositionEvent,
+  ZoomEvent,
+} from '@/components/layered-canvas/LayeredCanvas.vue';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
 import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import type Viewport from '@/model/chart/viewport/Viewport';
+import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
-import type Viewport from '@/model/chart/viewport/Viewport';
-import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
+import { computed, onMounted, onUnmounted, toRaw } from 'vue';
 
-@Options({
-  components: { LayeredCanvas },
+interface Props {
+  viewportModel: Viewport;
+}
+
+const { viewportModel } = defineProps<Props>();
+const highlightInvalidator = new ViewportHighlightInvalidator(viewportModel);
+const dataSourceInvalidator = new DataSourceInvalidator(viewportModel);
+
+const dataSourceLayer = createDataSourceLayer();
+const highlightingLayer = createHighlightingLayer();
+const canvasOptions: LayeredCanvasOptions = {
+  layers: [
+    createGridLayer(),
+    dataSourceLayer,
+    // shared data from siblings renderer
+    // priceline renderer
+    highlightingLayer,
+    // tool/crosshair renderer ??? shared with other panes
+  ],
+};
+
+onMounted(() => {
+  dataSourceInvalidator.installListeners();
+  dataSourceLayer.installListeners();
+  highlightingLayer.installListeners();
+  viewportModel.dataSource.addChangeEventListener(dataSourceChangeEventListener);
+});
+
+onUnmounted(() => {
+  dataSourceInvalidator.uninstallListeners();
+  dataSourceLayer.uninstallListeners();
+  highlightingLayer.uninstallListeners();
+  viewportModel.dataSource.removeChangeEventListener(dataSourceChangeEventListener);
 })
-export default class ViewportWidget extends Vue {
-  canvasOptions: LayeredCanvasOptions = { layers: [] };
-  @Prop({ type: Object as PropType<Viewport>, required: true })
-  private viewportModel!: Viewport;
-  private highlightInvalidator!: ViewportHighlightInvalidator;
-  private dataSourceInvalidator!: DataSourceInvalidator;
-  private dataSourceLayer!: ViewportDataSourceLayer;
-  private highlightingLayer!: ViewportHighlightingLayer;
 
-  created(): void {
-    this.highlightInvalidator = new ViewportHighlightInvalidator(this.viewportModel);
-    this.dataSourceInvalidator = new DataSourceInvalidator(this.viewportModel);
-    this.dataSourceLayer = this.createDataSourceLayer();
-    this.highlightingLayer = this.createHighlightingLayer();
+function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
+  if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
+    const { selected, highlighted } = toRaw(viewportModel);
+    const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
 
-    this.canvasOptions.layers.push(
-      this.createGridLayer(),
-      this.dataSourceLayer,
-      // shared data from siblings renderer
-      // priceline renderer
-      this.highlightingLayer,
-      // tool/crosshair renderer ??? shared with other panes
-    );
-  }
+    for (const event of removedEntriesEvents) {
+      if (highlighted === event.entry) {
+        viewportModel.highlighted = undefined;
+        viewportModel.highlightedHandleId = undefined;
+        viewportModel.cursor = undefined;
+      }
 
-  mounted(): void {
-    this.dataSourceInvalidator.installListeners();
-    this.dataSourceLayer.installListeners();
-    this.highlightingLayer.installListeners();
-    this.viewportModel.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
-  }
-
-  unmounted(): void {
-    this.dataSourceInvalidator.uninstallListeners();
-    this.dataSourceLayer.uninstallListeners();
-    this.highlightingLayer.uninstallListeners();
-    this.viewportModel.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
-  }
-
-  private dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
-    if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
-      const { selected, highlighted } = toRaw(this.viewportModel);
-      const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
-
-      for (const event of removedEntriesEvents) {
-        if (highlighted === event.entry) {
-          this.viewportModel.highlighted = undefined;
-          this.viewportModel.highlightedHandleId = undefined;
-          this.viewportModel.cursor = undefined;
-        }
-
-        if (selected.has(event.entry)) {
-          selected.delete(event.entry);
-        }
+      if (selected.has(event.entry)) {
+        selected.delete(event.entry);
       }
     }
-  }
-
-  private createGridLayer(): ViewportGridLayer {
-    const { timeAxis, priceAxis } = this.viewportModel;
-    return new ViewportGridLayer(timeAxis, priceAxis);
-  }
-
-  private createDataSourceLayer(): ViewportDataSourceLayer {
-    const { dataSource, priceAxis } = this.viewportModel;
-    const result: ViewportDataSourceLayer = new ViewportDataSourceLayer(dataSource, priceAxis.inverted);
-
-    result.addContextChangeListener((newCtx: LayerContext) => {
-      this.highlightInvalidator.layerContext = newCtx;
-      this.dataSourceInvalidator.context = newCtx;
-    });
-
-    return result;
-  }
-
-  private createHighlightingLayer(): ViewportHighlightingLayer {
-    return new ViewportHighlightingLayer(this.viewportModel);
-  }
-
-  onMouseMove(e: MousePositionEvent): void {
-    this.highlightInvalidator.invalidate(e);
-  }
-
-  onLeftMouseBtnDoubleClick(): void {
-    const { highlighted } = this.viewportModel;
-    if (highlighted !== undefined) {
-      console.log(`double click on element: ${highlighted.descriptor.ref}`);
-    } else {
-      console.log('double click on viewport');
-    }
-  }
-
-  onLeftMouseBtnClick(e: MouseClickEvent): void {
-    this.viewportModel.updateSelection(e.isCtrl);
-  }
-
-  onDragStart(e: MouseClickEvent): void {
-    this.viewportModel.updateSelection(e.isCtrl, true);
-
-    if (this.viewportModel.selectionCanBeDragged()) {
-      this.viewportModel.dataSource.beginTransaction({ incident: 'drag-in-viewport' });
-
-      if (e.isCtrl) {
-        this.viewportModel.cloneSelected();
-      }
-    }
-
-    this.viewportModel.updateDragHandle();
-  }
-
-  onDrag(e: DragMoveEvent): void {
-    if (this.viewportModel.selectionCanBeDragged()) {
-      this.highlightInvalidator.invalidate(e);
-      this.viewportModel.moveSelected(e);
-    } else {
-      const { timeAxis, priceAxis } = this.viewportModel;
-      timeAxis.move(e.dx);
-      priceAxis.move(e.dy);
-    }
-  }
-
-  onDragEnd(): void {
-    const { dataSource } = this.viewportModel;
-    if (this.viewportModel.selectionCanBeDragged()) {
-      dataSource.endTransaction();
-    } else {
-      dataSource.tvaClerk.processReport({
-        protocolOptions: { incident: 'move-in-viewport' },
-        sign: true,
-      });
-    }
-  }
-
-  onZoom(e: ZoomEvent): void {
-    this.viewportModel.timeAxis.zoom(e.pivot.x, e.delta);
-  }
-
-  get cssVars(): any {
-    const cursor: string = this.viewportModel.cursor || 'default';
-    return {
-      cursor: `${cursor} !important`,
-    };
   }
 }
+
+function createGridLayer(): ViewportGridLayer {
+  const { timeAxis, priceAxis } = viewportModel;
+  return new ViewportGridLayer(timeAxis, priceAxis);
+}
+
+function createDataSourceLayer(): ViewportDataSourceLayer {
+  const { dataSource, priceAxis } = viewportModel;
+  const result: ViewportDataSourceLayer = new ViewportDataSourceLayer(dataSource, priceAxis.inverted);
+
+  result.addContextChangeListener((newCtx: LayerContext) => {
+    highlightInvalidator.layerContext = newCtx;
+    dataSourceInvalidator.context = newCtx;
+  });
+
+  return result;
+}
+
+function createHighlightingLayer(): ViewportHighlightingLayer {
+  return new ViewportHighlightingLayer(viewportModel);
+}
+
+function onMouseMove(e: MousePositionEvent): void {
+  highlightInvalidator.invalidate(e);
+}
+
+function onLeftMouseBtnDoubleClick(): void {
+  const { highlighted } = viewportModel;
+  if (highlighted !== undefined) {
+    console.log(`double click on element: ${highlighted.descriptor.ref}`);
+  } else {
+    console.log('double click on viewport');
+  }
+}
+
+function onLeftMouseBtnClick(e: MouseClickEvent): void {
+  viewportModel.updateSelection(e.isCtrl);
+}
+
+function onDragStart(e: MouseClickEvent): void {
+  viewportModel.updateSelection(e.isCtrl, true);
+
+  if (viewportModel.selectionCanBeDragged()) {
+    viewportModel.dataSource.beginTransaction({ incident: 'drag-in-viewport' });
+
+    if (e.isCtrl) {
+      viewportModel.cloneSelected();
+    }
+  }
+
+  viewportModel.updateDragHandle();
+}
+
+function onDrag(e: DragMoveEvent): void {
+  if (viewportModel.selectionCanBeDragged()) {
+    highlightInvalidator.invalidate(e);
+    viewportModel.moveSelected(e);
+  } else {
+    const { timeAxis, priceAxis } = viewportModel;
+    timeAxis.move(e.dx);
+    priceAxis.move(e.dy);
+  }
+}
+
+function onDragEnd(): void {
+  const { dataSource } = viewportModel;
+  if (viewportModel.selectionCanBeDragged()) {
+    dataSource.endTransaction();
+  } else {
+    dataSource.tvaClerk.processReport({
+      protocolOptions: { incident: 'move-in-viewport' },
+      sign: true,
+    });
+  }
+}
+
+function onZoom(e: ZoomEvent): void {
+  viewportModel.timeAxis.zoom(e.pivot.x, e.delta);
+}
+
+const cssVars = computed(() => {
+  const cursor: string = viewportModel.cursor || 'default';
+  return {
+    cursor: `${cursor} !important`,
+  };
+});
 </script>
 
 <style scoped>

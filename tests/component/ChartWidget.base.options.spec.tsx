@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/experimental-ct-vue';
 import type { Page } from 'playwright';
 import type { PaneOptions } from '@/components/layout';
-import type { ViewportOptions } from '@/model/viewport/Viewport';
+import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type ChartWidgetTestContext from './tools/ChartWidgetTestContext';
 import { delay } from './tools/utils';
 import type { BoundRect } from './tools/utils';

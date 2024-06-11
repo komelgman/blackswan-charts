@@ -1,8 +1,13 @@
-<script lang="tsx">
-import type { CSSProperties, VNode } from 'vue';
-import { reactive } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Inject } from 'vue-property-decorator';
+<template>
+  <div ref="rootElement" class="context-menu" :style="style">
+    <ul>
+      <component :is="item" v-for="item in renderItems()" :key="item.id" />
+    </ul>
+  </div>
+</template>
+
+<script setup lang="tsx">
+import { ref, computed, onUnmounted, inject, nextTick, toRaw, type ComputedRef } from 'vue';
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
 import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
@@ -12,106 +17,105 @@ import makeFont from '@/misc/make-font';
 import type { ChartStyle } from '@/model/ChartStyle';
 import type { Point } from '@/model/type-defs';
 
-const HIDDEN_POS: Point = { x: -10000, y: 0 };
-
-@Options({
-  components: { simpleItem: SimpleMenuItem, checkboxItem: CheckboxMenuItem },
-})
-export default class ContextMenu extends Vue {
-  private position: Point = HIDDEN_POS;
-  private items: MenuItem[] = reactive([]);
-  private visible: boolean = false;
-  private removeHideListener!: EventRemover;
-
-  @Inject()
-  private chartStyle!: ChartStyle;
-
-  unmounted(): void {
-    if (typeof this.removeHideListener === 'function') {
-      this.removeHideListener();
-    }
-  }
-
-  public show(event: MouseEvent, items: MenuItem[]): void {
-    this.items.splice(0, this.items.length, ...items);
-    this.removeHideListener = onceDocument('mousedown', this.hide);
-    this.visible = true;
-
-    this.$nextTick(() => {
-      this.position = this.calcPosition(event);
-    });
-  }
-
-  private calcPosition(event: MouseEvent): Point {
-    const width = this.$el.clientWidth;
-    const height = this.$el.clientHeight;
-    const result: Point = {
-      x: event.pageX,
-      y: event.pageY,
-    };
-
-    if (height + result.y >= window.innerHeight + window.scrollY) {
-      const targetTop = result.y - height;
-
-      if (targetTop > window.scrollY) {
-        result.y = targetTop;
-      }
-    }
-
-    if (width + result.x >= window.innerWidth + window.scrollX) {
-      const targetWidth = result.x - width;
-
-      if (targetWidth > window.scrollX) {
-        result.x = targetWidth;
-      }
-    }
-
-    return result;
-  }
-
-  public hide(): void {
-    this.visible = false;
-    this.position = HIDDEN_POS;
-
-    if (typeof this.removeHideListener === 'function') {
-      this.removeHideListener();
-    }
-  }
-
-  private get style(): CSSProperties {
-    return {
-      font: makeFont(this.chartStyle.text),
-      color: this.chartStyle.text.color,
-      display: this.visible ? 'block' : 'none',
-      paddingLeft: '26px',
-      top: `${this.position.y}px`,
-      left: `${this.position.x}px`,
-    };
-  }
-
-  renderItems(): VNode[] {
-    return this.items.map((item) => {
-      switch (item.type) {
-        case 'item':
-          return <simple-item model={item} />;
-        case 'checkbox':
-          return <checkbox-item model={item} />;
-        default:
-          return <span>error</span>;
-      }
-    });
-  }
-
-  render(): any {
-    return (
-      <div class="context-menu" style={this.style}>
-        <ul>
-          {this.renderItems()}
-        </ul>
-      </div>
-    );
-  }
+export declare type ContextMenu = {
+  show: (event: MouseEvent, newItems: MenuItem[]) => void,
+  hide: () => void
 }
+
+const rootElement = ref<HTMLDivElement>();
+const HIDDEN_POS: Point = { x: -10000, y: 0 };
+const position = ref<Point>(HIDDEN_POS);
+const items = ref<MenuItem[]>([]);
+const visible = ref<boolean>(false);
+const chartStyle = inject<ComputedRef<ChartStyle>>('chartStyle');
+
+let removeHideListener: EventRemover | undefined;
+
+onUnmounted(() => {
+  if (typeof removeHideListener === 'function') {
+    removeHideListener();
+    removeHideListener = undefined;
+  }
+});
+
+const show = (event: MouseEvent, newItems: MenuItem[]): void => {
+  items.value.splice(0, items.value.length, ...newItems);
+  removeHideListener = onceDocument('mousedown', hide);
+  visible.value = true;
+
+  nextTick(() => {
+    position.value = calcPosition(event);
+  });
+};
+
+const hide = (): void => {
+  visible.value = false;
+  position.value = HIDDEN_POS;
+
+  if (typeof removeHideListener === 'function') {
+    removeHideListener();
+  }
+};
+
+const calcPosition = (event: MouseEvent): Point => {
+  const width = rootElement.value?.clientWidth || 0;
+  const height = rootElement.value?.clientHeight || 0;
+  const result: Point = {
+    x: event.pageX,
+    y: event.pageY,
+  };
+
+  if (height + result.y >= window.innerHeight + window.scrollY) {
+    const targetTop = result.y - height;
+
+    if (targetTop > window.scrollY) {
+      result.y = targetTop;
+    }
+  }
+
+  if (width + result.x >= window.innerWidth + window.scrollX) {
+    const targetWidth = result.x - width;
+
+    if (targetWidth > window.scrollX) {
+      result.x = targetWidth;
+    }
+  }
+
+  return result;
+};
+
+const style = computed(() => {
+  if (!chartStyle) {
+    return { };
+  }
+
+  return {
+    font: makeFont(chartStyle.value!.text),
+    color: chartStyle.value!.text.color,
+    display: visible.value ? 'block' : 'none',
+    paddingLeft: '26px',
+    top: `${position.value.y}px`,
+    left: `${position.value.x}px`,
+  }
+});
+
+const renderItems = (): any[] => {
+  return items.value.map((item) => {
+    switch (item.type) {
+      case 'item':
+        return <SimpleMenuItem model={item} />;
+      case 'checkbox':
+        return <CheckboxMenuItem model={item} />;
+      default:
+        return <span>error</span>;
+    }
+  });
+};
+
+defineExpose({
+  show,
+  hide
+})
 </script>
 
 <style scoped lang="scss">

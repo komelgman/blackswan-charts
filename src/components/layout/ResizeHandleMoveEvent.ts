@@ -1,8 +1,8 @@
-import type ResizeHandle from '@/components/layout/ResizeHandle.vue';
 import type { Point } from '@/model/type-defs';
 
 export default interface ResizeHandleMoveEvent {
-  sender: ResizeHandle;
+  preventDrag: () => void;
+  allowDrag: () => void;
   index: number;
   dx: number;
   dy: number;

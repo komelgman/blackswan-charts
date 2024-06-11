@@ -2,68 +2,70 @@
   <div class="resize-handle" @mousedown="onDragStart"/>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+<script lang="ts" setup>
 import type { ResizeHandleMoveEvent } from '@/components/layout';
 import { onceDocument, onDocument } from '@/misc/document-listeners';
 import type { Point } from '@/model/type-defs';
 
-@Options({})
-export default class ResizeHandle extends Vue {
-  @Prop({ required: true, type: Number })
-  private index!: number;
+interface Props {
+  index: number;
+}
 
-  dragBlocked: boolean = false;
-  startPos!: Point;
-  prevPos!: Point;
-  removeMoveListener!: any;
-  removeEndListener!: any;
+const props = defineProps<Props>();
+const emit = defineEmits<(e: 'resize-move', dPos: ResizeHandleMoveEvent) => void>();
 
-  onDragStart(e: MouseEvent): void {
-    this.dragBlocked = false;
-    if (!e.defaultPrevented) {
-      e.preventDefault();
+let dragBlocked = false;
+let startPos: Point;
+let prevPos: Point;
+let removeMoveListener: any;
+let removeEndListener: any;
 
-      this.startPos = { x: e.x, y: e.y };
-      this.prevPos = { x: e.x, y: e.y };
+function onDragStart(e: MouseEvent): void {
+  dragBlocked = false;
+  if (!e.defaultPrevented) {
+    e.preventDefault();
 
-      this.removeMoveListener = onDocument('mousemove', this.onDrag);
-      this.removeEndListener = onceDocument('mouseup', this.onDragEnd);
-    }
+    startPos = { x: e.x, y: e.y };
+    prevPos = { x: e.x, y: e.y };
+
+    removeMoveListener = onDocument('mousemove', onDrag);
+    removeEndListener = onceDocument('mouseup', onDragEnd);
+  }
+}
+
+function onDrag(e: DragEvent): void {
+  const dPos = {
+    preventDrag: () => dragBlocked = false,
+    allowDrag: () => dragBlocked = true,
+    index: props.index,
+    dx: e.x - prevPos.x,
+    dy: e.y - prevPos.y,
+    from: { ...startPos },
+    changeX: e.x - startPos.x,
+    changeY: e.y - startPos.y,
+  } as ResizeHandleMoveEvent;
+
+  if (!dragBlocked) {
+    prevPos = { x: e.x, y: e.y };
+  }
+  dragBlocked = false;
+
+  emit('resize-move', dPos);
+}
+
+function onDragEnd(e?: DragEvent): void {
+  if (e !== undefined) {
+    e.preventDefault();
   }
 
-  private onDrag(e: DragEvent): void {
-    const dPos = {
-      sender: this,
-      index: this.index,
-      dx: e.x - this.prevPos.x,
-      dy: e.y - this.prevPos.y,
-      from: { ...this.startPos },
-      changeX: e.x - this.startPos.x,
-      changeY: e.y - this.startPos.y,
-    } as ResizeHandleMoveEvent;
-
-    if (!this.dragBlocked) {
-      this.prevPos = { x: e.x, y: e.y };
-    }
-    this.dragBlocked = false;
-
-    this.$emit('resize-move', dPos);
+  if (typeof removeMoveListener === 'function') {
+    removeMoveListener();
+    removeMoveListener = undefined;
   }
 
-  private onDragEnd(e?: DragEvent): void {
-    if (e !== undefined) {
-      e.preventDefault();
-    }
-
-    if (typeof this.removeMoveListener === 'function') {
-      this.removeMoveListener();
-    }
-
-    if (typeof this.removeEndListener === 'function') {
-      this.removeEndListener();
-    }
+  if (typeof removeEndListener === 'function') {
+    removeEndListener();
+    removeEndListener = undefined;
   }
 }
 </script>

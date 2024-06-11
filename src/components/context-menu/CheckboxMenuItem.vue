@@ -1,39 +1,32 @@
-<script lang="tsx">
-import type { VNode } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+<template>
+  <a
+      tabindex="0"
+      class="checkbox-menu-item"
+      :style="model.style"
+      @mousedown="model.onclick"
+      @keypress="onKeyPress"
+  >
+    <span v-if="model.checked" class="tickmark">&#x2714;</span>
+    {{ model.title }}
+  </a>
+</template>
+
+<script setup lang="ts">
 import type { CheckboxMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
 
-@Options({
-  components: {},
-})
-export default class CheckboxMenuItem extends Vue {
-  @Prop()
-  private model!: CheckboxMenuItemModel;
+interface Props {
+  model: CheckboxMenuItemModel;
+}
 
-  private onKeyPress(e: KeyboardEvent): void {
-    if (e.code === 'Enter' || e.code === 'Space') {
-      if ((e.target as any).click !== undefined) {
-        (e.target as any).click();
-      }
+const { model } = defineProps<Props>();
+
+const onKeyPress = (e: KeyboardEvent): void => {
+  if (e.code === 'Enter' || e.code === 'Space') {
+    if ((e.target as any).click !== undefined) {
+      (e.target as any).click();
     }
   }
-
-  render(): VNode {
-    return (
-      <li
-        tabindex="0"
-        class="checkbox-menu-item"
-        style={this.model.style}
-        onMousedown={() => this.model.onclick()}
-        onKeypress={this.onKeyPress}
-      >
-        {this.model.checked ? <span class="tickmark">&#x2714;</span> : null}
-        {this.model.title}
-      </li>
-    );
-  }
-}
+};
 </script>
 
 <style lang="scss" scoped>

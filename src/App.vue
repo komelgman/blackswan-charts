@@ -1,23 +1,20 @@
 <template>
-  <chart-widget ref="chart" :chart="chartApi"/>
+  <chart-widget :chart="chartApi"/>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import ChartWidget from '@/components/chart/ChartWidget.vue';
-import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import Chart from '@/model/Chart';
-import DataSource from '@/model/datasource/DataSource';
-import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
+import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { OHLCvChart } from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import DataSource from '@/model/datasource/DataSource';
+import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
+import type { DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
 import IdHelper from '@/model/tools/IdHelper';
-import type { CandlestickChartStyle, Line, Price, UTCTimestamp, VolumeIndicator } from '@/model/type-defs';
+import type { CandlestickChartStyle, Line, UTCTimestamp, VolumeIndicator } from '@/model/type-defs';
 import { LineBound, RegularTimePeriod } from '@/model/type-defs';
 import { isProxy } from 'vue';
-import { Options, Vue } from 'vue-class-component';
 
 /**
  * todo
@@ -28,377 +25,356 @@ import { Options, Vue } from 'vue-class-component';
  * Moving lines in scale that's different to line scale (mouse point should keep on line)
  */
 
+const idHelper: IdHelper = new IdHelper();
+const mainDs = new DataSource({ id: 'main', idHelper: idHelper });
+const chartApi = new Chart({
+  sketchers: new Map<DrawingType, Sketcher>([]),
+  style: {},
+});
 
-@Options({
-  components: {
-    ChartWidget,
+const drawings = {
+  ohlcvBTCUSDT: {
+    id: 'ohlcv1',
+    title: 'BTCUSDT',
+    type: 'OHLCv',
+    data: {
+      pipeOptions: {
+        type: 'OHLCvPipeOptions',
+        symbol: 'BINANCE:BTCUSDT',
+        step: RegularTimePeriod.m5,
+      },
+      style: {
+        type: 'CandlestickChartStyle',
+        showBody: true,
+        showBorder: true,
+        showWick: true,
+        bearish: {
+          wick: '#EF5350',
+          body: '#EF5350',
+          border: '#EF5350',
+        },
+        bullish: {
+          wick: '#26A29A',
+          body: '#26A29A',
+          border: '#26A29A',
+        },
+      },
+    },
+    locked: false,
+    visible: true,
+    shareWith: '*' as '*',
+  } as DrawingOptions<OHLCvChart<CandlestickChartStyle>>, // DO<HasPipeOptions<OHLCvPipeOptions> & HasStyle<CandlestickChartStyle>>
+
+  volumeBTCUSDT: {
+    id: 'volume1',
+    title: 'BTCUSDT Volume',
+    type: 'Volume',
+    data: {
+      from: 0 as UTCTimestamp,
+      step: 0.01 as UTCTimestamp,
+      values: [1000, 1500, 300],
+      style: {
+        type: 'Columns',
+        bearish: '#EF5350',
+        bullish: '#26A29A',
+      },
+    },
+    locked: false,
+    visible: true,
+  } as DrawingOptions<VolumeIndicator<any>>,
+
+  redLineNoBound: {
+    id: 'line1',
+    title: 'line1',
+    type: 'Line',
+    data: {
+      def: [-1, -0.25, 1, 0.75],
+      boundType: LineBound.NoBound,
+      scale: PriceScales.log10,
+      style: { lineWidth: 2, fill: 1, color: '#AA0000' },
+    } as Line,
+    locked: false,
+    visible: true,
+    shareWith: '*' as '*',
   },
-})
-export default class App extends Vue {
-  chartApi!: Chart;
-  private idHelper!: IdHelper;
-  private mainDs!: DataSource;
 
-  created(): void {
-    this.idHelper = new IdHelper();
-    this.mainDs = new DataSource({ id: 'main', idHelper: this.idHelper });
+  greenLineBoundBoth: {
+    id: 'line2',
+    title: 'line2',
+    type: 'Line',
+    data: {
+      def: [-0.25, -0.25, 0.75, 0.75],
+      boundType: LineBound.Both,
+      scale: PriceScales.regular,
+      style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+    } as Line,
+    locked: false,
+    visible: true,
+    shareWith: '*' as '*',
+  },
 
-    this.chartApi = new Chart({
-      sketchers: new Map<DrawingType, Sketcher>([]),
-      style: {}
-    });
-    this.chartApi.createPane(this.mainDs, {});
-    this.chartApi.clearHistory();
-  }
+  greenLineBoundStart: {
+    id: 'line3',
+    title: 'line3',
+    type: 'Line',
+    data: {
+      def: [0 + 0.25, 0, 0.75 + 0.25, 0.75],
+      boundType: LineBound.BoundStart,
+      scale: PriceScales.regular,
+      style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+    } as Line,
+    locked: false,
+    visible: true,
+    shareWith: '*' as '*',
+  },
 
-  mounted(): void {
-    const { chartApi, mainDs } = this;
+  greenLineBoundEnd: {
+    id: 'line4',
+    title: 'line4',
+    type: 'Line',
+    data: {
+      def: [0 + 0.5, 0, 0.75 + 0.5, 0.75],
+      boundType: LineBound.BoundEnd,
+      scale: PriceScales.regular,
+      style: { lineWidth: 2, fill: 1, color: '#00AA00' },
+    } as Line,
+    locked: false,
+    visible: true,
+    shareWith: '*' as '*',
+  },
 
-    const drawings = {
-      ohlcvBTCUSDT: {
-        id: 'ohlcv1',
-        title: 'BTCUSDT',
-        type: 'OHLCv',
-        data: {
-          pipeOptions: {
-            type: "OHLCvPipeOptions",
-            symbol: "BINANCE:BTCUSDT",
-            step: RegularTimePeriod.m5,
-          },
-          style: {
-            type: "CandlestickChartStyle",
-            showBody: true,
-            showBorder: true,
-            showWick: true,
-            bearish: {
-              wick: '#EF5350',
-              body: '#EF5350',
-              border: '#EF5350',
-            },
-            bullish: {
-              wick: '#26A29A',
-              body: '#26A29A',
-              border: '#26A29A',
-            }
-          },
-        },
-        locked: false,
-        visible: true,
-        shareWith: '*' as '*',
-      } as DrawingOptions<OHLCvChart<CandlestickChartStyle>>, // DO<HasPipeOptions<OHLCvPipeOptions> & HasStyle<CandlestickChartStyle>>
+  green025VLineNotShared: {
+    id: 'vline1',
+    title: 'vline1',
+    type: 'VLine',
+    data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
+    locked: false,
+    visible: true,
+  },
 
-      volumeBTCUSDT: {
-        id: 'volume1',
-        title: 'BTCUSDT Volume',
-        type: 'Volume',
-        data: {
-          from: 0 as UTCTimestamp,
-          step: 0.01 as UTCTimestamp,
-          values: [1000, 1500, 300],
-          style: {
-            type: "Columns",
-            bearish: '#EF5350',
-            bullish: '#26A29A',
-          }
-        },
-        locked: false,
-        visible: true,
-      } as DrawingOptions<VolumeIndicator<any>>,
+  green025HLineNotShared: {
+    id: 'hline1',
+    title: 'hline1',
+    type: 'HLine',
+    data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
+    locked: false,
+    visible: true,
+  },
 
-      redLineNoBound: {
-        id: 'line1',
-        title: 'line1',
-        type: 'Line',
-        data: {
-          def: [-1, -0.25, 1, 0.75],
-          boundType: LineBound.NoBound,
-          scale: PriceScales.log10,
-          style: { lineWidth: 2, fill: 1, color: '#AA0000' },
-        } as Line,
-        locked: false,
-        visible: true,
-        shareWith: '*' as '*',
-      },
+  red010VLineShared: {
+    id: 'vline2',
+    title: 'vline2',
+    type: 'VLine',
+    data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
+    shareWith: '*' as '*',
+    locked: false,
+    visible: true,
+  },
 
-      greenLineBoundBoth: {
-        id: 'line2',
-        title: 'line2',
-        type: 'Line',
-        data: {
-          def: [-0.25, -0.25, 0.75, 0.75],
-          boundType: LineBound.Both,
-          scale: PriceScales.regular,
-          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
-        } as Line,
-        locked: false,
-        visible: true,
-        shareWith: '*' as '*',
-      },
+  red010HLineShared: {
+    id: 'hline2',
+    title: 'hline2',
+    type: 'HLine',
+    data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
+    shareWith: '*' as '*',
+    locked: false,
+    visible: true,
+  },
+};
 
-      greenLineBoundStart: {
-        id: 'line3',
-        title: 'line3',
-        type: 'Line',
-        data: {
-          def: [0 + 0.25, 0, 0.75 + 0.25, 0.75],
-          boundType: LineBound.BoundStart,
-          scale: PriceScales.regular,
-          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
-        } as Line,
-        locked: false,
-        visible: true,
-        shareWith: '*' as '*',
-      },
+chartApi.createPane(mainDs, {});
 
-      greenLineBoundEnd: {
-        id: 'line4',
-        title: 'line4',
-        type: 'Line',
-        data: {
-          def: [0 + 0.5, 0, 0.75 + 0.5, 0.75],
-          boundType: LineBound.BoundEnd,
-          scale: PriceScales.regular,
-          style: { lineWidth: 2, fill: 1, color: '#00AA00' },
-        } as Line,
-        locked: false,
-        visible: true,
-        shareWith: '*' as '*',
-      },
-
-      green025VLineNotShared: {
-        id: 'vline1',
-        title: 'vline1',
-        type: 'VLine',
-        data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
-        locked: false,
-        visible: true,
-      },
-
-      green025HLineNotShared: {
-        id: 'hline1',
-        title: 'hline1',
-        type: 'HLine',
-        data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
-        locked: false,
-        visible: true,
-      },
-
-      red010VLineShared: {
-        id: 'vline2',
-        title: 'vline2',
-        type: 'VLine',
-        data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-        shareWith: '*' as '*',
-        locked: false,
-        visible: true,
-      },
-
-      red010HLineShared: {
-        id: 'hline2',
-        title: 'hline2',
-        type: 'HLine',
-        data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-        shareWith: '*' as '*',
-        locked: false,
-        visible: true,
-      },
-    };
-
-    mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
-      for (const [reason, reasonEvents] of events) {
-        for (const dataSourceChangeEvent of reasonEvents) {
-          if (isProxy(dataSourceChangeEvent.entry.descriptor.options)) {
-            console.trace(reason, dataSourceChangeEvent);
-          }
-        }
+mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
+  for (const [reason, reasonEvents] of events) {
+    for (const dataSourceChangeEvent of reasonEvents) {
+      if (isProxy(dataSourceChangeEvent.entry.descriptor.options)) {
+        console.warn(reason, dataSourceChangeEvent);
       }
-    });
-
-    // sample 1
-    let i = 0;
-
-    setTimeout((j: number) => {
-      console.log(`${j}) chartApi.clearHistory();`);
-      chartApi.clearHistory();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) chartApi.createPane(~second);`);
-      const dataSource: DataSource = new DataSource({ id: 'second', idHelper: this.idHelper });
-      chartApi.createPane(dataSource, { preferredSize: 0.3 });
-    }, 100 * i++, i);
-
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) chartApi.undo();`);
-    //   chartApi.undo();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) chartApi.undo();`);
-    //   chartApi.undo();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) chartApi.redo();`);
-    //   chartApi.redo();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green025HLineNotShared);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.green025HLineNotShared);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green025VLineNotShared);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.green025VLineNotShared);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.red010VLineShared);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.red010VLineShared);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.red010HLineShared);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.red010HLineShared);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.remove(drawings.red010HLineShared.id);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.remove(drawings.red010HLineShared.id);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundBoth);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.greenLineBoundBoth);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundStart);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.greenLineBoundStart);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green0to1LineBoundEnd);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.greenLineBoundEnd);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.mainDs.add(drawings.green025to075Line);`);
-    //
-    //   this.mainDs.beginTransaction();
-    //   this.mainDs.add(drawings.redLineNoBound);
-    //   this.mainDs.endTransaction();
-    // }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.add(drawings.ohlcvBTCUSDT);`);
-
-      this.mainDs.beginTransaction();
-      this.mainDs.add(drawings.ohlcvBTCUSDT);
-      //this.mainDs.add(drawings.volumeBTCUSDT);
-      this.mainDs.endTransaction();
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.process(['hlocv1'], ...); // init`);
-
-      this.mainDs.addChangeEventListener((events, ds) => {
-        if (events.has(DataSourceChangeEventReason.DataInvalid)) {
-          const event = (events.get(DataSourceChangeEventReason.DataInvalid) || [])
-              .find(e => e.entry.descriptor.ref == 'ohlcv1');
-
-          if (event) {
-            console.log(event);
-          }
-        }
-      });
-
-      this.mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
-        e.descriptor.options.data.content = {
-          available: { from: 0  as UTCTimestamp, to: 1  as UTCTimestamp },
-          loaded: { from: 0  as UTCTimestamp, to: 0.02  as UTCTimestamp },
-          step: 0.01 as UTCTimestamp,
-          values: [
-            [0.3, 0.5, 0.1, 0.15, 1000],
-            [0.15, 0.6, 0.0, 0.45, 1500],
-            [0.35, 0.7, 0.3, 0.55, 300]
-          ] as [Price, Price, Price, Price, number][],
-        };
-      });
-
-    }, 100 * i++, i);
-
-    setTimeout((j: number) => {
-      console.log(`${j}) this.mainDs.process('hlocv1', ...); // update`);
-
-      const process = () => {
-        this.mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
-          const values = e.descriptor.options.data.content?.values || [];
-          const lastBar = values[values.length - 1];
-          const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
-          const h = Math.max(lastBar[1], c);
-          const l = Math.min(lastBar[2], c);
-
-          // add new
-          // values.push(lastBar);
-
-          // update last
-          values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
-
-          // replace all
-          // values.splice(0, values.length, newItems);
-        });
-      };
-
-      setInterval(process, 1000);
-    }, 100 * i++, i);
-
-    // i += 50;
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.chartApi.togglePane(this.mainDs.id);`);
-    //   this.chartApi.togglePane(this.mainDs.id);
-    // }, 100 * i++, i);
-    //
-    // i += 50;
-    //
-    // setTimeout((j: number) => {
-    //   console.log(`${j}) this.chartApi.togglePane(this.mainDs.id);`);
-    //   this.chartApi.togglePane(this.mainDs.id);
-    // }, 100 * i++, i);
-
-
-    // ---------------------------------------------------------------------------------------------
-    // setTimeout(() => {
-    //   chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
-    // }, 1000);
+    }
   }
-}
+});
+
+let i = 0;
+
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.clearHistory();`);
+  chartApi.clearHistory();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.createPane(~second);`);
+  const dataSource: DataSource = new DataSource({ id: 'second', idHelper: idHelper });
+  chartApi.createPane(dataSource, { preferredSize: 0.3 });
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.undo();`);
+  chartApi.undo();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.undo();`);
+  chartApi.undo();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.redo();`);
+  chartApi.redo();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.green025HLineNotShared);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.green025HLineNotShared);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.green025VLineNotShared);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.green025VLineNotShared);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.red010VLineShared);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.red010VLineShared);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.red010HLineShared);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.red010HLineShared);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.remove(drawings.red010HLineShared.id);`);
+
+  mainDs.beginTransaction();
+  mainDs.remove(drawings.red010HLineShared.id);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
+//
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.greenLineBoundBoth);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
+
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.green0to1LineBoundStart);`);
+//
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.greenLineBoundStart);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
+//
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.green0to1LineBoundEnd);`);
+//
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.greenLineBoundEnd);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
+//
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.green025to075Line);`);
+//
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.redLineNoBound);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
+
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
+//
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.ohlcvBTCUSDT);
+//   //mainDs.add(drawings.volumeBTCUSDT);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
+
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.process(['hlocv1'], ...); // init`);
+//
+//   mainDs.addChangeEventListener((events, ds) => {
+//     if (events.has(DataSourceChangeEventReason.DataInvalid)) {
+//       const event = (events.get(DataSourceChangeEventReason.DataInvalid) || [])
+//           .find(e => e.entry.descriptor.ref == 'ohlcv1');
+//
+//       if (event) {
+//         console.debug(event);
+//       }
+//     }
+//   });
+//
+//   mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+//     e.descriptor.options.data.content = {
+//       available: { from: 0  as UTCTimestamp, to: 1  as UTCTimestamp },
+//       loaded: { from: 0  as UTCTimestamp, to: 0.02  as UTCTimestamp },
+//       step: 0.01 as UTCTimestamp,
+//       values: [
+//         [0.3, 0.5, 0.1, 0.15, 1000],
+//         [0.15, 0.6, 0.0, 0.45, 1500],
+//         [0.35, 0.7, 0.3, 0.55, 300]
+//       ] as [Price, Price, Price, Price, number][],
+//     };
+//   });
+// }, 100 * i++, i);
+
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
+//
+//   const process = () => {
+//     mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+//       const values = e.descriptor.options.data.content?.values || [];
+//       const lastBar = values[values.length - 1];
+//       const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
+//       const h = Math.max(lastBar[1], c);
+//       const l = Math.min(lastBar[2], c);
+//
+//       // add new
+//       // values.push(lastBar);
+//
+//       // update last
+//       values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
+//
+//       // replace all
+//       // values.splice(0, values.length, newItems);
+//     });
+//   };
+//
+//   setInterval(process, 1000);
+// }, 100 * i++, i);
+
+// i += 50;
+//
+// setTimeout((j: number) => {
+//   console.log(`${j}) chartApi.togglePane(mainDs.id);`);
+//   chartApi.togglePane(mainDs.id);
+// }, 100 * i++, i);
+//
+// i += 50;
+//
+// setTimeout((j: number) => {
+//   console.log(`${j}) chartApi.togglePane(mainDs.id);`);
+//   chartApi.togglePane(mainDs.id);
+// }, 100 * i++, i);
+
+// ---------------------------------------------------------------------------------------------
+// setTimeout(() => {
+//   chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
+// }, 1000);
+
 </script>
 
 <style lang="scss">

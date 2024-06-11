@@ -1,32 +1,31 @@
 <template>
   <div
-    class="layered-canvas"
-    @mousedown.left="onDragStart"
-    @dblclick.left="onMouseLeftBtnDoubleClick"
-    @wheel.passive="onWheel"
-    @mousemove="onMouseMove"
-    @click.left="onMouseLeftBtnClick"
+      ref="rootElement"
+      class="layered-canvas"
+      @mousedown.left="onDragStart"
+      @dblclick.left="onMouseLeftBtnDoubleClick"
+      @wheel.passive="onWheel"
+      @mousemove="onMouseMove"
+      @click.left="onMouseLeftBtnClick"
   >
     <canvas
-      ref="nativeLayers"
-      v-for="(layer, index) in layers"
-      :key="layer.id"
-      :style="'user-select: none;-webkit-tap-highlight-color: transparent;z-index:' + index"
+        ref="nativeLayers"
+        v-for="(layer, index) in layers"
+        :key="layer.id"
+        :style="'user-select: none;-webkit-tap-highlight-color: transparent;z-index:' + index"
     />
   </div>
 </template>
 
-<script lang="ts">
-import { Prop, Ref } from 'vue-property-decorator';
-import { Options, Vue } from 'vue-class-component';
-import type { PropType } from 'vue';
-import ResizeObserver from 'resize-observer-polyfill';
+<script setup lang="ts">
 import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import type Layer from '@/components/layered-canvas/layers/Layer';
 import type { EventRemover } from '@/misc/document-listeners';
 import { onceDocument, onDocument } from '@/misc/document-listeners';
 import type { Point } from '@/model/type-defs';
+import ResizeObserver from 'resize-observer-polyfill';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 
+// todo extract to events
 export interface MousePositionEvent {
   x: number;
   y: number;
@@ -51,184 +50,196 @@ export interface ResizeEvent {
   height: number;
 }
 
-@Options({})
-export default class LayeredCanvas extends Vue {
-  @Prop({ type: Object as PropType<LayeredCanvasOptions>, required: true })
-  private options!: LayeredCanvasOptions;
+interface Props {
+  options: LayeredCanvasOptions;
+}
 
-  @Ref('nativeLayers')
-  private nativeLayers!: HTMLCanvasElement[];
+const props = defineProps<Props>();
 
-  private resizeObserver!: ResizeObserver;
-  private prevPos!: Point;
-  private removeMoveListener!: EventRemover;
-  private removeEndListener!: EventRemover;
-  private isSkipMovementsDetection: boolean = false;
-  private isDrag: boolean = false;
-  private dragInElement: Element | undefined;
-  private isWasDrag: boolean = false;
+const emit = defineEmits<{
+  (e: 'left-mouse-btn-click', event: MouseClickEvent): void;
+  (e: 'left-mouse-btn-double-click', event: MouseClickEvent): void;
+  (e: 'zoom', event: ZoomEvent): void;
+  (e: 'drag-start', event: MouseClickEvent): void;
+  (e: 'drag-move', event: DragMoveEvent): void;
+  (e: 'drag-end', event: MousePositionEvent): void;
+  (e: 'mouse-move', event: MousePositionEvent): void;
+  (e: 'resize', event: ResizeEvent): void;
+}>();
 
-  created(): void {
-    this.resizeObserver = new ResizeObserver(this.setupLayers);
+
+const rootElement = ref<HTMLElement>();
+const nativeLayers = ref<HTMLCanvasElement[]>([]);
+const resizeObserver = new ResizeObserver(setupLayers);
+// todo: check is ref needed
+const prevPos = ref<Point>({ x: 0, y: 0 });
+const removeMoveListener = ref<EventRemover>();
+const removeEndListener = ref<EventRemover>();
+const isSkipMovementsDetection = ref(false);
+const isDrag = ref(false);
+const dragInElement = ref<Element>();
+const isWasDrag = ref(false);
+const layers = props.options.layers;
+
+onMounted(() => {
+  if (!rootElement.value) {
+    throw new Error("rootElement must be present");
   }
 
-  mounted(): void {
-    this.resizeObserver.observe(this.$el);
+  resizeObserver.observe(rootElement.value);
+});
+
+onUnmounted(() => {
+  resizeObserver.disconnect();
+  onDragEnd();
+
+  for (const layer of props.options.layers) {
+    layer.clearListeners();
+  }
+});
+
+function getPos(e: MouseEvent, element?: Element): Point {
+  const target = element || e.target;
+  if (!(e instanceof MouseEvent) || !(target instanceof Element)) {
+    throw new Error('Illeagl argument: e instanceof MouseEvent)');
   }
 
-  unmounted(): void {
-    this.resizeObserver.disconnect();
-    this.onDragEnd();
+  const rect = target.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
 
-    for (const layer of this.layers) {
-      layer.clearListeners();
-    }
+function onMouseLeftBtnClick(e: MouseEvent): void {
+  if (!e.defaultPrevented && !isWasDrag.value) {
+    e.preventDefault();
+
+    const event: MouseClickEvent = { ...getPos(e), isCtrl: e.ctrlKey };
+    emit('left-mouse-btn-click', event);
+  }
+}
+
+function onMouseLeftBtnDoubleClick(e: MouseEvent): void {
+  if (!e.defaultPrevented) {
+    e.preventDefault();
+
+    const event: MouseClickEvent = { ...getPos(e), isCtrl: e.ctrlKey };
+    emit('left-mouse-btn-double-click', event);
+  }
+}
+
+function onWheel(e: WheelEvent): void {
+  if (!(e instanceof MouseEvent) || !(e.target instanceof Element)) {
+    return;
   }
 
-  get layers(): Layer[] {
-    return this.options.layers;
+  const event: ZoomEvent = { pivot: getPos(e), delta: e.deltaY };
+  emit('zoom', event);
+}
+
+function onDragStart(e: MouseEvent): void {
+  if (!e.defaultPrevented && e.target instanceof Element) {
+    isDrag.value = true;
+    isWasDrag.value = false;
+    dragInElement.value = e.target;
+    prevPos.value = getPos(e);
+    removeMoveListener.value = onDocument('mousemove', onDragMove, true);
+    removeEndListener.value = onceDocument('mouseup', onDragEnd);
   }
+}
 
-  private getPos(e: MouseEvent, element?: Element): Point {
-    const target = element || e.target;
-    if (!(e instanceof MouseEvent) || !(target instanceof Element)) {
-      throw new Error('Illeagl argument: e instanceof MouseEvent)');
-    }
-
-    const rect = target.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+function onDragMove(e: MouseEvent): void {
+  if (!isDrag.value || isSkipMovementsDetection.value) {
+    return;
   }
+  isSkipMovementsDetection.value = true;
 
-  onMouseLeftBtnClick(e: MouseEvent): void {
-    if (!e.defaultPrevented && !this.isWasDrag) {
-      e.preventDefault();
-
-      const event: MouseClickEvent = { ...this.getPos(e), isCtrl: e.ctrlKey };
-      this.$emit('left-mouse-btn-click', event);
-    }
-  }
-
-  onMouseLeftBtnDoubleClick(e: MouseEvent): void {
-    if (!e.defaultPrevented) {
-      e.preventDefault();
-
-      const event: MouseClickEvent = { ...this.getPos(e), isCtrl: e.ctrlKey };
-      this.$emit('left-mouse-btn-double-click', event);
-    }
-  }
-
-  onWheel(e: WheelEvent): void {
-    if (!(e instanceof MouseEvent) || !(e.target instanceof Element)) {
-      return;
-    }
-
-    const event: ZoomEvent = { pivot: this.getPos(e), delta: e.deltaY };
-    this.$emit('zoom', event);
-  }
-
-  onDragStart(e: MouseEvent): void {
-    if (!e.defaultPrevented && e.target instanceof Element) {
-      this.isDrag = true;
-      this.isWasDrag = false;
-      this.dragInElement = e.target;
-      this.prevPos = this.getPos(e);
-      this.removeMoveListener = onDocument('mousemove', this.onDragMove, true);
-      this.removeEndListener = onceDocument('mouseup', this.onDragEnd);
-    }
-  }
-
-  onDragMove(e: MouseEvent): void {
-    if (!this.isDrag || this.isSkipMovementsDetection) {
-      return;
-    }
-    this.isSkipMovementsDetection = true;
-
-    if (!this.isWasDrag) {
-      const startEvent: MouseClickEvent = {
-        ...this.getPos(e, this.dragInElement),
-        isCtrl: e.ctrlKey,
-      };
-      this.$emit('drag-start', startEvent);
-      this.isWasDrag = true;
-    }
-
-    const pos: Point = this.getPos(e, this.dragInElement);
-    const moveEvent: DragMoveEvent = {
-      ...pos,
-      dx: this.prevPos.x - pos.x,
-      dy: this.prevPos.y - pos.y,
+  if (!isWasDrag.value) {
+    const startEvent: MouseClickEvent = {
+      ...getPos(e, dragInElement.value),
+      isCtrl: e.ctrlKey,
     };
-    this.$emit('drag-move', moveEvent);
-    this.prevPos = pos;
-
-    // hint: decrease amount of drag events
-    setTimeout(() => {
-      this.isSkipMovementsDetection = false;
-    }, 10);
+    emit('drag-start', startEvent);
+    isWasDrag.value = true;
   }
 
-  onMouseMove(e: MouseEvent): void {
-    if (this.isDrag || this.isSkipMovementsDetection) {
-      return;
+  const pos: Point = getPos(e, dragInElement.value);
+  const moveEvent: DragMoveEvent = {
+    ...pos,
+    dx: prevPos.value.x - pos.x,
+    dy: prevPos.value.y - pos.y,
+  };
+  emit('drag-move', moveEvent);
+  prevPos.value = pos;
+
+  // hint: decrease amount of drag events
+  setTimeout(() => {
+    isSkipMovementsDetection.value = false;
+  }, 10);
+}
+
+function onMouseMove(e: MouseEvent): void {
+  if (isDrag.value || isSkipMovementsDetection.value) {
+    return;
+  }
+  isSkipMovementsDetection.value = true;
+
+  const event: MousePositionEvent = getPos(e);
+  emit('mouse-move', event);
+
+  // hint: decrease amount of move events
+  setTimeout(() => {
+    isSkipMovementsDetection.value = false;
+  }, 10);
+}
+
+function onDragEnd(e?: DragEvent): void {
+  isDrag.value = false;
+
+  if (e === undefined || !e.defaultPrevented) {
+    if (e !== undefined && isWasDrag.value) {
+      e.preventDefault();
+      const event: MousePositionEvent = getPos(e, dragInElement.value);
+      emit('drag-end', event);
     }
-    this.isSkipMovementsDetection = true;
 
-    const event: MousePositionEvent = this.getPos(e);
-    this.$emit('mouse-move', event);
+    if (typeof removeMoveListener.value === 'function') {
+      removeMoveListener.value();
+    }
 
-    // hint: decrease amount of move events
-    setTimeout(() => {
-      this.isSkipMovementsDetection = false;
-    }, 10);
-  }
-
-  onDragEnd(e?: DragEvent): void {
-    this.isDrag = false;
-
-    if (e === undefined || !e.defaultPrevented) {
-      if (e !== undefined && this.isWasDrag) {
-        e.preventDefault();
-        const event: MousePositionEvent = this.getPos(e, this.dragInElement);
-        this.$emit('drag-end', event);
-      }
-
-      if (typeof this.removeMoveListener === 'function') {
-        this.removeMoveListener();
-      }
-
-      if (typeof this.removeEndListener === 'function') {
-        this.removeEndListener();
-      }
+    if (typeof removeEndListener.value === 'function') {
+      removeEndListener.value();
     }
   }
+}
 
-  private setupLayers(): void {
-    this.$nextTick(() => {
-      const { nativeLayers, options } = this;
-      const { width, height } = this.$el.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
+function setupLayers(): void {
+  nextTick().then(() => {
+    if (!rootElement.value) {
+      throw new Error("rootElement must be present");
+    }
 
-      for (let layerId = 0; layerId < nativeLayers.length; layerId += 1) {
-        const layerCanvas: HTMLCanvasElement = nativeLayers[layerId];
-        layerCanvas.style.width = `${width}px`;
-        layerCanvas.style.height = `${height}px`;
+    const { width, height } = rootElement.value.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
 
-        const context = layerCanvas.getContext('2d');
-        if (!context) {
-          throw new Error('context === null');
-        }
+    for (let layerId = 0; layerId < nativeLayers.value.length; layerId += 1) {
+      const layerCanvas: HTMLCanvasElement = nativeLayers.value[layerId];
+      layerCanvas.style.width = `${width}px`;
+      layerCanvas.style.height = `${height}px`;
 
-        options.layers[layerId].setContext({
-          native: context,
-          width,
-          height,
-          dpr,
-        });
+      const context = layerCanvas.getContext('2d');
+      if (!context) {
+        throw new Error('context === null');
       }
 
-      this.$emit('resize', { width, height });
-    });
-  }
+      props.options.layers[layerId].setContext({
+        native: context,
+        width,
+        height,
+        dpr,
+      });
+    }
+
+    emit('resize', { width, height });
+  });
 }
 </script>
 

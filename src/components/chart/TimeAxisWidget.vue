@@ -1,18 +1,16 @@
 <template>
-  <div class="timeline pane">
+  <div ref="rootElement" class="timeline pane">
     <layered-canvas
-      :options="canvasOptions"
-      @drag-move="onDrag"
-      @zoom="onZoom"
-      @resize="onResize"
+        :options="canvasOptions"
+        @drag-move="onDrag"
+        @zoom="onZoom"
+        @resize="onResize"
     />
   </div>
 </template>
 
-<script lang="ts">
-import type { PropType } from 'vue';
-import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
+<script setup lang="ts">
+import { ref } from 'vue';
 import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
@@ -21,50 +19,46 @@ import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 
-@Options({
-  components: { LayeredCanvas },
-})
-export default class TimeAxisWidget extends Vue {
-  canvasOptions: LayeredCanvasOptions = { layers: [] };
-  @Prop({ type: Object as PropType<TimeAxis>, required: true })
-  private timeAxis!: TimeAxis;
-  private labelsInvalidator!: TimeLabelsInvalidator;
+interface Props {
+  timeAxis: TimeAxis;
+}
 
-  created(): void {
-    this.labelsInvalidator = new TimeLabelsInvalidator(this.timeAxis);
+const { timeAxis } = defineProps<Props>();
+const rootElement = ref<HTMLElement>();
+const labelsInvalidator: TimeLabelsInvalidator = new TimeLabelsInvalidator(timeAxis);
+const canvasOptions: LayeredCanvasOptions = {
+  layers: [
+    createLabelsLayer(),
+    // marks renderer
+    // priceline label renderer
+    // tool/crosshair label renderer
 
-    this.canvasOptions.layers.push(
-      this.createLabelsLayer(),
-      // marks renderer
-      // priceline label renderer
-      // tool/crosshair label renderer
-    );
-  }
+  ],
+};
 
-  private createLabelsLayer(): TimeAxisLabelsLayer {
-    const { timeAxis } = this;
-    const result: TimeAxisLabelsLayer = new TimeAxisLabelsLayer(timeAxis);
+function onDrag(e: DragMoveEvent): void {
+  timeAxis.zoom(rootElement.value!.getBoundingClientRect().width / 2, -e.dx);
+}
 
-    result.addContextChangeListener((newCtx: LayerContext) => {
-      this.labelsInvalidator.context = newCtx;
-    });
+function onZoom(e: ZoomEvent): void {
+  timeAxis.zoom(e.pivot.x, e.delta);
+}
 
-    return result;
-  }
+function onResize(e: ResizeEvent): void {
+  timeAxis.update({ screenSize: { main: e.width, second: e.height } });
+}
 
-  onDrag(e: DragMoveEvent): void {
-    this.timeAxis.zoom(this.$el.getBoundingClientRect().width / 2, -e.dx);
-  }
+function createLabelsLayer(): TimeAxisLabelsLayer {
+  const result: TimeAxisLabelsLayer = new TimeAxisLabelsLayer(timeAxis);
 
-  onZoom(e: ZoomEvent): void {
-    this.timeAxis.zoom(e.pivot.x, e.delta);
-  }
+  result.addContextChangeListener((newCtx: LayerContext) => {
+    labelsInvalidator.context = newCtx;
+  });
 
-  onResize(e: ResizeEvent): void {
-    this.timeAxis.update({ screenSize: { main: e.width, second: e.height } });
-  }
+  return result;
 }
 </script>
+
 
 <style scoped>
 .timeline {

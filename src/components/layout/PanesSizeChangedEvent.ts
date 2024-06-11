@@ -1,4 +1,4 @@
-import type Multipane from '@/components/layout/Multipane.vue';
+import type { Multipane } from '@/components/layout/Multipane.vue';
 
 export interface PaneSize {
   preferred?: number;
