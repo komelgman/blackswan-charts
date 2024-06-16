@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { resolve } from 'path';
+import { fileURLToPath, URL } from 'url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
@@ -12,15 +12,14 @@ export default defineConfig({
       babelPlugins: [
         ['@babel/plugin-proposal-decorators', { legacy: true }],
         ['@babel/plugin-transform-flow-strip-types'],
-        ['@babel/plugin-proposal-class-properties', { loose: true }],
       ],
     }),
   ],
 
   resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
+    alias: [
+      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }
+    ],
   },
 
   build: {

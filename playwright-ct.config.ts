@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import { resolve } from 'path';
+import path from 'path';
+import { fileURLToPath, URL } from "url";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -22,7 +23,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     ctPort: 3100,
-    headless: true,
+    headless: false,
     ctTemplateDir: './tests/component-template',
     ctCacheDir: './tests/component-template/.cache',
     ctViteConfig: {
@@ -36,9 +37,9 @@ export default defineConfig({
         }),
       ],
       resolve: {
-        alias: {
-          '@': resolve(__dirname, './src'),
-        },
+        alias: [
+          { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }
+        ],
       },
     },
   },

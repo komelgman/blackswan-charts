@@ -51,6 +51,7 @@ const drawings = {
     visible: true,
   },
 };
+
 test('check TVA functionality', async ({ page }) => {
   test.slow();
   // Listen for all console logs

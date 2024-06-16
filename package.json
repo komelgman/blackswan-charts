@@ -1,5 +1,6 @@
 {
   "name": "blackswan-charts",
+  "type": "module",
   "version": "0.0.0",
   "private": true,
   "scripts": {
