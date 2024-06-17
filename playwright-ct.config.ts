@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import path from 'path';
 import { fileURLToPath, URL } from "url";
 
 /**
@@ -23,7 +22,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     ctPort: 3100,
-    headless: false,
+    headless: true,
     ctTemplateDir: './tests/component-template',
     ctCacheDir: './tests/component-template/.cache',
     ctViteConfig: {

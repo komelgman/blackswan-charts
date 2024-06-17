@@ -6,7 +6,6 @@ import type { DataSourceOptions } from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/Drawing';
 import type ChartWidgetTestContext from '../component/tools/ChartWidgetTestContext';
 
-const modules = import.meta.glob('@/components/**/*.vue');
 const idHelper = new IdHelper();
 const chart = new Chart();
 const newDataSource = (options: DataSourceOptions, drawings: DrawingOptions[]) => new DataSource(options, drawings);
@@ -14,8 +13,7 @@ let $nextTick = (callback: () => void) => callback();
 
 function mount(): Promise<void> {
   return new Promise((resolve) => {
-    modules['/src/components/chart/ChartWidget.vue']().then((module: any) => {
-      // @ts-ignore
+    import('@/components/chart/ChartWidget.vue').then((module) => {
       $nextTick = createApp(module.default, { chart }).mount('#root').$nextTick;
       $nextTick(resolve);
     });

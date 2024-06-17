@@ -16,7 +16,7 @@ test.describe('dynamic component loading', () => {
    * // eslint-disable-next-line
    * (window as any).__testing_tools = {
    *   createApp,
-   *   modules: import.meta.glob('./components/**\/*.vue'), // <-- escaped path
+   *   modules: import.meta.glob('./components/**\/*.vue'), // <-- escaped path !!! warn - not working
    * };
    */
   test('ComponentWithAsyncChildren.vue', async ({ page }) => {

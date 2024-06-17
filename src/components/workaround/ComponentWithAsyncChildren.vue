@@ -11,12 +11,13 @@ interface Props {
 }
 
 const { options } = defineProps<Props>();
-const modules = import.meta.glob('@/components/**/*.vue');
 const component = ref<any>(null);
 const props = ref<any>(null);
 
 watch(options, () => {
-  component.value = defineAsyncComponent(modules[`/src/components/${options.component}.vue`]);
-  props.value = options.props;
+  if (options) {
+    component.value = defineAsyncComponent(() => import(`../${options.component}.vue`));
+    props.value = options.props;
+  }
 }, { immediate: true });
 </script>
