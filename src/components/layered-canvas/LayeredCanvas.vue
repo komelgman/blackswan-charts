@@ -71,15 +71,14 @@ const emit = defineEmits<{
 const rootElement = ref<HTMLElement>();
 const nativeLayers = ref<HTMLCanvasElement[]>([]);
 const resizeObserver = new ResizeObserver(setupLayers);
-// todo: check is ref needed
-const prevPos = ref<Point>({ x: 0, y: 0 });
-const removeMoveListener = ref<EventRemover>();
-const removeEndListener = ref<EventRemover>();
-const isSkipMovementsDetection = ref(false);
-const isDrag = ref(false);
-const dragInElement = ref<Element>();
-const isWasDrag = ref(false);
 const layers = props.options.layers;
+let prevPos: Point;
+let removeMoveListener: EventRemover;
+let removeEndListener: EventRemover;
+let isSkipMovementsDetection = false;
+let isDrag = false;
+let dragInElement: Element;
+let isWasDrag = false;
 
 onMounted(() => {
   if (!rootElement.value) {
@@ -109,7 +108,7 @@ function getPos(e: MouseEvent, element?: Element): Point {
 }
 
 function onMouseLeftBtnClick(e: MouseEvent): void {
-  if (!e.defaultPrevented && !isWasDrag.value) {
+  if (!e.defaultPrevented && !isWasDrag) {
     e.preventDefault();
 
     const event: MouseClickEvent = { ...getPos(e), isCtrl: e.ctrlKey };
@@ -137,76 +136,76 @@ function onWheel(e: WheelEvent): void {
 
 function onDragStart(e: MouseEvent): void {
   if (!e.defaultPrevented && e.target instanceof Element) {
-    isDrag.value = true;
-    isWasDrag.value = false;
-    dragInElement.value = e.target;
-    prevPos.value = getPos(e);
-    removeMoveListener.value = onDocument('mousemove', onDragMove, true);
-    removeEndListener.value = onceDocument('mouseup', onDragEnd);
+    isDrag = true;
+    isWasDrag = false;
+    dragInElement = e.target;
+    prevPos = getPos(e);
+    removeMoveListener = onDocument('mousemove', onDragMove, true);
+    removeEndListener = onceDocument('mouseup', onDragEnd);
   }
 }
 
 function onDragMove(e: MouseEvent): void {
-  if (!isDrag.value || isSkipMovementsDetection.value) {
+  if (!isDrag || isSkipMovementsDetection) {
     return;
   }
-  isSkipMovementsDetection.value = true;
+  isSkipMovementsDetection = true;
 
-  if (!isWasDrag.value) {
+  if (!isWasDrag) {
     const startEvent: MouseClickEvent = {
-      ...getPos(e, dragInElement.value),
+      ...getPos(e, dragInElement),
       isCtrl: e.ctrlKey,
     };
     emit('drag-start', startEvent);
-    isWasDrag.value = true;
+    isWasDrag = true;
   }
 
-  const pos: Point = getPos(e, dragInElement.value);
+  const pos: Point = getPos(e, dragInElement);
   const moveEvent: DragMoveEvent = {
     ...pos,
-    dx: prevPos.value.x - pos.x,
-    dy: prevPos.value.y - pos.y,
+    dx: prevPos.x - pos.x,
+    dy: prevPos.y - pos.y,
   };
   emit('drag-move', moveEvent);
-  prevPos.value = pos;
+  prevPos = pos;
 
   // hint: decrease amount of drag events
   setTimeout(() => {
-    isSkipMovementsDetection.value = false;
+    isSkipMovementsDetection = false;
   }, 10);
 }
 
 function onMouseMove(e: MouseEvent): void {
-  if (isDrag.value || isSkipMovementsDetection.value) {
+  if (isDrag || isSkipMovementsDetection) {
     return;
   }
-  isSkipMovementsDetection.value = true;
+  isSkipMovementsDetection = true;
 
   const event: MousePositionEvent = getPos(e);
   emit('mouse-move', event);
 
   // hint: decrease amount of move events
   setTimeout(() => {
-    isSkipMovementsDetection.value = false;
+    isSkipMovementsDetection = false;
   }, 10);
 }
 
 function onDragEnd(e?: DragEvent): void {
-  isDrag.value = false;
+  isDrag = false;
 
   if (e === undefined || !e.defaultPrevented) {
-    if (e !== undefined && isWasDrag.value) {
+    if (e !== undefined && isWasDrag) {
       e.preventDefault();
-      const event: MousePositionEvent = getPos(e, dragInElement.value);
+      const event: MousePositionEvent = getPos(e, dragInElement);
       emit('drag-end', event);
     }
 
-    if (typeof removeMoveListener.value === 'function') {
-      removeMoveListener.value();
+    if (typeof removeMoveListener === 'function') {
+      removeMoveListener();
     }
 
-    if (typeof removeEndListener.value === 'function') {
-      removeEndListener.value();
+    if (typeof removeEndListener === 'function') {
+      removeEndListener();
     }
   }
 }

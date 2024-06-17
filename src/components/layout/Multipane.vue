@@ -63,17 +63,15 @@ const emit = defineEmits<(e: 'drag-handle-moved', event: PanesSizeChangeEvent) =
 const rootElement = ref<ComponentPublicInstance>();
 const paneElements = ref<HTMLElement[]>([]);
 const borderElements = ref<ComponentPublicInstance[]>([]);
-// todo: check is ref needed
-const valid =  ref(true);
-const layout = ref<Layout>({
+const layout: Layout = {
   minSize: undefined,
   maxSize: undefined,
-});
+};
 const style = computed(() => {
   const result: any = {};
 
-  const minSize = layout.value.minSize === undefined ? undefined : `${layout.value.minSize}px`;
-  const maxSize = layout.value.maxSize === undefined ? undefined : `${layout.value.maxSize}px`;
+  const minSize = layout.minSize === undefined ? undefined : `${layout.minSize}px`;
+  const maxSize = layout.maxSize === undefined ? undefined : `${layout.maxSize}px`;
 
   if (props.direction === Direction.Horizontal) {
     result.minWidth = minSize;
@@ -93,6 +91,8 @@ const visibleItems = computed(() => {
   return props.items.filter((item) => item.visible === undefined || item.visible);
 });
 const resizeObserver: ResizeObserver = new ResizeObserver(invalidate);
+
+let valid: boolean = true;
 
 onMounted(() => {
   if (!rootElement.value) {
@@ -126,14 +126,14 @@ function paneStyle(desc: PaneDescriptor<unknown>): any {
 }
 
 function invalidate(): void {
-  if (valid.value) {
-    valid.value = false;
+  if (valid) {
+    valid = false;
     nextTick(adjustPanesSizes);
   }
 }
 
 function adjustPanesSizes(): void {
-  valid.value = true;
+  valid = true;
 
   const {
     suPanes,
@@ -175,16 +175,16 @@ function adjustPanesSizes(): void {
   // update layout min|max size options
   const minimumSize = snuMin + suMin;
   if (minimumSize > 0) {
-    layout.value.minSize = (minimumSize + bordersSize) * getDPR();
+    layout.minSize = (minimumSize + bordersSize) * getDPR();
   } else {
-    layout.value.minSize = undefined;
+    layout.minSize = undefined;
   }
 
   const maximumSize = snuMax + suMax;
   if (maximumSize > 0 && maximumSize < Number.MAX_VALUE) {
-    layout.value.maxSize = (maximumSize + bordersSize) * getDPR();
+    layout.maxSize = (maximumSize + bordersSize) * getDPR();
   } else {
-    layout.value.maxSize = undefined;
+    layout.maxSize = undefined;
   }
 
   // fix inaccuracy and apply size
