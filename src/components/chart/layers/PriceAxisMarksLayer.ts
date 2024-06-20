@@ -1,19 +1,23 @@
-import { toRaw, watch } from 'vue';
 import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
-import Layer from '@/components/layered-canvas/layers/Layer';
+import Layer from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
-import type { DataSourceChangeEventListener, DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
+import type Viewport from '@/model/chart/viewport/Viewport';
+import type {
+  DataSourceChangeEventListener,
+  DataSourceChangeEventsMap,
+} from '@/model/datasource/DataSourceChangeEventListener';
 import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { Predicate } from '@/model/type-defs';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import { toRaw, watch } from 'vue';
 
 export default class PriceAxisMarksLayer extends Layer {
   private readonly viewport: Viewport;
 
   constructor(viewport: Viewport) {
     super();
+
     this.viewport = viewport;
 
     watch([

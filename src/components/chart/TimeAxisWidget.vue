@@ -10,14 +10,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
+import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
-import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
+import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
+import { ref } from 'vue';
 
 interface Props {
   timeAxis: TimeAxis;
@@ -25,14 +23,12 @@ interface Props {
 
 const { timeAxis } = defineProps<Props>();
 const rootElement = ref<HTMLElement>();
-const labelsInvalidator: TimeLabelsInvalidator = new TimeLabelsInvalidator(timeAxis);
 const canvasOptions: LayeredCanvasOptions = {
   layers: [
-    createLabelsLayer(),
+    new TimeAxisLabelsLayer(timeAxis),
     // marks renderer
     // priceline label renderer
     // tool/crosshair label renderer
-
   ],
 };
 
@@ -46,16 +42,6 @@ function onZoom(e: ZoomEvent): void {
 
 function onResize(e: ResizeEvent): void {
   timeAxis.update({ screenSize: { main: e.width, second: e.height } });
-}
-
-function createLabelsLayer(): TimeAxisLabelsLayer {
-  const result: TimeAxisLabelsLayer = new TimeAxisLabelsLayer(timeAxis);
-
-  result.addContextChangeListener((newCtx: LayerContext) => {
-    labelsInvalidator.context = newCtx;
-  });
-
-  return result;
 }
 </script>
 

@@ -1,5 +1,5 @@
+import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { toRaw } from 'vue';
-import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { invertColor } from '@/misc/color';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { HandleId } from '@/model/datasource/Drawing';

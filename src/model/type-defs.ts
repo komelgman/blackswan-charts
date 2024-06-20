@@ -1,5 +1,4 @@
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import type { DrawingReference } from '@/model/datasource/Drawing';
 
 export declare type Nominal<T, Name extends string> = T & { [Symbol.species]: Name; };
 export declare type Wrapped<T> = { value: T };

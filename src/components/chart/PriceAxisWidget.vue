@@ -10,16 +10,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
 import PriceAxisLabelsLayer from '@/components/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisMarksLayer from '@/components/chart/layers/PriceAxisMarksLayer';
+import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
-import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
-import type ChartState from '@/model/ChartState';
+import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type Viewport from '@/model/chart/viewport/Viewport';
+import type ChartState from '@/model/ChartState';
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
 
 interface Props {
   viewportModel: Viewport;
@@ -28,11 +26,10 @@ interface Props {
 const { viewportModel } = defineProps<Props>();
 const rootElement = ref<HTMLElement>();
 const chartState = inject<ChartState>('chartState');
-const labelsInvalidator = new PriceLabelsInvalidator(viewportModel.priceAxis);
 const marksLayer = new PriceAxisMarksLayer(viewportModel);
 const canvasOptions: LayeredCanvasOptions = {
   layers: [
-    createLabelsLayer(),
+    new PriceAxisLabelsLayer(viewportModel.priceAxis),
     marksLayer,
     // priceline mark renderer
     // tool/cross hair label renderer
@@ -57,17 +54,6 @@ function onZoom(e: ZoomEvent): void {
 
 function onResize(e: ResizeEvent): void {
   viewportModel.priceAxis.update({ screenSize: { main: e.height, second: e.width } });
-}
-
-function createLabelsLayer(): PriceAxisLabelsLayer {
-  const { priceAxis } = viewportModel;
-  const result: PriceAxisLabelsLayer = new PriceAxisLabelsLayer(priceAxis);
-
-  result.addContextChangeListener((newCtx: LayerContext) => {
-    labelsInvalidator.context = newCtx;
-  });
-
-  return result;
 }
 
 const cssVars = computed(() => {

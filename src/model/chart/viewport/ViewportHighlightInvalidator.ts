@@ -1,9 +1,9 @@
-import { toRaw } from 'vue';
-import { isEqualDrawingReference } from '@/model/datasource/Drawing';
-import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { Point } from '@/model/type-defs';
+import type { LayerContext } from '@/components/layered-canvas/types';
 import type Viewport from '@/model/chart/viewport/Viewport';
+import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import { isEqualDrawingReference } from '@/model/datasource/Drawing';
+import type { Point } from '@/model/type-defs';
+import { toRaw } from 'vue';
 
 export default class ViewportHighlightInvalidator {
   public layerContext!: LayerContext;

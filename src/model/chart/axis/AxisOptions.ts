@@ -1,4 +1,4 @@
-import type { TextStyle } from '@/model/ChartStyle';
+import type { TextStyle } from '@/model/TextStyle';
 import type { LogicSize, Range } from '@/model/type-defs';
 
 export const enum ZoomType {

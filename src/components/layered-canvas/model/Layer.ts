@@ -1,5 +1,4 @@
-import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
-import type { LayerContextChangeListener } from '@/components/layered-canvas/layers/LayerContextChangeListener';
+import type { LayerContext, LayerContextChangeListener } from '@/components/layered-canvas/types';
 
 export default abstract class Layer {
   private static sharedId: number = 0;
@@ -30,11 +29,12 @@ export default abstract class Layer {
 
   public setContext(ctx: LayerContext): void {
     this.ctx = ctx;
-    this.invalid = true;
 
     for (const listener of this.listeners) {
       listener.call(listener, this.ctx);
     }
+
+    this.invalid = true;
   }
 
   public addContextChangeListener(listener: LayerContextChangeListener): void {
@@ -70,7 +70,7 @@ export default abstract class Layer {
       isSizeChanged = true;
     }
 
-    // sometimes (very often) ctx getContext returns the same context every time
+    // sometimes (very often) ctx getContext returns the same context
     // and there might be previous transformation
     // so let's reset it to be sure that everything is ok
     // do no use resetTransform to respect Edge

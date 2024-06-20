@@ -1,10 +1,9 @@
 import { isString } from '@/misc/strict-type-checks';
-import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type { DataSourceId } from '@/model/datasource/DataSource';
-import type HasCenterPos from '@/model/type-defs/options/HasCenterPos';
-import type HasCursor from '@/model/type-defs/options/HasCursor';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Point } from '@/model/type-defs';
+import type HasCenterPos from '@/model/type-defs/options/HasCenterPos';
+import type HasCursor from '@/model/type-defs/options/HasCursor';
 
 export declare type DrawingId = EntityId;
 export declare type ExternalDrawingId = [DataSourceId, DrawingId];
@@ -47,13 +46,13 @@ export interface Graphics {
 export interface DrawingHandle extends Graphics, HasCursor, HasCenterPos {
 }
 
-export default interface Drawing {
-  parts: Graphics[];
-  handles: Record<HandleId, DrawingHandle>;
-}
-
 export interface AxisMark {
   text: string;
   screenPos: number;
   textColor: string;
+}
+
+export default interface Drawing {
+  parts: Graphics[];
+  handles: Record<HandleId, DrawingHandle>;
 }

@@ -1,4 +1,4 @@
-import type { PaneDescriptor, PaneOptions } from '@/components/layout';
+import type { PaneDescriptor, PaneOptions } from '@/components/layout/types';
 import PriceAxis from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { ChartStyle } from '@/model/ChartStyle';

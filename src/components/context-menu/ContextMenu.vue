@@ -7,7 +7,6 @@
 </template>
 
 <script setup lang="tsx">
-import { ref, computed, onUnmounted, inject, nextTick, toRaw, type ComputedRef } from 'vue';
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
 import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
@@ -16,6 +15,7 @@ import { onceDocument } from '@/misc/document-listeners';
 import makeFont from '@/misc/make-font';
 import type { ChartStyle } from '@/model/ChartStyle';
 import type { Point } from '@/model/type-defs';
+import { computed, type ComputedRef, inject, nextTick, onUnmounted, ref } from 'vue';
 
 export declare type ContextMenu = {
   show: (event: MouseEvent, newItems: MenuItem[]) => void,

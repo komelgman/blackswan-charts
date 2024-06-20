@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import Direction from '@/components/layout/Direction';
+import { Direction } from '@/components/layout/types';
 import { computed } from 'vue';
 
 interface Props {

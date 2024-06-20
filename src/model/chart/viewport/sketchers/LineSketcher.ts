@@ -1,7 +1,7 @@
+import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { toRaw } from 'vue';
 import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/AbstractLineGraphics';
 import SplineGraphics from '@/model/chart/viewport/sketchers/graphics/SplineGraphics';
-import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import { inRange } from '@/misc/line-functions';
 import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type { HandleId } from '@/model/datasource/Drawing';

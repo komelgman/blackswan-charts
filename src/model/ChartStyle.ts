@@ -1,11 +1,5 @@
+import type { TextStyle } from '@/model/TextStyle';
 import type { RectStyle } from '@/model/type-defs';
-
-export interface TextStyle {
-  color: string;
-  fontSize: number;
-  fontFamily: string;
-  fontStyle?: string;
-}
 
 export interface ChartStyle {
   text: TextStyle;

@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Thickness } from '@/components/layout';
+import { Thickness } from '@/components/layout/types';
 
 interface Props {
   thickness?: Thickness;

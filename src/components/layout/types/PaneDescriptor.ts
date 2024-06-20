@@ -1,8 +1,6 @@
-import type { EntityId } from '@/model/tools/IdBuilder';
+import type { PaneId } from '@/components/layout/types';
 
-export declare type PaneId = EntityId;
-
-export default interface PaneDescriptor<T> {
+export interface PaneDescriptor<T> {
   id: PaneId;
   model: T;
   size?: number;
@@ -14,10 +12,3 @@ export default interface PaneDescriptor<T> {
   maxSize?: number;
   visible: boolean;
 }
-
-export declare type PaneOptions<O> = {
-  preferredSize?: number;
-  minSize?: number;
-  maxSize?: number;
-  visible?: boolean;
-} & O;

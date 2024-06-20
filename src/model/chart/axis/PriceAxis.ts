@@ -1,3 +1,4 @@
+import type { TextStyle } from '@/model/TextStyle';
 import { reactive } from 'vue';
 import UpdatePriceAxisInverted from '@/model/chart/axis/incidents/UpdatePriceAxisInverted';
 import UpdatePriceAxisScale from '@/model/chart/axis/incidents/UpdatePriceAxisScale';
@@ -8,7 +9,6 @@ import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import { ZoomType } from '@/model/chart/axis/AxisOptions';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import type { TextStyle } from '@/model/ChartStyle';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { Price, Wrapped } from '@/model/type-defs';
 

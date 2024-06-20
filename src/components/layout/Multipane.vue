@@ -13,16 +13,11 @@
 </template>
 
 <script lang="ts" setup>
-import type { PaneDescriptor, ResizeHandleMoveEvent } from '@/components/layout';
-import { BoxLayout, Direction, Divider, ResizeHandle } from '@/components/layout';
-import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
+import { BoxLayout, Divider, ResizeHandle } from '@/components/layout';
+import type { PanesSizeChangedEvent, ResizeHandleMoveEvent } from '@/components/layout/events';
+import { Direction, type PaneDescriptor } from '@/components/layout/types';
 import ResizeObserver from 'resize-observer-polyfill';
 import { type ComponentPublicInstance, computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-
-export declare type Multipane<T> = {
-  invalidate: () => void;
-  visibleItems: PaneDescriptor<T>[];
-}
 
 interface PaneInfo {
   paneDesc: PaneDescriptor<any>;
@@ -59,7 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   resizable: false,
   direction: Direction.Vertical,
 });
-const emit = defineEmits<(e: 'drag-handle-moved', event: PanesSizeChangeEvent) => void>();
+const emit = defineEmits<(e: 'drag-handle-moved', event: PanesSizeChangedEvent) => void>();
 const rootElement = ref<ComponentPublicInstance>();
 const paneElements = ref<HTMLElement[]>([]);
 const borderElements = ref<ComponentPublicInstance[]>([]);
@@ -422,7 +417,7 @@ function onResizeHandleMove(e: ResizeHandleMoveEvent): void {
     source: { invalidate, visibleItems: visibleItems.value },
     initial: initialSizes,
     changed: changedSizes,
-  } as PanesSizeChangeEvent);
+  } as PanesSizeChangedEvent);
 }
 
 function getDecPaneIndex(sign: number, index: number, items: PaneDescriptor<any>[]): number | undefined {

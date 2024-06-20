@@ -1,5 +1,5 @@
+import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { toRaw } from 'vue';
-import type { DragMoveEvent } from '@/components/layered-canvas/LayeredCanvas.vue';
 import type PriceAxis from '@/model/chart/axis/PriceAxis';
 import type { Inverted } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';

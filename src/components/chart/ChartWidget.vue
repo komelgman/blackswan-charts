@@ -66,39 +66,29 @@ import ViewportWidget from '@/components/chart/ViewportWidget.vue';
 import ContextMenu from '@/components/context-menu/ContextMenu.vue';
 import vContextMenuDirective from '@/components/context-menu/ContextMenuDirective';
 import type { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
-import { BoxLayout, Direction, Divider, Multipane } from '@/components/layout';
-import type { PaneId } from '@/components/layout/PaneDescriptor';
-import type { PanesSizeChangeEvent } from '@/components/layout/PanesSizeChangedEvent';
-import type { DeepPartial } from '@/misc/strict-type-checks';
-import type Chart from '@/model/Chart';
-import type { PaneRegistrationEvent } from '@/model/Chart';
+import { BoxLayout, Divider, Multipane } from '@/components/layout';
+import type { PanesSizeChangedEvent } from '@/components/layout/events';
+import { Direction, type PaneId } from '@/components/layout/types';
+import type { default as Chart, PaneRegistrationEvent } from '@/model/Chart';
 import type PriceAxis from '@/model/chart/axis/PriceAxis';
 import PriceAxisContextMenu from '@/model/chart/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/chart/context-menu/TimeAxisContextMenu';
 import ViewportContextMenu from '@/model/chart/context-menu/ViewportContextMenu';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
-import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import type Viewport from '@/model/chart/viewport/Viewport';
 import type ChartState from '@/model/ChartState';
 import type { ChartStyle } from '@/model/ChartStyle';
-import type { DrawingType } from '@/model/datasource/Drawing';
 import {
+  type ComponentPublicInstance,
   computed,
   onMounted,
   onUnmounted,
   provide,
   reactive,
-  watch,
   ref,
+  watch,
   type WatchStopHandle,
-  type ComponentPublicInstance,
 } from 'vue';
-
-// todo : extract
-export declare type ChartOptions = {
-  style: DeepPartial<ChartStyle>,
-  sketchers: Map<DrawingType, Sketcher>
-};
 
 interface Props {
   chart: Chart;
@@ -106,7 +96,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const rootElement = ref<ComponentPublicInstance>();
-const contextmenu = ref()
+const contextmenu = ref();
 
 const chartStyle = computed<ChartStyle>(() => props.chart.style);
 provide('chartStyle', chartStyle);
@@ -151,7 +141,7 @@ onUnmounted(() => {
       pane,
     });
   }
-})
+});
 
 function getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
   if (!contextMenuMap.has(priceAxis)) {
@@ -190,7 +180,7 @@ function onMouseLeave(): void {
   }
 }
 
-function onPaneSizeChanged(event: PanesSizeChangeEvent): void {
+function onPaneSizeChanged(event: PanesSizeChangedEvent): void {
   props.chart.tvaClerk
       .processReport({
         protocolOptions: { incident: 'chart-pane-size-changed', timeout: 1000 },

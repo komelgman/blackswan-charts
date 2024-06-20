@@ -18,37 +18,19 @@
 </template>
 
 <script setup lang="ts">
-import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
+import type {
+  DragMoveEvent,
+  MouseClickEvent,
+  MousePositionEvent,
+  ResizeEvent,
+  ZoomEvent,
+} from '@/components/layered-canvas/events';
+import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type { EventRemover } from '@/misc/document-listeners';
 import { onceDocument, onDocument } from '@/misc/document-listeners';
 import type { Point } from '@/model/type-defs';
 import ResizeObserver from 'resize-observer-polyfill';
 import { nextTick, onMounted, onUnmounted, ref } from 'vue';
-
-// todo extract to events
-export interface MousePositionEvent {
-  x: number;
-  y: number;
-}
-
-export interface DragMoveEvent extends MousePositionEvent {
-  dx: number;
-  dy: number;
-}
-
-export interface MouseClickEvent extends MousePositionEvent {
-  isCtrl: boolean;
-}
-
-export interface ZoomEvent {
-  pivot: Point;
-  delta: number;
-}
-
-export interface ResizeEvent {
-  width: number;
-  height: number;
-}
 
 interface Props {
   options: LayeredCanvasOptions;
@@ -66,7 +48,6 @@ const emit = defineEmits<{
   (e: 'mouse-move', event: MousePositionEvent): void;
   (e: 'resize', event: ResizeEvent): void;
 }>();
-
 
 const rootElement = ref<HTMLElement>();
 const nativeLayers = ref<HTMLCanvasElement[]>([]);
@@ -100,7 +81,7 @@ onUnmounted(() => {
 function getPos(e: MouseEvent, element?: Element): Point {
   const target = element || e.target;
   if (!(e instanceof MouseEvent) || !(target instanceof Element)) {
-    throw new Error('Illeagl argument: e instanceof MouseEvent)');
+    throw new Error('Illegal argument: e instanceof MouseEvent)');
   }
 
   const rect = target.getBoundingClientRect();

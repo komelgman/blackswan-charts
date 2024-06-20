@@ -1,4 +1,4 @@
-import type { PaneDescriptor } from '@/components/layout';
+import type { PaneDescriptor } from '@/components/layout/types';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import type Viewport from '@/model/chart/viewport/Viewport';

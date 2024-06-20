@@ -20,15 +20,9 @@
 import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
 import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
-import type {
-  DragMoveEvent,
-  MouseClickEvent,
-  MousePositionEvent,
-  ZoomEvent,
-} from '@/components/layered-canvas/LayeredCanvas.vue';
+import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type LayeredCanvasOptions from '@/components/layered-canvas/LayeredCanvasOptions';
-import type LayerContext from '@/components/layered-canvas/layers/LayerContext';
+import type { LayerContext, LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type Viewport from '@/model/chart/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
 import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
@@ -50,7 +44,6 @@ const canvasOptions: LayeredCanvasOptions = {
   layers: [
     createGridLayer(),
     dataSourceLayer,
-    // shared data from siblings renderer
     // priceline renderer
     highlightingLayer,
     // tool/crosshair renderer ??? shared with other panes
