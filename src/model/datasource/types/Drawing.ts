@@ -1,9 +1,9 @@
 import { isString } from '@/misc/strict-type-checks';
-import type { DataSourceId } from '@/model/datasource/DataSource';
+
+import type { DataSourceId } from '@/model/datasource/types';
 import type { EntityId } from '@/model/tools/IdBuilder';
-import type { Point } from '@/model/type-defs';
-import type HasCenterPos from '@/model/type-defs/options/HasCenterPos';
-import type HasCursor from '@/model/type-defs/options/HasCursor';
+import type { Point } from '@/model/chart/types';
+import type { HasCenterPos, HasCursor } from '@/model/type-defs/options';
 
 export declare type DrawingId = EntityId;
 export declare type ExternalDrawingId = [DataSourceId, DrawingId];
@@ -52,7 +52,7 @@ export interface AxisMark {
   textColor: string;
 }
 
-export default interface Drawing {
+export interface Drawing {
   parts: Graphics[];
   handles: Record<HandleId, DrawingHandle>;
 }

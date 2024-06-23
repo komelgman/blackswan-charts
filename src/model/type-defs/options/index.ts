@@ -1,0 +1,5 @@
+export * from './CanMergeWith'
+export * from './HasCenterPos'
+export * from './HasCursor'
+export * from './HasStyle'
+export * from './HasType'

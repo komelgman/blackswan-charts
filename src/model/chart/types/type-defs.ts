@@ -1,9 +1,6 @@
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-
-export declare type Nominal<T, Name extends string> = T & { [Symbol.species]: Name; };
-export declare type Wrapped<T> = { value: T };
-export declare type Predicate<T> = (factor: T) => boolean;
-export declare type Processor<T> = (value: T) => void;
+import type { Nominal } from '@/model/type-defs';
+import type { HasStyle } from '@/model/type-defs/options';
 
 export const enum RegularTimePeriod {
   m1 = 1 * 60 * 1000,
@@ -63,10 +60,6 @@ export declare type VLine = AbstractLine<UTCTimestamp>;
 export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Price]> & {
   boundType: LineBound;
   scale: PriceAxisScale;
-};
-
-export declare type HasStyle<T> = {
-  style: T;
 }
 
 export declare type OHLCv = {
@@ -81,7 +74,7 @@ export declare type VolumeIndicator<Style> = HasStyle<Style> & {
   from: UTCTimestamp;
   step: UTCTimestamp;
   values: number[];
-};
+}
 
 export interface CandleColors {
   wick: string;

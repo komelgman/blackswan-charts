@@ -1,8 +1,8 @@
-import type { PaneDescriptor, PaneSize } from '@/components/layout/types';
 import type { PanesSizeChangedEvent } from '@/components/layout/events';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import type { PaneDescriptor, PaneSize } from '@/components/layout/types';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
-import type { CanMergeWith } from '@/model/type-defs/options/CanMergeWith';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import type { CanMergeWith } from '@/model/type-defs/options';
 
 export interface PanesSizeChangedOptions extends HistoricalIncidentOptions {
   event: PanesSizeChangedEvent

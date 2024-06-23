@@ -5,7 +5,7 @@
 <script lang="ts" setup>
 import type { ResizeHandleMoveEvent } from '@/components/layout/events';
 import { onceDocument, onDocument } from '@/misc/document-listeners';
-import type { Point } from '@/model/type-defs';
+import type { Point } from '@/model/chart/types';
 
 interface Props {
   index: number;

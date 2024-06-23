@@ -4,16 +4,16 @@
 
 <script lang="ts" setup>
 import ChartWidget from '@/components/chart/ChartWidget.vue';
-import Chart from '@/model/Chart';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
+import Chart from '@/model/chart/Chart';
 import type { OHLCvChart } from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import DataSource from '@/model/datasource/DataSource';
-import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
-import type { DrawingOptions, DrawingType } from '@/model/datasource/Drawing';
+import type { DataSourceChangeEventsMap } from '@/model/datasource/events';
+import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { CandlestickChartStyle, Line, UTCTimestamp, VolumeIndicator } from '@/model/type-defs';
-import { LineBound, RegularTimePeriod } from '@/model/type-defs';
+import type { CandlestickChartStyle, Line, UTCTimestamp, VolumeIndicator } from '@/model/chart/types';
+import { LineBound, RegularTimePeriod } from '@/model/chart/types';
 import { isProxy } from 'vue';
 
 /**

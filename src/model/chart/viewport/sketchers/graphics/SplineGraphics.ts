@@ -1,5 +1,5 @@
 import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/AbstractLineGraphics';
-import type { LineStyle } from '@/model/type-defs';
+import type { LineStyle } from '@/model/chart/types';
 
 export interface SplineGraphicsOptions {
   points: number[];

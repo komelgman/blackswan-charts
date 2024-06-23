@@ -1,11 +1,9 @@
-import { isString } from '@/misc/strict-type-checks';
 import { clone } from '@/misc/object.clone';
+import { isString } from '@/misc/strict-type-checks';
 import type DataSource from '@/model/datasource/DataSource';
-import type { DataSourceId } from '@/model/datasource/DataSource';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
+import { DataSourceChangeEventReason } from '@/model/datasource/events';
+import type { DataSourceEntry, DataSourceId, DrawingOptions, DrawingReference } from '@/model/datasource/types';
 
 export default class DataSourceSharedEntries {
   public readonly dataSource: DataSource;

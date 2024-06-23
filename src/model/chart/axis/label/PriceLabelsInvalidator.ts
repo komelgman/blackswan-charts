@@ -1,9 +1,9 @@
-import { computed, watch } from 'vue';
 import makeFont from '@/misc/make-font';
 import AbstractInvalidator from '@/model/chart/axis/label/AbstractInvalidator';
 import type { LabelOptions } from '@/model/chart/axis/label/LabelOptions';
 import type PriceAxis from '@/model/chart/axis/PriceAxis';
-import type { LogicSize, Price } from '@/model/type-defs';
+import type { LogicSize, Price } from '@/model/chart/types';
+import { computed, watch } from 'vue';
 
 // const SCALES = [0.05, 0.1, 0.2, 0.25, 0.5, 0.8, 1, 2, 5];
 export default class PriceLabelsInvalidator extends AbstractInvalidator {

@@ -1,32 +1,29 @@
-import type { DeepPartial } from '@/misc/strict-type-checks';
-import { isString } from '@/misc/strict-type-checks';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
-import type {
-  DataSourceChangeEvent,
-  DataSourceChangeEventListener,
-  DataSourceChangeEventsMap,
-} from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import { type DeepPartial, isString } from '@/misc/strict-type-checks';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
-import type { DrawingDescriptor, DrawingId, DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
-import AddNewEntry from '@/model/datasource/incidents/AddNewEntry';
-import RemoveEntry from '@/model/datasource/incidents/RemoveEntry';
-import UpdateEntry from '@/model/datasource/incidents/UpdateEntry';
+import {
+  type DataSourceChangeEvent,
+  type DataSourceChangeEventListener,
+  DataSourceChangeEventReason,
+  type DataSourceChangeEventsMap,
+} from '@/model/datasource/events';
+import { AddNewEntry, RemoveEntry, UpdateEntry } from '@/model/datasource/incidents';
+import type {
+  DataSourceEntry,
+  DataSourceId,
+  DataSourceOptions,
+  DrawingDescriptor,
+  DrawingId,
+  DrawingOptions,
+  DrawingReference,
+} from '@/model/datasource/types';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
-import type { EntityId } from '@/model/tools/IdBuilder';
 import type IdHelper from '@/model/tools/IdHelper';
-import type { Predicate} from '@/model/type-defs';
+import type { Predicate } from '@/model/type-defs';
 import { isProxy, toRaw } from 'vue';
-
-export declare type DataSourceId = EntityId;
-export interface DataSourceOptions {
-  id?: DataSourceId;
-  idHelper: IdHelper
-}
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;

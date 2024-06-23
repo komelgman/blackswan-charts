@@ -1,3 +1,3 @@
-export default interface HasCursor {
+export interface HasCursor {
   cursor?: string;
 }

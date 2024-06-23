@@ -1,11 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import { clone } from '@/misc/object.clone';
-import IdHelper from '@/model/tools/IdHelper';
 import DataSource from '@/model/datasource/DataSource';
-import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
+import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import IdHelper from '@/model/tools/IdHelper';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('DataSourceSharedEntries | DataSource operations', () => {
   let interconnect: DataSourceInterconnect;

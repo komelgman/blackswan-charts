@@ -1,5 +1,5 @@
-import type { LineStyle } from '@/model/type-defs';
 import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/AbstractLineGraphics';
+import type { LineStyle } from '@/model/chart/types';
 
 export interface LineGraphicsOptions {
   x0: number;

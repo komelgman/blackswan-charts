@@ -1,16 +1,17 @@
-import type { TextStyle } from '@/model/TextStyle';
-import { reactive } from 'vue';
-import UpdatePriceAxisInverted from '@/model/chart/axis/incidents/UpdatePriceAxisInverted';
-import UpdatePriceAxisScale from '@/model/chart/axis/incidents/UpdatePriceAxisScale';
-import type { EntityId } from '@/model/tools/IdBuilder';
-import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import { clone } from '@/misc/object.clone';
+import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import { ZoomType } from '@/model/chart/axis/AxisOptions';
+import UpdatePriceAxisInverted from '@/model/chart/axis/incidents/UpdatePriceAxisInverted';
+import UpdatePriceAxisScale from '@/model/chart/axis/incidents/UpdatePriceAxisScale';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
+import type { TextStyle } from '@/model/chart/types/styles';
 import type TVAClerk from '@/model/history/TVAClerk';
-import type { Price, Wrapped } from '@/model/type-defs';
+import type { EntityId } from '@/model/tools/IdBuilder';
+import type { Price } from '@/model/chart/types';
+import type { Wrapped } from '@/model/type-defs';
+import { reactive } from 'vue';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;

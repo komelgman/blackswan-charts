@@ -1,10 +1,9 @@
-import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
-import type { ChartStyle } from '@/model/ChartStyle';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { HandleId } from '@/model/datasource/Drawing';
-import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type { MenuItem } from '@/components/context-menu/types';
+import type { ChartStyle } from '@/model/chart/types/styles';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
+import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import type Viewport from '@/model/chart/viewport/Viewport';
+import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 
 export default abstract class AbstractSketcher<T> implements Sketcher<T> {
   protected chartStyle: ChartStyle | undefined;

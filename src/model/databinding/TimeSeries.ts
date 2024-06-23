@@ -1,7 +1,7 @@
 import { clone } from '@/misc/object.clone';
 import DataBinding from '@/model/databinding/DataBinding';
-import type { ExternalDrawingId } from '@/model/datasource/Drawing';
-import type { Range, UTCTimestamp } from '@/model/type-defs';
+import type { ExternalDrawingId } from '@/model/datasource/types';
+import type { Range, UTCTimestamp } from '@/model/chart/types';
 
 export interface TimeSeriesOptions<T extends object = object> {
   name: string;

@@ -1,11 +1,11 @@
-import { isEmpty } from '@/misc/strict-type-checks';
 import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/misc/strict-type-checks';
-import type { ChartStyle } from '@/model/ChartStyle';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import { isEmpty } from '@/misc/strict-type-checks';
+import type { ChartStyle } from '@/model/chart/types/styles';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
-import type { CanMergeWith } from '@/model/type-defs/options/CanMergeWith';
+import type { CanMergeWith } from '@/model/type-defs/options';
 
 export interface UpdateChartStyleOptions extends HistoricalIncidentOptions {
   style: ChartStyle;

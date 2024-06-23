@@ -1,14 +1,12 @@
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
-import { toRaw } from 'vue';
-import type PriceAxis from '@/model/chart/axis/PriceAxis';
-import type { Inverted } from '@/model/chart/axis/PriceAxis';
+import type { default as PriceAxis, Inverted } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import type DataSource from '@/model/datasource/DataSource';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingType, HandleId } from '@/model/datasource/Drawing';
-import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
+import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type DataSource from '@/model/datasource/DataSource';
+import type { DataSourceEntry, DrawingType, HandleId } from '@/model/datasource/types';
+import { toRaw } from 'vue';
 
 export interface ViewportOptions {
   priceScale: PriceAxisScale;

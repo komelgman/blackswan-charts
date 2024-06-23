@@ -1,17 +1,16 @@
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
-import { toRaw } from 'vue';
-import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/AbstractLineGraphics';
-import SplineGraphics from '@/model/chart/viewport/sketchers/graphics/SplineGraphics';
 import { inRange } from '@/misc/line-functions';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { HandleId } from '@/model/datasource/Drawing';
-import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
-import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
-import RoundHandle from '@/model/chart/viewport/sketchers/handles/RoundHandle';
-import type { Line, LineStyle, Price, Range, UTCTimestamp } from '@/model/type-defs';
-import { LineBound } from '@/model/type-defs';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
+import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
+import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/AbstractLineGraphics';
+import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
+import SplineGraphics from '@/model/chart/viewport/sketchers/graphics/SplineGraphics';
+import RoundHandle from '@/model/chart/viewport/sketchers/handles/RoundHandle';
 import type Viewport from '@/model/chart/viewport/Viewport';
+import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
+import type { Line, LineStyle, Price, Range, UTCTimestamp } from '@/model/chart/types';
+import { LineBound } from '@/model/chart/types';
+import { toRaw } from 'vue';
 
 export interface LineOptions {
   def: UTCTimestamp;

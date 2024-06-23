@@ -1,8 +1,8 @@
-import { reactive, watch } from 'vue';
-import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
+import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/types';
 import type PriceAxis from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
+import { reactive, watch } from 'vue';
 
 export default class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private readonly axis: PriceAxis;

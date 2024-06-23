@@ -10,13 +10,12 @@ import RemovePane from '@/model/chart/incidents/RemovePane';
 import SwapPanes from '@/model/chart/incidents/SwapPanes';
 import TogglePane from '@/model/chart/incidents/TogglePane';
 import UpdateChartStyle from '@/model/chart/incidents/UpdateChartStyle';
+import type { ChartStyle } from '@/model/chart/types/styles';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import { default as Viewport, type ViewportOptions } from '@/model/chart/viewport/Viewport';
-import type { ChartOptions } from '@/model/ChartOptions';
-import type { ChartStyle } from '@/model/ChartStyle';
 import type DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
-import type { DrawingType } from '@/model/datasource/Drawing';
+import type { DrawingType } from '@/model/datasource/types';
 import chartOptionsDefaults from '@/model/default-config/ChartStyle.Defaults';
 import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
@@ -24,12 +23,22 @@ import type TVAClerk from '@/model/history/TVAClerk';
 import type TVAProtocol from '@/model/history/TVAProtocol';
 import { reactive } from 'vue';
 
+export interface ChartOptions {
+  style: DeepPartial<ChartStyle>,
+  sketchers: Map<DrawingType, Sketcher>
+}
+
+export interface ChartState {
+  timeWidgetHeight: number;
+  priceWidgetWidth: number;
+}
+
 export interface PaneRegistrationEvent {
   type: 'install' | 'uninstall';
   pane: PaneDescriptor<Viewport>;
 }
 
-export declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) => void;
+declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) => void;
 
 export default class Chart {
   private readonly paneRegEventListeners: PaneRegistrationEventListener[];

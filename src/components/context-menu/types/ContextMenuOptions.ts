@@ -1,5 +1,5 @@
+import type { Point } from '@/model/chart/types';
 import type { CSSProperties } from 'vue';
-import type { Point } from '@/model/type-defs';
 
 export declare type TextIcon = { type: 'text', text: string };
 export declare type ImageIcon = { type: 'image', image: string };

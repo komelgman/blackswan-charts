@@ -1,9 +1,8 @@
-import { createApp, toRaw } from 'vue';
-import Chart from '@/model/Chart';
-import IdHelper from '@/model/tools/IdHelper';
+import Chart from '@/model/chart/Chart';
 import DataSource from '@/model/datasource/DataSource';
-import type { DataSourceOptions } from '@/model/datasource/DataSource';
-import type { DrawingOptions } from '@/model/datasource/Drawing';
+import type { DataSourceOptions, DrawingOptions } from '@/model/datasource/types';
+import IdHelper from '@/model/tools/IdHelper';
+import { createApp, toRaw } from 'vue';
 import type ChartWidgetTestContext from '../component/tools/ChartWidgetTestContext';
 
 const idHelper = new IdHelper();

@@ -1,6 +1,6 @@
 import type PriceAxis from '@/model/chart/axis/PriceAxis';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 
 export interface UpdatePriceAxisInvertedOptions extends HistoricalIncidentOptions {
   axis: PriceAxis;

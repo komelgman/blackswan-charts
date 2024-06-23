@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CheckboxMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
+import type { CheckboxMenuItemModel } from '@/components/context-menu/types';
 
 interface Props {
   model: CheckboxMenuItemModel;

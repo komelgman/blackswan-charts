@@ -17,16 +17,15 @@
 </template>
 
 <script setup lang="ts">
-import ViewportDataSourceLayer from '@/components/chart/layers/ViewportDataSourceLayer';
-import ViewportGridLayer from '@/components/chart/layers/ViewportGridLayer';
-import ViewportHighlightingLayer from '@/components/chart/layers/ViewportHighlightingLayer';
 import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayerContext, LayeredCanvasOptions } from '@/components/layered-canvas/types';
+import ViewportDataSourceLayer from '@/model/chart/layers/ViewportDataSourceLayer';
+import ViewportGridLayer from '@/model/chart/layers/ViewportGridLayer';
+import ViewportHighlightingLayer from '@/model/chart/layers/ViewportHighlightingLayer';
 import type Viewport from '@/model/chart/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
-import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
+import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
 import { computed, onMounted, onUnmounted, toRaw } from 'vue';
 

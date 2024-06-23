@@ -1,14 +1,14 @@
-import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
 import Layer from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
+import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
 import type Viewport from '@/model/chart/viewport/Viewport';
-import type {
-  DataSourceChangeEventListener,
-  DataSourceChangeEventsMap,
-} from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import {
+  DataSourceChangeEventReason,
+  type DataSourceChangeEventListener,
+  type DataSourceChangeEventsMap,
+} from '@/model/datasource/events';
+import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Predicate } from '@/model/type-defs';
 import { toRaw, watch } from 'vue';
 

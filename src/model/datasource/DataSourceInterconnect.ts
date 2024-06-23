@@ -1,13 +1,20 @@
-import { toRaw } from 'vue';
-import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import { isString } from '@/misc/strict-type-checks';
-import type DataSource from '@/model/datasource/DataSource';
-import type { DataSourceId } from '@/model/datasource/DataSource';
-import type { DataSourceChangeEventListener, DataSourceChangeEvent, DataSourceChangeEventsMap }
-  from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingId, DrawingReference, DrawingDescriptor } from '@/model/datasource/Drawing';
+import type { default as DataSource } from '@/model/datasource/DataSource';
+import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
+import {
+  type DataSourceChangeEvent,
+  type DataSourceChangeEventListener,
+  DataSourceChangeEventReason,
+  type DataSourceChangeEventsMap,
+} from '@/model/datasource/events';
+import type {
+  DataSourceEntry,
+  DataSourceId,
+  DrawingDescriptor,
+  DrawingId,
+  DrawingReference,
+} from '@/model/datasource/types';
+import { toRaw } from 'vue';
 
 declare type Action = (dsse: DataSourceSharedEntries, ref: DrawingReference, descriptor: DrawingDescriptor) => void;
 

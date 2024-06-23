@@ -1,14 +1,12 @@
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import type { HasType } from '@/model/type-defs/options/HasType';
-import { toRaw } from 'vue';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { Graphics } from '@/model/datasource/Drawing';
-import type Drawing from '@/model/datasource/Drawing';
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
-import type { OHLCv, Price, Range, UTCTimestamp, TimePeriod, HasStyle } from '@/model/type-defs';
 import type Viewport from '@/model/chart/viewport/Viewport';
+import type { DataSourceEntry, Drawing, Graphics } from '@/model/datasource/types';
+import type { OHLCv, Price, Range, TimePeriod, UTCTimestamp } from '@/model/chart/types';
+import type { HasStyle, HasType } from '@/model/type-defs/options';
+import { toRaw } from 'vue';
 
 const resizeArray = (array: Graphics[], newSize: number): Graphics[] => {
   if (array.length === newSize) {

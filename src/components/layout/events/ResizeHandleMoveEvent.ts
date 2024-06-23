@@ -1,4 +1,4 @@
-import type { Point } from '@/model/type-defs';
+import type { Point } from '@/model/chart/types';
 
 export default interface ResizeHandleMoveEvent {
   preventDrag: () => void;

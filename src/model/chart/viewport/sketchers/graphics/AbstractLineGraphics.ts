@@ -1,6 +1,6 @@
-import type { Graphics } from '@/model/datasource/Drawing';
 import { setLineStyle } from '@/misc/line-functions';
-import type { LineStyle, Point } from '@/model/type-defs';
+import type { Graphics } from '@/model/datasource/types';
+import type { LineStyle, Point } from '@/model/chart/types';
 
 export default abstract class AbstractLineGraphics<GraphicOptions> implements Graphics {
   protected path!: Path2D;

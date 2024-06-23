@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
+import type { SimpleMenuItemModel } from '@/components/context-menu/types';
 import { type VNode } from 'vue';
-import type { SimpleMenuItemModel } from '@/components/context-menu/ContextMenuOptions';
 
 interface Props {
   model: SimpleMenuItemModel;

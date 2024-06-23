@@ -28,7 +28,7 @@ import type {
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type { EventRemover } from '@/misc/document-listeners';
 import { onceDocument, onDocument } from '@/misc/document-listeners';
-import type { Point } from '@/model/type-defs';
+import type { Point } from '@/model/chart/types';
 import ResizeObserver from 'resize-observer-polyfill';
 import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 

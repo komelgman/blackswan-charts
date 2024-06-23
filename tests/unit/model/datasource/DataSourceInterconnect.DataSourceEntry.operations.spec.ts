@@ -1,15 +1,17 @@
-import type { SpyInstance } from 'vitest';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
-import IdHelper from '@/model/tools/IdHelper';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
-import { isEqualDrawingReference } from '@/model/datasource/Drawing';
+import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
+import {
+  type DataSourceEntry,
+  type DrawingOptions,
+  type DrawingReference,
+  isEqualDrawingReference,
+} from '@/model/datasource/types';
+import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import IdHelper from '@/model/tools/IdHelper';
+import type { MockInstance } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('DataSourceSharedEntries | DataSource entries operations', () => {
   let interconnect: DataSourceInterconnect;
@@ -17,9 +19,9 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   let ds2: DataSource;
   let ds3: DataSource;
   let idHelper: IdHelper;
-  let ds1Spy: SpyInstance;
-  let ds2Spy: SpyInstance;
-  let ds3Spy: SpyInstance;
+  let ds1Spy: MockInstance;
+  let ds2Spy: MockInstance;
+  let ds3Spy: MockInstance;
   let ds1Events: DataSourceChangeEventsMap;
   let ds2Events: DataSourceChangeEventsMap;
   let ds3Events: DataSourceChangeEventsMap;

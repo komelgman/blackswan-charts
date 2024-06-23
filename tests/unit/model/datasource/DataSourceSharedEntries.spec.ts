@@ -1,9 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import { clone } from '@/misc/object.clone';
-import IdHelper from '@/model/tools/IdHelper';
 import DataSource from '@/model/datasource/DataSource';
-import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
+import IdHelper from '@/model/tools/IdHelper';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('DataSourceSharedEntries', () => {
   let ds1: DataSource;

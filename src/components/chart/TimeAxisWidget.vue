@@ -10,11 +10,11 @@
 </template>
 
 <script setup lang="ts">
-import TimeAxisLabelsLayer from '@/components/chart/layers/TimeAxisLabelsLayer';
 import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
+import TimeAxisLabelsLayer from '@/model/chart/layers/TimeAxisLabelsLayer';
 import { ref } from 'vue';
 
 interface Props {

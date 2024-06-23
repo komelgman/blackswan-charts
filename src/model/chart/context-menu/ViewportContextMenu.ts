@@ -1,4 +1,4 @@
-import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/ContextMenuOptions';
+import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/types';
 import type Viewport from '@/model/chart/viewport/Viewport';
 
 export default class ViewportContextMenu implements ContextMenuOptionsProvider {

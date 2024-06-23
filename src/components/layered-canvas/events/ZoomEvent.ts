@@ -1,4 +1,4 @@
-import type { Point } from '@/model/type-defs';
+import type { Point } from '@/model/chart/types';
 
 export interface ZoomEvent {
   pivot: Point;

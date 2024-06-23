@@ -1,8 +1,7 @@
 import { isString } from '@/misc/strict-type-checks';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingReference } from '@/model/datasource/Drawing';
+import type { DataSourceEntry, DrawingReference } from '@/model/datasource/types';
 
-export interface StorageEntry {
+interface StorageEntry {
   value: DataSourceEntry;
   prev?: StorageEntry;
   next?: StorageEntry;

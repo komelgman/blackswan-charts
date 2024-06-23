@@ -1,6 +1,6 @@
+import type { ContextMenuOptionsProvider } from '@/components/context-menu/types';
+import type { ContextMenu } from '@/components/context-menu/types';
 import type { Directive, DirectiveBinding } from 'vue';
-import type { ContextMenu } from '@/components/context-menu/ContextMenu.vue';
-import type { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
 
 type ContextMenuDirectiveEl = Element;
 type ContextMenuDirectiveValue = { model: ContextMenuOptionsProvider, instance: ContextMenu };

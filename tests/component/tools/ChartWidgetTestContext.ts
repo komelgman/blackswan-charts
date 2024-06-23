@@ -1,7 +1,6 @@
-import type Chart from '@/model/Chart';
+import type Chart from '@/model/chart/Chart';
 import type DataSource from '@/model/datasource/DataSource';
-import type { DataSourceOptions } from '@/model/datasource/DataSource';
-import type { DrawingOptions } from '@/model/datasource/Drawing';
+import type { DrawingOptions, DataSourceOptions } from '@/model/datasource/types';
 import type IdHelper from '@/model/tools/IdHelper';
 
 export default interface ChartWidgetTestContext {

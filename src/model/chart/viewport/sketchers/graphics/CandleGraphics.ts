@@ -1,5 +1,5 @@
-import type { Graphics } from '@/model/datasource/Drawing';
-import type { Point, CandleColors, CandlestickChartStyle } from '@/model/type-defs';
+import type { Graphics } from '@/model/datasource/types';
+import type { CandleColors, CandlestickChartStyle, Point } from '@/model/chart/types';
 
 export interface CandleGraphicsOptions {
   x: number;

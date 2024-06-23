@@ -8,19 +8,14 @@
 
 <script setup lang="tsx">
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
-import type { MenuItem } from '@/components/context-menu/ContextMenuOptions';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
+import type { MenuItem } from '@/components/context-menu/types';
 import type { EventRemover } from '@/misc/document-listeners';
 import { onceDocument } from '@/misc/document-listeners';
 import makeFont from '@/misc/make-font';
-import type { ChartStyle } from '@/model/ChartStyle';
-import type { Point } from '@/model/type-defs';
+import type { ChartStyle } from '@/model/chart/types/styles';
+import type { Point } from '@/model/chart/types';
 import { computed, type ComputedRef, inject, nextTick, onUnmounted, ref } from 'vue';
-
-export declare type ContextMenu = {
-  show: (event: MouseEvent, newItems: MenuItem[]) => void,
-  hide: () => void
-}
 
 const rootElement = ref<HTMLDivElement>();
 const HIDDEN_POS: Point = { x: -10000, y: 0 };

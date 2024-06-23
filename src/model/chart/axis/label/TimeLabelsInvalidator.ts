@@ -1,9 +1,9 @@
-import { computed, watch } from 'vue';
 import makeFont from '@/misc/make-font';
 import AbstractInvalidator from '@/model/chart/axis/label/AbstractInvalidator';
 import type { LabelOptions } from '@/model/chart/axis/label/LabelOptions';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import type { LogicSize, UTCTimestamp } from '@/model/type-defs';
+import type { LogicSize, UTCTimestamp } from '@/model/chart/types';
+import { computed, watch } from 'vue';
 
 // const SECOND = 1000;
 // const MINUTE = SECOND * 60;

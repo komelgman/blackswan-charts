@@ -1,4 +1,4 @@
-export default interface HasCenterPos {
+export interface HasCenterPos {
   cx: number;
   cy: number;
 }

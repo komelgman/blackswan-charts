@@ -1,5 +1,5 @@
-import type { ChartStyle } from '@/model/ChartStyle';
-import { LineFillStyle } from '@/model/type-defs';
+import type { ChartStyle } from '@/model/chart/types/styles';
+import { LineFillStyle } from '@/model/chart/types';
 
 export const defaultFontFamily = '"Trebuchet MS", Roboto, Ubuntu, sans-serif';
 

@@ -1,14 +1,13 @@
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
-import { toRaw } from 'vue';
 import { invertColor } from '@/misc/color';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { HandleId } from '@/model/datasource/Drawing';
-import type { VLine } from '@/model/type-defs';
-import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
-import SquareHandle from '@/model/chart/viewport/sketchers/handles/SquareHandle';
-import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
+import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
+import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
+import SquareHandle from '@/model/chart/viewport/sketchers/handles/SquareHandle';
 import type Viewport from '@/model/chart/viewport/Viewport';
+import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
+import type { VLine } from '@/model/chart/types';
+import { toRaw } from 'vue';
 
 export default class VLineSketcher extends AbstractSketcher<VLine> {
   protected draw(entry: DataSourceEntry<VLine>, viewport: Viewport): void {

@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/dot-notation */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
-import type { DrawingOptions, DrawingReference } from '@/model/datasource/Drawing';
+import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
+import {
+  type DataSourceEntry,
+  type DrawingOptions,
+  type DrawingReference,
+  isEqualDrawingReference,
+} from '@/model/datasource/types';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import IdHelper from '@/model/tools/IdHelper';
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceChangeEventsMap } from '@/model/datasource/DataSourceChangeEventListener';
-import { isEqualDrawingReference } from '@/model/datasource/Drawing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('DataSource', () => {
   let ds: DataSource;

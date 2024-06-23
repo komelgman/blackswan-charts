@@ -59,25 +59,24 @@
 </template>
 
 <script setup lang="ts">
-import { PRICE_LABEL_PADDING } from '@/components/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
 import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
 import ContextMenu from '@/components/context-menu/ContextMenu.vue';
-import vContextMenuDirective from '@/components/context-menu/ContextMenuDirective';
-import type { ContextMenuOptionsProvider } from '@/components/context-menu/ContextMenuOptions';
+import vContextMenuDirective from '@/components/context-menu/model/ContextMenuDirective';
+import type { ContextMenuOptionsProvider } from '@/components/context-menu/types';
 import { BoxLayout, Divider, Multipane } from '@/components/layout';
 import type { PanesSizeChangedEvent } from '@/components/layout/events';
 import { Direction, type PaneId } from '@/components/layout/types';
-import type { default as Chart, PaneRegistrationEvent } from '@/model/Chart';
 import type PriceAxis from '@/model/chart/axis/PriceAxis';
+import type { ChartState, default as Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
 import PriceAxisContextMenu from '@/model/chart/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/chart/context-menu/TimeAxisContextMenu';
 import ViewportContextMenu from '@/model/chart/context-menu/ViewportContextMenu';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
+import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
+import type { ChartStyle } from '@/model/chart/types/styles';
 import type Viewport from '@/model/chart/viewport/Viewport';
-import type ChartState from '@/model/ChartState';
-import type { ChartStyle } from '@/model/ChartStyle';
 import {
   type ComponentPublicInstance,
   computed,

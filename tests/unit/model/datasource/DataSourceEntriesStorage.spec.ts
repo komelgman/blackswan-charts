@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect } from 'vitest';
 
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
+import type { DataSourceEntry } from '@/model/datasource/types';
 
 describe('DataSourceEntriesStorage', () => {
   let storage: DataSourceEntriesStorage;

@@ -1,6 +1,6 @@
 import BigBoom from '@/model/history/incidents/BigBoom';
-import TVAClerk from '@/model/history/TVAClerk';
 import type { HistoricalIncidentReport } from '@/model/history/TVAClerk';
+import TVAClerk from '@/model/history/TVAClerk';
 import TVAProtocol, { TVAProtocolSign } from '@/model/history/TVAProtocol';
 
 export interface TVAProtocolOptions {

@@ -1,9 +1,8 @@
-import DataSourceChangeEventReason from '@/model/datasource/DataSourceChangeEventReason';
-import type { DataSourceEntry } from '@/model/datasource/DataSourceEntry';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
-import type { DrawingDescriptor } from '@/model/datasource/Drawing';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import { DataSourceChangeEventReason } from '@/model/datasource/events';
+import type { DataSourceEntry, DrawingDescriptor } from '@/model/datasource/types';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
+import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 
 export interface AddNewEntryOptions extends HistoricalIncidentOptions {
   descriptor: DrawingDescriptor;
@@ -11,7 +10,7 @@ export interface AddNewEntryOptions extends HistoricalIncidentOptions {
   addReason: (reason: DataSourceChangeEventReason, entries: DataSourceEntry[]) => void;
 }
 
-export default class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryOptions> {
+export class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryOptions> {
   // eslint-disable-next-line no-useless-constructor
   public constructor(options: AddNewEntryOptions) {
     super(options);

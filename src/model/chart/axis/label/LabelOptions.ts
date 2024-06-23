@@ -1,4 +1,4 @@
-import type { LogicSize } from '@/model/type-defs';
+import type { LogicSize } from '@/model/chart/types';
 
 export declare type LabelOptions<T> = {
   value: T,
