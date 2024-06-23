@@ -3,7 +3,7 @@ import { isString } from '@/model/type-defs';
 import type { DataSourceId } from '@/model/datasource/types';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Point } from '@/model/chart/types';
-import type { HasCenterPos, HasCursor } from '@/model/type-defs/options';
+import type { HasCenterPos, HasCursor } from 'src/model/type-defs/optional';
 
 export declare type DrawingId = EntityId;
 export declare type ExternalDrawingId = [DataSourceId, DrawingId];

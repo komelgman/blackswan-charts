@@ -5,7 +5,7 @@ import type { UTCTimestamp } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
 import type TVAClerk from '@/model/history/TVAClerk';
 import { PostConstruct } from '@/model/type-defs/decorators';
-import type { HasPostConstruct } from '@/model/type-defs/options';
+import type { HasPostConstruct } from 'src/model/type-defs/optional';
 
 @PostConstruct
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {

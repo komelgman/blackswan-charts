@@ -5,7 +5,7 @@ import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGrap
 import type Viewport from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing, Graphics } from '@/model/datasource/types';
 import type { OHLCv, Price, Range, TimePeriod, UTCTimestamp } from '@/model/chart/types';
-import type { HasStyle, HasType } from '@/model/type-defs/options';
+import type { HasStyle, HasType } from 'src/model/type-defs/optional';
 import { toRaw } from 'vue';
 
 const resizeArray = (array: Graphics[], newSize: number): Graphics[] => {

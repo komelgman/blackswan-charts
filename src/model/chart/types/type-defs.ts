@@ -1,6 +1,6 @@
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { Nominal } from '@/model/type-defs';
-import type { HasStyle } from '@/model/type-defs/options';
+import type { HasStyle } from 'src/model/type-defs/optional';
 
 export const enum RegularTimePeriod {
   m1 = 1 * 60 * 1000,

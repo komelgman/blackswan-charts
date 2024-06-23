@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { HasPostConstruct } from '@/model/type-defs/options';
+import type { HasPostConstruct } from 'src/model/type-defs/optional';
 
 type Constructor<T> = new (...args: any[]) => T;
 
