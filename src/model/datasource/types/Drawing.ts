@@ -1,4 +1,4 @@
-import { isString } from '@/misc/strict-type-checks';
+import { isString } from '@/model/type-defs';
 
 import type { DataSourceId } from '@/model/datasource/types';
 import type { EntityId } from '@/model/tools/IdBuilder';

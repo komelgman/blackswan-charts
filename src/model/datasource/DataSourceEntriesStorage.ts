@@ -1,4 +1,4 @@
-import { isString } from '@/misc/strict-type-checks';
+import { isString } from '@/model/type-defs';
 import type { DataSourceEntry, DrawingReference } from '@/model/datasource/types';
 
 interface StorageEntry {

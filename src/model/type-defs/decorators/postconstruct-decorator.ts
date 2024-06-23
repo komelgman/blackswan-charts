@@ -1,25 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { reactive } from 'vue';
-
-export interface HasPostConstruct {
-  postConstruct: () => void;
-}
+import type { HasPostConstruct } from '@/model/type-defs/options';
 
 type Constructor<T> = new (...args: any[]) => T;
 
-export default function Reactive<T extends Record<string, any>>(ConstructorFunction: Constructor<T>): Constructor<T> {
+export function PostConstruct<T extends Record<string, any>>(ConstructorFunction: Constructor<T>): Constructor<T> {
   // eslint-disable-next-line func-names
   const newConstructor = function (...args: any[]): T {
     // eslint-disable-next-line func-names
     const ClassProxy = function (): T {
-      const result: T = (reactive(new ConstructorFunction(...args)) as any) as T;
+      const result: T = new ConstructorFunction(...args) satisfies T;
 
       if ((result as any as HasPostConstruct).postConstruct !== undefined) {
         result.postConstruct.apply(result);
       }
 
       return result;
-    } as any as { new(): T };
+    } as any as new() => T;
 
     ClassProxy.prototype = ConstructorFunction.prototype;
     return new ClassProxy();

@@ -1,6 +1,6 @@
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
-import { type DeepPartial, isString } from '@/misc/strict-type-checks';
+import { type DeepPartial, isString } from '@/model/type-defs';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import {

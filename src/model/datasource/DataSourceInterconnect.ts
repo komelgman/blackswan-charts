@@ -1,4 +1,4 @@
-import { isString } from '@/misc/strict-type-checks';
+import { isString } from '@/model/type-defs';
 import type { default as DataSource } from '@/model/datasource/DataSource';
 import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import {

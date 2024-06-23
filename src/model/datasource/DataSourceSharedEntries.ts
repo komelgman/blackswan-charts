@@ -1,5 +1,5 @@
 import { clone } from '@/misc/object.clone';
-import { isString } from '@/misc/strict-type-checks';
+import { isString } from '@/model/type-defs';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';

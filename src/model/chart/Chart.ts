@@ -1,7 +1,6 @@
 import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
-import type { DeepPartial } from '@/misc/strict-type-checks';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import AddNewPane from '@/model/chart/incidents/AddNewPane';
@@ -21,6 +20,7 @@ import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type TVAProtocol from '@/model/history/TVAProtocol';
+import type { DeepPartial } from '@/model/type-defs';
 import { reactive } from 'vue';
 
 export interface ChartOptions {
@@ -207,10 +207,7 @@ export default class Chart {
   }
 
   private createTimeAxis(chartStyle: ChartStyle): TimeAxis {
-    const timeAxis = new TimeAxis(this.tva.clerk, chartStyle.text);
-    timeAxis.postConstruct();
-
-    return timeAxis;
+    return new TimeAxis(this.tva.clerk, chartStyle.text);
   }
 
   private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {

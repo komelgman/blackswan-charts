@@ -1,5 +1,4 @@
 import { clone } from '@/misc/object.clone';
-import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import { ZoomType } from '@/model/chart/axis/AxisOptions';
@@ -11,6 +10,8 @@ import type TVAClerk from '@/model/history/TVAClerk';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Price } from '@/model/chart/types';
 import type { Wrapped } from '@/model/type-defs';
+import { PostConstruct } from '@/model/type-defs/decorators';
+import type { HasPostConstruct } from '@/model/type-defs/options';
 import { reactive } from 'vue';
 
 export declare type InvertedValue = 1 | -1;
@@ -22,6 +23,7 @@ export interface PriceAxisOptions extends AxisOptions<Price> {
   contentWidth?: Wrapped<number>;
 }
 
+@PostConstruct
 export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostConstruct {
   private cache!: [/* virtualFrom */ number, /* scaleK */ number, /* unscaleK */ number];
   private fractionValue: number = 0;

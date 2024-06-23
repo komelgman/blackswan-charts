@@ -1,11 +1,11 @@
 import { merge } from '@/misc/object.merge';
-import type { DeepPartial } from '@/misc/strict-type-checks';
-import { isEmpty } from '@/misc/strict-type-checks';
+import type { DeepPartial } from '@/model/type-defs';
+import { isEmpty } from '@/model/type-defs';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
-import type { CanMergeWith } from '@/model/type-defs/options';
+import type { HasMergeWith } from '@/model/type-defs/options';
 
 export interface UpdateChartStyleOptions extends HistoricalIncidentOptions {
   style: ChartStyle;
@@ -14,7 +14,7 @@ export interface UpdateChartStyleOptions extends HistoricalIncidentOptions {
 
 export default class UpdateChartStyle
   extends AbstractHistoricalIncident<UpdateChartStyleOptions>
-  implements CanMergeWith<UpdateChartStyle>, IsNexusIncident {
+  implements HasMergeWith<UpdateChartStyle>, IsNexusIncident {
   // ---------------------------------------------------------
   protected marker: string = '--update-chart-style';
   private unmerge!: Record<string, unknown>;

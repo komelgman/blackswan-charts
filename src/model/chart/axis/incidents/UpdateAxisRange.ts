@@ -4,7 +4,7 @@ import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncide
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
 import type { Range } from '@/model/chart/types';
-import type { CanMergeWith } from '@/model/type-defs/options';
+import type { HasMergeWith } from '@/model/type-defs/options';
 
 export interface UpdateRangeOptions<T extends number> extends HistoricalIncidentOptions {
   axis: Axis<T, AxisOptions<T>>;
@@ -13,7 +13,7 @@ export interface UpdateRangeOptions<T extends number> extends HistoricalIncident
 
 export default class UpdateAxisRange<T extends number>
   extends AbstractHistoricalIncident<UpdateRangeOptions<T>>
-  implements CanMergeWith<UpdateAxisRange<T>>, IsNexusIncident {
+  implements HasMergeWith<UpdateAxisRange<T>>, IsNexusIncident {
   //---------------------------------------------------------------
   protected readonly marker: string = '--update-axis-range';
   private readonly initial: Range<T>;

@@ -34,7 +34,6 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
       paneOptions.priceScale,
       paneOptions.priceInverted,
     );
-    priceAxis.postConstruct();
 
     this.paneDescriptor = {
       id: dataSource.id,

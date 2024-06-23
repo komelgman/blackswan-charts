@@ -1,6 +1,6 @@
 import { merge } from '@/misc/object.merge';
-import type { DeepPartial } from '@/misc/strict-type-checks';
-import { isEmpty } from '@/misc/strict-type-checks';
+import type { DeepPartial } from '@/model/type-defs';
+import { isEmpty } from '@/model/type-defs';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
 import {
@@ -12,7 +12,7 @@ import {
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
-import type { CanMergeWith } from '@/model/type-defs/options';
+import type { HasMergeWith } from '@/model/type-defs/options';
 
 export interface UpdateOptions extends HistoricalIncidentOptions {
   ref: DrawingReference,
@@ -23,7 +23,7 @@ export interface UpdateOptions extends HistoricalIncidentOptions {
 
 export class UpdateEntry
   extends AbstractHistoricalIncident<UpdateOptions>
-  implements CanMergeWith<UpdateEntry>, IsNexusIncident {
+  implements HasMergeWith<UpdateEntry>, IsNexusIncident {
   // ------------------------------------------------------
   protected marker: string = '--update-drawing-in-datasource';
   private unmerge!: Record<string, unknown>;

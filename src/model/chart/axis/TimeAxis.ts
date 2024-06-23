@@ -1,11 +1,13 @@
-import type { HasPostConstruct } from '@/misc/reactive-decorator';
 import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import { ZoomType } from '@/model/chart/axis/AxisOptions';
+import type { UTCTimestamp } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
 import type TVAClerk from '@/model/history/TVAClerk';
-import type { UTCTimestamp } from '@/model/chart/types';
+import { PostConstruct } from '@/model/type-defs/decorators';
+import type { HasPostConstruct } from '@/model/type-defs/options';
 
+@PostConstruct
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
 
