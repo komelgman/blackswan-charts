@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 import type { MockInstance } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/misc/object.clone';
@@ -545,7 +546,7 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   });
 
   it('test requestDataUpdate shared entry', () => {
-    ds1.requestDataUpdate(ds1.storage.get(drawing1.id));
+    ds1.requestDataUpdate(ds1['storage'].get(drawing1.id));
 
     expect(ds1Spy).toHaveBeenCalledOnce();
     expect(ds2Spy).toHaveBeenCalledOnce();
@@ -560,7 +561,7 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   });
 
   it('test requestDataUpdate external shared entry', () => {
-    ds2.requestDataUpdate(ds2.storage.get([ds1.id, drawing1.id]));
+    ds2.requestDataUpdate(ds2['storage'].get([ds1.id, drawing1.id]));
 
     expect(ds1Spy).toHaveBeenCalledOnce();
     expect(ds2Spy).toHaveBeenCalledOnce();
