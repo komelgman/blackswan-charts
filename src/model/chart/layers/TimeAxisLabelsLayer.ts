@@ -1,9 +1,9 @@
+import { computed, watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import { computed, watch } from 'vue';
 
 export default class TimeAxisLabelsLayer extends Layer {
   private readonly timeAxis: TimeAxis;

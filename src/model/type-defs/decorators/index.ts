@@ -1,1 +1,1 @@
-export * from './postconstruct-decorator'
+export * from './postconstruct-decorator';

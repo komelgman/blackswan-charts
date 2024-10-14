@@ -1,9 +1,9 @@
+import { computed, watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
 import type { default as PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
-import { computed, watch } from 'vue';
 
 export const PRICE_LABEL_PADDING = 8;
 
@@ -15,7 +15,7 @@ export default class PriceAxisLabelsLayer extends Layer {
     super();
 
     this.priceAxis = priceAxis;
-    this.labelsInvalidator  = new PriceLabelsInvalidator(priceAxis);
+    this.labelsInvalidator = new PriceLabelsInvalidator(priceAxis);
 
     this.addContextChangeListener((newCtx: LayerContext) => {
       this.labelsInvalidator.context = newCtx;

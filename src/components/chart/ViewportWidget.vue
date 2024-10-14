@@ -1,22 +1,23 @@
 <template>
   <div
-      class="viewport"
-      :style="cssVars"
+    class="viewport"
+    :style="cssVars"
   >
     <layered-canvas
-        :options="canvasOptions"
-        @drag-start="onDragStart"
-        @drag-end="onDragEnd"
-        @drag-move="onDrag"
-        @mouse-move="onMouseMove"
-        @zoom="onZoom"
-        @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
-        @left-mouse-btn-click="onLeftMouseBtnClick"
+      :options="canvasOptions"
+      @drag-start="onDragStart"
+      @drag-end="onDragEnd"
+      @drag-move="onDrag"
+      @mouse-move="onMouseMove"
+      @zoom="onZoom"
+      @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
+      @left-mouse-btn-click="onLeftMouseBtnClick"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, toRaw } from 'vue';
 import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayerContext, LayeredCanvasOptions } from '@/components/layered-canvas/types';
@@ -27,7 +28,6 @@ import type Viewport from '@/model/chart/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
-import { computed, onMounted, onUnmounted, toRaw } from 'vue';
 
 interface Props {
   viewportModel: Viewport;
@@ -61,7 +61,7 @@ onUnmounted(() => {
   dataSourceLayer.uninstallListeners();
   highlightingLayer.uninstallListeners();
   viewportModel.dataSource.removeChangeEventListener(dataSourceChangeEventListener);
-})
+});
 
 function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
   if (events.has(DataSourceChangeEventReason.RemoveEntry)) {

@@ -1,3 +1,5 @@
+import type { HasPostConstruct } from 'src/model/type-defs/optional';
+import { reactive } from 'vue';
 import { clone } from '@/misc/object.clone';
 import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
@@ -11,8 +13,6 @@ import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Price } from '@/model/chart/types';
 import type { Wrapped } from '@/model/type-defs';
 import { PostConstruct } from '@/model/type-defs/decorators';
-import type { HasPostConstruct } from 'src/model/type-defs/optional';
-import { reactive } from 'vue';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;

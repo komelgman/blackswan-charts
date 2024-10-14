@@ -1,3 +1,4 @@
+import type { HasMergeWith } from 'src/model/type-defs/optional';
 import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/model/type-defs';
 import { isEmpty } from '@/model/type-defs';
@@ -5,7 +6,6 @@ import type { ChartStyle } from '@/model/chart/types/styles';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
-import type { HasMergeWith } from 'src/model/type-defs/optional';
 
 export interface UpdateChartStyleOptions extends HistoricalIncidentOptions {
   style: ChartStyle;

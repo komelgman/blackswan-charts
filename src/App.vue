@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts" setup>
+import { isProxy } from 'vue';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import Chart from '@/model/chart/Chart';
@@ -14,7 +15,6 @@ import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
 import type { CandlestickChartStyle, Line, UTCTimestamp, VolumeIndicator } from '@/model/chart/types';
 import { LineBound, RegularTimePeriod } from '@/model/chart/types';
-import { isProxy } from 'vue';
 
 /**
  * todo
@@ -26,7 +26,7 @@ import { isProxy } from 'vue';
  */
 
 const idHelper: IdHelper = new IdHelper();
-const mainDs = new DataSource({ id: 'main', idHelper: idHelper });
+const mainDs = new DataSource({ id: 'main', idHelper });
 const chartApi = new Chart({
   sketchers: new Map<DrawingType, Sketcher>([]),
   style: {},
@@ -203,7 +203,7 @@ setTimeout((j: number) => {
 
 setTimeout((j: number) => {
   console.log(`${j}) chartApi.createPane(~second);`);
-  const dataSource: DataSource = new DataSource({ id: 'second', idHelper: idHelper });
+  const dataSource: DataSource = new DataSource({ id: 'second', idHelper });
   chartApi.createPane(dataSource, { preferredSize: 0.3 });
 }, 100 * i++, i);
 

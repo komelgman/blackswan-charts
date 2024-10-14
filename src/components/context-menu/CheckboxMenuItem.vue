@@ -1,10 +1,10 @@
 <template>
   <a
-      tabindex="0"
-      class="checkbox-menu-item"
-      :style="model.style"
-      @mousedown="model.onclick"
-      @keypress="onKeyPress"
+    tabindex="0"
+    class="checkbox-menu-item"
+    :style="model.style"
+    @mousedown="model.onclick"
+    @keypress="onKeyPress"
   >
     <span v-if="model.checked" class="tickmark">&#x2714;</span>
     {{ model.title }}

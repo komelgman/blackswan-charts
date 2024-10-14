@@ -1,6 +1,6 @@
+import type { HasStyle } from 'src/model/type-defs/optional';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { Nominal } from '@/model/type-defs';
-import type { HasStyle } from 'src/model/type-defs/optional';
 
 export const enum RegularTimePeriod {
   m1 = 1 * 60 * 1000,
@@ -60,7 +60,7 @@ export declare type VLine = AbstractLine<UTCTimestamp>;
 export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Price]> & {
   boundType: LineBound;
   scale: PriceAxisScale;
-}
+};
 
 export declare type OHLCv = {
   loaded: Range<UTCTimestamp>;
@@ -68,13 +68,13 @@ export declare type OHLCv = {
   visible?: Range<UTCTimestamp>;
   step: UTCTimestamp; // todo: TimePeriod;
   values: [o: Price, h: Price, l: Price, c: Price, v?: number][];
-}
+};
 
 export declare type VolumeIndicator<Style> = HasStyle<Style> & {
   from: UTCTimestamp;
   step: UTCTimestamp;
   values: number[];
-}
+};
 
 export interface CandleColors {
   wick: string;
@@ -85,7 +85,7 @@ export interface CandleColors {
 export declare type CandleType = 'bearish' | 'bullish';
 
 export interface CandlestickChartStyle extends Record<CandleType, CandleColors> {
-  type: "CandlestickChartStyle";
+  type: 'CandlestickChartStyle';
   showWick: boolean;
   showBody: boolean;
   showBorder: boolean;

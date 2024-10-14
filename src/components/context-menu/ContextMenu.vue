@@ -7,6 +7,7 @@
 </template>
 
 <script setup lang="tsx">
+import { computed, type ComputedRef, inject, nextTick, onUnmounted, ref } from 'vue';
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
 import type { MenuItem } from '@/components/context-menu/types';
@@ -15,7 +16,6 @@ import { onceDocument } from '@/misc/document-listeners';
 import makeFont from '@/misc/make-font';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { Point } from '@/model/chart/types';
-import { computed, type ComputedRef, inject, nextTick, onUnmounted, ref } from 'vue';
 
 const rootElement = ref<HTMLDivElement>();
 const HIDDEN_POS: Point = { x: -10000, y: 0 };
@@ -91,26 +91,24 @@ const style = computed(() => {
     paddingLeft: '26px',
     top: `${position.value.y}px`,
     left: `${position.value.x}px`,
+  };
+});
+
+const renderItems = (): any[] => items.value.map((item) => {
+  switch (item.type) {
+    case 'item':
+      return <SimpleMenuItem model={item} />;
+    case 'checkbox':
+      return <CheckboxMenuItem model={item} />;
+    default:
+      return <span>error</span>;
   }
 });
 
-const renderItems = (): any[] => {
-  return items.value.map((item) => {
-    switch (item.type) {
-      case 'item':
-        return <SimpleMenuItem model={item} />;
-      case 'checkbox':
-        return <CheckboxMenuItem model={item} />;
-      default:
-        return <span>error</span>;
-    }
-  });
-};
-
 defineExpose({
   show,
-  hide
-})
+  hide,
+});
 </script>
 
 <style scoped lang="scss">

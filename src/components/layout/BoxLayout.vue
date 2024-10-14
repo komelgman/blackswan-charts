@@ -5,20 +5,18 @@
 </template>
 
 <script setup lang="ts">
-import { Direction } from '@/components/layout/types';
 import { computed } from 'vue';
+import { Direction } from '@/components/layout/types';
 
 interface Props {
   direction?: Direction;
 }
 
 const { direction } = withDefaults(defineProps<Props>(), {
-  direction: Direction.Horizontal
+  direction: Direction.Horizontal,
 });
 
-const classnames = computed(() => {
-  return ['boxlayout', `layout-${direction}`];
-});
+const classnames = computed(() => ['boxlayout', `layout-${direction}`]);
 </script>
 
 <style lang="scss">

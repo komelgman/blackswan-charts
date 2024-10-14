@@ -1,3 +1,3 @@
-export declare type HasType<typeName> = {
-  type: typeName
-}
+export declare type HasType<TypeName> = {
+  type: TypeName
+};

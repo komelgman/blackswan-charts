@@ -1,3 +1,3 @@
-export * from './AddNewEntry'
-export * from './RemoveEntry'
-export * from './UpdateEntry'
+export * from './AddNewEntry';
+export * from './RemoveEntry';
+export * from './UpdateEntry';

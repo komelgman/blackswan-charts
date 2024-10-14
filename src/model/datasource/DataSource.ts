@@ -1,6 +1,7 @@
+import { isProxy, toRaw } from 'vue';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
-import { type DeepPartial, isString } from '@/model/type-defs';
+import { type DeepPartial, isString, Predicate } from '@/model/type-defs';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import {
@@ -22,8 +23,6 @@ import type {
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type IdHelper from '@/model/tools/IdHelper';
-import type { Predicate } from '@/model/type-defs';
-import { isProxy, toRaw } from 'vue';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;

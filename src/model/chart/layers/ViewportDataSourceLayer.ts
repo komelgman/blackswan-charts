@@ -1,3 +1,4 @@
+import { toRaw, watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import type { Inverted, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
@@ -6,7 +7,6 @@ import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
-import { toRaw, watch } from 'vue';
 
 export default class ViewportDataSourceLayer extends Layer {
   private readonly ds: DataSource;

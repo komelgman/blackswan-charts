@@ -1,3 +1,5 @@
+import type { HasStyle, HasType } from 'src/model/type-defs/optional';
+import { toRaw } from 'vue';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
@@ -5,8 +7,6 @@ import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGrap
 import type Viewport from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing, Graphics } from '@/model/datasource/types';
 import type { OHLCv, Price, Range, TimePeriod, UTCTimestamp } from '@/model/chart/types';
-import type { HasStyle, HasType } from 'src/model/type-defs/optional';
-import { toRaw } from 'vue';
 
 const resizeArray = (array: Graphics[], newSize: number): Graphics[] => {
   if (array.length === newSize) {
@@ -15,24 +15,23 @@ const resizeArray = (array: Graphics[], newSize: number): Graphics[] => {
 
   const changeSize = newSize - array.length;
   if (changeSize > 0) {
-    return array.splice(0, 0, ... Array(changeSize).fill(undefined));
+    return array.splice(0, 0, ...Array(changeSize).fill(undefined));
   }
 
   return array.splice(0, -changeSize);
 };
 
-export declare type OHLCvPipeOptions = HasType<"OHLCvPipeOptions"> & {
+export declare type OHLCvPipeOptions = HasType<'OHLCvPipeOptions'> & {
   symbol: string;
   step: TimePeriod;
   // offset from timeAxis in count of step
   fromOffset?: number; // default 0
   toOffset?: number; // default 0
-}
+};
 
 export declare type OHLCvChart<Style> = { content?: OHLCv } & { pipeOptions: OHLCvPipeOptions } & HasStyle<Style>;
 
 export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>> {
-
   public invalidate(entry: DataSourceEntry<OHLCvChart<any>>, viewport: Viewport): boolean {
     const { timeAxis, dataSource } = viewport;
 
@@ -111,7 +110,7 @@ export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>
         yh: priceAxis.translate(bar[2]),
         yl: priceAxis.translate(bar[3]),
         yc: priceAxis.translate(bar[4]),
-        style
+        style,
       };
 
       if (parts[i] === undefined) {

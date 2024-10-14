@@ -3,4 +3,4 @@ import type { MenuItem } from '@/components/context-menu/types/ContextMenuOption
 export declare type ContextMenu = {
   show: (event: MouseEvent, newItems: MenuItem[]) => void,
   hide: () => void
-}
+};

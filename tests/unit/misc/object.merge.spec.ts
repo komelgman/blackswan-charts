@@ -1,5 +1,6 @@
-import { merge } from '@/misc/object.merge';
+/* eslint-disable no-sparse-arrays */
 import { describe, expect, it, test } from 'vitest';
+import { merge } from '@/misc/object.merge';
 
 describe('merge tuples', () => {
   it('should throw error', () => {
@@ -53,7 +54,7 @@ describe('merge objects', () => {
       b: { p1: { p11: 1 } },
       ex: [
         { p1: { p11: 1 } },
-        { p1: undefined }
+        { p1: undefined },
       ],
     },
     {
@@ -61,7 +62,7 @@ describe('merge objects', () => {
       b: { p1: { p11: 1 } },
       ex: [
         { p1: { p11: 1 } },
-        { p1: null }
+        { p1: null },
       ],
     },
     {
@@ -69,7 +70,7 @@ describe('merge objects', () => {
       b: { p1: { p11: 1 } },
       ex: [
         { p1: { p11: 1, p12: null, p13: undefined, p14: 1.3, p15: {}, p16: [1, 2, 3] } },
-        { p1: { p11: '1' } }
+        { p1: { p11: '1' } },
       ],
     },
     {
@@ -77,7 +78,7 @@ describe('merge objects', () => {
       b: { p1: { p11: 1, p12: 2, p13: 3, p14: 4.4, p15: undefined, p16: [2, 1, 0] } },
       ex: [
         { p1: { p11: 1, p12: 2, p13: 3, p14: 4.4, p15: undefined, p16: [2, 1, 0] } },
-        { p1: { p11: '1', p12: null, p13: undefined, p14: 1.3, p15: {}, p16: [1, 2, 3] } }
+        { p1: { p11: '1', p12: null, p13: undefined, p14: 1.3, p15: {}, p16: [1, 2, 3] } },
       ],
     },
     {
@@ -85,7 +86,7 @@ describe('merge objects', () => {
       b: { p1: { p11: 1 } },
       ex: [
         { p1: { abc: { a: null }, p11: 1 } },
-        { p1: { p11: null } }
+        { p1: { p11: null } },
       ],
     },
   ])('merge($a, $b) -> $ex', ({ a, b, ex }) => {

@@ -1,2 +1,2 @@
-export * from './ChartStyle'
-export * from './TextStyle'
+export * from './ChartStyle';
+export * from './TextStyle';

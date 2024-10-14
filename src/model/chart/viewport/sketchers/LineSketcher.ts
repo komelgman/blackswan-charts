@@ -1,3 +1,4 @@
+import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { inRange } from '@/misc/line-functions';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
@@ -10,7 +11,6 @@ import type Viewport from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type { Line, LineStyle, Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { LineBound } from '@/model/chart/types';
-import { toRaw } from 'vue';
 
 export interface LineOptions {
   def: UTCTimestamp;
@@ -174,7 +174,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
         const lineScale = (options.data as Line).scale.func;
         const [x0, y0, x1, y1] = options.data.def;
         // todo: fix, now it's parallel but delta isn't matched to actual move, point on line should move with mouse pointer
-        const dy = lineScale.translate(priceAxis.revert(e.y  - priceAxis.inverted.value * e.dy)) - lineScale.translate(priceAxis.revert(e.y));
+        const dy = lineScale.translate(priceAxis.revert(e.y - priceAxis.inverted.value * e.dy)) - lineScale.translate(priceAxis.revert(e.y));
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
         const ny0 = lineScale.revert(lineScale.translate(y0) + dy);
         const nx1 = timeAxis.revert(timeAxis.translate(x1) - e.dx);

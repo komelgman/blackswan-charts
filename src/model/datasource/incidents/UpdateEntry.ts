@@ -1,3 +1,4 @@
+import type { HasMergeWith } from 'src/model/type-defs/optional';
 import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/model/type-defs';
 import { isEmpty } from '@/model/type-defs';
@@ -12,7 +13,6 @@ import {
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
-import type { HasMergeWith } from 'src/model/type-defs/optional';
 
 export interface UpdateOptions extends HistoricalIncidentOptions {
   ref: DrawingReference,
@@ -56,7 +56,7 @@ export class UpdateEntry
     }
 
     const opDescriptor = op.options.storage.get(op.options.ref).descriptor;
-    const descriptor = this.options.storage.get(this.options.ref).descriptor;
+    const { descriptor } = this.options.storage.get(this.options.ref);
 
     if (!isEqualDrawingReference(opDescriptor.ref, descriptor.ref)) {
       return false; // update for another one drawing

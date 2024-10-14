@@ -32,7 +32,7 @@ export class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryOptions> 
   }
 
   protected inverseIncident(): void {
-    const { addReason, storage} = this.options;
+    const { addReason, storage } = this.options;
     const deletedEntry: DataSourceEntry = storage.pop();
 
     addReason(DataSourceChangeEventReason.RemoveEntry, [deletedEntry]);

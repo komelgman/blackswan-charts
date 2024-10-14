@@ -1,3 +1,4 @@
+import { reactive } from 'vue';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
@@ -7,7 +8,6 @@ import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/chart/types';
-import { reactive } from 'vue';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
   private readonly rangeValue: Range<T> = reactive({ from: -1 as T, to: 1 as T }) as Range<T>;

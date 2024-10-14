@@ -1,3 +1,4 @@
+import { reactive } from 'vue';
 import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
@@ -21,7 +22,6 @@ import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
 import type TVAClerk from '@/model/history/TVAClerk';
 import type TVAProtocol from '@/model/history/TVAProtocol';
 import type { DeepPartial } from '@/model/type-defs';
-import { reactive } from 'vue';
 
 export interface ChartOptions {
   style: DeepPartial<ChartStyle>,

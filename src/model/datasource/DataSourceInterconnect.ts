@@ -1,3 +1,4 @@
+import { toRaw } from 'vue';
 import { isString } from '@/model/type-defs';
 import type { default as DataSource } from '@/model/datasource/DataSource';
 import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
@@ -14,7 +15,6 @@ import type {
   DrawingId,
   DrawingReference,
 } from '@/model/datasource/types';
-import { toRaw } from 'vue';
 
 declare type Action = (dsse: DataSourceSharedEntries, ref: DrawingReference, descriptor: DrawingDescriptor) => void;
 
@@ -82,8 +82,7 @@ export default class DataSourceInterconnect {
   }
 
   private addEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    const action: Action = (dsse: DataSourceSharedEntries, ref: DrawingReference, descriptor: DrawingDescriptor) =>
-        dsse.addEntry(ref, descriptor.options);
+    const action: Action = (dsse, ref, descriptor) => dsse.addEntry(ref, descriptor.options);
 
     this.applyActionToSharedEntries(entries, srcDs, action);
   }

@@ -4,7 +4,6 @@ import type { DataSourceEntry } from '@/model/datasource/types';
 import type { VolumeIndicator } from '@/model/chart/types';
 
 export default class VolumeIndicatorAsColumnsSketcher extends AbstractSketcher<VolumeIndicator<any>> {
-
   protected draw(entry: DataSourceEntry<VolumeIndicator<any>>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');

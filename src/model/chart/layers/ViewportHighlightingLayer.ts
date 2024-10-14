@@ -1,3 +1,4 @@
+import { computed, watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type Viewport from '@/model/chart/viewport/Viewport';
@@ -7,7 +8,6 @@ import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
-import { computed, watch } from 'vue';
 
 export default class ViewportHighlightingLayer extends Layer {
   private readonly viewport: Viewport;

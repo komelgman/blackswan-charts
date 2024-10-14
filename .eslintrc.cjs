@@ -52,6 +52,7 @@ module.exports = {
 
     '@typescript-eslint/ban-ts-ignore': 0,
     '@typescript-eslint/no-inferrable-types': 0,
+    '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/lines-between-class-members': 0,
     '@typescript-eslint/no-shadow': ['error'],
 

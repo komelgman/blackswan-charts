@@ -7,7 +7,7 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
   const unmerge: Record<string, any> = {};
 
   for (const src of sources) {
-    if (Array.isArray(dst) && Array.isArray(src) && dst.length != src.length) {
+    if (Array.isArray(dst) && Array.isArray(src) && dst.length !== src.length) {
       throw new Error('Illegal Argument: can merge tuples with same length only');
     }
 

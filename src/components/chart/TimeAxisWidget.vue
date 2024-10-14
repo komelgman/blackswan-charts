@@ -1,21 +1,21 @@
 <template>
   <div ref="rootElement" class="timeline pane">
     <layered-canvas
-        :options="canvasOptions"
-        @drag-move="onDrag"
-        @zoom="onZoom"
-        @resize="onResize"
+      :options="canvasOptions"
+      @drag-move="onDrag"
+      @zoom="onZoom"
+      @resize="onResize"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import TimeAxisLabelsLayer from '@/model/chart/layers/TimeAxisLabelsLayer';
-import { ref } from 'vue';
 
 interface Props {
   timeAxis: TimeAxis;
@@ -44,7 +44,6 @@ function onResize(e: ResizeEvent): void {
   timeAxis.update({ screenSize: { main: e.width, second: e.height } });
 }
 </script>
-
 
 <style scoped>
 .timeline {

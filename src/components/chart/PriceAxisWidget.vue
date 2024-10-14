@@ -1,15 +1,16 @@
 <template>
   <div ref="rootElement" class="priceline pane" :style="cssVars">
     <layered-canvas
-        :options="canvasOptions"
-        @drag-move="onDrag"
-        @zoom="onZoom"
-        @resize="onResize"
+      :options="canvasOptions"
+      @drag-move="onDrag"
+      @zoom="onZoom"
+      @resize="onResize"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
 import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
@@ -17,7 +18,6 @@ import type { ChartState } from '@/model/chart/Chart';
 import PriceAxisLabelsLayer from '@/model/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisMarksLayer from '@/model/chart/layers/PriceAxisMarksLayer';
 import type Viewport from '@/model/chart/viewport/Viewport';
-import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
 
 interface Props {
   viewportModel: Viewport;

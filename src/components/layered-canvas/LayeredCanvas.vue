@@ -1,23 +1,25 @@
 <template>
   <div
-      ref="rootElement"
-      class="layered-canvas"
-      @mousedown.left="onDragStart"
-      @dblclick.left="onMouseLeftBtnDoubleClick"
-      @wheel.passive="onWheel"
-      @mousemove="onMouseMove"
-      @click.left="onMouseLeftBtnClick"
+    ref="rootElement"
+    class="layered-canvas"
+    @mousedown.left="onDragStart"
+    @dblclick.left="onMouseLeftBtnDoubleClick"
+    @wheel.passive="onWheel"
+    @mousemove="onMouseMove"
+    @click.left="onMouseLeftBtnClick"
   >
     <canvas
-        ref="nativeLayers"
-        v-for="(layer, index) in layers"
-        :key="layer.id"
-        :style="'user-select: none;-webkit-tap-highlight-color: transparent;z-index:' + index"
+      ref="nativeLayers"
+      v-for="(layer, index) in layers"
+      :key="layer.id"
+      :style="`user-select: none;-webkit-tap-highlight-color: transparent;z-index:${index}`"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import ResizeObserver from 'resize-observer-polyfill';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import type {
   DragMoveEvent,
   MouseClickEvent,
@@ -29,8 +31,6 @@ import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type { EventRemover } from '@/misc/document-listeners';
 import { onceDocument, onDocument } from '@/misc/document-listeners';
 import type { Point } from '@/model/chart/types';
-import ResizeObserver from 'resize-observer-polyfill';
-import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 
 interface Props {
   options: LayeredCanvasOptions;
@@ -52,7 +52,7 @@ const emit = defineEmits<{
 const rootElement = ref<HTMLElement>();
 const nativeLayers = ref<HTMLCanvasElement[]>([]);
 const resizeObserver = new ResizeObserver(setupLayers);
-const layers = props.options.layers;
+const { layers } = props.options;
 let prevPos: Point;
 let removeMoveListener: EventRemover;
 let removeEndListener: EventRemover;
@@ -63,7 +63,7 @@ let isWasDrag = false;
 
 onMounted(() => {
   if (!rootElement.value) {
-    throw new Error("rootElement must be present");
+    throw new Error('rootElement must be present');
   }
 
   resizeObserver.observe(rootElement.value);
@@ -194,7 +194,7 @@ function onDragEnd(e?: DragEvent): void {
 function setupLayers(): void {
   nextTick().then(() => {
     if (!rootElement.value) {
-      throw new Error("rootElement must be present");
+      throw new Error('rootElement must be present');
     }
 
     const { width, height } = rootElement.value.getBoundingClientRect();

@@ -1,2 +1,2 @@
-export * from './ContextMenuOptions'
-export type { ContextMenu } from './ContextMenu'
+export * from './ContextMenuOptions';
+export type { ContextMenu } from './ContextMenu';

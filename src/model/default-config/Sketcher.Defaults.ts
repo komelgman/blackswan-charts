@@ -7,7 +7,7 @@ import VolumeIndicatorAsColumnsSketcher from '@/model/chart/viewport/sketchers/V
 import type { DrawingType } from '@/model/datasource/types';
 
 export default new Map<DrawingType, Sketcher>([
-  ["OHLCv", new OHLCvChartSketcher()],
+  ['OHLCv', new OHLCvChartSketcher()],
   ['Volume', new VolumeIndicatorAsColumnsSketcher()],
   ['Line', new LineSketcher()],
   ['HLine', new HLineSketcher()],

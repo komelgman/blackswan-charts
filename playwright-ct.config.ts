@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import { fileURLToPath, URL } from "url";
+import { fileURLToPath, URL } from 'url';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -37,7 +37,7 @@ export default defineConfig({
       ],
       resolve: {
         alias: [
-          { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }
+          { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
         ],
       },
     },

@@ -5,20 +5,18 @@
 </template>
 
 <script setup lang="ts">
-import { Thickness } from '@/components/layout/types';
 import { computed } from 'vue';
+import { Thickness } from '@/components/layout/types';
 
 interface Props {
   thickness?: Thickness;
 }
 
 const { thickness } = withDefaults(defineProps<Props>(), {
-  thickness: Thickness.Thin
+  thickness: Thickness.Thin,
 });
 
-const classnames = computed(() => {
-  return ['divider', `divider-${thickness}`];
-});
+const classnames = computed(() => ['divider', `divider-${thickness}`]);
 </script>
 
 <style lang="scss">

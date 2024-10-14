@@ -58,7 +58,6 @@ export default class CandleGraphics implements Graphics {
     ctx.lineWidth = 3;
     const result = ctx.isPointInPath(this.barPath, x, y) || ctx.isPointInStroke(this.wickPath, x, y);
 
-
     // * debug
     // ctx.strokeStyle = '#454545';
     // ctx.stroke(this.path);

@@ -1,10 +1,10 @@
 <template>
   <a
-      tabindex="0"
-      class="simple-menu-item"
-      :style="model.style"
-      @click="model.onclick"
-      @keypress="onKeyPress"
+    tabindex="0"
+    class="simple-menu-item"
+    :style="model.style"
+    @click="model.onclick"
+    @keypress="onKeyPress"
   >
     <renderIcon />
     {{ model.title }}
@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
-import type { SimpleMenuItemModel } from '@/components/context-menu/types';
 import { type VNode } from 'vue';
+import type { SimpleMenuItemModel } from '@/components/context-menu/types';
 
 interface Props {
   model: SimpleMenuItemModel;

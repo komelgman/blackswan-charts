@@ -1,10 +1,10 @@
+import type { HasMergeWith } from 'src/model/type-defs/optional';
 import type Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
 import type { IsNexusIncident } from '@/model/history/TVAProtocol';
 import type { Range } from '@/model/chart/types';
-import type { HasMergeWith } from 'src/model/type-defs/optional';
 
 export interface UpdateRangeOptions<T extends number> extends HistoricalIncidentOptions {
   axis: Axis<T, AxisOptions<T>>;

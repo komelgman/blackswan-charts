@@ -13,11 +13,11 @@
 </template>
 
 <script lang="ts" setup>
+import ResizeObserver from 'resize-observer-polyfill';
+import { type ComponentPublicInstance, computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { BoxLayout, Divider, ResizeHandle } from '@/components/layout';
 import type { PanesSizeChangedEvent, ResizeHandleMoveEvent } from '@/components/layout/events';
 import { Direction, type PaneDescriptor } from '@/components/layout/types';
-import ResizeObserver from 'resize-observer-polyfill';
-import { type ComponentPublicInstance, computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface PaneInfo {
   paneDesc: PaneDescriptor<any>;
@@ -82,31 +82,29 @@ const style = computed(() => {
 
   return result;
 });
-const visibleItems = computed(() => {
-  return props.items.filter((item) => item.visible === undefined || item.visible);
-});
+const visibleItems = computed(() => props.items.filter((item) => item.visible === undefined || item.visible));
 const resizeObserver: ResizeObserver = new ResizeObserver(invalidate);
 
 let valid: boolean = true;
 
 onMounted(() => {
   if (!rootElement.value) {
-    throw new Error("rootElement must be present");
+    throw new Error('rootElement must be present');
   }
 
   resizeObserver.observe(rootElement.value.$el);
-})
+});
 
 onUnmounted(() => {
   resizeObserver.disconnect();
-})
+});
 
 watch(visibleItems, invalidate);
 
 function sortedPaneElements(): HTMLElement[] {
   return paneElements.value
-      ? paneElements.value.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
-      : [];
+    ? paneElements.value.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
+    : [];
 }
 
 function paneStyle(desc: PaneDescriptor<unknown>): any {

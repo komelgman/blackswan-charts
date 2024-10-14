@@ -1,2 +1,2 @@
-export * from './strict-type-checks'
-export * from './type-helpers'
+export * from './strict-type-checks';
+export * from './type-helpers';

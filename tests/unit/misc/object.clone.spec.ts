@@ -1,5 +1,6 @@
+/* eslint-disable no-sparse-arrays */
+import { expect, test } from 'vitest';
 import { clone } from '@/misc/object.clone';
-import { describe, expect, it, test } from 'vitest';
 
 test.each([
   { a: [], ex: [] },
@@ -10,7 +11,7 @@ test.each([
   { a: {}, ex: {} },
   {
     a: { p1: 1, p2: null, p3: undefined, p4: { p5: [1, 2, 3, , , 6] } },
-    ex: { p1: 1, p2: null, p3: undefined, p4: { p5: [1, 2, 3, , , 6] } }
+    ex: { p1: 1, p2: null, p3: undefined, p4: { p5: [1, 2, 3, , , 6] } },
   },
 ])('clone($a) -> $ex', ({ a, ex }) => {
   const cloned: any = clone(a);

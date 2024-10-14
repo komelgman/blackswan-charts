@@ -1,3 +1,4 @@
+import { toRaw, watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
@@ -10,7 +11,6 @@ import {
 } from '@/model/datasource/events';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Predicate } from '@/model/type-defs';
-import { toRaw, watch } from 'vue';
 
 export default class PriceAxisMarksLayer extends Layer {
   private readonly viewport: Viewport;
@@ -56,7 +56,7 @@ export default class PriceAxisMarksLayer extends Layer {
     native.textAlign = 'end';
     native.font = makeFont(textStyle);
 
-    const validMarks: Predicate<DataSourceEntry> = ({ descriptor, mark}): boolean => {
+    const validMarks: Predicate<DataSourceEntry> = ({ descriptor, mark }): boolean => {
       const { options } = descriptor;
 
       return options.type === 'HLine'

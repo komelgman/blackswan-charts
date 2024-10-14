@@ -1,27 +1,27 @@
 <template>
   <box-layout
-      :direction="Direction.Vertical"
-      :style="cssVars"
-      ref="rootElement"
-      @keydown="onKeyDown"
-      @mouseenter="onMouseEnter"
-      @mouseleave="onMouseLeave"
-      @contextmenu.prevent
-      tabindex="0"
+    :direction="Direction.Vertical"
+    :style="cssVars"
+    ref="rootElement"
+    @keydown="onKeyDown"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+    @contextmenu.prevent
+    tabindex="0"
   >
     <ContextMenu ref="contextmenu"/>
     <multipane
-        :items="chart.panes"
-        :direction="Direction.Vertical"
-        resizable
-        @drag-handle-moved="onPaneSizeChanged"
-        style="height: 100%"
+      :items="chart.panes"
+      :direction="Direction.Vertical"
+      resizable
+      @drag-handle-moved="onPaneSizeChanged"
+      style="height: 100%"
     >
       <template v-slot:default="props">
         <box-layout>
           <viewport-widget
-              :viewport-model="props.model"
-              v-context-menu-directive="{
+            :viewport-model="props.model"
+            v-context-menu-directive="{
               model: getViewportContextMenu(props.model),
               instance: contextmenu,
             }"
@@ -30,8 +30,8 @@
           <divider/>
 
           <price-axis-widget
-              :viewport-model="props.model"
-              v-context-menu-directive="{
+            :viewport-model="props.model"
+            v-context-menu-directive="{
               model: getPriceAxisContextMenu(props.model.priceAxis),
               instance: contextmenu,
             }"
@@ -44,8 +44,8 @@
 
     <box-layout :style="timeLineStyle">
       <time-axis-widget
-          :time-axis="chart.timeAxis"
-          v-context-menu-directive="{
+        :time-axis="chart.timeAxis"
+        v-context-menu-directive="{
           model: getTimeAxisContextMenu(),
           instance: contextmenu,
         }"
@@ -59,6 +59,17 @@
 </template>
 
 <script setup lang="ts">
+import {
+  type ComponentPublicInstance,
+  computed,
+  onMounted,
+  onUnmounted,
+  provide,
+  reactive,
+  ref,
+  watch,
+  type WatchStopHandle,
+} from 'vue';
 import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
 import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
@@ -77,17 +88,6 @@ import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type Viewport from '@/model/chart/viewport/Viewport';
-import {
-  type ComponentPublicInstance,
-  computed,
-  onMounted,
-  onUnmounted,
-  provide,
-  reactive,
-  ref,
-  watch,
-  type WatchStopHandle,
-} from 'vue';
 
 interface Props {
   chart: Chart;
@@ -112,11 +112,11 @@ const contextMenuMap = new WeakMap<any, ContextMenuOptionsProvider>();
 onMounted(() => {
   // todo: unwatch all unhandled watchers
   watch(
-      () => chartStyle.value.text.fontSize,
-      (v) => {
-        chartState.timeWidgetHeight = v + 16;
-      },
-      { immediate: true },
+    () => chartStyle.value.text.fontSize,
+    (v) => {
+      chartState.timeWidgetHeight = v + 16;
+    },
+    { immediate: true },
   );
 
   props.chart.addPaneRegistrationEventListener(onPaneRegEventListener);
@@ -181,13 +181,13 @@ function onMouseLeave(): void {
 
 function onPaneSizeChanged(event: PanesSizeChangedEvent): void {
   props.chart.tvaClerk
-      .processReport({
-        protocolOptions: { incident: 'chart-pane-size-changed', timeout: 1000 },
-        incident: new PanesSizeChanged({
-          event,
-        }),
-        immediate: false,
-      });
+    .processReport({
+      protocolOptions: { incident: 'chart-pane-size-changed', timeout: 1000 },
+      incident: new PanesSizeChanged({
+        event,
+      }),
+      immediate: false,
+    });
 }
 
 function onPaneRegEventListener(event: PaneRegistrationEvent): void {
@@ -198,7 +198,7 @@ function onPaneRegEventListener(event: PaneRegistrationEvent): void {
     }
 
     (unwatchers.get(pane.id) as WatchStopHandle[]).push(
-        watch(pane.model.priceAxis.contentWidth, updatePriceAxisWidth, { immediate: true }),
+      watch(pane.model.priceAxis.contentWidth, updatePriceAxisWidth, { immediate: true }),
     );
   } else {
     if (!unwatchers.has(pane.id)) {
@@ -256,21 +256,17 @@ const cssVars = computed(() => {
   };
 });
 
-const timeLineStyle = computed(() => {
-  return {
-    maxHeight: `${chartState.timeWidgetHeight}px`,
-    minHeight: `${chartState.timeWidgetHeight}px`,
-    height: `${chartState.timeWidgetHeight}px`,
-  };
-});
+const timeLineStyle = computed(() => ({
+  maxHeight: `${chartState.timeWidgetHeight}px`,
+  minHeight: `${chartState.timeWidgetHeight}px`,
+  height: `${chartState.timeWidgetHeight}px`,
+}));
 
-const timeLineButtonPaneStyle = computed(() => {
-  return {
-    display: 'flex',
-    flex: '1 1 auto',
-    maxWidth: `${chartState.priceWidgetWidth}px`,
-    minWidth: `${chartState.priceWidgetWidth}px`,
-    width: `${chartState.priceWidgetWidth}px`,
-  };
-});
+const timeLineButtonPaneStyle = computed(() => ({
+  display: 'flex',
+  flex: '1 1 auto',
+  maxWidth: `${chartState.priceWidgetWidth}px`,
+  minWidth: `${chartState.priceWidgetWidth}px`,
+  width: `${chartState.priceWidgetWidth}px`,
+}));
 </script>
