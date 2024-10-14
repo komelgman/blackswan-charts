@@ -24,7 +24,7 @@ import type { LayerContext, LayeredCanvasOptions } from '@/components/layered-ca
 import ViewportDataSourceLayer from '@/model/chart/layers/ViewportDataSourceLayer';
 import ViewportGridLayer from '@/model/chart/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/model/chart/layers/ViewportHighlightingLayer';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
@@ -70,9 +70,7 @@ function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void 
 
     for (const event of removedEntriesEvents) {
       if (highlighted === event.entry) {
-        viewportModel.highlighted = undefined;
-        viewportModel.highlightedHandleId = undefined;
-        viewportModel.cursor = undefined;
+        viewportModel.resetHightlightes();
       }
 
       if (selected.has(event.entry)) {

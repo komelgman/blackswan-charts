@@ -3,7 +3,7 @@ import type { HasPostConstruct } from 'src/model/type-defs/optional';
 
 type Constructor<T> = new (...args: any[]) => T;
 
-export function PostConstruct<T extends Record<string, any>>(ConstructorFunction: Constructor<T>): Constructor<T> {
+export default function PostConstruct<T extends Record<string, any>>(ConstructorFunction: Constructor<T>): Constructor<T> {
   // eslint-disable-next-line func-names
   const newConstructor = function (...args: any[]): T {
     // eslint-disable-next-line func-names

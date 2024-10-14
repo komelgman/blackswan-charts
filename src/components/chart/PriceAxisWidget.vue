@@ -17,7 +17,7 @@ import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type { ChartState } from '@/model/chart/Chart';
 import PriceAxisLabelsLayer from '@/model/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisMarksLayer from '@/model/chart/layers/PriceAxisMarksLayer';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 
 interface Props {
   viewportModel: Viewport;

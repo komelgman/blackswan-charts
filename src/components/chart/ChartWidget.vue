@@ -79,15 +79,15 @@ import type { ContextMenuOptionsProvider } from '@/components/context-menu/types
 import { BoxLayout, Divider, Multipane } from '@/components/layout';
 import type { PanesSizeChangedEvent } from '@/components/layout/events';
 import { Direction, type PaneId } from '@/components/layout/types';
-import type PriceAxis from '@/model/chart/axis/PriceAxis';
-import type { ChartState, default as Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
+import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
+import type { ChartState, Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
 import PriceAxisContextMenu from '@/model/chart/context-menu/PriceAxisContextMenu';
 import TimeAxisContextMenu from '@/model/chart/context-menu/TimeAxisContextMenu';
 import ViewportContextMenu from '@/model/chart/context-menu/ViewportContextMenu';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
 import type { ChartStyle } from '@/model/chart/types/styles';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 
 interface Props {
   chart: Chart;

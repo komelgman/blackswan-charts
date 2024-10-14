@@ -3,7 +3,7 @@ import Layer from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventListener,

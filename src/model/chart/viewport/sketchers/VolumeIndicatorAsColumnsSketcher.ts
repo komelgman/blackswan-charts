@@ -1,5 +1,5 @@
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { VolumeIndicator } from '@/model/chart/types';
 

@@ -3,7 +3,7 @@ import Layer from '@/components/layered-canvas/model/Layer';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
-import type { default as PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
+import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 
 export const PRICE_LABEL_PADDING = 8;
 

@@ -24,7 +24,7 @@ export interface PriceAxisOptions extends AxisOptions<Price> {
 }
 
 @PostConstruct
-export default class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostConstruct {
+export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostConstruct {
   private cache!: [/* virtualFrom */ number, /* scaleK */ number, /* unscaleK */ number];
   private fractionValue: number = 0;
 

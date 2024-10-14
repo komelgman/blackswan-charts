@@ -1,7 +1,7 @@
 import { computed, watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import {
   type DataSourceChangeEventListener,

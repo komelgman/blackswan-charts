@@ -5,7 +5,7 @@ import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
 import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
 import SquareHandle from '@/model/chart/viewport/sketchers/handles/SquareHandle';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type { HLine } from '@/model/chart/types';
 

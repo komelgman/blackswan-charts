@@ -6,7 +6,7 @@
 import { isProxy } from 'vue';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
-import Chart from '@/model/chart/Chart';
+import { Chart } from '@/model/chart/Chart';
 import type { OHLCvChart } from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import DataSource from '@/model/datasource/DataSource';

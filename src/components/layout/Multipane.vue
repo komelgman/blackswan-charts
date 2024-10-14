@@ -101,7 +101,7 @@ onUnmounted(() => {
 
 watch(visibleItems, invalidate);
 
-function sortedPaneElements(): HTMLElement[] {
+function paneElementsGetSortedByIndex(): HTMLElement[] {
   return paneElements.value
     ? paneElements.value.sort((a, b) => (a.dataset.index as any) - (b.dataset.index as any))
     : [];
@@ -295,7 +295,7 @@ function resize(paneInfos: PaneInfo[], retrievedSize: number, targetSize: number
 }
 
 function getInitialParamsForVisiblePanes(): InitialParamsForVisiblePanes {
-  const visibleItems = props.items;
+  const currentVisibleItems = props.items;
   const availableSize = getSize(rootElement.value?.$el);
   const bordersSize = getBordersSize();
   const size = availableSize - bordersSize;
@@ -308,8 +308,8 @@ function getInitialParamsForVisiblePanes(): InitialParamsForVisiblePanes {
   let suMax = 0;
   let snuMax = 0;
 
-  for (let i = 0; i < visibleItems?.length || 0; i += 1) {
-    const paneDesc = visibleItems[i];
+  for (let i = 0; i < currentVisibleItems?.length || 0; i += 1) {
+    const paneDesc = currentVisibleItems[i];
 
     if (paneDesc.minSize === undefined) {
       paneDesc.minSize = 1;
@@ -366,7 +366,7 @@ function onResizeHandleMove(e: ResizeHandleMoveEvent): void {
   const initialSizes = items.map((v) => ({ preferred: v.preferredSize, current: v.size }));
   const dsize = (props.direction === Direction.Vertical ? e.dy : e.dx) * getDPR();
   const deltaSign = Math.sign(dsize);
-  const paneElements = sortedPaneElements();
+  const sortedPaneElements = paneElementsGetSortedByIndex();
   let deltaSize = Math.abs(dsize);
 
   while (deltaSize > 0) {
@@ -403,8 +403,8 @@ function onResizeHandleMove(e: ResizeHandleMoveEvent): void {
     decItem.preferredSize = decItem.size / (availableSize - bordersSize);
     incItem.preferredSize = incItem.size / (availableSize - bordersSize);
 
-    setSize(paneElements[decPaneIndex], decItem.size);
-    setSize(paneElements[incPaneIndex], incItem.size);
+    setSize(sortedPaneElements[decPaneIndex], decItem.size);
+    setSize(sortedPaneElements[incPaneIndex], incItem.size);
 
     deltaSize = shouldBeDistributed;
   }

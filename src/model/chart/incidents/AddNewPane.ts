@@ -1,10 +1,9 @@
 import type { PaneDescriptor, PaneOptions } from '@/components/layout/types';
-import PriceAxis from '@/model/chart/axis/PriceAxis';
+import { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
-import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
-import Viewport from '@/model/chart/viewport/Viewport';
+import { type ViewportOptions, Viewport } from '@/model/chart/viewport/Viewport';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DrawingType } from '@/model/datasource/types';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';

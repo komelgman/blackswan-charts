@@ -7,7 +7,7 @@ import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/Abst
 import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
 import SplineGraphics from '@/model/chart/viewport/sketchers/graphics/SplineGraphics';
 import RoundHandle from '@/model/chart/viewport/sketchers/handles/RoundHandle';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type { Line, LineStyle, Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { LineBound } from '@/model/chart/types';
@@ -97,6 +97,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
 
         curX = nextX;
         curY = nextY;
+      // eslint-disable-next-line no-constant-condition
       } while (true);
 
       // eslint-disable-next-line no-lonely-if

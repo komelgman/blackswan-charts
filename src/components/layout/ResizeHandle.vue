@@ -35,8 +35,8 @@ function onDragStart(e: MouseEvent): void {
 
 function onDrag(e: DragEvent): void {
   const dPos = {
-    preventDrag: () => dragBlocked = false,
-    allowDrag: () => dragBlocked = true,
+    preventDrag: () => { dragBlocked = false; },
+    allowDrag: () => { dragBlocked = true; },
     index: props.index,
     dx: e.x - prevPos.x,
     dy: e.y - prevPos.y,

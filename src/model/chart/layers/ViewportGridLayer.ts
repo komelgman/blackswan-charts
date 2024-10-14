@@ -1,7 +1,7 @@
 import { watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import { drawHorizontalLine, drawVerticalLine } from '@/misc/line-functions';
-import type { default as PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
+import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 
 export default class ViewportGridLayer extends Layer {

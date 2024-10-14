@@ -1,6 +1,6 @@
 import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
-import type { default as PriceAxis, Inverted } from '@/model/chart/axis/PriceAxis';
+import type { PriceAxis, Inverted } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
@@ -13,7 +13,7 @@ export interface ViewportOptions {
   priceInverted: Inverted;
 }
 
-export default class Viewport {
+export class Viewport {
   private readonly sketchers!: Map<DrawingType, Sketcher>;
 
   public readonly timeAxis: TimeAxis;
@@ -52,6 +52,12 @@ export default class Viewport {
         selected.add(highlighted);
       }
     }
+  }
+
+  public resetHightlightes(): void {
+    this.highlighted = undefined;
+    this.highlightedHandleId = undefined;
+    this.cursor = undefined;
   }
 
   public selectionCanBeDragged(): boolean {

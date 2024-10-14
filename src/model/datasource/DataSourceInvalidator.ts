@@ -2,7 +2,7 @@ import type { WatchStopHandle } from 'vue';
 import { computed, toRaw, watch } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import {
   type DataSourceChangeEventListener,
   DataSourceChangeEventReason,

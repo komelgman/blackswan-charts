@@ -12,7 +12,7 @@ import TogglePane from '@/model/chart/incidents/TogglePane';
 import UpdateChartStyle from '@/model/chart/incidents/UpdateChartStyle';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
-import { default as Viewport, type ViewportOptions } from '@/model/chart/viewport/Viewport';
+import { Viewport, type ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/types';
@@ -40,7 +40,7 @@ export interface PaneRegistrationEvent {
 
 declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) => void;
 
-export default class Chart {
+export class Chart {
   private readonly paneRegEventListeners: PaneRegistrationEventListener[];
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly tva: TimeVarianceAuthority;

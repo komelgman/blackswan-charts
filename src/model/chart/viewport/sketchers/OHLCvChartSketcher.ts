@@ -4,7 +4,7 @@ import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
-import type Viewport from '@/model/chart/viewport/Viewport';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing, Graphics } from '@/model/datasource/types';
 import type { OHLCv, Price, Range, TimePeriod, UTCTimestamp } from '@/model/chart/types';
 
@@ -67,7 +67,8 @@ export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    let { descriptor, drawing } = entry;
+    let { drawing } = entry;
+    const { descriptor } = entry;
     const { priceAxis, timeAxis } = viewport;
 
     const ohlc = toRaw(descriptor?.options.data).content;
