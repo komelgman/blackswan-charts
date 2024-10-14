@@ -9,7 +9,7 @@ export declare type SimpleMenuItemModel = {
   type: 'item';
   title: string;
   style?: CSSProperties;
-  onclick: CallableFunction;
+  onclick: (e: MouseEvent) => void;
   icon?: MenuItemIcon;
 };
 
@@ -18,7 +18,7 @@ export declare type CheckboxMenuItemModel = {
   title: string;
   checked: boolean;
   style?: CSSProperties;
-  onclick: CallableFunction;
+  onclick: (e: MouseEvent) => void;
 };
 
 export declare type DividerMenuItemModel = { type: 'divider' };

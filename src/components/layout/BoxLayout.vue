@@ -12,10 +12,7 @@ interface Props {
   direction?: Direction;
 }
 
-const { direction } = withDefaults(defineProps<Props>(), {
-  direction: Direction.Horizontal,
-});
-
+const { direction = Direction.Horizontal } = defineProps<Props>();
 const classnames = computed(() => ['boxlayout', `layout-${direction}`]);
 </script>
 

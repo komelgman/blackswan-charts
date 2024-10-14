@@ -4,5 +4,9 @@
     {
       "path": "./tsconfig.base.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+  },
 }

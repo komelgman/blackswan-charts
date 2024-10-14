@@ -12,10 +12,7 @@ interface Props {
   thickness?: Thickness;
 }
 
-const { thickness } = withDefaults(defineProps<Props>(), {
-  thickness: Thickness.Thin,
-});
-
+const { thickness = Thickness.Thin } = defineProps<Props>();
 const classnames = computed(() => ['divider', `divider-${thickness}`]);
 </script>
 

@@ -14,7 +14,7 @@ const { options } = defineProps<Props>();
 const component = ref<any>(null);
 const props = ref<any>(null);
 
-watch(options, () => {
+watch(() => options, () => {
   if (options) {
     component.value = defineAsyncComponent(() => import(`../${options.component}.vue`));
     props.value = options.props;
