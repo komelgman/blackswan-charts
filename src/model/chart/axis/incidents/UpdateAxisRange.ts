@@ -3,7 +3,7 @@ import type Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
-import type { IsNexusIncident } from '@/model/history/TVAProtocol';
+import type { IsEmptyIncident } from '@/model/history/HistoricalProtocol';
 import type { Range } from '@/model/chart/types';
 
 export interface UpdateRangeOptions<T extends number> extends HistoricalIncidentOptions {
@@ -13,7 +13,7 @@ export interface UpdateRangeOptions<T extends number> extends HistoricalIncident
 
 export default class UpdateAxisRange<T extends number>
   extends AbstractHistoricalIncident<UpdateRangeOptions<T>>
-  implements HasMergeWith<UpdateAxisRange<T>>, IsNexusIncident {
+  implements HasMergeWith<UpdateAxisRange<T>>, IsEmptyIncident {
   //---------------------------------------------------------------
   protected readonly marker: string = '--update-axis-range';
   private readonly initial: Range<T>;
@@ -43,7 +43,7 @@ export default class UpdateAxisRange<T extends number>
     return true;
   }
 
-  public isNexusIncident(): boolean {
+  public isEmptyIncident(): boolean {
     const { from, to } = this.options.range;
     return this.initial.from === from && this.initial.to === to;
   }

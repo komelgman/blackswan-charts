@@ -20,7 +20,7 @@ import type {
   DrawingOptions,
   DrawingReference,
 } from '@/model/datasource/types';
-import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import type { HistoricalProtocolOptions } from '@/model/history/History';
 import type IdHelper from '@/model/tools/IdHelper';
 import type { HistoricalIncidentReportProcessor } from '../history/HistoricalIncidentReport';
 
@@ -33,7 +33,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private readonly idHelper: IdHelper;
   private historicalIncidentReportProcessorValue: HistoricalIncidentReportProcessor | undefined;
-  private protocolOptions: TVAProtocolOptions | undefined = undefined;
+  private protocolOptions: HistoricalProtocolOptions | undefined = undefined;
 
   public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
@@ -139,8 +139,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.fire(new Map([[DataInvalid, this.toChangeEvents(DataInvalid, [entry])]]));
   }
 
-  public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
-    this.protocolOptions = options ?? { incident: this.getNewTransactionId() };
+  public beginTransaction(options: HistoricalProtocolOptions | undefined = undefined): void {
+    this.protocolOptions = options ?? { protocolTitle: this.getNewTransactionId() };
 
     this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions,
@@ -155,7 +155,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreInTransaction();
 
     this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
       sign: true,
     });
 
@@ -180,7 +180,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     }
 
     this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
       incident: new AddNewEntry({
         descriptor: this.createDescriptor(options),
         storage: this.storage,
@@ -194,7 +194,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreInTransaction();
 
     this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
       incident: new UpdateEntry({
         ref,
         storage: this.storage,
@@ -204,7 +204,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     });
   }
 
-  // Note: this changes won't store in TVA
+  // Note: this changes won't store in History
   public process<T>(refs: DrawingReference[], processor: (entry: DataSourceEntry<T>) => void): void {
     this.checkWeAreNotInProxy();
     const entries: DataSourceEntry[] = [];
@@ -225,7 +225,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreInTransaction();
 
     this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
       incident: new RemoveEntry({
         ref,
         storage: this.storage,
@@ -246,7 +246,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     }
 
     this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as TVAProtocolOptions,
+      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
       incident: new AddNewEntry({
         descriptor: cloned,
         storage: this.storage,
@@ -257,7 +257,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     return this.storage.get(cloned.ref);
   }
 
-  // todo: tva
+  // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringToFront(ref: DrawingReference): void {
     this.checkWeAreNotInProxy();
@@ -273,7 +273,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     // this.addReason(DataSourceChangeEventReason.OrderChanged, orderedEntries);
   }
 
-  // todo: tva
+  // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendToBack(ref: DrawingReference): void {
     this.checkWeAreNotInProxy();
@@ -293,7 +293,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     // this.addReason(DataSourceChangeEventReason.OrderChanged, orderedEntries);
   }
 
-  // todo: tva
+  // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringForward(ref: DrawingReference): void {
     this.checkWeAreNotInProxy();
@@ -313,7 +313,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     // this.addReason(DataSourceChangeEventReason.OrderChanged, orderedEntries);
   }
 
-  // todo: tva
+  // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendBackward(ref: DrawingReference): void {
     this.checkWeAreNotInProxy();

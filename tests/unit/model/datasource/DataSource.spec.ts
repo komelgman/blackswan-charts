@@ -10,7 +10,7 @@ import {
   type DrawingReference,
   isEqualDrawingReference,
 } from '@/model/datasource/types';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import History from '@/model/history/History';
 import IdHelper from '@/model/tools/IdHelper';
 
 describe('DataSource', () => {
@@ -158,28 +158,28 @@ describe('DataSource', () => {
   });
 
   it('test (begin|end)Transaction()', () => {
-    const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
-    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
+    const history: History = new History();
+    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
 
     expect(() => ds.endTransaction())
       .toThrowError(/^Invalid state, dataSource.beginTransaction\(\) should be used before$/);
-    expect(tva['current'].title).toEqual('big-boom');
-    expect(tva['current'].sign).toBeTruthy();
+    expect(history['currentProtocol'].title).toEqual('big-boom');
+    expect(history['currentProtocol'].sign).toBeTruthy();
 
-    ds.beginTransaction({ incident: 'test-incident' });
+    ds.beginTransaction({ protocolTitle: 'test-incident' });
 
-    expect(tva['current'].title).toEqual('test-incident');
-    expect(tva['current'].sign).toBeFalsy();
+    expect(history['currentProtocol'].title).toEqual('test-incident');
+    expect(history['currentProtocol'].sign).toBeFalsy();
 
     ds.endTransaction();
 
-    expect(tva['current'].title).toEqual('test-incident');
-    expect(tva['current'].sign).toBeTruthy();
+    expect(history['currentProtocol'].title).toEqual('test-incident');
+    expect(history['currentProtocol'].sign).toBeTruthy();
   });
 
   it('test add()/remove() entry', () => {
-    const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
-    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
+    const history: History = new History();
+    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
     const newId = ds.getNewId('HLine');
     let addedEntries: DrawingReference[] = [];
     let removedEntries: DrawingReference[] = [];
@@ -206,13 +206,13 @@ describe('DataSource', () => {
       .toEqual([drawing1.id, drawing2.id, drawing3.id, newId]);
     expect(storage.head?.value.descriptor.ref).toEqual(drawing1.id);
     expect(storage.tail?.value.descriptor.ref).toEqual(newId);
-    expect(tva['current'].sign).toBeFalsy();
+    expect(history['currentProtocol'].sign).toBeFalsy();
 
     ds.endTransaction();
 
     expect(listenerSpy).toHaveBeenCalledOnce();
     expect(addedEntries).toEqual([newId]);
-    expect(tva['current'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toBeTruthy();
 
     ds.beginTransaction();
     ds.remove(drawing1.id);
@@ -221,7 +221,7 @@ describe('DataSource', () => {
 
     expect(listenerSpy).toHaveBeenCalledTimes(2);
     expect(removedEntries).toEqual([drawing1.id, newId]);
-    expect(tva['current'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toBeTruthy();
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([drawing2.id, drawing3.id]);
     expect(storage.head?.value.descriptor.ref).toEqual(drawing2.id);
@@ -234,7 +234,7 @@ describe('DataSource', () => {
 
     expect(listenerSpy).toHaveBeenCalledTimes(3);
     expect(removedEntries).toEqual([drawing2.id, drawing3.id]);
-    expect(tva['current'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toBeTruthy();
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([]);
     expect(storage.head).toBeUndefined();
@@ -242,8 +242,8 @@ describe('DataSource', () => {
   });
 
   it('test update() entry', () => {
-    const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
-    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
+    const history: History = new History();
+    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
     let updatedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
@@ -265,17 +265,17 @@ describe('DataSource', () => {
     const updated = getDSEntry(drawing1.id);
     expect(updated.descriptor.options.title).toEqual('test hline - updated');
     expect(updated.descriptor.valid).toBeFalsy();
-    expect(tva['current'].sign).toBeFalsy();
+    expect(history['currentProtocol'].sign).toBeFalsy();
 
     ds.endTransaction();
 
     expect(listenerSpy).toHaveBeenCalledOnce();
     expect(updatedEntries).toEqual([drawing1.id]);
-    expect(tva['current'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toBeTruthy();
   });
 
   it('test clone() entry', () => {
-    const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
+    const history: History = new History();
     let clonedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
@@ -286,7 +286,7 @@ describe('DataSource', () => {
     const listenerSpy = vi.spyOn(options, 'eventListener');
     const entry: DataSourceEntry<unknown> = storage.get(drawing1.id);
 
-    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
+    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
     ds.addChangeEventListener(options.eventListener);
     entry.descriptor.valid = true;
 
@@ -296,12 +296,12 @@ describe('DataSource', () => {
     expect(cloned.descriptor.ref).toEqual('test4');
     expect(cloned.descriptor.options).toEqual(entry.descriptor.options);
     expect(cloned.descriptor.valid).toBeFalsy();
-    expect(tva['current'].sign).toBeFalsy();
+    expect(history['currentProtocol'].sign).toBeFalsy();
 
     ds.endTransaction();
 
     expect(listenerSpy).toHaveBeenCalledOnce();
     expect(clonedEntries).toEqual(['test4']);
-    expect(tva['current'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toBeTruthy();
   });
 });

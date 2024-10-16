@@ -55,7 +55,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
 
   public invert(): void {
     this.historicalIncidentReportProcessor({
-      protocolOptions: { incident: 'price-axis-update-inverted' },
+      protocolOptions: { protocolTitle: 'price-axis-update-inverted' },
       incident: new UpdatePriceAxisInverted({
         axis: this,
         inverted: this.inverted.value < 0,
@@ -70,7 +70,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
 
   public set scale(value: PriceAxisScale) {
     this.historicalIncidentReportProcessor({
-      protocolOptions: { incident: 'price-axis-update-scale' },
+      protocolOptions: { protocolTitle: 'price-axis-update-scale' },
       incident: new UpdatePriceAxisScale({
         axis: this,
         scale: value,

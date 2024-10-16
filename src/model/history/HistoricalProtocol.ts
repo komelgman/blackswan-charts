@@ -11,30 +11,30 @@ import type { Predicate } from '@/model/type-defs';
  *
  * @example: the update incident that has no actual changes
  */
-export interface IsNexusIncident {
-  isNexusIncident(): boolean;
+export interface IsEmptyIncident {
+  isEmptyIncident(): boolean;
 }
 
-export const enum TVAProtocolSign {
+export const enum HistoricalProtocolSign {
   NotSigned,
   Rejected,
   Approved,
 }
 
-export default class TVAProtocol {
+export default class HistoricalProtocol {
   private readonly incidents: HistoricalIncident[] = [];
-  private signValue: TVAProtocolSign = TVAProtocolSign.NotSigned;
+  private signValue: HistoricalProtocolSign = HistoricalProtocolSign.NotSigned;
 
   public readonly title: string;
-  public next?: TVAProtocol = undefined;
-  public prev?: TVAProtocol;
+  public next?: HistoricalProtocol = undefined;
+  public prev?: HistoricalProtocol;
 
   private beforeApply?: () => void;
   private afterApply?: () => void;
   private beforeInverse?: () => void;
   private afterInverse?: () => void;
 
-  constructor(title: string, base: TVAProtocol | undefined = undefined) {
+  constructor(title: string, base: HistoricalProtocol | undefined = undefined) {
     const current = this.newTimelineFrom(base);
     this.prev = current;
     this.title = title;
@@ -43,7 +43,7 @@ export default class TVAProtocol {
     }
   }
 
-  public setLifeHooks(hooks: HistoricalIncidentLifeHooks): TVAProtocol {
+  public setLifeHooks(hooks: HistoricalIncidentLifeHooks): HistoricalProtocol {
     this.beforeInverse = hooks.beforeInverse;
     this.afterInverse = hooks.afterInverse;
 
@@ -53,9 +53,7 @@ export default class TVAProtocol {
     return this;
   }
 
-  private newTimelineFrom(
-    base: TVAProtocol | undefined,
-  ): TVAProtocol | undefined {
+  private newTimelineFrom(base: HistoricalProtocol | undefined): HistoricalProtocol | undefined {
     let newBase = base;
     if (newBase !== undefined) {
       if (!base?.isSigned) {
@@ -64,7 +62,7 @@ export default class TVAProtocol {
 
       // reject all not approved protocols
       while (
-        newBase.sign === TVAProtocolSign.Rejected
+        newBase.sign === HistoricalProtocolSign.Rejected
         && newBase.prev !== undefined
       ) {
         newBase = newBase.prev;
@@ -118,13 +116,13 @@ export default class TVAProtocol {
       throw new Error('Illegal state: Protocol already was signed!');
     }
 
-    this.signValue = TVAProtocolSign.Approved;
+    this.signValue = HistoricalProtocolSign.Approved;
 
-    this.incidents.forEach((incident, index) => {
-      if ((incident as unknown as IsNexusIncident)?.isNexusIncident?.()) {
+    for (let index = this.incidents.length - 1; index >= 0; index--) {
+      if ((this.incidents[index] as unknown as IsEmptyIncident)?.isEmptyIncident?.()) {
         this.incidents.splice(index, 1);
       }
-    });
+    }
 
     if (this.incidents.length === 0 && this.prev !== undefined) {
       if (this.next !== undefined) {
@@ -133,7 +131,7 @@ export default class TVAProtocol {
         );
       }
 
-      this.signValue = TVAProtocolSign.Rejected;
+      this.signValue = HistoricalProtocolSign.Rejected;
       this.inverse();
     }
   }
@@ -153,17 +151,14 @@ export default class TVAProtocol {
   }
 
   public get isSigned(): boolean {
-    return this.signValue !== TVAProtocolSign.NotSigned;
+    return this.signValue !== HistoricalProtocolSign.NotSigned;
   }
 
-  public get sign(): TVAProtocolSign {
+  public get sign(): HistoricalProtocolSign {
     return this.signValue;
   }
 
-  public addIncident(
-    incident: HistoricalIncident,
-    immediate: boolean = true,
-  ): TVAProtocol {
+  public addIncident(incident: HistoricalIncident, immediate: boolean = true): HistoricalProtocol {
     if (this.signValue) {
       throw new Error(
         "Illegal state: Can't add Incident because Protocol already was signed!",

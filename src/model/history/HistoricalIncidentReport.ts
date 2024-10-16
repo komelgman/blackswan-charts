@@ -2,10 +2,10 @@ import type {
   HistoricalIncident,
   HistoricalIncidentLifeHooks,
 } from '@/model/history/HistoricalIncident';
-import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import type { HistoricalProtocolOptions } from '@/model/history/History';
 
 export interface HistoricalIncidentReport {
-  protocolOptions: TVAProtocolOptions;
+  protocolOptions: HistoricalProtocolOptions;
   skipIf?: (incident: HistoricalIncident) => boolean;
   incident?: HistoricalIncident;
   immediate?: boolean;

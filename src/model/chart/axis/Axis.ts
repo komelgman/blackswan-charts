@@ -4,7 +4,7 @@ import { merge } from '@/misc/object.merge';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import UpdateAxisRange from '@/model/chart/axis/incidents/UpdateAxisRange';
 import type { TextStyle } from '@/model/chart/types/styles';
-import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
+import type { HistoricalProtocolOptions } from '@/model/history/History';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/chart/types';
 import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
@@ -54,7 +54,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   public abstract revert(screenPos: number): T;
 
   public move(screenDelta: number): void {
-    const protocolOptions: TVAProtocolOptions = { incident: 'move-in-viewport' };
+    const protocolOptions: HistoricalProtocolOptions = { protocolTitle: 'move-in-viewport' };
 
     this.historicalIncidentReportProcessor({
       protocolOptions,
@@ -77,8 +77,8 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   public zoom(screenPivot: number, screenDelta: number): void {
-    const protocolOptions: TVAProtocolOptions = {
-      incident: `zoom-axis-${this.id}`,
+    const protocolOptions: HistoricalProtocolOptions = {
+      protocolTitle: `zoom-axis-${this.id}`,
       timeout: 1000,
     };
 

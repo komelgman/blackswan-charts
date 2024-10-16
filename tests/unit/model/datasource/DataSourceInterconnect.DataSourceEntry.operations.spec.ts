@@ -11,7 +11,7 @@ import {
   type DrawingReference,
   isEqualDrawingReference,
 } from '@/model/datasource/types';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
+import History from '@/model/history/History';
 import IdHelper from '@/model/tools/IdHelper';
 
 describe('DataSourceSharedEntries | DataSource entries operations', () => {
@@ -104,15 +104,15 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   }
 
   beforeEach(async () => {
-    const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
+    const history: History = new History();
     interconnect = new DataSourceInterconnect();
     idHelper = new IdHelper();
     ds1 = new DataSource({ id: 'ds1', idHelper }, clone([drawing0, drawing1, drawing2]));
     ds2 = new DataSource({ id: 'ds2', idHelper }, clone([drawing2, drawing3, drawing4]));
     ds3 = new DataSource({ id: 'ds3', idHelper }, clone([drawing3, drawing5]));
-    ds1.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
-    ds2.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
-    ds3.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
+    ds1.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    ds2.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    ds3.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
     interconnect.addDataSource(ds1);
     interconnect.addDataSource(ds2);
     interconnect.addDataSource(ds3);

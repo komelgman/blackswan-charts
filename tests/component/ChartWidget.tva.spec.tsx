@@ -52,7 +52,7 @@ const drawings = {
   },
 };
 
-test('check TVA functionality', async ({ page }) => {
+test('check History functionality', async ({ page }) => {
   test.slow();
   // Listen for all console logs
   page.on('console', (msg) => console.log(msg.text()));

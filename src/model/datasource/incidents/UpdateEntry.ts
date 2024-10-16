@@ -12,7 +12,7 @@ import {
 } from '@/model/datasource/types';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
-import type { IsNexusIncident } from '@/model/history/TVAProtocol';
+import type { IsEmptyIncident } from '@/model/history/HistoricalProtocol';
 
 export interface UpdateOptions extends HistoricalIncidentOptions {
   ref: DrawingReference,
@@ -23,7 +23,7 @@ export interface UpdateOptions extends HistoricalIncidentOptions {
 
 export class UpdateEntry
   extends AbstractHistoricalIncident<UpdateOptions>
-  implements HasMergeWith<UpdateEntry>, IsNexusIncident {
+  implements HasMergeWith<UpdateEntry>, IsEmptyIncident {
   // ------------------------------------------------------
   protected marker: string = '--update-drawing-in-datasource';
   private unmerge!: Record<string, unknown>;
@@ -69,7 +69,7 @@ export class UpdateEntry
     return true;
   }
 
-  public isNexusIncident(): boolean {
+  public isEmptyIncident(): boolean {
     return isEmpty(this.unmerge);
   }
 }

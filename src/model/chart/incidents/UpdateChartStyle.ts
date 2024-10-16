@@ -5,7 +5,7 @@ import { isEmpty } from '@/model/type-defs';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
 import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
-import type { IsNexusIncident } from '@/model/history/TVAProtocol';
+import type { IsEmptyIncident } from '@/model/history/HistoricalProtocol';
 
 export interface UpdateChartStyleOptions extends HistoricalIncidentOptions {
   style: ChartStyle;
@@ -14,7 +14,7 @@ export interface UpdateChartStyleOptions extends HistoricalIncidentOptions {
 
 export default class UpdateChartStyle
   extends AbstractHistoricalIncident<UpdateChartStyleOptions>
-  implements HasMergeWith<UpdateChartStyle>, IsNexusIncident {
+  implements HasMergeWith<UpdateChartStyle>, IsEmptyIncident {
   // ---------------------------------------------------------
   protected marker: string = '--update-chart-style';
   private unmerge!: Record<string, unknown>;
@@ -46,7 +46,7 @@ export default class UpdateChartStyle
     return true;
   }
 
-  public isNexusIncident(): boolean {
+  public isEmptyIncident(): boolean {
     return isEmpty(this.unmerge);
   }
 }

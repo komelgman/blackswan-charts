@@ -181,7 +181,7 @@ function onMouseLeave(): void {
 
 function onPaneSizeChanged(event: PanesSizeChangedEvent): void {
   props.chart.historicalIncidentReportProcessor({
-    protocolOptions: { incident: 'chart-pane-size-changed', timeout: 1000 },
+    protocolOptions: { protocolTitle: 'chart-pane-size-changed', timeout: 1000 },
     incident: new PanesSizeChanged({
       event,
     }),

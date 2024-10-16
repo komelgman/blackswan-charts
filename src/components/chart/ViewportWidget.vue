@@ -122,7 +122,7 @@ function onDragStart(e: MouseClickEvent): void {
   viewportModel.updateSelection(e.isCtrl, true);
 
   if (viewportModel.selectionCanBeDragged()) {
-    viewportModel.dataSource.beginTransaction({ incident: 'drag-in-viewport' });
+    viewportModel.dataSource.beginTransaction({ protocolTitle: 'drag-in-viewport' });
 
     if (e.isCtrl) {
       viewportModel.cloneSelected();
@@ -149,7 +149,7 @@ function onDragEnd(): void {
     dataSource.endTransaction();
   } else {
     dataSource.historicalIncidentReportProcessor({
-      protocolOptions: { incident: 'move-in-viewport' },
+      protocolOptions: { protocolTitle: 'move-in-viewport' },
       sign: true,
     });
   }

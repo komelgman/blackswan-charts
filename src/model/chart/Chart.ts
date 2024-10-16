@@ -18,8 +18,8 @@ import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/types';
 import chartOptionsDefaults from '@/model/default-config/ChartStyle.Defaults';
 import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
-import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import type TVAProtocol from '@/model/history/TVAProtocol';
+import History from '@/model/history/History';
+import type HistoricalProtocol from '@/model/history/HistoricalProtocol';
 import type { DeepPartial } from '@/model/type-defs';
 import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
 
@@ -43,7 +43,7 @@ declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) => void;
 export class Chart {
   private readonly paneRegEventListeners: PaneRegistrationEventListener[];
   private readonly sketchers: Map<DrawingType, Sketcher>;
-  private readonly tva: TimeVarianceAuthority;
+  private readonly history: History;
   private readonly dataSourceInterconnect: DataSourceInterconnect;
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
@@ -52,7 +52,7 @@ export class Chart {
   constructor(chartOptions?: ChartOptions) {
     const chartStyle = this.createChartStyle(chartOptions?.style);
     this.paneRegEventListeners = [];
-    this.tva = new TimeVarianceAuthority();
+    this.history = new History();
     this.panes = reactive([]);
     this.style = reactive(chartStyle);
     this.sketchers = this.createSketchers(chartStyle, chartOptions?.sketchers);
@@ -75,8 +75,8 @@ export class Chart {
   }
 
   public updateStyle(options: DeepPartial<ChartStyle>): void {
-    this.tva
-      .getProtocol({ incident: 'chart-controller-update-style' })
+    this.history
+      .getProtocol({ protocolTitle: 'chart-controller-update-style' })
       .addIncident(new UpdateChartStyle({
         style: this.style,
         update: options,
@@ -98,8 +98,8 @@ export class Chart {
 
     dataSource.historicalIncidentReportProcessor = this.historicalIncidentReportProcessor;
 
-    this.tva
-      .getProtocol({ incident: 'chart-controller-create-pane' })
+    this.history
+      .getProtocol({ protocolTitle: 'chart-controller-create-pane' })
       .addIncident(new AddNewPane({
         dataSource,
         paneOptions,
@@ -123,8 +123,8 @@ export class Chart {
   public removePane(paneId: PaneId): void {
     const initialSizes = this.getPanesSizes();
 
-    this.tva
-      .getProtocol({ incident: 'chart-controller-remove-pane' })
+    this.history
+      .getProtocol({ protocolTitle: 'chart-controller-remove-pane' })
       .addIncident(new RemovePane({
         panes: this.panes,
         paneIndex: this.indexByPaneId(paneId),
@@ -140,8 +140,8 @@ export class Chart {
   }
 
   public swapPanes(paneId1: PaneId, paneId2: PaneId): void {
-    this.tva
-      .getProtocol({ incident: 'chart-controller-swap-panes' })
+    this.history
+      .getProtocol({ protocolTitle: 'chart-controller-swap-panes' })
       .addIncident(new SwapPanes({
         panes: this.panes,
         pane1Index: this.indexByPaneId(paneId1),
@@ -153,10 +153,10 @@ export class Chart {
   public togglePane(paneId: PaneId): void {
     const paneIndex = this.indexByPaneId(paneId);
     const initialSizes = this.getPanesSizes();
-    const tvaProtocol: TVAProtocol = this.tva
-      .getProtocol({ incident: 'chart-controller-toggle-pane' });
+    const protocol: HistoricalProtocol = this.history
+      .getProtocol({ protocolTitle: 'chart-controller-toggle-pane' });
 
-    tvaProtocol
+    protocol
       .addIncident(new TogglePane({
         panes: this.panes,
         paneIndex,
@@ -167,7 +167,7 @@ export class Chart {
         changed: this.getPanesSizes(),
       }));
 
-    tvaProtocol.trySign();
+    protocol.trySign();
   }
 
   public paneModel(paneId: PaneId): Viewport {
@@ -175,27 +175,27 @@ export class Chart {
   }
 
   public get historicalIncidentReportProcessor(): HistoricalIncidentReportProcessor {
-    return this.tva.reportProcessor.bind(this.tva);
+    return this.history.reportProcessor.bind(this.history);
   }
 
   public clearHistory(): void {
-    this.tva.clear();
+    this.history.clear();
   }
 
   public get isCanRedo(): boolean {
-    return this.tva.isCanRedo;
+    return this.history.isCanRedo;
   }
 
   public redo(): void {
-    this.tva.redo();
+    this.history.redo();
   }
 
   public get isCanUndo(): boolean {
-    return this.tva.isCanUndo;
+    return this.history.isCanUndo;
   }
 
   public undo(): void {
-    this.tva.undo();
+    this.history.undo();
   }
 
   private createChartStyle(style?: DeepPartial<ChartStyle>): ChartStyle {
