@@ -1,4 +1,4 @@
-import type { HasMergeWith } from 'src/model/type-defs/optional';
+import type { HasMergeWith } from '@/model/type-defs/optional';
 import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/model/type-defs';
 import { isEmpty } from '@/model/type-defs';

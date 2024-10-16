@@ -1,4 +1,4 @@
-import type { HasStyle } from 'src/model/type-defs/optional';
+import type { HasStyle } from '@/model/type-defs/optional';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { Nominal } from '@/model/type-defs';
 

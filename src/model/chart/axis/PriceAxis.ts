@@ -1,5 +1,5 @@
-import type { HasPostConstruct } from 'src/model/type-defs/optional';
 import { reactive } from 'vue';
+import type { HasPostConstruct } from '@/model/type-defs/optional';
 import { clone } from '@/misc/object.clone';
 import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';

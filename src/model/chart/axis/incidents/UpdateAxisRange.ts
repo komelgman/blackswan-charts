@@ -1,4 +1,4 @@
-import type { HasMergeWith } from 'src/model/type-defs/optional';
+import type { HasMergeWith } from '@/model/type-defs/optional';
 import type Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';

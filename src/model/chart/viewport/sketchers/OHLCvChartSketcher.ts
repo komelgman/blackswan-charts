@@ -1,5 +1,5 @@
-import type { HasStyle, HasType } from 'src/model/type-defs/optional';
 import { toRaw } from 'vue';
+import type { HasStyle, HasType } from '@/model/type-defs/optional';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';

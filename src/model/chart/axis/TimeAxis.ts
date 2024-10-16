@@ -1,4 +1,4 @@
-import type { HasPostConstruct } from 'src/model/type-defs/optional';
+import type { HasPostConstruct } from '@/model/type-defs/optional';
 import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import { ZoomType } from '@/model/chart/axis/AxisOptions';

@@ -1,4 +1,4 @@
-import type { HasCenterPos, HasCursor } from 'src/model/type-defs/optional';
+import type { HasCenterPos, HasCursor } from '@/model/type-defs/optional';
 import { isString } from '@/model/type-defs';
 
 import type { DataSourceId } from '@/model/datasource/types';
