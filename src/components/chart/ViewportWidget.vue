@@ -148,7 +148,7 @@ function onDragEnd(): void {
   if (viewportModel.selectionCanBeDragged()) {
     dataSource.endTransaction();
   } else {
-    dataSource.tvaClerk.processReport({
+    dataSource.historicalIncidentReportProcessor({
       protocolOptions: { incident: 'move-in-viewport' },
       sign: true,
     });

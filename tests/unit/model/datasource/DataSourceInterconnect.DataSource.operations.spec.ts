@@ -82,9 +82,9 @@ describe('DataSourceSharedEntries | DataSource operations', () => {
     ds1 = new DataSource({ id: 'ds1', idHelper }, clone([drawing0, drawing1, drawing2]));
     ds2 = new DataSource({ id: 'ds2', idHelper }, clone([drawing2, drawing3, drawing4]));
     ds3 = new DataSource({ id: 'ds3', idHelper }, clone([drawing3, drawing5]));
-    ds1.tvaClerk = tva.clerk;
-    ds2.tvaClerk = tva.clerk;
-    ds3.tvaClerk = tva.clerk;
+    ds1.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
+    ds2.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
+    ds3.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
   });
 
   it('test add DataSource', () => {

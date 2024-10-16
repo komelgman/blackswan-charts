@@ -21,8 +21,8 @@ import type {
   DrawingReference,
 } from '@/model/datasource/types';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
-import type TVAClerk from '@/model/history/TVAClerk';
 import type IdHelper from '@/model/tools/IdHelper';
+import type { HistoricalIncidentReportProcessor } from '../history/HistoricalIncidentReport';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;
@@ -32,7 +32,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private readonly changeEvents: DataSourceChangeEventsMap = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private readonly idHelper: IdHelper;
-  private tvaClerkValue: TVAClerk | undefined;
+  private historicalIncidentReportProcessorValue: HistoricalIncidentReportProcessor | undefined;
   private protocolOptions: TVAProtocolOptions | undefined = undefined;
 
   public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
@@ -44,16 +44,16 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.initEntries(drawings);
   }
 
-  public set tvaClerk(value: TVAClerk) {
-    this.tvaClerkValue = value;
+  public set historicalIncidentReportProcessor(value: HistoricalIncidentReportProcessor) {
+    this.historicalIncidentReportProcessorValue = value;
   }
 
-  public get tvaClerk(): TVAClerk {
-    if (this.tvaClerkValue === undefined) {
-      throw new Error('Illegal state: this.tvaValue === undefined');
+  public get historicalIncidentReportProcessor(): HistoricalIncidentReportProcessor {
+    if (this.historicalIncidentReportProcessorValue === undefined) {
+      throw new Error('Illegal state: this.historicalIncidentReportProcessorValue === undefined');
     }
 
-    return this.tvaClerkValue;
+    return this.historicalIncidentReportProcessorValue;
   }
 
   * [Symbol.iterator](): IterableIterator<Readonly<DataSourceEntry>> {
@@ -142,7 +142,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public beginTransaction(options: TVAProtocolOptions | undefined = undefined): void {
     this.protocolOptions = options ?? { incident: this.getNewTransactionId() };
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions,
       lifeHooks: {
         afterInverse: () => toRaw(this).flush(),
@@ -154,7 +154,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public endTransaction(): void {
     this.checkWeAreInTransaction();
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,
       sign: true,
     });
@@ -179,7 +179,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       throw new Error(`Entry with this reference already exists: ${options.id}`);
     }
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,
       incident: new AddNewEntry({
         descriptor: this.createDescriptor(options),
@@ -193,7 +193,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,
       incident: new UpdateEntry({
         ref,
@@ -224,7 +224,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,
       incident: new RemoveEntry({
         ref,
@@ -245,7 +245,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       cloned.ref[1] = this.idHelper.forGroup(cloned.ref[0]).getNewId(cloned.options.type);
     }
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions as TVAProtocolOptions,
       incident: new AddNewEntry({
         descriptor: cloned,

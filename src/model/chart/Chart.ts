@@ -19,9 +19,9 @@ import type { DrawingType } from '@/model/datasource/types';
 import chartOptionsDefaults from '@/model/default-config/ChartStyle.Defaults';
 import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
 import TimeVarianceAuthority from '@/model/history/TimeVarianceAuthority';
-import type TVAClerk from '@/model/history/TVAClerk';
 import type TVAProtocol from '@/model/history/TVAProtocol';
 import type { DeepPartial } from '@/model/type-defs';
+import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
 
 export interface ChartOptions {
   style: DeepPartial<ChartStyle>,
@@ -96,7 +96,7 @@ export class Chart {
       merge(paneOptions, options);
     }
 
-    dataSource.tvaClerk = this.tva.clerk;
+    dataSource.historicalIncidentReportProcessor = this.historicalIncidentReportProcessor;
 
     this.tva
       .getProtocol({ incident: 'chart-controller-create-pane' })
@@ -174,8 +174,8 @@ export class Chart {
     return this.panes[this.indexByPaneId(paneId)].model;
   }
 
-  public get tvaClerk(): TVAClerk {
-    return this.tva.clerk;
+  public get historicalIncidentReportProcessor(): HistoricalIncidentReportProcessor {
+    return this.tva.reportProcessor.bind(this.tva);
   }
 
   public clearHistory(): void {
@@ -207,7 +207,7 @@ export class Chart {
   }
 
   private createTimeAxis(chartStyle: ChartStyle): TimeAxis {
-    return new TimeAxis(this.tva.clerk, chartStyle.text);
+    return new TimeAxis(this.historicalIncidentReportProcessor.bind(this), chartStyle.text);
   }
 
   private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {

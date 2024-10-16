@@ -1,6 +1,5 @@
-import BigBoom from '@/model/history/incidents/BigBoom';
-import type { HistoricalIncidentReport } from '@/model/history/TVAClerk';
-import TVAClerk from '@/model/history/TVAClerk';
+import InitialIncident from '@/model/history/incidents/InitialIncident';
+import type { HistoricalIncidentReport } from '@/model/history/HistoricalIncidentReport';
 import TVAProtocol, { TVAProtocolSign } from '@/model/history/TVAProtocol';
 
 export interface TVAProtocolOptions {
@@ -12,25 +11,25 @@ export default class TimeVarianceAuthority {
   private current: TVAProtocol;
   private lastIncident: string | undefined;
   private lastTimeWhenProtocolUsed!: number;
-  private clerkValue: TVAClerk;
 
   constructor() {
     this.current = new TVAProtocol('big-boom');
-    this.current.addIncident(new BigBoom());
+    this.current.addIncident(new InitialIncident());
     this.current.trySign();
-    this.clerkValue = new TVAClerk(this.reportProcessor);
   }
 
   public getProtocol(options: TVAProtocolOptions): TVAProtocol {
     if (this.lastIncident === undefined && !this.current.isSigned) {
-      throw new Error('Illegal state: this.lastIncident === undefined && !this.current.isSigned');
+      throw new Error(
+        'Illegal state: this.lastIncident === undefined && !this.current.isSigned',
+      );
     }
 
     const isInTime: boolean = options.timeout === undefined
-      || (Date.now() - (this.lastTimeWhenProtocolUsed || 0) <= options.timeout);
+      || Date.now() - (this.lastTimeWhenProtocolUsed || 0) <= options.timeout;
 
     const isNewProtocol = this.lastIncident !== undefined && this.lastIncident !== options.incident;
-    const isTimeoutExpired = (this.lastIncident === options.incident && !isInTime);
+    const isTimeoutExpired = this.lastIncident === options.incident && !isInTime;
 
     if (!this.current.isSigned && (isNewProtocol || isTimeoutExpired)) {
       this.current.trySign();
@@ -56,7 +55,7 @@ export default class TimeVarianceAuthority {
 
   public redo(): void {
     if (!this.isCanRedo) {
-      console.warn('Illegal state, can\'t do redo');
+      console.warn("Illegal state, can't do redo");
       return;
     }
 
@@ -66,7 +65,7 @@ export default class TimeVarianceAuthority {
 
   public undo(): void {
     if (!this.isCanUndo) {
-      console.warn('Illegal state, can\'t do undo');
+      console.warn("Illegal state, can't do undo");
       return;
     }
 
@@ -90,11 +89,7 @@ export default class TimeVarianceAuthority {
     }
   }
 
-  public get clerk(): TVAClerk {
-    return this.clerkValue;
-  }
-
-  private reportProcessor: (report: HistoricalIncidentReport) => void = (report): void => {
+  public reportProcessor(report: HistoricalIncidentReport): void {
     const protocol = this.getProtocol(report.protocolOptions);
     if (report.skipIf && protocol.hasIncident(report.skipIf)) {
       return;
@@ -111,5 +106,5 @@ export default class TimeVarianceAuthority {
     if (report.sign) {
       protocol.trySign();
     }
-  };
+  }
 }

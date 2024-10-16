@@ -1,13 +1,24 @@
 import type { HasMergeWith } from '@/model/type-defs/optional';
-import type { HistoricalIncident, HistoricalIncidentLifeHooks } from '@/model/history/HistoricalIncident';
+import type {
+  HistoricalIncident,
+  HistoricalIncidentLifeHooks,
+} from '@/model/history/HistoricalIncident';
 import type { Predicate } from '@/model/type-defs';
 
+/**
+ * Indicates that incident shouldn't be stored,
+ * because incident state has initial state
+ *
+ * @example: the update incident that has no actual changes
+ */
 export interface IsNexusIncident {
   isNexusIncident(): boolean;
 }
 
 export const enum TVAProtocolSign {
-  NotSigned, Rejected, Approved,
+  NotSigned,
+  Rejected,
+  Approved,
 }
 
 export default class TVAProtocol {
@@ -42,7 +53,9 @@ export default class TVAProtocol {
     return this;
   }
 
-  private newTimelineFrom(base: TVAProtocol | undefined): TVAProtocol | undefined {
+  private newTimelineFrom(
+    base: TVAProtocol | undefined,
+  ): TVAProtocol | undefined {
     let newBase = base;
     if (newBase !== undefined) {
       if (!base?.isSigned) {
@@ -50,7 +63,10 @@ export default class TVAProtocol {
       }
 
       // reject all not approved protocols
-      while (newBase.sign === TVAProtocolSign.Rejected && newBase.prev !== undefined) {
+      while (
+        newBase.sign === TVAProtocolSign.Rejected
+        && newBase.prev !== undefined
+      ) {
         newBase = newBase.prev;
       }
     }
@@ -112,7 +128,9 @@ export default class TVAProtocol {
 
     if (this.incidents.length === 0 && this.prev !== undefined) {
       if (this.next !== undefined) {
-        throw new Error('Illegal state: next should be undefined when we sign new protocol');
+        throw new Error(
+          'Illegal state: next should be undefined when we sign new protocol',
+        );
       }
 
       this.signValue = TVAProtocolSign.Rejected;
@@ -142,12 +160,17 @@ export default class TVAProtocol {
     return this.signValue;
   }
 
-  public addIncident(incident: HistoricalIncident, immediate: boolean = true): TVAProtocol {
+  public addIncident(
+    incident: HistoricalIncident,
+    immediate: boolean = true,
+  ): TVAProtocol {
     if (this.signValue) {
-      throw new Error('Illegal state: Can\'t add Incident because Protocol already was signed!');
+      throw new Error(
+        "Illegal state: Can't add Incident because Protocol already was signed!",
+      );
     }
 
-    if (!this.wasMerged(incident, immediate)) {
+    if (!this.tryMerge(incident, immediate)) {
       this.incidents.push(incident);
       if (immediate) {
         incident.apply();
@@ -157,10 +180,12 @@ export default class TVAProtocol {
     return this;
   }
 
-  private wasMerged(incident: HistoricalIncident, immediate: boolean): boolean {
+  private tryMerge(incident: HistoricalIncident, immediate: boolean): boolean {
     for (let i = this.incidents.length - 1; i >= 0; i -= 1) {
       const applicant = this.incidents[i];
-      const isWasMerged: boolean = (applicant as unknown as HasMergeWith<HistoricalIncident>)?.mergeWith?.(incident);
+      const isWasMerged: boolean = (
+        applicant as unknown as HasMergeWith<HistoricalIncident>
+      )?.mergeWith?.(incident);
 
       if (isWasMerged) {
         if (immediate) {

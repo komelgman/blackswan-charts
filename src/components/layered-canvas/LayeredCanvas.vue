@@ -78,7 +78,7 @@ onUnmounted(() => {
   }
 });
 
-function getPos(e: MouseEvent, element?: Element): Point {
+function getMousePosRelativeToElement(e: MouseEvent, element?: Element): Point {
   const target = element || e.target;
   if (!(e instanceof MouseEvent) || !(target instanceof Element)) {
     throw new Error('Illegal argument: e instanceof MouseEvent)');
@@ -92,7 +92,7 @@ function onMouseLeftBtnClick(e: MouseEvent): void {
   if (!e.defaultPrevented && !isWasDrag) {
     e.preventDefault();
 
-    const event: MouseClickEvent = { ...getPos(e), isCtrl: e.ctrlKey };
+    const event: MouseClickEvent = { ...getMousePosRelativeToElement(e), isCtrl: e.ctrlKey };
     emit('left-mouse-btn-click', event);
   }
 }
@@ -101,7 +101,7 @@ function onMouseLeftBtnDoubleClick(e: MouseEvent): void {
   if (!e.defaultPrevented) {
     e.preventDefault();
 
-    const event: MouseClickEvent = { ...getPos(e), isCtrl: e.ctrlKey };
+    const event: MouseClickEvent = { ...getMousePosRelativeToElement(e), isCtrl: e.ctrlKey };
     emit('left-mouse-btn-double-click', event);
   }
 }
@@ -111,7 +111,7 @@ function onWheel(e: WheelEvent): void {
     return;
   }
 
-  const event: ZoomEvent = { pivot: getPos(e), delta: e.deltaY };
+  const event: ZoomEvent = { pivot: getMousePosRelativeToElement(e), delta: e.deltaY };
   emit('zoom', event);
 }
 
@@ -120,7 +120,7 @@ function onDragStart(e: MouseEvent): void {
     isDrag = true;
     isWasDrag = false;
     dragInElement = e.target;
-    prevPos = getPos(e);
+    prevPos = getMousePosRelativeToElement(e);
     removeMoveListener = onDocument('mousemove', onDragMove, true);
     removeEndListener = onceDocument('mouseup', onDragEnd);
   }
@@ -134,14 +134,14 @@ function onDragMove(e: MouseEvent): void {
 
   if (!isWasDrag) {
     const startEvent: MouseClickEvent = {
-      ...getPos(e, dragInElement),
+      ...getMousePosRelativeToElement(e, dragInElement),
       isCtrl: e.ctrlKey,
     };
     emit('drag-start', startEvent);
     isWasDrag = true;
   }
 
-  const pos: Point = getPos(e, dragInElement);
+  const pos: Point = getMousePosRelativeToElement(e, dragInElement);
   const moveEvent: DragMoveEvent = {
     ...pos,
     dx: prevPos.x - pos.x,
@@ -162,7 +162,7 @@ function onMouseMove(e: MouseEvent): void {
   }
   isSkipMovementsDetection = true;
 
-  const event: MousePositionEvent = getPos(e);
+  const event: MousePositionEvent = getMousePosRelativeToElement(e);
   emit('mouse-move', event);
 
   // hint: decrease amount of move events
@@ -177,7 +177,7 @@ function onDragEnd(e?: DragEvent): void {
   if (e === undefined || !e.defaultPrevented) {
     if (e !== undefined && isWasDrag) {
       e.preventDefault();
-      const event: MousePositionEvent = getPos(e, dragInElement);
+      const event: MousePositionEvent = getMousePosRelativeToElement(e, dragInElement);
       emit('drag-end', event);
     }
 

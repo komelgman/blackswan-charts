@@ -5,20 +5,20 @@ import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import UpdateAxisRange from '@/model/chart/axis/incidents/UpdateAxisRange';
 import type { TextStyle } from '@/model/chart/types/styles';
 import type { TVAProtocolOptions } from '@/model/history/TimeVarianceAuthority';
-import type TVAClerk from '@/model/history/TVAClerk';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/chart/types';
+import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
   private readonly rangeValue: Range<T> = reactive({ from: -1 as T, to: 1 as T }) as Range<T>;
   private readonly textStyleValue: TextStyle;
   private readonly screenSizeValue: LogicSize = reactive({ main: -1, second: -1 });
   private readonly id: EntityId;
-  public readonly tvaClerk: TVAClerk;
+  public readonly historicalIncidentReportProcessor: HistoricalIncidentReportProcessor;
   public readonly labels: Map<number, string> = reactive(new Map<number, string>());
 
-  protected constructor(id: EntityId, tvaClerk: TVAClerk, textStyle: TextStyle) {
-    this.tvaClerk = tvaClerk;
+  protected constructor(id: EntityId, historicalIncidentReportProcessor: HistoricalIncidentReportProcessor, textStyle: TextStyle) {
+    this.historicalIncidentReportProcessor = historicalIncidentReportProcessor;
     this.textStyleValue = reactive(textStyle);
     this.id = id;
   }
@@ -56,7 +56,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   public move(screenDelta: number): void {
     const protocolOptions: TVAProtocolOptions = { incident: 'move-in-viewport' };
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions,
       skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
       incident: new UpdateAxisRange({
@@ -67,7 +67,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
 
     this.updateRange(screenDelta);
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions,
       incident: new UpdateAxisRange({
         axis: this,
@@ -82,7 +82,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
       timeout: 1000,
     };
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions,
       skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
       incident: new UpdateAxisRange({
@@ -93,7 +93,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
 
     this.updateZoom(screenPivot, screenDelta);
 
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions,
       incident: new UpdateAxisRange({
         axis: this,

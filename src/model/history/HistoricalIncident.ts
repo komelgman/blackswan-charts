@@ -1,6 +1,5 @@
 export interface HistoricalIncident {
   apply(): void;
-
   inverse(): void;
 }
 

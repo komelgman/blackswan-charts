@@ -4,15 +4,15 @@ import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import { ZoomType } from '@/model/chart/axis/AxisOptions';
 import type { UTCTimestamp } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
-import type TVAClerk from '@/model/history/TVAClerk';
 import { PostConstruct } from '@/model/type-defs/decorators';
+import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
 
 @PostConstruct
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
 
-  public constructor(tvaClerk: TVAClerk, textOptions: TextStyle) {
-    super('time', tvaClerk, textOptions);
+  public constructor(historicalIncidentReportProcessor: HistoricalIncidentReportProcessor, textOptions: TextStyle) {
+    super('time', historicalIncidentReportProcessor, textOptions);
   }
 
   public postConstruct(): void {

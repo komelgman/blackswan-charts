@@ -1,4 +1,3 @@
-export interface MousePositionEvent {
-  x: number;
-  y: number;
-}
+import type { Point } from '@/model/chart/types';
+
+export interface MousePositionEvent extends Point {}

@@ -180,14 +180,13 @@ function onMouseLeave(): void {
 }
 
 function onPaneSizeChanged(event: PanesSizeChangedEvent): void {
-  props.chart.tvaClerk
-    .processReport({
-      protocolOptions: { incident: 'chart-pane-size-changed', timeout: 1000 },
-      incident: new PanesSizeChanged({
-        event,
-      }),
-      immediate: false,
-    });
+  props.chart.historicalIncidentReportProcessor({
+    protocolOptions: { incident: 'chart-pane-size-changed', timeout: 1000 },
+    incident: new PanesSizeChanged({
+      event,
+    }),
+    immediate: false,
+  });
 }
 
 function onPaneRegEventListener(event: PaneRegistrationEvent): void {

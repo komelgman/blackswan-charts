@@ -28,7 +28,7 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
 
     const priceAxis: PriceAxis = new PriceAxis(
       dataSource.id,
-      dataSource.tvaClerk,
+      dataSource.historicalIncidentReportProcessor,
       style.text,
       paneOptions.priceScale,
       paneOptions.priceInverted,

@@ -8,11 +8,11 @@ import UpdatePriceAxisInverted from '@/model/chart/axis/incidents/UpdatePriceAxi
 import UpdatePriceAxisScale from '@/model/chart/axis/incidents/UpdatePriceAxisScale';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { TextStyle } from '@/model/chart/types/styles';
-import type TVAClerk from '@/model/history/TVAClerk';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Price } from '@/model/chart/types';
 import type { Wrapped } from '@/model/type-defs';
 import { PostConstruct } from '@/model/type-defs/decorators';
+import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;
@@ -32,8 +32,14 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   protected invertedValue: Inverted;
   protected contentWidthValue: Wrapped<number> = { value: -1 }; // watch doesn't work with scalar
 
-  public constructor(id: EntityId, tvaClerk: TVAClerk, textStyle: TextStyle, scale: PriceAxisScale, inverted: Inverted) {
-    super(`${id}-price`, tvaClerk, textStyle);
+  public constructor(
+    id: EntityId,
+    historicalIncidentReportProcessor: HistoricalIncidentReportProcessor,
+    textStyle: TextStyle,
+    scale: PriceAxisScale,
+    inverted: Inverted,
+  ) {
+    super(`${id}-price`, historicalIncidentReportProcessor, textStyle);
     this.scaleValue = reactive(clone(scale));
     this.invertedValue = reactive(clone(inverted));
   }
@@ -48,7 +54,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   }
 
   public invert(): void {
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: { incident: 'price-axis-update-inverted' },
       incident: new UpdatePriceAxisInverted({
         axis: this,
@@ -63,7 +69,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   }
 
   public set scale(value: PriceAxisScale) {
-    this.tvaClerk.processReport({
+    this.historicalIncidentReportProcessor({
       protocolOptions: { incident: 'price-axis-update-scale' },
       incident: new UpdatePriceAxisScale({
         axis: this,

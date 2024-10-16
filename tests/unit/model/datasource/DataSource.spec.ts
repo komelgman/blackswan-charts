@@ -159,7 +159,7 @@ describe('DataSource', () => {
 
   it('test (begin|end)Transaction()', () => {
     const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
-    ds.tvaClerk = tva.clerk;
+    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
 
     expect(() => ds.endTransaction())
       .toThrowError(/^Invalid state, dataSource.beginTransaction\(\) should be used before$/);
@@ -179,7 +179,7 @@ describe('DataSource', () => {
 
   it('test add()/remove() entry', () => {
     const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
-    ds.tvaClerk = tva.clerk;
+    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
     const newId = ds.getNewId('HLine');
     let addedEntries: DrawingReference[] = [];
     let removedEntries: DrawingReference[] = [];
@@ -243,7 +243,7 @@ describe('DataSource', () => {
 
   it('test update() entry', () => {
     const tva: TimeVarianceAuthority = new TimeVarianceAuthority();
-    ds.tvaClerk = tva.clerk;
+    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
     let updatedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
@@ -286,7 +286,7 @@ describe('DataSource', () => {
     const listenerSpy = vi.spyOn(options, 'eventListener');
     const entry: DataSourceEntry<unknown> = storage.get(drawing1.id);
 
-    ds.tvaClerk = tva.clerk;
+    ds.historicalIncidentReportProcessor = tva.reportProcessor.bind(tva);
     ds.addChangeEventListener(options.eventListener);
     entry.descriptor.valid = true;
 
