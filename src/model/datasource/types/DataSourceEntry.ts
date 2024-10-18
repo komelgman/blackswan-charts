@@ -3,5 +3,5 @@ import type { Drawing, AxisMark, DrawingDescriptor } from '@/model/datasource/ty
 export declare type DataSourceEntry<DataType = any> = {
   descriptor: DrawingDescriptor<DataType>,
   drawing?: Drawing,
-  mark?: AxisMark,
+  mark?: AxisMark, // todo: marks
 };

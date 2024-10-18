@@ -1,9 +1,9 @@
+import type { Predicate } from '@/model/type-defs';
 import type { HasMergeWith } from '@/model/type-defs/optional';
 import type {
   HistoricalIncident,
   HistoricalIncidentLifeHooks,
 } from '@/model/history/HistoricalIncident';
-import type { Predicate } from '@/model/type-defs';
 
 /**
  * Indicates that incident shouldn't be stored,

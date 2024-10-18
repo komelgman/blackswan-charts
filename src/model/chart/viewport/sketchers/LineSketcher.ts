@@ -9,16 +9,23 @@ import SplineGraphics from '@/model/chart/viewport/sketchers/graphics/SplineGrap
 import RoundHandle from '@/model/chart/viewport/sketchers/handles/RoundHandle';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
-import type { Line, LineStyle, Price, Range, UTCTimestamp } from '@/model/chart/types';
+import type { Line, Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { LineBound } from '@/model/chart/types';
 
-export interface LineOptions {
-  def: UTCTimestamp;
-  style: LineStyle;
-}
+declare type VisiblePoints = [
+  isVisible: boolean,
+  x0: UTCTimestamp,
+  y0: Price,
+  x1: UTCTimestamp,
+  y1: Price,
+  lineFunc: (x: UTCTimestamp) => Price,
+];
 
-export declare type VisiblePoints = [boolean, UTCTimestamp, Price, UTCTimestamp, Price, (x: UTCTimestamp) => Price];
-declare type VisiblePoint = [UTCTimestamp, Price, 'Side' | 'StartBound' | 'EndBound'];
+declare type VisiblePoint = [
+  x: UTCTimestamp,
+  y: Price,
+  type: 'Side' | 'StartBound' | 'EndBound',
+];
 
 export default class LineSketcher extends AbstractSketcher<Line> {
   protected draw(entry: DataSourceEntry<Line>, viewport: Viewport): void {
@@ -27,9 +34,8 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     }
 
     const { descriptor, drawing } = entry;
-
-    const { data: line, locked } = descriptor.options;
     const { timeAxis, priceAxis } = viewport;
+    const { data: line, locked } = descriptor.options;
     const { range: priceRange, scale: priceScale } = priceAxis;
     const { range: timeRange } = timeAxis;
     const [visible, x0, y0, x1, y1, lineFunc] = this.visiblePoints(line, timeRange, priceRange);
@@ -41,16 +47,17 @@ export default class LineSketcher extends AbstractSketcher<Line> {
       return;
     }
 
-    let installHandles = false;
+    let isNeedToCreateHandles = false;
     const vpX0 = timeAxis.translate(x0);
     const vpY0 = priceAxis.translate(y0);
     const vpX1 = timeAxis.translate(x1);
     const vpY1 = priceAxis.translate(y1);
 
-    if (priceScale.title === line.scale.title || x1 - x0 === 0 || y1 - y0 === 0) {
-      // draw straight line
-      if (drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== LineGraphics.TYPE) {
-        installHandles = true;
+    const isDrawAsStrightLine = priceScale.title === line.scale.title || x1 - x0 === 0 || y1 - y0 === 0;
+    if (isDrawAsStrightLine) {
+      const isNeedToCreateLine = drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== LineGraphics.TYPE;
+      if (isNeedToCreateLine) {
+        isNeedToCreateHandles = true;
         entry.drawing = {
           parts: [new LineGraphics(vpX0, vpY0, vpX1, vpY1, line.style)],
           handles: {},
@@ -100,9 +107,9 @@ export default class LineSketcher extends AbstractSketcher<Line> {
       // eslint-disable-next-line no-constant-condition
       } while (true);
 
-      // eslint-disable-next-line no-lonely-if
-      if (drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== SplineGraphics.TYPE) {
-        installHandles = true;
+      const isNeedToCreateLine = drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== SplineGraphics.TYPE;
+      if (isNeedToCreateLine) {
+        isNeedToCreateHandles = true;
         entry.drawing = {
           parts: [new SplineGraphics(points, line.style)],
           handles: {},
@@ -116,7 +123,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     }
 
     const [lx0, ly0, lx1, ly1] = line.def;
-    if (installHandles) {
+    if (isNeedToCreateHandles) {
       if (entry.drawing?.handles === undefined) {
         throw new Error('Oops.');
       }
@@ -155,13 +162,13 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     }
   }
 
-  public dragHandle(viewport: Viewport, entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
+  public dragHandle(entry: DataSourceEntry, viewport: Viewport, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
       || entry.descriptor.options.type !== 'Line'
       || entry.descriptor.options.locked
       || entry.drawing === undefined
     ) {
-      console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
+      console.warn('IllegalState: object can\'t be dragged by this sketcher dragHandle');
       return undefined;
     }
 
@@ -203,11 +210,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     };
   }
 
-  private visiblePoints(
-    line: Line,
-    timeRange: Readonly<Range<UTCTimestamp>>,
-    priceRange: Readonly<Range<Price>>,
-  ): VisiblePoints {
+  private visiblePoints(line: Line, timeRange: Readonly<Range<UTCTimestamp>>, priceRange: Readonly<Range<Price>>): VisiblePoints {
     const lineScale = line.scale.func;
     const [lx0, ly0, lx1, ly1] = line.def;
     const ldx = lx1 - lx0;

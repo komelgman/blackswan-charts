@@ -39,20 +39,21 @@ export interface DrawingDescriptor<DataType = any> {
 export interface Graphics {
   type?: string;
   render(ctx: CanvasRenderingContext2D): void;
-
   hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean;
 }
 
 export interface DrawingHandle extends Graphics, HasCursor, HasCenterPos {
 }
 
+export interface Drawing {
+  parts: Graphics[];
+  handles: Record<HandleId, DrawingHandle>;
+}
+
 export interface AxisMark {
   text: string;
   screenPos: number;
   textColor: string;
-}
-
-export interface Drawing {
-  parts: Graphics[];
-  handles: Record<HandleId, DrawingHandle>;
+  bgColor: string;
+  type: 'PriceMark' | 'TimeMark';
 }

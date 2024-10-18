@@ -9,9 +9,9 @@ export default interface Sketcher<T = any> {
 
   setChartStyle(chartStyle: ChartStyle): void;
 
-  contextmenu(dataSourceEntry: DataSourceEntry<T>): MenuItem[];
+  contextmenu(entry: DataSourceEntry<T>): MenuItem[];
 
-  dragHandle(viewport: Viewport, entry: DataSourceEntry<T>, handle?: HandleId): DragHandle | undefined;
+  dragHandle(entry: DataSourceEntry<T>, viewport: Viewport, handle?: HandleId): DragHandle | undefined;
 
   // todo editdialog
 }

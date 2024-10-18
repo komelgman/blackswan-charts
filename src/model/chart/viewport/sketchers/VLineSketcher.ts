@@ -45,25 +45,28 @@ export default class VLineSketcher extends AbstractSketcher<VLine> {
         screenPos: x,
         textColor: invertColor(line.style.color),
         text: markText,
+        bgColor: line.style.color,
+        type: 'TimeMark',
       };
     } else {
       Object.assign(timeMark, {
         screenPos: x,
         textColor: invertColor(line.style.color),
         text: markText,
+        bgColor: line.style.color,
         invalid: false,
       });
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public dragHandle(viewport: Viewport, entry: DataSourceEntry<VLine>, handle?: HandleId): DragHandle | undefined {
+  public dragHandle(entry: DataSourceEntry<VLine>, viewport: Viewport, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
       || entry.descriptor.options.type !== 'VLine'
       || entry.descriptor.options.locked
       || entry.drawing === undefined
     ) {
-      console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
+      console.warn('IllegalState: object can\'t be dragged by this sketcher dragHandle');
       return undefined;
     }
 

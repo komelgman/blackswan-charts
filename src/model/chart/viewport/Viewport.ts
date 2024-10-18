@@ -125,7 +125,7 @@ export class Viewport {
     // case when we drag some handle
     if (highlighted !== undefined && !highlighted.descriptor.options.locked && highlightedHandleId !== undefined) {
       const sketcher: Sketcher = this.getSketcher(highlighted.descriptor.options.type);
-      return sketcher.dragHandle(this, highlighted, highlightedHandleId);
+      return sketcher.dragHandle(highlighted, this, highlightedHandleId);
     }
 
     // case when we drag several (mb one) element by body picking
@@ -133,7 +133,7 @@ export class Viewport {
     for (const entry of selected) {
       if (!entry.descriptor.options.locked) {
         const sketcher: Sketcher = this.getSketcher(entry.descriptor.options.type);
-        const dragHandle: DragHandle | undefined = sketcher.dragHandle(this, entry);
+        const dragHandle: DragHandle | undefined = sketcher.dragHandle(entry, this);
         if (dragHandle !== undefined) {
           dragHandles.push(dragHandle);
         }

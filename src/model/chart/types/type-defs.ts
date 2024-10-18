@@ -85,7 +85,7 @@ export interface CandleColors {
 export declare type CandleType = 'bearish' | 'bullish';
 
 export interface CandlestickChartStyle extends Record<CandleType, CandleColors> {
-  type: 'CandlestickChartStyle';
+  type: 'CandlestickChart';
   showWick: boolean;
   showBody: boolean;
   showBorder: boolean;

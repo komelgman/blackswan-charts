@@ -56,19 +56,21 @@ export default class PriceAxisMarksLayer extends Layer {
     native.textAlign = 'end';
     native.font = makeFont(textStyle);
 
-    const validMarks: Predicate<DataSourceEntry> = ({ descriptor, mark }): boolean => {
+    const containValidMarks: Predicate<DataSourceEntry> = ({ descriptor, drawing, mark }): boolean => {
       const { options } = descriptor;
 
-      return options.type === 'HLine'
+      // todo: marks
+      return mark !== undefined
+        && mark.type === 'PriceMark'
         && options.visible
+        && drawing !== undefined
         && !!descriptor.valid
-        && !!descriptor.visibleInViewport
-        && mark !== undefined;
+        && !!descriptor.visibleInViewport;
     };
 
     const x = width - PRICE_LABEL_PADDING;
-    for (const { descriptor, drawing, mark } of toRaw(this.viewport.dataSource).filtered(validMarks)) {
-      if (mark === undefined || drawing === undefined) {
+    for (const { mark } of toRaw(this.viewport.dataSource).filtered(containValidMarks)) {
+      if (mark === undefined) {
         continue;
       }
 
@@ -76,7 +78,7 @@ export default class PriceAxisMarksLayer extends Layer {
 
       native.beginPath();
       native.lineWidth = 1;
-      native.fillStyle = descriptor.options.data.style.color;
+      native.fillStyle = mark.bgColor;
       native.rect(0, y - half - 3, width, textStyle.fontSize + 4);
       native.fill();
 

@@ -49,24 +49,28 @@ export default class HLineSketcher extends AbstractSketcher<HLine> {
         screenPos: y,
         textColor: invertColor(line.style.color),
         text: markText,
+        bgColor: line.style.color,
+        type: 'PriceMark',
       };
     } else {
       Object.assign(priceMark, {
         screenPos: y,
         textColor: invertColor(line.style.color),
         text: markText,
+        bgColor: line.style.color,
         invalid: false,
       });
     }
   }
 
-  public dragHandle(viewport: Viewport, entry: DataSourceEntry<HLine>, handle?: HandleId): DragHandle | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public dragHandle(entry: DataSourceEntry<HLine>, viewport: Viewport, handle?: HandleId): DragHandle | undefined {
     if (entry === undefined
       || entry.descriptor.options.type !== 'HLine'
       || entry.descriptor.options.locked
       || entry.drawing === undefined
     ) {
-      console.warn('IllegalState: highlighted object doesn\'t fit tho this sketcher dragHandle');
+      console.warn('IllegalState: object can\'t be dragged by this sketcher dragHandle');
       return undefined;
     }
 

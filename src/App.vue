@@ -10,10 +10,10 @@ import { Chart } from '@/model/chart/Chart';
 import type { OHLCvChart } from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import DataSource from '@/model/datasource/DataSource';
-import type { DataSourceChangeEventsMap } from '@/model/datasource/events';
-import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
+import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
+import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { CandlestickChartStyle, Line, UTCTimestamp, VolumeIndicator } from '@/model/chart/types';
+import type { CandlestickChartStyle, Line, Price, UTCTimestamp, VolumeIndicator } from '@/model/chart/types';
 import { LineBound, RegularTimePeriod } from '@/model/chart/types';
 
 /**
@@ -44,7 +44,7 @@ const drawings = {
         step: RegularTimePeriod.m5,
       },
       style: {
-        type: 'CandlestickChartStyle',
+        type: 'CandlestickChart',
         showBody: true,
         showBorder: true,
         showWick: true,
@@ -262,13 +262,13 @@ setTimeout((j: number) => {
   mainDs.endTransaction();
 }, 100 * i++, i);
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
-//
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.greenLineBoundBoth);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.greenLineBoundBoth);
+  mainDs.endTransaction();
+}, 100 * i++, i);
 
 // setTimeout((j: number) => {
 //   console.log(`${j}) mainDs.add(drawings.green0to1LineBoundStart);`);
@@ -294,42 +294,42 @@ setTimeout((j: number) => {
 //   mainDs.endTransaction();
 // }, 100 * i++, i);
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
-//
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.ohlcvBTCUSDT);
-//   //mainDs.add(drawings.volumeBTCUSDT);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.process(['hlocv1'], ...); // init`);
-//
-//   mainDs.addChangeEventListener((events, ds) => {
-//     if (events.has(DataSourceChangeEventReason.DataInvalid)) {
-//       const event = (events.get(DataSourceChangeEventReason.DataInvalid) || [])
-//           .find(e => e.entry.descriptor.ref == 'ohlcv1');
-//
-//       if (event) {
-//         console.debug(event);
-//       }
-//     }
-//   });
-//
-//   mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
-//     e.descriptor.options.data.content = {
-//       available: { from: 0  as UTCTimestamp, to: 1  as UTCTimestamp },
-//       loaded: { from: 0  as UTCTimestamp, to: 0.02  as UTCTimestamp },
-//       step: 0.01 as UTCTimestamp,
-//       values: [
-//         [0.3, 0.5, 0.1, 0.15, 1000],
-//         [0.15, 0.6, 0.0, 0.45, 1500],
-//         [0.35, 0.7, 0.3, 0.55, 300]
-//       ] as [Price, Price, Price, Price, number][],
-//     };
-//   });
-// }, 100 * i++, i);
+  mainDs.beginTransaction();
+  mainDs.add(drawings.ohlcvBTCUSDT);
+  // mainDs.add(drawings.volumeBTCUSDT);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.process(['hlocv1'], ...); // init`);
+
+  mainDs.addChangeEventListener((events) => {
+    if (events.has(DataSourceChangeEventReason.DataInvalid)) {
+      const event = (events.get(DataSourceChangeEventReason.DataInvalid) || [])
+        .find((e) => e.entry.descriptor.ref === 'ohlcv1');
+
+      if (event) {
+        console.debug(event);
+      }
+    }
+  });
+
+  mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+    e.descriptor.options.data.content = {
+      available: { from: 0 as UTCTimestamp, to: 1 as UTCTimestamp },
+      loaded: { from: 0 as UTCTimestamp, to: 0.02 as UTCTimestamp },
+      step: 0.01 as UTCTimestamp,
+      values: [
+        [0.3, 0.5, 0.1, 0.15, 1000],
+        [0.15, 0.6, 0.0, 0.45, 1500],
+        [0.35, 0.7, 0.3, 0.55, 300],
+      ] as [Price, Price, Price, Price, number][],
+    };
+  });
+}, 100 * i++, i);
 
 // setTimeout((j: number) => {
 //   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);

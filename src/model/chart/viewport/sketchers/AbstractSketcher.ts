@@ -20,12 +20,13 @@ export default abstract class AbstractSketcher<T> implements Sketcher<T> {
 
   protected abstract draw(entry: DataSourceEntry<T>, viewport: Viewport): void;
 
-  public dragHandle(viewport: Viewport, entry: DataSourceEntry<T>, handle?: HandleId): DragHandle | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public dragHandle(entry: DataSourceEntry<T>, viewport: Viewport, handle?: HandleId): DragHandle | undefined {
     return undefined;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public contextmenu(dataSourceEntry: DataSourceEntry<T>): MenuItem[] {
+  public contextmenu(entry: DataSourceEntry<T>): MenuItem[] {
     return [];
   }
 }

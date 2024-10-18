@@ -36,7 +36,7 @@ onUnmounted(() => {
 const show = (event: MouseEvent, newItems: MenuItem[]): void => {
   items.value.splice(0, items.value.length, ...newItems);
   removeHideListener = onceDocument('mousedown', hide);
-  visible.value = true;
+  visible.value = items.value.length > 0;
 
   nextTick(() => {
     position.value = calcPosition(event);
