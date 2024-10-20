@@ -11,6 +11,7 @@ import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type { Line, Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { LineBound } from '@/model/chart/types';
+import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 
 declare type VisiblePoints = [
   isVisible: boolean,
@@ -179,14 +180,33 @@ export default class LineSketcher extends AbstractSketcher<Line> {
       let update;
 
       if (handle === undefined) {
-        const lineScale = (options.data as Line).scale.func;
+        // todo: still work bad
+        const lineScale = (options.data as Line).scale;
         const [x0, y0, x1, y1] = options.data.def;
-        // todo: fix, now it's parallel but delta isn't matched to actual move, point on line should move with mouse pointer
-        const dy = lineScale.translate(priceAxis.revert(e.y - priceAxis.inverted.value * e.dy)) - lineScale.translate(priceAxis.revert(e.y));
+
+        let ny0;
+        let ny1;
+
+        if (lineScale.title === priceAxis.scale.title) {
+          const dy = priceAxis.inverted.value * e.dy;
+          ny0 = priceAxis.revert(priceAxis.translate(y0) - dy);
+          ny1 = priceAxis.revert(priceAxis.translate(y1) - dy);
+        } else if (lineScale.title === PriceScales.regular.title) {
+          console.log({
+            mouse_y0: priceAxis.revert(e.y),
+            mouse_y1: priceAxis.revert(e.y + priceAxis.inverted.value * e.dy),
+          });
+
+          const dy = priceAxis.revert(e.y + priceAxis.inverted.value * e.dy) - priceAxis.revert(e.y);
+          ny0 = y0 + dy;
+          ny1 = y1 + dy;
+        } else {
+          ny0 = y0;
+          ny1 = y1;
+        }
+
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
-        const ny0 = lineScale.revert(lineScale.translate(y0) + dy);
         const nx1 = timeAxis.revert(timeAxis.translate(x1) - e.dx);
-        const ny1 = lineScale.revert(lineScale.translate(y1) + dy);
         update = { data: { def: [nx0, ny0, nx1, ny1] } };
       }
 

@@ -5,21 +5,9 @@ import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher'
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { DataSourceEntry, Drawing, Graphics } from '@/model/datasource/types';
+import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
 import type { OHLCv, Price, Range, TimePeriod, UTCTimestamp } from '@/model/chart/types';
-
-const resizeArray = (array: Graphics[], newSize: number): Graphics[] => {
-  if (array.length === newSize) {
-    return array;
-  }
-
-  const changeSize = newSize - array.length;
-  if (changeSize > 0) {
-    return array.splice(0, 0, ...Array(changeSize).fill(undefined));
-  }
-
-  return array.splice(0, -changeSize);
-};
+import { resize as resizeArray } from '@/misc/array.resize';
 
 export declare type OHLCvPipeOptions = HasType<'OHLCvPipeOptions'> & {
   symbol: string;
@@ -49,13 +37,13 @@ export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>
     let result = false;
 
     if (timeRangeFrom < ohlc.loaded.from && ohlc.loaded.from > ohlc.available.from) {
-      // todo:
+      // todo: set requested range to entry
       console.log({ timeRangeFrom, lf: ohlc.loaded.from, af: ohlc.available.from });
       result = true;
     }
 
     if (timeRangeTo > ohlc.loaded.to && ohlc.loaded.to < ohlc.available.to) {
-      // todo:
+      // todo: set requested range to entry
       result = true;
     }
 

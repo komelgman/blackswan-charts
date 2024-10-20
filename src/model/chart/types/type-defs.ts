@@ -13,8 +13,8 @@ export const enum RegularTimePeriod {
   week = 7 * 24 * 60 * 60 * 1000,
 }
 
-export declare type NameTimedPeriod = 'Month' | 'Year';
-export declare type TimePeriod = RegularTimePeriod | NameTimedPeriod;
+export declare type NamedTimedPeriod = 'Month' | 'Year';
+export declare type TimePeriod = RegularTimePeriod | NamedTimedPeriod;
 export declare type UTCTimestamp = Nominal<number, 'UTCTimestamp'>;
 export declare type Price = Nominal<number, 'Price'>;
 

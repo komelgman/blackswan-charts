@@ -103,7 +103,7 @@ const drawings = {
     title: 'line2',
     type: 'Line',
     data: {
-      def: [-0.25, -0.25, 0.75, 0.75],
+      def: [-0.25, 0.75, 0.75, 0.75],
       boundType: LineBound.Both,
       scale: PriceScales.regular,
       style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -333,7 +333,7 @@ setTimeout((j: number) => {
 
 // setTimeout((j: number) => {
 //   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
-//
+
 //   const process = () => {
 //     mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
 //       const values = e.descriptor.options.data.content?.values || [];
@@ -341,18 +341,18 @@ setTimeout((j: number) => {
 //       const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
 //       const h = Math.max(lastBar[1], c);
 //       const l = Math.min(lastBar[2], c);
-//
+
 //       // add new
 //       // values.push(lastBar);
-//
+
 //       // update last
 //       values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
-//
+
 //       // replace all
 //       // values.splice(0, values.length, newItems);
 //     });
 //   };
-//
+
 //   setInterval(process, 1000);
 // }, 100 * i++, i);
 
