@@ -19,7 +19,7 @@ declare type VisiblePoints = [
   y0: Price,
   x1: UTCTimestamp,
   y1: Price,
-  lineFunc: (x: UTCTimestamp) => Price,
+  lineFunc: ((x: UTCTimestamp) => Price) | undefined,
 ];
 
 declare type VisiblePoint = [
@@ -54,7 +54,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     const vpX1 = timeAxis.translate(x1);
     const vpY1 = priceAxis.translate(y1);
 
-    const isDrawAsStrightLine = priceScale.title === line.scale.title || x1 - x0 === 0 || y1 - y0 === 0;
+    const isDrawAsStrightLine = priceScale.title === line.scale.title || lineFunc === undefined;
     if (isDrawAsStrightLine) {
       const isNeedToCreateLine = drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== LineGraphics.TYPE;
       if (isNeedToCreateLine) {
@@ -69,13 +69,18 @@ export default class LineSketcher extends AbstractSketcher<Line> {
       }
     } else {
       // draw spline
+      const MAGIC_CONST = 12;
+      const BREAKER_LIMIT = 1e+5;
+      const MIN_STEP = 1e-6;
       const points: number[] = [];
-      const MAGIC_CONST = 24;
       let step = ((x1 - x0) * MAGIC_CONST) / Math.sqrt((vpX1 - vpX0) ** 2 + (vpY1 - vpY0) ** 2);
       let curX: UTCTimestamp = x0;
       let curY: Price = y0;
       let nextX: UTCTimestamp;
       let nextY: Price;
+      let breaker = 0;
+      let infiniteStepAjustementBreakerEnabled = false;
+
       do {
         nextX = curX + step as UTCTimestamp;
         nextY = lineFunc(nextX);
@@ -85,10 +90,12 @@ export default class LineSketcher extends AbstractSketcher<Line> {
           + (priceAxis.translate(nextY) - priceAxis.translate(curY)) ** 2,
         );
 
-        if (chunkSize > MAGIC_CONST) {
-          step /= (chunkSize / MAGIC_CONST);
+        if (chunkSize > MAGIC_CONST && !infiniteStepAjustementBreakerEnabled) {
+          step = Math.max(step / (chunkSize / MAGIC_CONST), MIN_STEP);
+          infiniteStepAjustementBreakerEnabled = true;
           continue;
-        } else if (chunkSize < MAGIC_CONST / 2) {
+        } else if (chunkSize < MAGIC_CONST / 2 && !infiniteStepAjustementBreakerEnabled) {
+          infiniteStepAjustementBreakerEnabled = true;
           step *= 2;
           continue;
         }
@@ -98,15 +105,19 @@ export default class LineSketcher extends AbstractSketcher<Line> {
           break;
         }
 
-        if (nextX > x1) {
+        if (nextX >= x1) {
           nextX = x1;
           nextY = y1;
         }
 
         curX = nextX;
         curY = nextY;
-      // eslint-disable-next-line no-constant-condition
-      } while (true);
+        infiniteStepAjustementBreakerEnabled = false;
+      } while (++breaker < BREAKER_LIMIT);
+
+      if (breaker === BREAKER_LIMIT) {
+        console.warn('BREAKER LIMIT was excided in spline build process');
+      }
 
       const isNeedToCreateLine = drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== SplineGraphics.TYPE;
       if (isNeedToCreateLine) {
@@ -192,15 +203,16 @@ export default class LineSketcher extends AbstractSketcher<Line> {
           ny0 = priceAxis.revert(priceAxis.translate(y0) - dy);
           ny1 = priceAxis.revert(priceAxis.translate(y1) - dy);
         } else if (lineScale.title === PriceScales.regular.title) {
-          console.log({
-            mouse_y0: priceAxis.revert(e.y),
-            mouse_y1: priceAxis.revert(e.y + priceAxis.inverted.value * e.dy),
-          });
+          const priceAtMousePos = priceAxis.inverted.value * priceAxis.revert(e.y) as Price;
+          const priceAtOldMousePos = priceAxis.inverted.value * priceAxis.revert(e.y - priceAxis.inverted.value * e.dy) as Price;
+          const dy = lineScale.func.translate(priceAtOldMousePos) - lineScale.func.translate(priceAtMousePos);
 
-          const dy = priceAxis.revert(e.y + priceAxis.inverted.value * e.dy) - priceAxis.revert(e.y);
-          ny0 = y0 + dy;
-          ny1 = y1 + dy;
+          console.log({ priceAtMousePos, priceAtOldMousePos, dy });
+
+          ny0 = lineScale.func.revert(lineScale.func.translate(y0) - dy);
+          ny1 = lineScale.func.revert(lineScale.func.translate(y1) - dy);
         } else {
+          // tbd
           ny0 = y0;
           ny1 = y1;
         }
@@ -240,7 +252,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     if (ldx === 0) {
       // line is parallel to 0Y
       if (inRange(lx0, timeRange)) {
-        return this.applyLineBounds(line, lx0, priceRange.from, lx1, priceRange.to, () => { throw new Error('Line is || OY'); });
+        return this.applyLineBounds(line, lx0, priceRange.from, lx1, priceRange.to, undefined);
       }
 
       return noVisiblePoints;
@@ -249,7 +261,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     if (ldy === 0) {
       // line is parallel 0X
       if (inRange(ly0, priceRange)) {
-        return this.applyLineBounds(line, timeRange.from, ly0, timeRange.to, ly1, () => { throw new Error('Line is || OX'); });
+        return this.applyLineBounds(line, timeRange.from, ly0, timeRange.to, ly1, undefined);
       }
 
       return noVisiblePoints;
@@ -295,7 +307,14 @@ export default class LineSketcher extends AbstractSketcher<Line> {
     return noVisiblePoints;
   }
 
-  private applyLineBounds(line: Line, x0: UTCTimestamp, y0: Price, x1: UTCTimestamp, y1: Price, lineFunc: (x: UTCTimestamp) => Price): VisiblePoints {
+  private applyLineBounds(
+    line: Line,
+    x0: UTCTimestamp,
+    y0: Price,
+    x1: UTCTimestamp,
+    y1: Price,
+    lineFunc: ((x: UTCTimestamp) => Price) | undefined,
+  ): VisiblePoints {
     const [lx0, ly0, lx1, ly1] = line.def;
     const points: VisiblePoint[] = [];
 
