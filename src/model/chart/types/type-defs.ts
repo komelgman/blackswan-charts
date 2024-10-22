@@ -1,21 +1,8 @@
 import type { HasStyle } from '@/model/type-defs/optional';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { Nominal } from '@/model/type-defs';
+import type { UTCTimestamp } from '@/model/chart/types/time';
 
-export const enum RegularTimePeriod {
-  m1 = 1 * 60 * 1000,
-  m5 = 5 * 60 * 1000,
-  m15 = 15 * 60 * 1000,
-  m30 = 30 * 60 * 1000,
-  h1 = 60 * 60 * 1000,
-  h4 = 4 * 60 * 60 * 1000,
-  day = 24 * 60 * 60 * 1000,
-  week = 7 * 24 * 60 * 60 * 1000,
-}
-
-export declare type NamedTimedPeriod = 'Month' | 'Year';
-export declare type TimePeriod = RegularTimePeriod | NamedTimedPeriod;
-export declare type UTCTimestamp = Nominal<number, 'UTCTimestamp'>;
 export declare type Price = Nominal<number, 'Price'>;
 
 export declare type Range<T> = { from: T, to: T };
@@ -60,14 +47,6 @@ export declare type VLine = AbstractLine<UTCTimestamp>;
 export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Price]> & {
   boundType: LineBound;
   scale: PriceAxisScale;
-};
-
-export declare type OHLCv = {
-  loaded: Range<UTCTimestamp>;
-  available: Range<UTCTimestamp>;
-  visible?: Range<UTCTimestamp>;
-  step: UTCTimestamp; // todo: TimePeriod;
-  values: [o: Price, h: Price, l: Price, c: Price, v?: number][];
 };
 
 export declare type VolumeIndicator<Style> = HasStyle<Style> & {

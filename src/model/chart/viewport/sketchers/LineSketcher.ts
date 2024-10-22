@@ -207,7 +207,7 @@ export default class LineSketcher extends AbstractSketcher<Line> {
           const priceAtOldMousePos = priceAxis.inverted.value * priceAxis.revert(e.y - priceAxis.inverted.value * e.dy) as Price;
           const dy = lineScale.func.translate(priceAtOldMousePos) - lineScale.func.translate(priceAtMousePos);
 
-          console.log({ priceAtMousePos, priceAtOldMousePos, dy });
+          // console.log({ priceAtMousePos, priceAtOldMousePos, dy });
 
           ny0 = lineScale.func.revert(lineScale.func.translate(y0) - dy);
           ny1 = lineScale.func.revert(lineScale.func.translate(y1) - dy);

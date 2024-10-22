@@ -7,14 +7,13 @@ import { isProxy } from 'vue';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import { Chart } from '@/model/chart/Chart';
-import type { OHLCvChart } from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { CandlestickChartStyle, Line, Price, UTCTimestamp, VolumeIndicator } from '@/model/chart/types';
-import { LineBound, RegularTimePeriod } from '@/model/chart/types';
+import type { CandlestickChartStyle, Line, OHLCvChart, Price, UTCTimestamp, VolumeIndicator } from '@/model/chart/types';
+import { LineBound, TimePeriod } from '@/model/chart/types';
 
 /**
  * todo
@@ -41,7 +40,7 @@ const drawings = {
       pipeOptions: {
         type: 'OHLCvPipeOptions',
         symbol: 'BINANCE:BTCUSDT',
-        step: RegularTimePeriod.m5,
+        step: TimePeriod.m5,
       },
       style: {
         type: 'CandlestickChart',
@@ -88,7 +87,7 @@ const drawings = {
     title: 'line1',
     type: 'Line',
     data: {
-      def: [-1, -0.25, 1, 0.75],
+      def: [-1 * 10 * TimePeriod.m1, -0.25, 1 * 10 * TimePeriod.m1, 0.75],
       boundType: LineBound.NoBound,
       scale: PriceScales.log10,
       style: { lineWidth: 2, fill: 1, color: '#AA0000' },
@@ -103,7 +102,7 @@ const drawings = {
     title: 'line2',
     type: 'Line',
     data: {
-      def: [-0.25, 0.75, 0.75, 0.75],
+      def: [0, 0.75, 0.75 * 10 * TimePeriod.m1, 0.75],
       boundType: LineBound.Both,
       scale: PriceScales.regular,
       style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -118,7 +117,7 @@ const drawings = {
     title: 'line3',
     type: 'Line',
     data: {
-      def: [0 + 0.25, 0, 0.75 + 0.25, 0.75],
+      def: [(0 + 0.25) * 10 * TimePeriod.m1, 0, (0.75 + 0.25) * 10 * TimePeriod.m1, 0.75],
       boundType: LineBound.BoundStart,
       scale: PriceScales.regular,
       style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -133,7 +132,7 @@ const drawings = {
     title: 'line4',
     type: 'Line',
     data: {
-      def: [0 + 0.5, 0, 0.75 + 0.5, 0.75],
+      def: [(0 + 0.5) * 10 * TimePeriod.m1, 0, (0.75 + 0.5) * 10 * TimePeriod.m1, 0.75],
       boundType: LineBound.BoundEnd,
       scale: PriceScales.regular,
       style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -147,7 +146,7 @@ const drawings = {
     id: 'vline1',
     title: 'vline1',
     type: 'VLine',
-    data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
+    data: { def: -0.25 * 10 * TimePeriod.m1, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
     locked: false,
     visible: true,
   },
@@ -165,7 +164,7 @@ const drawings = {
     id: 'vline2',
     title: 'vline2',
     type: 'VLine',
-    data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
+    data: { def: -0.1 * 10 * TimePeriod.m1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
     shareWith: '*' as '*',
     locked: false,
     visible: true,
@@ -319,9 +318,9 @@ setTimeout((j: number) => {
 
   mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
     e.descriptor.options.data.content = {
-      available: { from: 0 as UTCTimestamp, to: 1 as UTCTimestamp },
-      loaded: { from: 0 as UTCTimestamp, to: 0.02 as UTCTimestamp },
-      step: 0.01 as UTCTimestamp,
+      available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
+      loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
+      step: TimePeriod.m1,
       values: [
         [0.3, 0.5, 0.1, 0.15, 1000],
         [0.15, 0.6, 0.0, 0.45, 1500],
@@ -329,6 +328,8 @@ setTimeout((j: number) => {
       ] as [Price, Price, Price, Price, number][],
     };
   });
+
+  chartApi.timeAxis.update({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
 }, 100 * i++, i);
 
 // setTimeout((j: number) => {
