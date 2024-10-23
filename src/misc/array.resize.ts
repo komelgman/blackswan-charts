@@ -1,13 +1,13 @@
 // eslint-disable-next-line import/prefer-default-export
-export function resize<T>(array: T[], newSize: number): T[] {
-  if (array.length === newSize) {
-    return array;
+export function resize<T>(array: T[], newSize: number) {
+  if (array.length !== newSize) {
+    return;
   }
 
   const deltaSize = array.length - newSize;
   if (deltaSize > 0) {
-    return array.splice(0, 0, ...Array(deltaSize).fill(undefined));
+    array.splice(0, 0, ...Array(deltaSize).fill(undefined));
+  } else {
+    array.splice(0, deltaSize);
   }
-
-  return array.splice(0, deltaSize);
 }

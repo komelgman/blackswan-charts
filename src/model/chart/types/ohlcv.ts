@@ -17,3 +17,5 @@ export declare type OHLCv = {
   step: TimePeriod;
   values: [o: Price, h: Price, l: Price, c: Price, v?: number][];
 };
+
+export declare type OHCLvBar = [time: UTCTimestamp, o: Price, h: Price, l: Price, c: Price, v?: number];

@@ -48,6 +48,7 @@ export interface DrawingHandle extends Graphics, HasCursor, HasCenterPos {
 export interface Drawing {
   parts: Graphics[];
   handles: Record<HandleId, DrawingHandle>;
+  renderer?: string;
 }
 
 export interface AxisMark {

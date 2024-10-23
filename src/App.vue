@@ -332,30 +332,30 @@ setTimeout((j: number) => {
   chartApi.timeAxis.update({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
 }, 100 * i++, i);
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
 
-//   const process = () => {
-//     mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
-//       const values = e.descriptor.options.data.content?.values || [];
-//       const lastBar = values[values.length - 1];
-//       const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
-//       const h = Math.max(lastBar[1], c);
-//       const l = Math.min(lastBar[2], c);
+  const process = () => {
+    mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+      const values = e.descriptor.options.data.content?.values || [];
+      const lastBar = values[values.length - 1];
+      const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
+      const h = Math.max(lastBar[1], c);
+      const l = Math.min(lastBar[2], c);
 
-//       // add new
-//       // values.push(lastBar);
+      // add new
+      // values.push(lastBar);
 
-//       // update last
-//       values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
+      // update last
+      values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
 
-//       // replace all
-//       // values.splice(0, values.length, newItems);
-//     });
-//   };
+      // replace all
+      // values.splice(0, values.length, newItems);
+    });
+  };
 
-//   setInterval(process, 1000);
-// }, 100 * i++, i);
+  setInterval(process, 1000);
+}, 100 * i++, i);
 
 // i += 50;
 //

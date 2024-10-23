@@ -1,14 +1,19 @@
 import { toRaw } from 'vue';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
-import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
-import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
-import { type OHLCv, type OHLCvChart, type UTCTimestamp, type Price, type Range, barToTime, timeToBar } from '@/model/chart/types';
-import { resize as resizeArray } from '@/misc/array.resize';
+import { type OHLCv, type OHLCvChart, type UTCTimestamp, type Range, barToTime, timeToBar, type OHCLvBar } from '@/model/chart/types';
+import type { ChartRenderer } from '@/model/chart/viewport/sketchers/renderers';
 
 export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>> {
+  private readonly renderer: ChartRenderer;
+
+  public constructor(renderer: ChartRenderer) {
+    super();
+    this.renderer = renderer;
+  }
+
   public invalidate(entry: DataSourceEntry<OHLCvChart<any>>, viewport: Viewport): boolean {
     const { timeAxis, dataSource } = viewport;
 
@@ -44,18 +49,13 @@ export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    let { drawing } = entry;
-    const { descriptor } = entry;
-    const { priceAxis, timeAxis } = viewport;
-
-    const ohlc = toRaw(descriptor?.options.data).content;
+    const ohlc = toRaw(entry.descriptor?.options.data).content;
     if (!ohlc) {
       return;
     }
 
-    const { range: priceRange } = priceAxis;
-    const { range: timeRange } = timeAxis;
-    const bars: [UTCTimestamp, Price, Price, Price, Price, number?][] = this.visibleBars(ohlc, priceRange, timeRange);
+    const { descriptor } = entry;
+    const bars: OHCLvBar[] = this.visibleBars(ohlc, viewport.timeAxis.range);
 
     descriptor.visibleInViewport = bars.length > 0;
     descriptor.valid = descriptor.visibleInViewport;
@@ -64,45 +64,19 @@ export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>
       return;
     }
 
-    if (drawing === undefined) {
+    const { drawing } = entry;
+    if (drawing === undefined || drawing.renderer !== this.renderer.name) {
       entry.drawing = {
         parts: [],
         handles: {},
+        renderer: this.renderer.name,
       } as Drawing;
-
-      drawing = entry.drawing;
     }
 
-    const style = toRaw(descriptor?.options.data.style);
-    const parts = resizeArray(drawing?.parts, bars.length);
-    const barSpace: number = timeAxis.translate(barToTime(timeRange.from, 1, ohlc.step) as UTCTimestamp);
-    const barGap = Math.max(1, Math.ceil(0.4 * barSpace));
-    const barWidth = barSpace - barGap;
-
-    for (let i = 0; i < bars.length; ++i) {
-      const bar = bars[i];
-      const options: CandleGraphicsOptions = {
-        x: timeAxis.translate(bar[0]),
-        width: barWidth,
-        yo: priceAxis.translate(bar[1]),
-        yh: priceAxis.translate(bar[2]),
-        yl: priceAxis.translate(bar[3]),
-        yc: priceAxis.translate(bar[4]),
-        style,
-      };
-
-      if (parts[i] === undefined) {
-        parts[i] = new CandleGraphics(options);
-      } else {
-        (parts[i] as CandleGraphics).invalidate(options);
-      }
-    }
-
-    drawing.parts = parts;
+    this.renderer.renderBarsToEntry(bars, entry, viewport);
   }
 
-  private visibleBars(ohlc: OHLCv, priceRange: Readonly<Range<Price>>, timeRange: Readonly<Range<UTCTimestamp>>)
-    : [UTCTimestamp, Price, Price, Price, Price, number?][] {
+  private visibleBars(ohlc: OHLCv, timeRange: Readonly<Range<UTCTimestamp>>): OHCLvBar[] {
     const { loaded, step: ohlcStep, values: ohlcValues } = ohlc;
     const { from: ohlcFrom } = loaded;
     const barCount = ohlcValues.length;
@@ -116,11 +90,10 @@ export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>
 
     const firstIndex = Math.max(0, firstVisibleBar);
     const lastIndex = Math.min(barCount - 1, lastVisibleBar);
-    const result: [UTCTimestamp, Price, Price, Price, Price, number?][] = new Array(lastIndex - firstIndex + 1);
+    const result: OHCLvBar[] = new Array(lastIndex - firstIndex + 1);
 
     for (let i = firstIndex; i <= lastIndex; ++i) {
-      const [o, h, l, c, v] = ohlcValues[i];
-      result[i - firstIndex] = [barToTime(ohlcFrom, i, ohlcStep) as UTCTimestamp, o, h, l, c, v];
+      result[i - firstIndex] = [barToTime(ohlcFrom, i, ohlcStep) as UTCTimestamp, ...ohlcValues[i]];
     }
 
     return result;
