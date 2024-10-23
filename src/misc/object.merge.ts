@@ -2,8 +2,8 @@ declare type Item = [Record<string, any>, Record<string, any>, Record<string, an
 
 const PROP_IS_NOT_SET = null;
 
-// eslint-disable-next-line import/prefer-default-export
-export function merge(dst: Record<string, any>, ...sources: Record<string, any>[]): [Record<string, any>, Record<string, any>] {
+export function merge(dst: Record<string, any>, ...sources: Record<string, any>[]): [result: Record<string, any>, diff: Record<string, any>] {
+  const { hasOwnProperty } = Object.prototype;
   const items: Item[] = [];
   const unmerge: Record<string, any> = {};
 
@@ -13,7 +13,7 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
     }
 
     for (const prop in src) {
-      if (Object.prototype.hasOwnProperty.call(src, prop)) {
+      if (hasOwnProperty.call(src, prop)) {
         items.push([dst, unmerge, src, prop]);
       }
     }
@@ -25,14 +25,14 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
     const dstPropValue: any = dstObj[property];
 
     if (srcPropValue?.constructor !== Object || dstPropValue?.constructor !== Object) {
-      const srcHasOwnProp = Object.prototype.hasOwnProperty.call(srcObj, property);
-      const dstHasOwnProp = Object.prototype.hasOwnProperty.call(dstObj, property);
+      const srcHasOwnProp = hasOwnProperty.call(srcObj, property);
+      const dstHasOwnProp = hasOwnProperty.call(dstObj, property);
 
       if (srcPropValue === dstPropValue && dstHasOwnProp && srcHasOwnProp) {
         continue;
       }
 
-      if (oldObj !== undefined && !Object.prototype.hasOwnProperty.call(oldObj, property)
+      if (oldObj !== undefined && !hasOwnProperty.call(oldObj, property)
         && (dstHasOwnProp || srcPropValue !== PROP_IS_NOT_SET)) {
         oldObj[property] = dstHasOwnProp ? dstPropValue : PROP_IS_NOT_SET;
       }
@@ -43,12 +43,12 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
         dstObj[property] = srcPropValue;
       }
     } else {
-      if (!Object.prototype.hasOwnProperty.call(oldObj, property)) {
+      if (!hasOwnProperty.call(oldObj, property)) {
         oldObj[property] = {};
       }
 
       for (const prop in srcPropValue) {
-        if (Object.prototype.hasOwnProperty.call(srcPropValue, prop)) {
+        if (hasOwnProperty.call(srcPropValue, prop)) {
           items.push([dstPropValue, oldObj[property], srcPropValue, prop]);
         }
       }

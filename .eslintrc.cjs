@@ -63,6 +63,7 @@ module.exports = {
     'jsx-a11y/no-noninteractive-tabindex': 0,
     'jsx-a11y/no-noninteractive-element-interactions': 0,
 
+    'import/prefer-default-export': 0,
     'import/no-extraneous-dependencies': ['error', {
       devDependencies: [
         './**.config.ts',

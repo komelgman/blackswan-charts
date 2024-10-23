@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
 export function resize<T>(array: T[], newSize: number) {
   if (array.length !== newSize) {
     return;

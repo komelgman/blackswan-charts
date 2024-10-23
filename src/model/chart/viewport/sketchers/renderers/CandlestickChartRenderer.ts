@@ -7,7 +7,6 @@ import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import { resize as resizeArray } from '@/misc/array.resize';
 
-// eslint-disable-next-line import/prefer-default-export
 export class CandlestickChartRenderer implements ChartRenderer {
   get name(): string {
     return this.constructor.name;
