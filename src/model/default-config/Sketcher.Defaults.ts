@@ -1,6 +1,6 @@
 import HLineSketcher from '@/model/chart/viewport/sketchers/HLineSketcher';
 import LineSketcher from '@/model/chart/viewport/sketchers/LineSketcher';
-import OHLCvPlotSketcher from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
+import OHLCvPlotSketcher from '@/model/chart/viewport/sketchers/OHLCvPlotSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import VLineSketcher from '@/model/chart/viewport/sketchers/VLineSketcher';
 import type { DrawingType } from '@/model/datasource/types';

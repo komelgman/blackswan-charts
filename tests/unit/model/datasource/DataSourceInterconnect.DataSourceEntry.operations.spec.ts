@@ -11,7 +11,7 @@ import {
   type DrawingReference,
   isEqualDrawingReference,
 } from '@/model/datasource/types';
-import History from '@/model/history/History';
+import { History } from '@/model/history';
 import IdHelper from '@/model/tools/IdHelper';
 
 describe('DataSourceSharedEntries | DataSource entries operations', () => {

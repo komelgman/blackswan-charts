@@ -3,7 +3,7 @@ import type { HasMergeWith } from '@/model/type-defs/optional';
 import type {
   HistoricalIncident,
   HistoricalIncidentLifeHooks,
-} from '@/model/history/HistoricalIncident';
+} from '@/model/history';
 
 /**
  * Indicates that incident shouldn't be stored,
@@ -21,7 +21,7 @@ export const enum HistoricalProtocolSign {
   Approved,
 }
 
-export default class HistoricalProtocol {
+export class HistoricalProtocol {
   private readonly incidents: HistoricalIncident[] = [];
   private signValue: HistoricalProtocolSign = HistoricalProtocolSign.NotSigned;
 

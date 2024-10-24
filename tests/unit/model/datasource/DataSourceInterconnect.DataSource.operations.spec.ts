@@ -3,7 +3,7 @@ import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
-import History from '@/model/history/History';
+import { History } from '@/model/history';
 import IdHelper from '@/model/tools/IdHelper';
 
 describe('DataSourceSharedEntries | DataSource operations', () => {

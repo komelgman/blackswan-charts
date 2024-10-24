@@ -6,8 +6,7 @@ import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import { type ViewportOptions, Viewport } from '@/model/chart/viewport/Viewport';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DrawingType } from '@/model/datasource/types';
-import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import { AbstractHistoricalIncident, type HistoricalIncidentOptions } from '@/model/history';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;

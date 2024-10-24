@@ -1,13 +1,12 @@
-import InitialIncident from '@/model/history/incidents/InitialIncident';
-import type { HistoricalIncidentReport } from '@/model/history/HistoricalIncidentReport';
-import HistoricalProtocol, { HistoricalProtocolSign } from '@/model/history/HistoricalProtocol';
+import { InitialIncident } from '@/model/history/incidents';
+import { type HistoricalIncidentReport, HistoricalProtocol, HistoricalProtocolSign } from '@/model/history';
 
 export interface HistoricalProtocolOptions {
   protocolTitle: string;
   timeout?: number;
 }
 
-export default class History {
+export class History {
   private currentProtocol: HistoricalProtocol;
   private lastProtocolTitle: string | undefined;
   private lastTimeWhenProtocolWasUsed!: number;

@@ -5,7 +5,7 @@ import { ZoomType } from '@/model/chart/axis/AxisOptions';
 import type { UTCTimestamp } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
 import { PostConstruct } from '@/model/type-defs/decorators';
-import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
+import type { HistoricalIncidentReportProcessor } from '@/model/history';
 
 @PostConstruct
 export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {

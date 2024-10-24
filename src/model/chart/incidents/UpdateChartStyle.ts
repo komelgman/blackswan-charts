@@ -3,9 +3,7 @@ import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/model/type-defs';
 import { isEmpty } from '@/model/type-defs';
 import type { ChartStyle } from '@/model/chart/types/styles';
-import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
-import type { IsEmptyIncident } from '@/model/history/HistoricalProtocol';
+import { AbstractHistoricalIncident, type HistoricalIncidentOptions, type IsEmptyIncident } from '@/model/history';
 
 export interface UpdateChartStyleOptions extends HistoricalIncidentOptions {
   style: ChartStyle;

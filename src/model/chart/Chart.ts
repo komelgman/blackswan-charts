@@ -18,10 +18,12 @@ import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/types';
 import chartOptionsDefaults from '@/model/default-config/ChartStyle.Defaults';
 import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
-import History from '@/model/history/History';
-import type HistoricalProtocol from '@/model/history/HistoricalProtocol';
 import type { DeepPartial } from '@/model/type-defs';
-import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
+import {
+  type HistoricalIncidentReportProcessor,
+  type HistoricalProtocol,
+  History,
+} from '@/model/history';
 
 export interface ChartOptions {
   style: DeepPartial<ChartStyle>,

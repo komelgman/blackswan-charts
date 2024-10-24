@@ -1,8 +1,7 @@
 import { clone } from '@/misc/object.clone';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import { AbstractHistoricalIncident, type HistoricalIncidentOptions } from '@/model/history';
 
 export interface UpdatePriceAxisScaleOptions extends HistoricalIncidentOptions {
   axis: PriceAxis;

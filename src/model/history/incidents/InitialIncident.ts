@@ -1,7 +1,6 @@
-import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
+import { type HistoricalIncidentOptions, AbstractHistoricalIncident } from '@/model/history';
 
-export default class InitialIncident extends AbstractHistoricalIncident<HistoricalIncidentOptions> {
+export class InitialIncident extends AbstractHistoricalIncident<HistoricalIncidentOptions> {
   public constructor() {
     super({});
   }

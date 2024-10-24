@@ -4,10 +4,9 @@ import { merge } from '@/misc/object.merge';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
 import UpdateAxisRange from '@/model/chart/axis/incidents/UpdateAxisRange';
 import type { TextStyle } from '@/model/chart/types/styles';
-import type { HistoricalProtocolOptions } from '@/model/history/History';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/chart/types';
-import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
+import type { HistoricalProtocolOptions, HistoricalIncidentReportProcessor } from '@/model/history';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> {
   private readonly rangeValue: Range<T> = reactive({ from: -1 as T, to: 1 as T }) as Range<T>;

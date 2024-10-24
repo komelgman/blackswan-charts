@@ -12,7 +12,7 @@ import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Price } from '@/model/chart/types';
 import type { Wrapped } from '@/model/type-defs';
 import { PostConstruct } from '@/model/type-defs/decorators';
-import type { HistoricalIncidentReportProcessor } from '@/model/history/HistoricalIncidentReport';
+import type { HistoricalIncidentReportProcessor } from '@/model/history';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;

@@ -10,9 +10,7 @@ import {
   type DrawingReference,
   isEqualDrawingReference,
 } from '@/model/datasource/types';
-import type { HistoricalIncidentOptions } from '@/model/history/HistoricalIncident';
-import { AbstractHistoricalIncident } from '@/model/history/HistoricalIncident';
-import type { IsEmptyIncident } from '@/model/history/HistoricalProtocol';
+import { AbstractHistoricalIncident, type HistoricalIncidentOptions, type IsEmptyIncident } from '@/model/history';
 
 export interface UpdateOptions extends HistoricalIncidentOptions {
   ref: DrawingReference,

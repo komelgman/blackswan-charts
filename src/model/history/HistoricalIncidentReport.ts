@@ -1,8 +1,8 @@
 import type {
   HistoricalIncident,
   HistoricalIncidentLifeHooks,
-} from '@/model/history/HistoricalIncident';
-import type { HistoricalProtocolOptions } from '@/model/history/History';
+  HistoricalProtocolOptions,
+} from '@/model/history';
 
 export interface HistoricalIncidentReport {
   protocolOptions: HistoricalProtocolOptions;

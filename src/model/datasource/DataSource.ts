@@ -20,9 +20,8 @@ import type {
   DrawingOptions,
   DrawingReference,
 } from '@/model/datasource/types';
-import type { HistoricalProtocolOptions } from '@/model/history/History';
+import type { HistoricalIncidentReportProcessor, HistoricalProtocolOptions } from '@/model/history';
 import type IdHelper from '@/model/tools/IdHelper';
-import type { HistoricalIncidentReportProcessor } from '../history/HistoricalIncidentReport';
 
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;
