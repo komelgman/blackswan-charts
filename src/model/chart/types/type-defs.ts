@@ -1,4 +1,3 @@
-import type { HasStyle } from '@/model/type-defs/optional';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { Nominal } from '@/model/type-defs';
 import type { UTCTimestamp } from '@/model/chart/types/time';
@@ -49,12 +48,6 @@ export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Pric
   scale: PriceAxisScale;
 };
 
-export declare type VolumeIndicator<Style> = HasStyle<Style> & {
-  from: UTCTimestamp;
-  step: UTCTimestamp;
-  values: number[];
-};
-
 export interface CandleColors {
   wick: string;
   body: string;
@@ -62,10 +55,3 @@ export interface CandleColors {
 }
 
 export declare type CandleType = 'bearish' | 'bullish';
-
-export interface CandlestickChartStyle extends Record<CandleType, CandleColors> {
-  type: 'CandlestickChart';
-  showWick: boolean;
-  showBody: boolean;
-  showBorder: boolean;
-}

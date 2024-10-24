@@ -1,5 +1,6 @@
 import type { Graphics } from '@/model/datasource/types';
-import type { CandleColors, CandlestickChartStyle, Point } from '@/model/chart/types';
+import type { CandleColors, Point } from '@/model/chart/types';
+import type { CandlestickBarStyle } from '@/model/chart/viewport/sketchers/renderers';
 
 export interface CandleGraphicsOptions {
   x: number;
@@ -8,13 +9,13 @@ export interface CandleGraphicsOptions {
   yh: number;
   yl: number;
   yc: number;
-  style: CandlestickChartStyle;
+  style: CandlestickBarStyle;
 }
 
 export default class CandleGraphics implements Graphics {
   private barPath!: Path2D;
   private wickPath!: Path2D;
-  private style!: CandlestickChartStyle;
+  private style!: CandlestickBarStyle;
   private colors!: CandleColors;
 
   constructor(options: CandleGraphicsOptions) {

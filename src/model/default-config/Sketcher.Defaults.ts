@@ -1,16 +1,16 @@
 import HLineSketcher from '@/model/chart/viewport/sketchers/HLineSketcher';
 import LineSketcher from '@/model/chart/viewport/sketchers/LineSketcher';
-import OHLCvChartSketcher from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
+import OHLCvPlotSketcher from '@/model/chart/viewport/sketchers/OHLCvChartSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 import VLineSketcher from '@/model/chart/viewport/sketchers/VLineSketcher';
 import type { DrawingType } from '@/model/datasource/types';
-import SketcherGroup, { styleTypeAsSubtypeMatcher } from '@/model/chart/viewport/sketchers/SketcherGroup';
-import { CandlestickChartRenderer } from '@/model/chart/viewport/sketchers/renderers';
+import SketcherGroup, { matchSubtypeFromChartOptions } from '@/model/chart/viewport/sketchers/SketcherGroup';
+import { CandlestickPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 
 export default new Map<DrawingType, Sketcher>([
   [
-    'OHLCv', new SketcherGroup(styleTypeAsSubtypeMatcher)
-      .addSubtype('CandlestickChart', new OHLCvChartSketcher(new CandlestickChartRenderer())),
+    'OHLCv', new SketcherGroup(matchSubtypeFromChartOptions)
+      .addSubtype('CandlestickPlot', new OHLCvPlotSketcher(new CandlestickPlotRenderer())),
   ],
   ['Line', new LineSketcher()],
   ['HLine', new HLineSketcher()],

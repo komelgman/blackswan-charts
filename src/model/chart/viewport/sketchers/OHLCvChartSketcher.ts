@@ -3,18 +3,19 @@ import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
-import { type OHLCv, type OHLCvChart, type UTCTimestamp, type Range, barToTime, timeToBar, type OHCLvBar } from '@/model/chart/types';
-import type { ChartRenderer } from '@/model/chart/viewport/sketchers/renderers';
+import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHCLvBar, OHLCvPlotOptions } from '@/model/chart/types';
+import { barToTime, timeToBar } from '@/model/chart/types';
+import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 
-export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>> {
-  private readonly renderer: ChartRenderer;
+export default class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
+  private readonly renderer: OHLCvPlotRenderer<O>;
 
-  public constructor(renderer: ChartRenderer) {
+  public constructor(renderer: OHLCvPlotRenderer<O>) {
     super();
     this.renderer = renderer;
   }
 
-  public invalidate(entry: DataSourceEntry<OHLCvChart<any>>, viewport: Viewport): boolean {
+  public invalidate(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): boolean {
     const { timeAxis, dataSource } = viewport;
 
     const ohlc = entry.descriptor.options.data.content;
@@ -44,7 +45,7 @@ export default class OHLCvChartSketcher extends AbstractSketcher<OHLCvChart<any>
     return result;
   }
 
-  protected draw(entry: DataSourceEntry<OHLCvChart<any>>, viewport: Viewport): void {
+  protected draw(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }

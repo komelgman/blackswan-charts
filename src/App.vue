@@ -12,8 +12,9 @@ import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { CandlestickChartStyle, Line, OHLCvChart, Price, UTCTimestamp, VolumeIndicator } from '@/model/chart/types';
+import type { Line, OHLCvPlot, Price, UTCTimestamp } from '@/model/chart/types';
 import { LineBound, TimePeriod } from '@/model/chart/types';
+import type { CandlestickPlot } from '@/model/chart/viewport/sketchers/renderers';
 
 /**
  * todo
@@ -42,45 +43,47 @@ const drawings = {
         symbol: 'BINANCE:BTCUSDT',
         step: TimePeriod.m5,
       },
-      style: {
-        type: 'CandlestickChart',
-        showBody: true,
-        showBorder: true,
-        showWick: true,
-        bearish: {
-          wick: '#EF5350',
-          body: '#EF5350',
-          border: '#EF5350',
-        },
-        bullish: {
-          wick: '#26A29A',
-          body: '#26A29A',
-          border: '#26A29A',
+      plotOptions: {
+        type: 'CandlestickPlot',
+        barStyle: {
+          showBody: true,
+          showBorder: true,
+          showWick: true,
+          bearish: {
+            wick: '#EF5350',
+            body: '#EF5350',
+            border: '#EF5350',
+          },
+          bullish: {
+            wick: '#26A29A',
+            body: '#26A29A',
+            border: '#26A29A',
+          },
         },
       },
     },
     locked: false,
     visible: true,
     shareWith: '*' as '*',
-  } as DrawingOptions<OHLCvChart<CandlestickChartStyle>>, // DO<HasPipeOptions<OHLCvPipeOptions> & HasStyle<CandlestickChartStyle>>
+  } as DrawingOptions<CandlestickPlot>,
 
-  volumeBTCUSDT: {
-    id: 'volume1',
-    title: 'BTCUSDT Volume',
-    type: 'Volume',
-    data: {
-      from: 0 as UTCTimestamp,
-      step: 0.01 as UTCTimestamp,
-      values: [1000, 1500, 300],
-      style: {
-        type: 'Columns',
-        bearish: '#EF5350',
-        bullish: '#26A29A',
-      },
-    },
-    locked: false,
-    visible: true,
-  } as DrawingOptions<VolumeIndicator<any>>,
+  // volumeBTCUSDT: {
+  //   id: 'volume1',
+  //   title: 'BTCUSDT Volume',
+  //   type: 'OHLCv',
+  //   data: {
+  //     from: 0 as UTCTimestamp,
+  //     step: 0.01 as UTCTimestamp,
+  //     values: [1000, 1500, 300],
+  //     style: {
+  //       type: 'Columns',
+  //       bearish: '#EF5350',
+  //       bullish: '#26A29A',
+  //     },
+  //   },
+  //   locked: false,
+  //   visible: true,
+  // } as DrawingOptions<VolumeIndicator<ColumnsVolumeIndicatorStyle>>,
 
   redLineNoBound: {
     id: 'line1',
@@ -316,7 +319,7 @@ setTimeout((j: number) => {
     }
   });
 
-  mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+  mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
     e.descriptor.options.data.content = {
       available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
       loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
@@ -336,7 +339,7 @@ setTimeout((j: number) => {
   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
 
   const process = () => {
-    mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+    mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
       const values = e.descriptor.options.data.content?.values || [];
       const lastBar = values[values.length - 1];
       const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;

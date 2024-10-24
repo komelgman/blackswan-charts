@@ -5,8 +5,8 @@ import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type Sketcher from './Sketcher';
 
-export function styleTypeAsSubtypeMatcher(entry: DataSourceEntry): string {
-  return entry.descriptor.options.data.style.type;
+export function matchSubtypeFromChartOptions(entry: DataSourceEntry): string {
+  return entry.descriptor.options.data.plotOptions.type;
 }
 
 export default class SketcherGroup<T = any> implements Sketcher<T> {

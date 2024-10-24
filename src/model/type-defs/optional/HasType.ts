@@ -1,3 +1,3 @@
-export declare type HasType<TypeName> = {
+export interface HasType<TypeName extends string> {
   type: TypeName
-};
+}

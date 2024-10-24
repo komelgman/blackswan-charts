@@ -1,3 +1,3 @@
-export declare type HasStyle<T> = {
+export interface HasStyle<T> {
   style: T;
-};
+}
