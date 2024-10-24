@@ -329,7 +329,7 @@ setTimeout((j: number) => {
     };
   });
 
-  chartApi.timeAxis.update({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
+  chartApi.timeAxis.noHistoryManagedUpdate({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
 }, 100 * i++, i);
 
 setTimeout((j: number) => {

@@ -19,8 +19,8 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
     this.invalidateCache();
   }
 
-  public update(options: AxisOptions<UTCTimestamp>): void {
-    super.update(options);
+  public noHistoryManagedUpdate(options: AxisOptions<UTCTimestamp>): void {
+    super.noHistoryManagedUpdate(options);
 
     if (options.range !== undefined || options.screenSize?.main !== undefined) {
       this.invalidateCache();
@@ -60,7 +60,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
     const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
     const delta = size * zoomType.valueOf();
 
-    this.update({
+    this.noHistoryManagedUpdate({
       range: {
         from: from + delta as UTCTimestamp,
         to,
@@ -79,7 +79,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
     const unscaleK = size / screenSize;
     const revert = (screenPos: number): UTCTimestamp => (from + unscaleK * screenPos) as UTCTimestamp;
 
-    this.update({
+    this.noHistoryManagedUpdate({
       range: { from: revert(screenDelta), to: revert(screenSize + screenDelta) },
     });
   }

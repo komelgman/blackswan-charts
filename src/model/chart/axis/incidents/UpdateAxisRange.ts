@@ -26,12 +26,12 @@ export default class UpdateAxisRange<T extends number>
 
   protected applyIncident(): void {
     const { axis, range } = this.options;
-    axis.update({ range });
+    axis.noHistoryManagedUpdate({ range });
   }
 
   protected inverseIncident(): void {
     const { axis } = this.options;
-    axis.update({ range: this.initial });
+    axis.noHistoryManagedUpdate({ range: this.initial });
   }
 
   public mergeWith(op: UpdateAxisRange<T>): boolean {

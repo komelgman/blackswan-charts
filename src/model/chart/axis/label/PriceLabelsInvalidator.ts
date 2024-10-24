@@ -39,7 +39,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     const zeroPos: number = this.axis.translate(0 as Price);
     const shift = Math.sign(zeroPos) * (zeroPos % step);
 
-    this.axis.update({ contentWidth: { value: logicLabelSize.second } });
+    this.axis.noHistoryManagedUpdate({ contentWidth: { value: logicLabelSize.second } });
     for (let pos = shift; pos < screenSize; pos += step) {
       const labelInfo: LabelOptions<Price> = this.findLabel(this.axis.revert(pos));
       this.axis.labels.set(this.axis.translate(labelInfo.value), labelInfo.caption);

@@ -53,7 +53,7 @@ function onZoom(e: ZoomEvent): void {
 }
 
 function onResize(e: ResizeEvent): void {
-  viewportModel.priceAxis.update({ screenSize: { main: e.height, second: e.width } });
+  viewportModel.priceAxis.noHistoryManagedUpdate({ screenSize: { main: e.height, second: e.width } });
 }
 
 const cssVars = computed(() => {

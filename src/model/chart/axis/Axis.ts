@@ -23,7 +23,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     this.id = id;
   }
 
-  public update(options: Options): void {
+  public noHistoryManagedUpdate(options: Options): void {
     if (options.range !== undefined) {
       merge(this.rangeValue, { ...options.range });
     }

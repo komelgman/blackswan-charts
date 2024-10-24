@@ -14,11 +14,11 @@ export default class UpdatePriceAxisInverted extends AbstractHistoricalIncident<
 
   protected applyIncident(): void {
     const { axis, inverted } = this.options;
-    axis.update({ inverted });
+    axis.noHistoryManagedUpdate({ inverted });
   }
 
   protected inverseIncident(): void {
     const { axis, inverted } = this.options;
-    axis.update({ inverted: !inverted });
+    axis.noHistoryManagedUpdate({ inverted: !inverted });
   }
 }

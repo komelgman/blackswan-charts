@@ -19,11 +19,11 @@ export default class UpdatePriceAxisScale extends AbstractHistoricalIncident<Upd
 
   protected applyIncident(): void {
     const { axis, scale } = this.options;
-    axis.update({ scale });
+    axis.noHistoryManagedUpdate({ scale });
   }
 
   protected inverseIncident(): void {
     const { axis } = this.options;
-    axis.update({ scale: this.initial });
+    axis.noHistoryManagedUpdate({ scale: this.initial });
   }
 }

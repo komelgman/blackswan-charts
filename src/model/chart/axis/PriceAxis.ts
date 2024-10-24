@@ -87,8 +87,8 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
     return this.contentWidthValue;
   }
 
-  public update(options: PriceAxisOptions): void {
-    super.update(options);
+  public noHistoryManagedUpdate(options: PriceAxisOptions): void {
+    super.noHistoryManagedUpdate(options);
 
     if (options.inverted !== undefined) {
       Object.assign(this.invertedValue, { value: options.inverted ? 1 : -1 });
@@ -166,7 +166,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
     const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
     const delta = virtualSize * zoomType.valueOf();
 
-    this.update({
+    this.noHistoryManagedUpdate({
       range: {
         from: scalingFunction.revert(virtualFrom + delta * (screenPivot / screenSize)),
         to: scalingFunction.revert(virtualTo - delta * ((screenSize - screenPivot) / screenSize)),
@@ -186,7 +186,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
 
     const revert = (screenPos: number): Price => scalingFunction.revert(virtualFrom + unscaleK * screenPos);
 
-    this.update({
+    this.noHistoryManagedUpdate({
       range: {
         from: revert(this.inverted.value * screenDelta),
         to: revert(screenSize + this.inverted.value * screenDelta),

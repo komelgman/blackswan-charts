@@ -41,7 +41,7 @@ function onZoom(e: ZoomEvent): void {
 }
 
 function onResize(e: ResizeEvent): void {
-  timeAxis.update({ screenSize: { main: e.width, second: e.height } });
+  timeAxis.noHistoryManagedUpdate({ screenSize: { main: e.width, second: e.height } });
 }
 </script>
 
