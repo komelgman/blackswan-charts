@@ -316,7 +316,7 @@ setTimeout((j: number) => {
     }
   });
 
-  mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+  mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
     e.descriptor.options.data.content = {
       available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
       loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
@@ -336,7 +336,7 @@ setTimeout((j: number) => {
   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
 
   const process = () => {
-    mainDs.process(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
+    mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvChart<unknown>>) => {
       const values = e.descriptor.options.data.content?.values || [];
       const lastBar = values[values.length - 1];
       const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;

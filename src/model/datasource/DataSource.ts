@@ -204,8 +204,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     });
   }
 
-  // Note: this changes won't store in History
-  public process<T>(refs: DrawingReference[], processor: (entry: DataSourceEntry<T>) => void): void {
+  public noHistoryManagedEntriesProcess<T>(refs: DrawingReference[], processor: (entry: DataSourceEntry<T>) => void): void {
     this.checkWeAreNotInProxy();
     const entries: DataSourceEntry[] = [];
 
