@@ -1,16 +1,21 @@
+/* eslint-disable function-paren-newline */
 import HLineSketcher from '@/model/chart/viewport/sketchers/HLineSketcher';
 import LineSketcher from '@/model/chart/viewport/sketchers/LineSketcher';
 import OHLCvPlotSketcher from '@/model/chart/viewport/sketchers/OHLCvPlotSketcher';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import SketcherGroup, { subtypeFromPlotOptionsStyleType, subtypeFromPlotOptionsType } from '@/model/chart/viewport/sketchers/SketcherGroup';
 import VLineSketcher from '@/model/chart/viewport/sketchers/VLineSketcher';
+import { CandlestickPlotRenderer, ColumnsVolumeRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import type { DrawingType } from '@/model/datasource/types';
-import SketcherGroup, { matchSubtypeFromChartOptions } from '@/model/chart/viewport/sketchers/SketcherGroup';
-import { CandlestickPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 
 export default new Map<DrawingType, Sketcher>([
   [
-    'OHLCv', new SketcherGroup(matchSubtypeFromChartOptions)
-      .addSubtype('CandlestickPlot', new OHLCvPlotSketcher(new CandlestickPlotRenderer())),
+    'OHLCv', new SketcherGroup(subtypeFromPlotOptionsType)
+      .addSubtype('CandlestickPlot', new OHLCvPlotSketcher(new CandlestickPlotRenderer()))
+      .addSubtype(
+        'VolumeIndicator', new SketcherGroup(subtypeFromPlotOptionsStyleType)
+          .addSubtype('Columns', new OHLCvPlotSketcher(new ColumnsVolumeRenderer())),
+      ),
   ],
   ['Line', new LineSketcher()],
   ['HLine', new HLineSketcher()],

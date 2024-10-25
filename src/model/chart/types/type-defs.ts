@@ -48,10 +48,13 @@ export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Pric
   scale: PriceAxisScale;
 };
 
-export interface CandleColors {
-  wick: string;
+export interface BarColors {
   body: string;
   border: string;
+}
+
+export interface CandleColors extends BarColors {
+  wick: string;
 }
 
 export declare type CandleType = 'bearish' | 'bullish';

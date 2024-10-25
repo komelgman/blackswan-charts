@@ -12,9 +12,9 @@ import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { Line, OHLCvPlot, Price, UTCTimestamp } from '@/model/chart/types';
+import type { Line, OHLCv, OHLCvPlot, Price, UTCTimestamp } from '@/model/chart/types';
 import { LineBound, TimePeriod } from '@/model/chart/types';
-import type { CandlestickPlot } from '@/model/chart/viewport/sketchers/renderers';
+import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
 
 /**
  * todo
@@ -67,23 +67,34 @@ const drawings = {
     shareWith: '*' as '*',
   } as DrawingOptions<CandlestickPlot>,
 
-  // volumeBTCUSDT: {
-  //   id: 'volume1',
-  //   title: 'BTCUSDT Volume',
-  //   type: 'OHLCv',
-  //   data: {
-  //     from: 0 as UTCTimestamp,
-  //     step: 0.01 as UTCTimestamp,
-  //     values: [1000, 1500, 300],
-  //     style: {
-  //       type: 'Columns',
-  //       bearish: '#EF5350',
-  //       bullish: '#26A29A',
-  //     },
-  //   },
-  //   locked: false,
-  //   visible: true,
-  // } as DrawingOptions<VolumeIndicator<ColumnsVolumeIndicatorStyle>>,
+  volumeBTCUSDT: {
+    id: 'ohlcv2',
+    title: 'BTCUSDT Volume',
+    type: 'OHLCv',
+    data: {
+      pipeOptions: {
+        type: 'OHLCvPipeOptions',
+        symbol: 'BINANCE:BTCUSDT',
+        step: TimePeriod.m5,
+      },
+      plotOptions: {
+        type: 'VolumeIndicator',
+        style: {
+          type: 'Columns',
+          bearish: {
+            body: '#EF5350',
+            border: '#EF5350',
+          },
+          bullish: {
+            body: '#26A29A',
+            border: '#26A29A',
+          },
+        },
+      },
+    },
+    locked: false,
+    visible: true,
+  } as DrawingOptions<ColumnsVolumeIndicator>,
 
   redLineNoBound: {
     id: 'line1',
@@ -301,17 +312,27 @@ setTimeout((j: number) => {
 
   mainDs.beginTransaction();
   mainDs.add(drawings.ohlcvBTCUSDT);
-  // mainDs.add(drawings.volumeBTCUSDT);
+  mainDs.add(drawings.volumeBTCUSDT);
   mainDs.endTransaction();
 }, 100 * i++, i);
+
+const content: OHLCv = {
+  available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
+  loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
+  step: TimePeriod.m1,
+  values: [
+    [0.3, 0.5, 0.1, 0.15, 1000],
+    [0.15, 0.6, 0.0, 0.45, 1500],
+    [0.35, 0.7, 0.3, 0.55, 300],
+  ] as [Price, Price, Price, Price, number][],
+};
 
 setTimeout((j: number) => {
   console.log(`${j}) mainDs.process(['hlocv1'], ...); // init`);
 
   mainDs.addChangeEventListener((events) => {
     if (events.has(DataSourceChangeEventReason.DataInvalid)) {
-      const event = (events.get(DataSourceChangeEventReason.DataInvalid) || [])
-        .find((e) => e.entry.descriptor.ref === 'ohlcv1');
+      const event = (events.get(DataSourceChangeEventReason.DataInvalid) || []);
 
       if (event) {
         console.debug(event);
@@ -320,16 +341,11 @@ setTimeout((j: number) => {
   });
 
   mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
-    e.descriptor.options.data.content = {
-      available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
-      loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
-      step: TimePeriod.m1,
-      values: [
-        [0.3, 0.5, 0.1, 0.15, 1000],
-        [0.15, 0.6, 0.0, 0.45, 1500],
-        [0.35, 0.7, 0.3, 0.55, 300],
-      ] as [Price, Price, Price, Price, number][],
-    };
+    e.descriptor.options.data.content = content;
+  });
+
+  mainDs.noHistoryManagedEntriesProcess(['ohlcv2'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
+    e.descriptor.options.data.content = content;
   });
 
   chartApi.timeAxis.noHistoryManagedUpdate({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
@@ -339,22 +355,22 @@ setTimeout((j: number) => {
   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
 
   const process = () => {
-    mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
-      const values = e.descriptor.options.data.content?.values || [];
-      const lastBar = values[values.length - 1];
-      const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
-      const h = Math.max(lastBar[1], c);
-      const l = Math.min(lastBar[2], c);
+    const values = content?.values || [];
+    const lastBar = values[values.length - 1];
+    const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
+    const h = Math.max(lastBar[1], c);
+    const l = Math.min(lastBar[2], c);
 
-      // add new
-      // values.push(lastBar);
+    // add new
+    // values.push(lastBar);
 
-      // update last
-      values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
+    // update last
+    values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
 
-      // replace all
-      // values.splice(0, values.length, newItems);
-    });
+    // replace all
+    // values.splice(0, values.length, newItems);
+
+    mainDs.noHistoryManagedEntriesProcess(['ohlcv1', 'ohlcv2'], () => {});
   };
 
   setInterval(process, 1000);

@@ -5,16 +5,22 @@ import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
 
-export function matchSubtypeFromChartOptions(entry: DataSourceEntry): string {
+export declare type EntitySubtypeResolver = (entry: DataSourceEntry) => string | undefined;
+
+export function subtypeFromPlotOptionsType(entry: DataSourceEntry): string {
   return entry.descriptor.options.data.plotOptions.type;
 }
 
+export function subtypeFromPlotOptionsStyleType(entry: DataSourceEntry): string {
+  return entry.descriptor.options.data.plotOptions.style.type;
+}
+
 export default class SketcherGroup<T = any> implements Sketcher<T> {
-  private readonly matcher: (entry: DataSourceEntry<T>) => string | undefined;
+  private readonly subtypeResolver: EntitySubtypeResolver;
   private readonly subtypes: Map<string, Sketcher<T>> = new Map();
 
-  constructor(subtypeMatcher: (entry: DataSourceEntry<T>) => string | undefined) {
-    this.matcher = subtypeMatcher;
+  constructor(entitySubtypeResolver: EntitySubtypeResolver) {
+    this.subtypeResolver = entitySubtypeResolver;
   }
 
   public addSubtype(subtype: string, sketcher: Sketcher<T>): SketcherGroup {
@@ -23,7 +29,7 @@ export default class SketcherGroup<T = any> implements Sketcher<T> {
   }
 
   private getSubtypeSketcher(entry: DataSourceEntry<T>): Sketcher<T> {
-    const subtype = this.matcher(entry);
+    const subtype = this.subtypeResolver(entry);
     if (subtype === undefined) {
       throw new Error(`IllegalState: can\\'t detect subtype for entry ${JSON.stringify(entry)}`);
     }

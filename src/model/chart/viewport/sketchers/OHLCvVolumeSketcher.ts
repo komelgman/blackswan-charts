@@ -7,7 +7,7 @@ import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions 
 import { barToTime, timeToBar } from '@/model/chart/types';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 
-export default class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
+export default class OHLCvVolumeSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
   private readonly renderer: OHLCvPlotRenderer<O>;
 
   public constructor(renderer: OHLCvPlotRenderer<O>) {
@@ -33,7 +33,7 @@ export default class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends Abstr
 
     if (timeRangeFrom < ohlc.loaded.from && ohlc.loaded.from > ohlc.available.from) {
       // todo: set requested range to entry
-      // console.log({ timeRangeFrom, lf: ohlc.loaded.from, af: ohlc.available.from });
+      console.log({ timeRangeFrom, lf: ohlc.loaded.from, af: ohlc.available.from });
       result = true;
     }
 

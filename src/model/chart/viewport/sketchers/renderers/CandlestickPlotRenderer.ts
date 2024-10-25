@@ -1,5 +1,5 @@
 import { toRaw } from 'vue';
-import { type OHLCvPlot, type OHCLvBar, barToTime, type UTCTimestamp, type CandleType, type CandleColors } from '@/model/chart/types';
+import { type OHLCvPlot, type OHLCvBar, barToTime, type UTCTimestamp, type CandleType, type CandleColors } from '@/model/chart/types';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
@@ -25,7 +25,7 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
     return this.constructor.name;
   }
 
-  renderBarsToEntry(bars: OHCLvBar[], entry: DataSourceEntry<CandlestickPlot>, viewport: Viewport): void {
+  renderBarsToEntry(bars: OHLCvBar[], entry: DataSourceEntry<CandlestickPlot>, viewport: Viewport): void {
     const { descriptor, drawing } = entry;
     const { priceAxis, timeAxis } = viewport;
     const { range: timeRange } = timeAxis;

@@ -25,4 +25,4 @@ export declare type OHLCvPipeOptions = HasType<'OHLCvPipeOptions'> & {
   }
 };
 
-export declare type OHCLvBar = [time: UTCTimestamp, o: Price, h: Price, l: Price, c: Price, v?: number];
+export declare type OHLCvBar = [time: UTCTimestamp, o: Price, h: Price, l: Price, c: Price, v?: number];
