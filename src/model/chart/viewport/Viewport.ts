@@ -4,7 +4,7 @@ import type { PriceAxis, Inverted } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
-import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry, DrawingType, HandleId } from '@/model/datasource/types';
 

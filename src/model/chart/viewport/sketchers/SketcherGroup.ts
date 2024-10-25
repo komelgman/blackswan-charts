@@ -3,7 +3,7 @@ import type { ChartStyle } from '@/model/chart/types/styles';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
-import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type { Sketcher } from '@/model/chart/viewport/sketchers/Sketcher';
 
 export declare type EntitySubtypeResolver = (entry: DataSourceEntry) => string | undefined;
 
@@ -15,7 +15,7 @@ export function subtypeFromPlotOptionsStyleType(entry: DataSourceEntry): string 
   return entry.descriptor.options.data.plotOptions.style.type;
 }
 
-export default class SketcherGroup<T = any> implements Sketcher<T> {
+export class SketcherGroup<T = any> implements Sketcher<T> {
   private readonly subtypeResolver: EntitySubtypeResolver;
   private readonly subtypes: Map<string, Sketcher<T>> = new Map();
 

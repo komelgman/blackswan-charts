@@ -7,7 +7,7 @@ import { isProxy } from 'vue';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import { Chart } from '@/model/chart/Chart';
-import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
@@ -64,7 +64,7 @@ const drawings = {
     },
     locked: false,
     visible: true,
-    shareWith: '*' as '*',
+    shareWith: '*',
   } as DrawingOptions<CandlestickPlot>,
 
   volumeBTCUSDT: {
@@ -94,6 +94,7 @@ const drawings = {
     },
     locked: false,
     visible: true,
+    shareWith: '*',
   } as DrawingOptions<ColumnsVolumeIndicator>,
 
   redLineNoBound: {

@@ -2,14 +2,14 @@ import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { invertColor } from '@/misc/color';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
-import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
+import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
 import SquareHandle from '@/model/chart/viewport/sketchers/handles/SquareHandle';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type { VLine } from '@/model/chart/types';
 
-export default class VLineSketcher extends AbstractSketcher<VLine> {
+export class VLineSketcher extends AbstractSketcher<VLine> {
   protected draw(entry: DataSourceEntry<VLine>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');

@@ -11,7 +11,7 @@ import SwapPanes from '@/model/chart/incidents/SwapPanes';
 import TogglePane from '@/model/chart/incidents/TogglePane';
 import UpdateChartStyle from '@/model/chart/incidents/UpdateChartStyle';
 import type { ChartStyle } from '@/model/chart/types/styles';
-import type Sketcher from '@/model/chart/viewport/sketchers/Sketcher';
+import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import { Viewport, type ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';

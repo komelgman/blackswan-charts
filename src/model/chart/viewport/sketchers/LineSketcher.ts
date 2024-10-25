@@ -2,7 +2,7 @@ import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { inRange } from '@/misc/line-functions';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
-import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
+import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/AbstractLineGraphics';
 import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
 import SplineGraphics from '@/model/chart/viewport/sketchers/graphics/SplineGraphics';
@@ -28,7 +28,7 @@ declare type VisiblePoint = [
   type: 'Side' | 'StartBound' | 'EndBound',
 ];
 
-export default class LineSketcher extends AbstractSketcher<Line> {
+export class LineSketcher extends AbstractSketcher<Line> {
   protected draw(entry: DataSourceEntry<Line>, viewport: Viewport): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');

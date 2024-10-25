@@ -1,13 +1,13 @@
 import { toRaw } from 'vue';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import AbstractSketcher from '@/model/chart/viewport/sketchers/AbstractSketcher';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
 import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions } from '@/model/chart/types';
 import { barToTime, timeToBar } from '@/model/chart/types';
+import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 
-export default class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
+export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
   private readonly renderer: OHLCvPlotRenderer<O>;
 
   public constructor(renderer: OHLCvPlotRenderer<O>) {
@@ -74,6 +74,10 @@ export default class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends Abstr
       } as Drawing;
     }
 
+    this.renderBarsToEntry(bars, entry, viewport);
+  }
+
+  protected renderBarsToEntry(bars: OHLCvBar[], entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
     this.renderer.renderBarsToEntry(bars, entry, viewport);
   }
 
