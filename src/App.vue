@@ -12,8 +12,16 @@ import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { Line, OHLCv, OHLCvPlot, Price, UTCTimestamp } from '@/model/chart/types';
-import { LineBound, TimePeriod } from '@/model/chart/types';
+import type { Line, OHLCv, OHLCvPlot, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
+import {
+  LineBound,
+  OHLCV_RECORD_CLOSE,
+  OHLCV_RECORD_HIGH,
+  OHLCV_RECORD_LOW,
+  OHLCV_RECORD_OPEN,
+  OHLCV_RECORD_VOLUME,
+  TimePeriod,
+} from '@/model/chart/types';
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
 
 /**
@@ -358,15 +366,15 @@ setTimeout((j: number) => {
   const process = () => {
     const values = content?.values || [];
     const lastBar = values[values.length - 1];
-    const c = lastBar[3] + Math.random() * lastBar[3] * 0.2 - lastBar[3] * 0.1;
-    const h = Math.max(lastBar[1], c);
-    const l = Math.min(lastBar[2], c);
+    const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
+    const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
+    const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
 
     // add new
     // values.push(lastBar);
 
     // update last
-    values.splice(-1, 1, [lastBar[0], h, l, c, lastBar[4]] as [Price, Price, Price, Price, number]);
+    values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
 
     // replace all
     // values.splice(0, values.length, newItems);

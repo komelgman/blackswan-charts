@@ -1,5 +1,17 @@
 import { toRaw } from 'vue';
-import { type OHLCvPlot, type OHLCvBar, barToTime, type UTCTimestamp, type CandleType, type CandleColors } from '@/model/chart/types';
+import {
+  type OHLCvPlot,
+  type OHLCvBar,
+  barToTime,
+  type UTCTimestamp,
+  type CandleType,
+  type CandleColors,
+  OHLCV_BAR_TIMESTAMP,
+  OHLCV_BAR_OPEN,
+  OHLCV_BAR_HIGH,
+  OHLCV_BAR_LOW,
+  OHLCV_BAR_CLOSE,
+} from '@/model/chart/types';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
@@ -45,12 +57,12 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
     for (let i = 0; i < bars.length; ++i) {
       const bar = bars[i];
       const options: CandleGraphicsOptions = {
-        x: timeAxis.translate(bar[0]),
+        x: timeAxis.translate(bar[OHLCV_BAR_TIMESTAMP]),
         width: barWidth,
-        yo: priceAxis.translate(bar[1]),
-        yh: priceAxis.translate(bar[2]),
-        yl: priceAxis.translate(bar[3]),
-        yc: priceAxis.translate(bar[4]),
+        yo: priceAxis.translate(bar[OHLCV_BAR_OPEN]),
+        yh: priceAxis.translate(bar[OHLCV_BAR_HIGH]),
+        yl: priceAxis.translate(bar[OHLCV_BAR_LOW]),
+        yc: priceAxis.translate(bar[OHLCV_BAR_CLOSE]),
         style: plotOptions.barStyle,
       };
 

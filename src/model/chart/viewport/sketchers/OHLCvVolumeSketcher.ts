@@ -5,6 +5,8 @@ import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import { OHLCvPlotSketcher } from '@/model/chart/viewport/sketchers';
 
+export const DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR = 0.25;
+
 export class OHLCvVolumeSketcher<O extends OHLCvPlotOptions> extends OHLCvPlotSketcher<O> {
   public constructor(renderer: OHLCvPlotRenderer<O>) {
     super(renderer);
