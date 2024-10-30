@@ -108,10 +108,10 @@ provide('chartState', chartState);
 
 const unwatchers = new Map<PaneId, WatchStopHandle[]>();
 const contextMenuMap = new WeakMap<any, ContextMenuOptionsProvider>();
+let unwatch: WatchStopHandle;
 
 onMounted(() => {
-  // todo: unwatch all unhandled watchers
-  watch(
+  unwatch = watch(
     () => chartStyle.value.text.fontSize,
     (v) => {
       chartState.timeWidgetHeight = v + 16;
@@ -140,6 +140,8 @@ onUnmounted(() => {
       pane,
     });
   }
+
+  unwatch();
 });
 
 function getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
@@ -193,7 +195,7 @@ function onPaneRegEventListener(event: PaneRegistrationEvent): void {
   const { pane, type } = event;
   if (type === 'install') {
     if (!unwatchers.has(pane.id)) {
-      unwatchers.set(pane.id, []); // why there is used array???
+      unwatchers.set(pane.id, []);
     }
 
     (unwatchers.get(pane.id) as WatchStopHandle[]).push(
@@ -204,8 +206,8 @@ function onPaneRegEventListener(event: PaneRegistrationEvent): void {
       throw new Error(`Oops: !this.unwatchers.has(${pane.id})`);
     }
 
-    for (const unwatch of (unwatchers.get(pane.id) as WatchStopHandle[])) {
-      unwatch();
+    for (const unwatchCallback of (unwatchers.get(pane.id) as WatchStopHandle[])) {
+      unwatchCallback();
     }
   }
 }

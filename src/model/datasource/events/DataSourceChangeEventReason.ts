@@ -3,7 +3,6 @@ enum DataSourceChangeEventReason {
   AddEntry = 'AddEntry',
   UpdateEntry = 'UpdateEntry',
   RemoveEntry = 'RemoveEntry',
-  DataInvalid = 'DataInvalid',
   CacheReset = 'CacheReset',
   CacheInvalidated = 'CacheInvalidated',
 }

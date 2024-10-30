@@ -20,13 +20,15 @@ export declare type OHLCvPlotOptions = HasType<string>;
 
 export declare type OHLCvPlot<O extends OHLCvPlotOptions> = {
   plotOptions: O;
-  pipeOptions?: OHLCvPipeOptions;
+  contentOptions?: OHLCvContentOptions;
   content?: OHLCv;
 };
 
-export declare type OHLCvPipeOptions = HasType<'OHLCvPipeOptions'> & {
+export declare type OHLCvContentOptions = HasType<'OHLCvContentOptions'> & {
   symbol: string;
   step: TimePeriod;
+  provider?: string;
+  visibleTimeRange?: Range<UTCTimestamp>;
   extendedRange?: {
     barsBefore: number;
     barsAfther?: number;

@@ -17,7 +17,7 @@ import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/gra
 import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import { resize as resizeArray } from '@/misc/array.resize';
+import { resizeInPlace } from '@/misc/array.resizeInPlace';
 import type { HasType } from '@/model/type-defs/optional';
 
 export declare type CandlestickPlot = OHLCvPlot<CandlestickPlotOptions>;
@@ -47,7 +47,7 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
       throw new Error('Oops.');
     }
 
-    resizeArray(drawing?.parts, bars.length);
+    resizeInPlace(drawing?.parts, bars.length);
 
     const parts = drawing?.parts;
     const barSpace: number = timeAxis.translate(barToTime(timeRange.from, 1, ohlc.step) as UTCTimestamp);

@@ -16,14 +16,17 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
   }
 
   public invalidate(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): boolean {
-    const { timeAxis, dataSource } = viewport;
-
-    const ohlc = entry.descriptor.options.data.content;
-    if (!ohlc || this.needUpdateData(ohlc, timeAxis)) {
-      dataSource.requestDataUpdate(entry);
-    }
+    this.invalidateOHLCvContentOptions(entry, viewport);
 
     return super.invalidate(entry, viewport);
+  }
+
+  invalidateOHLCvContentOptions(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport) {
+    const { dataSource, timeAxis } = viewport;
+    const ohlc = entry.descriptor.options.data.content;
+    if (!ohlc || this.needUpdateData(ohlc, timeAxis)) {
+      dataSource.noHistoryManagedEntriesProcess([entry.descriptor.ref], () => {});
+    }
   }
 
   private needUpdateData(ohlc: OHLCv, timeAxis: TimeAxis): boolean {
@@ -33,7 +36,6 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
 
     if (timeRangeFrom < ohlc.loaded.from && ohlc.loaded.from > ohlc.available.from) {
       // todo: set requested range to entry
-      // console.log({ timeRangeFrom, lf: ohlc.loaded.from, af: ohlc.available.from });
       result = true;
     }
 

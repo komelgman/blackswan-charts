@@ -46,9 +46,10 @@ const drawings = {
     title: 'BTCUSDT',
     type: 'OHLCv',
     data: {
-      pipeOptions: {
-        type: 'OHLCvPipeOptions',
-        symbol: 'BINANCE:BTCUSDT',
+      contentOptions: {
+        type: 'OHLCvContentOptions',
+        symbol: 'BTCUSDT',
+        provider: 'BINANCE',
         step: TimePeriod.m5,
       },
       plotOptions: {
@@ -80,9 +81,10 @@ const drawings = {
     title: 'BTCUSDT Volume',
     type: 'OHLCv',
     data: {
-      pipeOptions: {
-        type: 'OHLCvPipeOptions',
-        symbol: 'BINANCE:BTCUSDT',
+      contentOptions: {
+        type: 'OHLCvContentOptions',
+        symbol: 'BTCUSDT',
+        provider: 'BINANCE',
         step: TimePeriod.m5,
       },
       plotOptions: {
@@ -338,16 +340,6 @@ const content: OHLCv = {
 
 setTimeout((j: number) => {
   console.log(`${j}) mainDs.process(['hlocv1'], ...); // init`);
-
-  mainDs.addChangeEventListener((events) => {
-    if (events.has(DataSourceChangeEventReason.DataInvalid)) {
-      const event = (events.get(DataSourceChangeEventReason.DataInvalid) || []);
-
-      if (event) {
-        console.debug(event);
-      }
-    }
-  });
 
   mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
     e.descriptor.options.data.content = content;

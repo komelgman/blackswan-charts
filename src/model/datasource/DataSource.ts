@@ -132,12 +132,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.fire(new Map([[CacheInvalidated, this.toChangeEvents(CacheInvalidated, entries)]]));
   }
 
-  public requestDataUpdate(entry: DataSourceEntry): void {
-    const { DataInvalid } = DataSourceChangeEventReason;
-
-    this.fire(new Map([[DataInvalid, this.toChangeEvents(DataInvalid, [entry])]]));
-  }
-
   public beginTransaction(options: HistoricalProtocolOptions | undefined = undefined): void {
     this.protocolOptions = options ?? { protocolTitle: this.getNewTransactionId() };
 

@@ -15,7 +15,7 @@ import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/rendere
 import { DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR } from '@/model/chart/viewport/sketchers';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import { resize as resizeArray } from '@/misc/array.resize';
+import { resizeInPlace } from '@/misc/array.resizeInPlace';
 import type { HasStyle, HasType } from '@/model/type-defs/optional';
 import type { VolumeColumnGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/VolumeColumnGraphics';
 import VolumeColumnGraphics from '@/model/chart/viewport/sketchers/graphics/VolumeColumnGraphics';
@@ -49,7 +49,7 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
       return;
     }
 
-    resizeArray(drawing?.parts, bars.length);
+    resizeInPlace(drawing?.parts, bars.length);
 
     const parts = drawing?.parts;
     const barSpace: number = timeAxis.translate(barToTime(timeRange.from, 1, ohlc.step) as UTCTimestamp);

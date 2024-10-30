@@ -15,8 +15,7 @@ export default {
     border: {
       lineWidth: 2,
       color: '#1010BB',
-      fill:
-      LineFillStyle.Solid,
+      fill: LineFillStyle.Solid,
     },
   },
   backgroundColor: '#131722',

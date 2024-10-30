@@ -70,11 +70,6 @@ export default class DataSourceInterconnect {
     if (removeEntries.length > 0) {
       this.removeEntries(removeEntries, srcDs);
     }
-
-    const updateDataRequestEntries = this.getNotSharedEventEntries(events.get(DataSourceChangeEventReason.DataInvalid) || []);
-    if (updateDataRequestEntries.length > 0) {
-      this.requestDataUpdateForEntries(updateDataRequestEntries, srcDs);
-    }
   };
 
   private getNotSharedEventEntries(events: DataSourceChangeEvent[]): DataSourceEntry[] {
@@ -95,12 +90,6 @@ export default class DataSourceInterconnect {
 
   private updateEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
     const action: Action = (dsse: DataSourceSharedEntries, ref: DrawingReference) => dsse.update(ref);
-
-    this.applyActionToSharedEntries(entries, srcDs, action);
-  }
-
-  private requestDataUpdateForEntries(entries: DataSourceEntry[], srcDs: DataSource): void {
-    const action: Action = (dsse: DataSourceSharedEntries, ref: DrawingReference) => dsse.requestDataUpdate(ref);
 
     this.applyActionToSharedEntries(entries, srcDs, action);
   }
