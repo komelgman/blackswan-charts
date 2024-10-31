@@ -289,7 +289,7 @@ describe('DataBinding', () => {
     expect(getContentSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing2.data.contentOptions as any as TestContentOptions));
   });
 
-  it('should call pipe.updateContentLoader when update entry contentOptions', () => {
+  it('should call pipe.updateLoaderOptions when update entry contentOptions', () => {
     const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
     const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
     const updateContentLoaderSpy = vi.spyOn(dataPipe, 'updateLoaderOptions');
@@ -309,6 +309,41 @@ describe('DataBinding', () => {
         },
       },
     });
+    ds2.endTransaction();
+
+    expect(stopContentLoadingSpy).toHaveBeenCalledTimes(0);
+    expect(startContentLoadingSpy).toHaveBeenCalledTimes(0);
+    expect(updateContentLoaderSpy).toHaveBeenCalledTimes(1);
+    expect(updateContentLoaderSpy).toHaveBeenNthCalledWith(1, [{
+      type: 'TestContentOptions',
+      contentKey: drawing4.data.contentOptions?.contentKey,
+      contentArgs: 'some value',
+    }, {
+      type: 'TestContentOptions',
+      contentKey: drawing5.data.contentOptions?.contentKey,
+    }]);
+  });
+
+  it('should call pipe.updateLoaderOptions when process entry contentOptions', () => {
+    const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
+    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
+    const updateContentLoaderSpy = vi.spyOn(dataPipe, 'updateLoaderOptions');
+    const binding = new DataBinding(chart, dataPipe);
+    const ds2 = new DataSource({ idHelper }, clone([drawing1, drawing3, drawing4, drawing5]));
+    chart.createPane(ds2);
+
+    stopContentLoadingSpy.mockClear();
+    startContentLoadingSpy.mockClear();
+    updateContentLoaderSpy.mockClear();
+
+    ds2.beginTransaction();
+    ds2.noHistoryManagedEntriesProcess(
+      [drawing4.id],
+      (e: DataSourceEntry) => {
+        e.descriptor.options.data.contentOptions.contentArgs = 'some value';
+      },
+      DataSourceChangeEventReason.DataInvalid,
+    );
     ds2.endTransaction();
 
     expect(stopContentLoadingSpy).toHaveBeenCalledTimes(0);

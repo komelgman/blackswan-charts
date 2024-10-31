@@ -197,7 +197,11 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     });
   }
 
-  public noHistoryManagedEntriesProcess<T>(refs: DrawingReference[], processor: (entry: DataSourceEntry<T>) => void): void {
+  public noHistoryManagedEntriesProcess<T>(
+    refs: DrawingReference[],
+    processor: (entry: DataSourceEntry<T>) => void,
+    reason: DataSourceChangeEventReason = DataSourceChangeEventReason.UpdateEntry,
+  ): void {
     this.checkWeAreNotInProxy();
     const entries: DataSourceEntry[] = [];
 
@@ -208,7 +212,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       entries.push(entry);
     }
 
-    this.addReason(DataSourceChangeEventReason.UpdateEntry, entries);
+    this.addReason(reason, entries);
     this.flush();
   }
 

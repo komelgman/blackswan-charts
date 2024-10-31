@@ -68,7 +68,10 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
       this.unbindEntry(ds, entry);
     }
 
-    const updatedEntries = this.getApplicableEventEntries(events.get(DataSourceChangeEventReason.UpdateEntry) || []);
+    const updatedEntries = this.getApplicableEventEntries([
+      ...(events.get(DataSourceChangeEventReason.UpdateEntry) || []),
+      ...(events.get(DataSourceChangeEventReason.DataInvalid) || []),
+    ]);
     for (const entry of updatedEntries) {
       this.tryUpdateEntryContentOptions(ds, entry);
     }

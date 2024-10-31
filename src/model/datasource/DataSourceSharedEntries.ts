@@ -100,6 +100,11 @@ export default class DataSourceSharedEntries {
     this.addReason(DataSourceChangeEventReason.RemoveEntry, [entry], true);
   }
 
+  public requestDataUpdate(ref: DrawingReference): void {
+    const entry: DataSourceEntry = this.storage.get(ref);
+    this.addReason(DataSourceChangeEventReason.DataInvalid, [entry], true);
+  }
+
   private createEntry(ref: DrawingReference, options: Omit<DrawingOptions, 'id'>): DataSourceEntry {
     if (isString(ref)) {
       return { descriptor: { ref, options } };

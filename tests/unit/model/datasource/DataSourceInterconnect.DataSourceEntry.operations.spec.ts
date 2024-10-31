@@ -544,4 +544,34 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
         drawing5.id,
       ]);
   });
+
+  it('test requestDataUpdate shared entry', () => {
+    ds1.noHistoryManagedEntriesProcess([drawing1.id], () => {}, DataSourceChangeEventReason.DataInvalid);
+
+    expect(ds1Spy).toHaveBeenCalledOnce();
+    expect(ds2Spy).toHaveBeenCalledOnce();
+    expect(ds3Spy).toHaveBeenCalledTimes(0);
+
+    expect(toRefsFromEventsMap(ds1Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([drawing1.id]);
+    expect(toRefsFromEventsMap(ds2Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([[ds1.id, drawing1.id]]);
+    expect(toRefsFromEventsMap(ds3Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([]);
+  });
+
+  it('test requestDataUpdate external shared entry', () => {
+    ds2.noHistoryManagedEntriesProcess([[ds1.id, drawing1.id]], () => {}, DataSourceChangeEventReason.DataInvalid);
+
+    expect(ds1Spy).toHaveBeenCalledOnce();
+    expect(ds2Spy).toHaveBeenCalledOnce();
+    expect(ds3Spy).toHaveBeenCalledTimes(0);
+
+    expect(toRefsFromEventsMap(ds1Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([drawing1.id]);
+    expect(toRefsFromEventsMap(ds2Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([[ds1.id, drawing1.id]]);
+    expect(toRefsFromEventsMap(ds3Events, DataSourceChangeEventReason.DataInvalid))
+      .toEqual([]);
+  });
 });

@@ -7,6 +7,7 @@ import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/model/type-defs';
+import { DataSourceChangeEventReason } from '@/model/datasource/events';
 
 export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
   private readonly renderer: OHLCvPlotRenderer<O>;
@@ -27,12 +28,16 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     const { dataSource } = viewport;
 
     if (optionsUpdate) {
-      toRaw(dataSource).noHistoryManagedEntriesProcess([entry.descriptor.ref], (e: DataSourceEntry<OHLCvPlot<any>>) => {
-        const contentOptions = e.descriptor.options.data?.contentOptions;
-        if (contentOptions) {
-          merge(contentOptions, optionsUpdate);
-        }
-      });
+      toRaw(dataSource).noHistoryManagedEntriesProcess(
+        [entry.descriptor.ref],
+        (e: DataSourceEntry<OHLCvPlot<any>>) => {
+          const contentOptions = e.descriptor.options.data?.contentOptions;
+          if (contentOptions) {
+            merge(contentOptions, optionsUpdate);
+          }
+        },
+        DataSourceChangeEventReason.DataInvalid,
+      );
     }
   }
 
