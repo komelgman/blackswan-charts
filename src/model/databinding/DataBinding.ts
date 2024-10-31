@@ -11,7 +11,7 @@ import {
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
 import { filterInPlace } from '@/misc/array.filterInPlace';
-import { clone } from '@/misc/object.clone';
+import type { DataPipe } from '@/model/databinding';
 
 export interface ContentOptions<T extends string> extends HasType<T> {}
 
@@ -20,19 +20,9 @@ export interface ExternalContent<O extends ContentOptions<string>, ContentType> 
   content?: ContentType;
 }
 
-export interface DataPipe<O extends ContentOptions<string>, ContentType> {
-  contentOptions(entry: DataSourceEntry): O | undefined;
-  canHandle(contentOptions: O): boolean;
-  toContentKey(contentOptions: O): string;
-  startContentLoading(contentOptions: O, contentUpdateCallback: (contentKey: string, content: ContentType) => void): void;
-  tryUpdateLoaderOptions(oldContentOptions: O, newContentOptions: O): void;
-  stopContentLoading(contentKey: string): void;
-  getContent(contentKey: string): ContentType;
-}
-
 export class DataBinding<O extends ContentOptions<string>, ContentType> {
   private readonly entriesByContentKey: Map<string, [DataSource, DataSourceEntry][]> = new Map();
-  private readonly entryRefToContentOptions: Map<string, O> = new Map();
+  private readonly entryRefToContentKey: Map<string, string> = new Map();
   private readonly pipe: DataPipe<O, ContentType>;
 
   constructor(chart: Chart, pipe: DataPipe<O, ContentType>) {
@@ -89,12 +79,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
       return;
     }
 
-    const prevContentOptions = this.entryRefToContentOptions.get(this.toEntryRef(ds, entry));
-    if (!prevContentOptions) {
-      return;
-    }
-
-    const prevContentKey = this.pipe.toContentKey(prevContentOptions);
+    const prevContentKey = this.entryRefToContentKey.get(this.toEntryRef(ds, entry));
     const curContentOptions = this.pipe.contentOptions(entry);
     if (!curContentOptions || !this.pipe.canHandle(curContentOptions)) {
       if (prevContentKey) {
@@ -112,7 +97,10 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
 
       this.tryBindEntry(ds, entry);
     } else {
-      this.pipe.tryUpdateLoaderOptions(prevContentOptions, curContentOptions);
+      const contentOptionsCollection: O[] = (this.entriesByContentKey.get(curContentKey) || [])
+        .map(([, e]) => e.descriptor.options.data.contentOptions);
+
+      this.pipe.updateLoaderOptions(contentOptionsCollection);
     }
   }
 
@@ -134,7 +122,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     }
 
     this.entriesByContentKey.get(contentKey)?.push([ds, entry]);
-    this.entryRefToContentOptions.set(this.toEntryRef(ds, entry), clone(contentOptions));
+    this.entryRefToContentKey.set(this.toEntryRef(ds, entry), contentKey);
 
     if (startLoading) {
       this.pipe.startContentLoading(contentOptions, this.updateContent.bind(this));
@@ -180,7 +168,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
   }
 
   private deleteFromEntryRefToContentOptions(ds: DataSource, entry: DataSourceEntry): void {
-    this.entryRefToContentOptions.delete(this.toEntryRef(ds, entry));
+    this.entryRefToContentKey.delete(this.toEntryRef(ds, entry));
   }
 
   private deleteFromEntriesByContentKey(contentKey: string, ds: DataSource, entry: DataSourceEntry): void {

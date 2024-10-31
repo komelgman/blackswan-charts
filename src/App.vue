@@ -352,30 +352,37 @@ setTimeout((j: number) => {
   chartApi.timeAxis.noHistoryManagedUpdate({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
 }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
 
-  const process = () => {
-    const values = content?.values || [];
-    const lastBar = values[values.length - 1];
-    const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
-    const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
-    const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
+//   mainDs.addChangeEventListener((e) => {
+//     const events = e.get(DataSourceChangeEventReason.UpdateEntry) || [];
+//     for (const event of events) {
+//       console.log(event);
+//     }
+//   });
 
-    // add new
-    // values.push(lastBar);
+//   const process = () => {
+//     const values = content?.values || [];
+//     const lastBar = values[values.length - 1];
+//     const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
+//     const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
+//     const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
 
-    // update last
-    values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
+//     // add new
+//     // values.push(lastBar);
 
-    // replace all
-    // values.splice(0, values.length, newItems);
+//     // update last
+//     values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
 
-    mainDs.noHistoryManagedEntriesProcess(['ohlcv1', 'ohlcv2'], () => {});
-  };
+//     // replace all
+//     // values.splice(0, values.length, newItems);
 
-  setInterval(process, 1000);
-}, 100 * i++, i);
+//     mainDs.noHistoryManagedEntriesProcess(['ohlcv1', 'ohlcv2'], () => {});
+//   };
+
+//   setInterval(process, 1000);
+// }, 100 * i++, i);
 
 // i += 50;
 //

@@ -10,7 +10,8 @@ import {
 } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
 import { Chart } from '@/model/chart/Chart';
-import { DataBinding, type ContentOptions, type DataPipe, type ExternalContent } from '@/model/databinding/DataBinding';
+import { DataBinding, type ContentOptions, type ExternalContent } from '@/model/databinding/DataBinding';
+import { type DataPipe } from '@/model/databinding/DataPipe';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 
 interface TestContentOptions extends ContentOptions<'TestContentOptions'> {
@@ -43,10 +44,8 @@ class TestDataPipe implements DataPipe<TestContentOptions, TestContentType> {
     contentUpdateCallback(contentKey, { message: contentKey.toUpperCase() });
   }
 
-  tryUpdateLoaderOptions(oldContentOptions: TestContentOptions, newContentOptions: TestContentOptions): void {
-    if (oldContentOptions.contentArgs !== newContentOptions.contentArgs) {
-      // update
-    }
+  updateLoaderOptions(newContentOptions: TestContentOptions[]): void {
+    // nothing
   }
 
   stopContentLoading(contentKey: string): void {
@@ -293,33 +292,36 @@ describe('DataBinding', () => {
   it('should call pipe.updateContentLoader when update entry contentOptions', () => {
     const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
     const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
-    const updateContentLoaderSpy = vi.spyOn(dataPipe, 'tryUpdateLoaderOptions');
+    const updateContentLoaderSpy = vi.spyOn(dataPipe, 'updateLoaderOptions');
     const binding = new DataBinding(chart, dataPipe);
+    const ds2 = new DataSource({ idHelper }, clone([drawing1, drawing3, drawing4, drawing5]));
+    chart.createPane(ds2);
+
     stopContentLoadingSpy.mockClear();
     startContentLoadingSpy.mockClear();
     updateContentLoaderSpy.mockClear();
 
-    ds1.beginTransaction();
-    ds1.update(drawing1.id, {
+    ds2.beginTransaction();
+    ds2.update(drawing4.id, {
       data: {
         contentOptions: {
           contentArgs: 'some value',
         },
       },
     });
-    ds1.endTransaction();
+    ds2.endTransaction();
 
     expect(stopContentLoadingSpy).toHaveBeenCalledTimes(0);
     expect(startContentLoadingSpy).toHaveBeenCalledTimes(0);
     expect(updateContentLoaderSpy).toHaveBeenCalledTimes(1);
-    expect(updateContentLoaderSpy).toHaveBeenNthCalledWith(1, {
+    expect(updateContentLoaderSpy).toHaveBeenNthCalledWith(1, [{
       type: 'TestContentOptions',
-      contentKey: drawing1.data.contentOptions?.contentKey,
+      contentKey: drawing4.data.contentOptions?.contentKey,
+      contentArgs: 'some value',
     }, {
       type: 'TestContentOptions',
-      contentKey: drawing1.data.contentOptions?.contentKey,
-      contentArgs: 'some value',
-    });
+      contentKey: drawing5.data.contentOptions?.contentKey,
+    }]);
   });
 
   it('should update entries in DataSource when updateContent called', () => {

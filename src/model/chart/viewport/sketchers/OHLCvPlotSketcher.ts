@@ -1,11 +1,12 @@
 import { toRaw } from 'vue';
-import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
-import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions } from '@/model/chart/types';
+import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions } from '@/model/chart/types';
 import { barToTime, timeToBar } from '@/model/chart/types';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
+import { merge } from '@/misc/object.merge';
+import type { DeepPartial } from '@/model/type-defs';
 
 export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
   private readonly renderer: OHLCvPlotRenderer<O>;
@@ -21,27 +22,37 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     return super.invalidate(entry, viewport);
   }
 
-  invalidateOHLCvContentOptions(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport) {
-    const { dataSource, timeAxis } = viewport;
-    const ohlc = entry.descriptor.options.data.content;
-    if (!ohlc || this.needUpdateData(ohlc, timeAxis)) {
-      dataSource.noHistoryManagedEntriesProcess([entry.descriptor.ref], () => {});
+  protected invalidateOHLCvContentOptions(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
+    const optionsUpdate = this.getContentOptionsUpdate(entry, viewport);
+    const { dataSource } = viewport;
+
+    if (optionsUpdate) {
+      toRaw(dataSource).noHistoryManagedEntriesProcess([entry.descriptor.ref], (e: DataSourceEntry<OHLCvPlot<any>>) => {
+        const contentOptions = e.descriptor.options.data?.contentOptions;
+        if (contentOptions) {
+          merge(contentOptions, optionsUpdate);
+        }
+      });
     }
   }
 
-  private needUpdateData(ohlc: OHLCv, timeAxis: TimeAxis): boolean {
+  protected getContentOptionsUpdate(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): DeepPartial<OHLCvContentOptions> | undefined {
+    const { timeAxis } = viewport;
+    const { content: ohlc, contentOptions: options } = entry.descriptor.options.data;
+
+    if (!ohlc || !options) {
+      return undefined;
+    }
+
     const timeRangeFrom = timeAxis.range.from;
     const timeRangeTo = timeAxis.range.to;
-    let result = false;
-
+    let result = undefined;
     if (timeRangeFrom < ohlc.loaded.from && ohlc.loaded.from > ohlc.available.from) {
       // todo: set requested range to entry
-      result = true;
     }
 
     if (timeRangeTo > ohlc.loaded.to && ohlc.loaded.to < ohlc.available.to) {
       // todo: set requested range to entry
-      result = true;
     }
 
     return result;
