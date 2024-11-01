@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { OHLCv, OHLCvContentOptions } from '@/model/chart/types';
+import { clone } from '@/misc/object.clone';
+import type { OHLCv, OHLCvContentOptions, UTCTimestamp } from '@/model/chart/types';
 import type { DataPipe } from '@/model/databinding';
 import type { DataSourceEntry } from '@/model/datasource/types';
 
 export interface OHLCvLoader {
+  updateContentOptions(contentOptions: OHLCvContentOptions): void;
   get content(): OHLCv;
   stop(): void;
 }
 
 export declare type LoaderFabric = (
+  contentKey: string,
   contentOptions: OHLCvContentOptions,
   contentUpdateCallback: (contentKey: string, content: OHLCv) => void
 ) => OHLCvLoader;
@@ -23,15 +26,11 @@ export class OHLCvPipe implements DataPipe<OHLCvContentOptions, OHLCv> {
 
   public contentOptions(entry: DataSourceEntry): OHLCvContentOptions | undefined {
     const { contentOptions } = entry.descriptor.options.data;
-    if (contentOptions && contentOptions.type === 'OHLCvContentOptions') {
-      return contentOptions;
-    }
-
-    return undefined;
+    return this.canHandle(contentOptions) ? contentOptions : undefined;
   }
 
-  public canHandle(contentOptions: OHLCvContentOptions): boolean {
-    return true;
+  protected canHandle(contentOptions: OHLCvContentOptions): boolean {
+    return contentOptions && contentOptions.type === 'OHLCvContentOptions';
   }
 
   public toContentKey(contentOptions: OHLCvContentOptions): string {
@@ -40,11 +39,60 @@ export class OHLCvPipe implements DataPipe<OHLCvContentOptions, OHLCv> {
   }
 
   public startContentLoading(contentOptions: OHLCvContentOptions, contentUpdateCallback: (contentKey: string, content: OHLCv) => void): void {
-    this.loaders.set(this.toContentKey(contentOptions), this.loaderFabric(contentOptions, contentUpdateCallback));
+    const loader = this.loaderFabric(this.toContentKey(contentOptions), contentOptions, contentUpdateCallback);
+    console.log({ startedWith: this.toContentKey(contentOptions) });
+    if (loader) {
+      this.loaders.set(this.toContentKey(contentOptions), loader);
+    } else {
+      throw new Error(`IllagalState: no loader created for ${contentOptions}`);
+    }
   }
 
   public updateLoaderOptions(newContentOptions: OHLCvContentOptions[]): void {
-    // todo
+    if (newContentOptions.length === 0) {
+      throw new Error('IllegalState: newContentOptions is empty');
+    }
+
+    const contentKey = this.toContentKey(newContentOptions[0]);
+    const loader = this.getLoaderByKey(contentKey);
+
+    loader.updateContentOptions(this.mergeOptions(newContentOptions));
+  }
+
+  protected mergeOptions(contentOptionsCollection: OHLCvContentOptions[]): OHLCvContentOptions {
+    const { type, symbol, step, provider } = contentOptionsCollection[0];
+
+    let extendedRange;
+    let visibleTimeRange;
+    for (let i = 0; i < contentOptionsCollection.length; ++i) {
+      const { extendedRange: er, visibleTimeRange: vtr } = contentOptionsCollection[i];
+      if (!extendedRange && er) {
+        extendedRange = clone(er);
+      } else if (extendedRange && er) {
+        extendedRange.barsBefore = Math.max(extendedRange.barsBefore, er.barsBefore);
+        if (er.barsAfther) {
+          extendedRange.barsAfther = extendedRange.barsAfther
+            ? Math.max(extendedRange.barsAfther, er.barsAfther)
+            : er.barsAfther;
+        }
+      }
+
+      if (!visibleTimeRange && vtr) {
+        visibleTimeRange = clone(vtr);
+      } else if (visibleTimeRange && vtr) {
+        visibleTimeRange.from = Math.min(visibleTimeRange.from, vtr.from) as UTCTimestamp;
+        visibleTimeRange.to = Math.max(visibleTimeRange.to, vtr.to) as UTCTimestamp;
+      }
+    }
+
+    return {
+      type,
+      symbol,
+      step,
+      provider,
+      extendedRange,
+      visibleTimeRange,
+    };
   }
 
   public stopContentLoading(contentKey: string): void {
@@ -56,12 +104,8 @@ export class OHLCvPipe implements DataPipe<OHLCvContentOptions, OHLCv> {
     return this.getLoaderByKey(contentKey).content;
   }
 
-  private getLoader(contentOptions: OHLCvContentOptions): OHLCvLoader {
-    return this.getLoaderByKey(this.toContentKey(contentOptions));
-  }
-
   private getLoaderByKey(contentKey: string): OHLCvLoader {
-    if (this.loaders.has(contentKey)) {
+    if (!this.loaders.has(contentKey)) {
       throw new Error(`IllegalState: no content loader by ${contentKey}`);
     }
 

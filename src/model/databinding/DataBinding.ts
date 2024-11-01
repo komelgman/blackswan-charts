@@ -12,6 +12,7 @@ import {
 } from '@/model/datasource/events';
 import { filterInPlace } from '@/misc/array.filterInPlace';
 import type { DataPipe } from '@/model/databinding';
+import { retry } from '@/misc/function.retry';
 
 export interface ContentOptions<T extends string> extends HasType<T> {}
 
@@ -84,7 +85,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
 
     const prevContentKey = this.entryRefToContentKey.get(this.toEntryRef(ds, entry));
     const curContentOptions = this.pipe.contentOptions(entry);
-    if (!curContentOptions || !this.pipe.canHandle(curContentOptions)) {
+    if (!curContentOptions) {
       if (prevContentKey) {
         this.unbindEntryByContentKey(ds, entry, prevContentKey);
       }
@@ -113,7 +114,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     }
 
     const contentOptions = this.pipe.contentOptions(entry);
-    if (!contentOptions || !this.pipe.canHandle(contentOptions)) {
+    if (!contentOptions) {
       return;
     }
 
@@ -128,10 +129,24 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     this.entryRefToContentKey.set(this.toEntryRef(ds, entry), contentKey);
 
     if (startLoading) {
-      this.pipe.startContentLoading(contentOptions, this.updateContent.bind(this));
+      this.pipe.startContentLoading(contentOptions, this.updateContentWithRetry.bind(this));
     } else {
-      this.updateContent(contentKey, this.pipe.getContent(contentKey));
+      this.updateContentWithRetry(contentKey, this.pipe.getContent(contentKey));
     }
+  }
+
+  private updateContentWithRetry(contentKey: string, content: ContentType) {
+    const retryOptions = {
+      retries: 5,
+      factor: 2,
+      minTimeout: 10,
+      maxTimeout: 500,
+    };
+
+    retry(retryOptions, async () => this.updateContent(contentKey, content))
+      .catch((error) => {
+        console.error('Failed to update content after retries:', error);
+      });
   }
 
   private updateContent(contentKey: string, content: ContentType) {
@@ -153,7 +168,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     this.deleteFromEntryRefToContentOptions(ds, entry);
 
     const contentOptions = this.pipe.contentOptions(entry);
-    if (!contentOptions || !this.pipe.canHandle(contentOptions)) {
+    if (!contentOptions) {
       return;
     }
 
@@ -183,6 +198,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     filterInPlace(storedEntries, ([storedDs, storedEntry]) => storedDs.id !== ds.id || storedEntry.descriptor.ref !== entry.descriptor.ref);
 
     if (storedEntries.length === 0) {
+      this.entriesByContentKey.delete(contentKey);
       this.pipe.stopContentLoading(contentKey);
     }
   }

@@ -12,7 +12,7 @@ import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { Line, OHLCv, OHLCvPlot, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
+import type { Line, OHLCv, OHLCvContentOptions, OHLCvPlot, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
 import {
   LineBound,
   OHLCV_RECORD_CLOSE,
@@ -23,6 +23,8 @@ import {
   TimePeriod,
 } from '@/model/chart/types';
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
+import { DataBinding } from '@/model/databinding';
+import { OHLCvPipe, type LoaderFabric } from '@/model/databinding/pipes/OHLCvPipe';
 
 /**
  * todo
@@ -206,6 +208,59 @@ const drawings = {
   },
 };
 
+const fabric: LoaderFabric = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
+  const content: OHLCv = {
+    available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
+    loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
+    step: TimePeriod.m1,
+    values: [
+      [0.3, 0.5, 0.1, 0.15, 1000],
+      [0.15, 0.6, 0.0, 0.45, 1500],
+      [0.35, 0.7, 0.3, 0.55, 300],
+    ] as [Price, Price, Price, Price, number][],
+  };
+
+  const process = () => {
+    const values = content?.values || [];
+    const lastBar = values[values.length - 1];
+    const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
+    const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
+    const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
+
+    // add new
+    // values.push(lastBar);
+
+    // update last
+    values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
+
+    // replace all
+    // values.splice(0, values.length, newItems);
+
+    callback(ck, content);
+  };
+
+  const intervalId = setInterval(process, 1000);
+
+  return {
+    stop: () => {
+      clearInterval(intervalId);
+    },
+    content,
+    updateContentOptions: (newContentOptions: OHLCvContentOptions) => {
+      // nothing
+    },
+  };
+};
+
+const binding = new DataBinding(chartApi, new OHLCvPipe(fabric));
+
+mainDs.addChangeEventListener((e) => {
+  const events = e.get(DataSourceChangeEventReason.DataInvalid) || [];
+  for (const event of events) {
+    console.log(event);
+  }
+});
+
 chartApi.createPane(mainDs, {});
 
 mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
@@ -325,63 +380,8 @@ setTimeout((j: number) => {
   mainDs.add(drawings.ohlcvBTCUSDT);
   mainDs.add(drawings.volumeBTCUSDT);
   mainDs.endTransaction();
-}, 100 * i++, i);
-
-const content: OHLCv = {
-  available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
-  loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
-  step: TimePeriod.m1,
-  values: [
-    [0.3, 0.5, 0.1, 0.15, 1000],
-    [0.15, 0.6, 0.0, 0.45, 1500],
-    [0.35, 0.7, 0.3, 0.55, 300],
-  ] as [Price, Price, Price, Price, number][],
-};
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.process(['hlocv1'], ...); // init`);
-
-  mainDs.noHistoryManagedEntriesProcess(['ohlcv1'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
-    e.descriptor.options.data.content = content;
-  });
-
-  mainDs.noHistoryManagedEntriesProcess(['ohlcv2'], (e: DataSourceEntry<OHLCvPlot<any>>) => {
-    e.descriptor.options.data.content = content;
-  });
 
   chartApi.timeAxis.noHistoryManagedUpdate({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.process('hlocv1', ...); // update`);
-
-  mainDs.addChangeEventListener((e) => {
-    const events = e.get(DataSourceChangeEventReason.DataInvalid) || [];
-    for (const event of events) {
-      console.log(event);
-    }
-  });
-
-  const process = () => {
-    const values = content?.values || [];
-    const lastBar = values[values.length - 1];
-    const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
-    const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
-    const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
-
-    // add new
-    // values.push(lastBar);
-
-    // update last
-    values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
-
-    // replace all
-    // values.splice(0, values.length, newItems);
-
-    mainDs.noHistoryManagedEntriesProcess(['ohlcv1', 'ohlcv2'], () => {});
-  };
-
-  setInterval(process, 1000);
 }, 100 * i++, i);
 
 // i += 50;
