@@ -1,62 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { clone } from '@/misc/object.clone';
 import type { OHLCv, OHLCvContentOptions, UTCTimestamp } from '@/model/chart/types';
-import type { DataPipe } from '@/model/databinding';
-import type { DataSourceEntry } from '@/model/datasource/types';
+import { AbstractDataPipe } from '@/model/databinding';
 
-export interface OHLCvLoader {
-  updateContentOptions(contentOptions: OHLCvContentOptions): void;
-  get content(): OHLCv;
-  stop(): void;
-}
-
-export declare type LoaderFabric = (
-  contentKey: string,
-  contentOptions: OHLCvContentOptions,
-  contentUpdateCallback: (contentKey: string, content: OHLCv) => void
-) => OHLCvLoader;
-
-export class OHLCvPipe implements DataPipe<OHLCvContentOptions, OHLCv> {
-  private readonly loaders: Map<string, OHLCvLoader> = new Map();
-  private readonly loaderFabric: LoaderFabric;
-
-  constructor(loaderFabric: LoaderFabric) {
-    this.loaderFabric = loaderFabric;
-  }
-
-  public contentOptions(entry: DataSourceEntry): OHLCvContentOptions | undefined {
-    const { contentOptions } = entry.descriptor.options.data;
-    return this.canHandle(contentOptions) ? contentOptions : undefined;
-  }
-
-  protected canHandle(contentOptions: OHLCvContentOptions): boolean {
-    return contentOptions && contentOptions.type === 'OHLCvContentOptions';
-  }
-
+export class OHLCvPipe extends AbstractDataPipe<OHLCvContentOptions, OHLCv> {
   public toContentKey(contentOptions: OHLCvContentOptions): string {
     const { provider, symbol, step } = contentOptions;
     return `${provider ? `${provider}:` : ''}${symbol}:${step}`;
   }
 
-  public startContentLoading(contentOptions: OHLCvContentOptions, contentUpdateCallback: (contentKey: string, content: OHLCv) => void): void {
-    const loader = this.loaderFabric(this.toContentKey(contentOptions), contentOptions, contentUpdateCallback);
-    console.log({ startedWith: this.toContentKey(contentOptions) });
-    if (loader) {
-      this.loaders.set(this.toContentKey(contentOptions), loader);
-    } else {
-      throw new Error(`IllagalState: no loader created for ${contentOptions}`);
-    }
-  }
-
-  public updateLoaderOptions(newContentOptions: OHLCvContentOptions[]): void {
-    if (newContentOptions.length === 0) {
-      throw new Error('IllegalState: newContentOptions is empty');
-    }
-
-    const contentKey = this.toContentKey(newContentOptions[0]);
-    const loader = this.getLoaderByKey(contentKey);
-
-    loader.updateContentOptions(this.mergeOptions(newContentOptions));
+  protected canHandle(contentOptions: OHLCvContentOptions): boolean {
+    return contentOptions && contentOptions.type === 'OHLCvContentOptions';
   }
 
   protected mergeOptions(contentOptionsCollection: OHLCvContentOptions[]): OHLCvContentOptions {
@@ -93,22 +47,5 @@ export class OHLCvPipe implements DataPipe<OHLCvContentOptions, OHLCv> {
       extendedRange,
       visibleTimeRange,
     };
-  }
-
-  public stopContentLoading(contentKey: string): void {
-    this.getLoaderByKey(contentKey).stop();
-    this.loaders.delete(contentKey);
-  }
-
-  public getContent(contentKey: string): OHLCv {
-    return this.getLoaderByKey(contentKey).content;
-  }
-
-  private getLoaderByKey(contentKey: string): OHLCvLoader {
-    if (!this.loaders.has(contentKey)) {
-      throw new Error(`IllegalState: no content loader by ${contentKey}`);
-    }
-
-    return this.loaders.get(contentKey) as OHLCvLoader;
   }
 }

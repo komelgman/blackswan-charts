@@ -10,9 +10,9 @@ import { Chart } from '@/model/chart/Chart';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
-import type { DataSourceEntry, DrawingOptions, DrawingType } from '@/model/datasource/types';
+import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
-import type { Line, OHLCv, OHLCvContentOptions, OHLCvPlot, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
+import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
 import {
   LineBound,
   OHLCV_RECORD_CLOSE,
@@ -23,13 +23,14 @@ import {
   TimePeriod,
 } from '@/model/chart/types';
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
-import { DataBinding } from '@/model/databinding';
-import { OHLCvPipe, type LoaderFabric } from '@/model/databinding/pipes/OHLCvPipe';
+import { DataBinding, type ContentLoaderFabric } from '@/model/databinding';
+import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
 
 /**
  * todo
  * ?need check, that is actually needed!
  * Separate line bounds and line definition, snap definition to high timeframe, to eliminate rounding issues
+ *
  * Time axis marks
  * Price axis marks
  * Moving lines in scale that's different to line scale (mouse point should keep on line)
@@ -208,7 +209,7 @@ const drawings = {
   },
 };
 
-const fabric: LoaderFabric = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
+const fabric: ContentLoaderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
   const content: OHLCv = {
     available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
     loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
@@ -240,14 +241,17 @@ const fabric: LoaderFabric = (ck: string, co: OHLCvContentOptions, callback: (ck
   };
 
   const intervalId = setInterval(process, 1000);
+  let contentOptions = co;
 
   return {
+    options: contentOptions,
+    content,
     stop: () => {
       clearInterval(intervalId);
     },
-    content,
     updateContentOptions: (newContentOptions: OHLCvContentOptions) => {
-      // nothing
+      console.log(newContentOptions);
+      contentOptions = newContentOptions;
     },
   };
 };
