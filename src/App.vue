@@ -389,6 +389,13 @@ setTimeout((j: number) => {
   chartApi.timeAxis.noHistoryManagedUpdate({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
 }, 100 * i++, i);
 
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.reset();`);
+
+  mainDs.reset();
+  mainDs.reset();
+}, 100 * i++, i);
+
 // i += 50;
 //
 // setTimeout((j: number) => {

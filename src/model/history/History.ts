@@ -7,14 +7,36 @@ export interface HistoricalProtocolOptions {
 }
 
 export class History {
-  private currentProtocol: HistoricalProtocol;
+  private currentProtocolValue: HistoricalProtocol;
   private lastProtocolTitle: string | undefined;
   private lastTimeWhenProtocolWasUsed!: number;
 
   constructor() {
-    this.currentProtocol = new HistoricalProtocol('big-boom');
-    this.currentProtocol.addIncident(new InitialIncident());
-    this.currentProtocol.trySign();
+    this.currentProtocolValue = new HistoricalProtocol('big-boom');
+    this.currentProtocolValue.addIncident(new InitialIncident());
+    this.currentProtocolValue.trySign();
+  }
+
+  private set currentProtocol(value: HistoricalProtocol) {
+    this.currentProtocolValue = value;
+  }
+
+  private get currentProtocol(): HistoricalProtocol {
+    while (this.currentProtocolValue.sign === HistoricalProtocolSign.Rejected) {
+      const prev = this.currentProtocolValue?.prev;
+      const next = this.currentProtocolValue?.next;
+
+      if (prev) {
+        prev.next = next;
+        this.currentProtocolValue = prev;
+      }
+
+      if (next) {
+        next.prev = prev;
+      }
+    }
+
+    return this.currentProtocolValue;
   }
 
   public getProtocol(options: HistoricalProtocolOptions): HistoricalProtocol {

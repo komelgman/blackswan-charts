@@ -21,7 +21,6 @@ import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
 import type { DeepPartial } from '@/model/type-defs';
 import {
   type HistoricalIncidentReportProcessor,
-  type HistoricalProtocol,
   History,
 } from '@/model/history';
 
@@ -157,10 +156,9 @@ export class Chart {
   public togglePane(paneId: PaneId): void {
     const paneIndex = this.indexByPaneId(paneId);
     const initialSizes = this.getPanesSizes();
-    const protocol: HistoricalProtocol = this.history
-      .getProtocol({ protocolTitle: 'chart-controller-toggle-pane' });
 
-    protocol
+    this.history
+      .getProtocol({ protocolTitle: 'chart-controller-toggle-pane' })
       .addIncident(new TogglePane({
         panes: this.panes,
         paneIndex,
@@ -169,9 +167,8 @@ export class Chart {
         panes: this.panes,
         initial: initialSizes,
         changed: this.getPanesSizes(),
-      }));
-
-    protocol.trySign();
+      }))
+      .trySign();
   }
 
   public paneModel(paneId: PaneId): Viewport {

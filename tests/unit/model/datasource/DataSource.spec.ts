@@ -10,7 +10,7 @@ import {
   type DrawingReference,
   isEqualDrawingReference,
 } from '@/model/datasource/types';
-import { History } from '@/model/history';
+import { HistoricalProtocolSign, History } from '@/model/history';
 import IdHelper from '@/model/tools/IdHelper';
 
 describe('DataSource', () => {
@@ -164,17 +164,17 @@ describe('DataSource', () => {
     expect(() => ds.endTransaction())
       .toThrowError(/^Invalid state, dataSource.beginTransaction\(\) should be used before$/);
     expect(history['currentProtocol'].title).toEqual('big-boom');
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
 
     ds.beginTransaction({ protocolTitle: 'test-incident' });
 
     expect(history['currentProtocol'].title).toEqual('test-incident');
-    expect(history['currentProtocol'].sign).toBeFalsy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.NotSigned);
 
-    ds.endTransaction();
+    ds.endTransaction(); // reject empty protocol
 
-    expect(history['currentProtocol'].title).toEqual('test-incident');
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].title).toEqual('big-boom');
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
   });
 
   it('test add()/remove() entry', () => {
@@ -206,13 +206,13 @@ describe('DataSource', () => {
       .toEqual([drawing1.id, drawing2.id, drawing3.id, newId]);
     expect(storage.head?.value.descriptor.ref).toEqual(drawing1.id);
     expect(storage.tail?.value.descriptor.ref).toEqual(newId);
-    expect(history['currentProtocol'].sign).toBeFalsy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.NotSigned);
 
     ds.endTransaction();
 
     expect(listenerSpy).toHaveBeenCalledOnce();
     expect(addedEntries).toEqual([newId]);
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
 
     ds.beginTransaction();
     ds.remove(drawing1.id);
@@ -221,7 +221,7 @@ describe('DataSource', () => {
 
     expect(listenerSpy).toHaveBeenCalledTimes(2);
     expect(removedEntries).toEqual([drawing1.id, newId]);
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([drawing2.id, drawing3.id]);
     expect(storage.head?.value.descriptor.ref).toEqual(drawing2.id);
@@ -234,7 +234,7 @@ describe('DataSource', () => {
 
     expect(listenerSpy).toHaveBeenCalledTimes(3);
     expect(removedEntries).toEqual([drawing2.id, drawing3.id]);
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([]);
     expect(storage.head).toBeUndefined();
@@ -265,13 +265,13 @@ describe('DataSource', () => {
     const updated = getDSEntry(drawing1.id);
     expect(updated.descriptor.options.title).toEqual('test hline - updated');
     expect(updated.descriptor.valid).toBeFalsy();
-    expect(history['currentProtocol'].sign).toBeFalsy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.NotSigned);
 
     ds.endTransaction();
 
     expect(listenerSpy).toHaveBeenCalledOnce();
     expect(updatedEntries).toEqual([drawing1.id]);
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
   });
 
   it('test clone() entry', () => {
@@ -296,13 +296,13 @@ describe('DataSource', () => {
     expect(cloned.descriptor.ref).toEqual('test4');
     expect(cloned.descriptor.options).toEqual(entry.descriptor.options);
     expect(cloned.descriptor.valid).toBeFalsy();
-    expect(history['currentProtocol'].sign).toBeFalsy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.NotSigned);
 
     ds.endTransaction();
 
     expect(listenerSpy).toHaveBeenCalledOnce();
     expect(clonedEntries).toEqual(['test4']);
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
   });
 
   it('test reset()', () => {
@@ -314,7 +314,7 @@ describe('DataSource', () => {
     ds.reset();
 
     expect(idBuilderResetSpy).toHaveBeenCalledOnce();
-    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([]);
     expect(storage.head).toBeUndefined();
