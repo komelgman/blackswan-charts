@@ -1,11 +1,16 @@
 export declare type EntityId = string;
 export default class IdBuilder {
   private readonly currentValueForPrefix: Map<string, number> = new Map<string, number>();
+
   public update(prefix: string, pretender: number): void {
     const loweredPrefix = prefix.toLowerCase();
     const max = Math.max(this.getCurrentValue(loweredPrefix), pretender);
 
     this.currentValueForPrefix.set(loweredPrefix, max);
+  }
+
+  public reset(): void {
+    this.currentValueForPrefix.clear();
   }
 
   public getNewId(prefix: string): EntityId {

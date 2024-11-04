@@ -304,4 +304,24 @@ describe('DataSource', () => {
     expect(clonedEntries).toEqual(['test4']);
     expect(history['currentProtocol'].sign).toBeTruthy();
   });
+
+  it('test reset()', () => {
+    const history: History = new History();
+    const idBulder = ds['idHelper'].forGroup(ds.id);
+    const idBuilderResetSpy = vi.spyOn(idBulder, 'reset');
+    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+
+    ds.reset();
+
+    expect(idBuilderResetSpy).toHaveBeenCalledOnce();
+    expect(history['currentProtocol'].sign).toBeTruthy();
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([]);
+    expect(storage.head).toBeUndefined();
+    expect(storage.tail).toBeUndefined();
+
+    history.undo();
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id]);
+  });
 });

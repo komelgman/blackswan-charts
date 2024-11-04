@@ -3,6 +3,7 @@ import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
+import { History } from '@/model/history';
 
 describe('DataSourceSharedEntries', () => {
   let ds1: DataSource;
@@ -89,6 +90,27 @@ describe('DataSourceSharedEntries', () => {
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([drawing0.id, drawing1.id, drawing2.id]);
     expect(storage.head?.value.descriptor.ref).toEqual(drawing0.id);
+    expect(storage.tail?.value.descriptor.ref).toEqual(drawing2.id);
+  });
+
+  it('test reset data source with shared entries', () => {
+    const history: History = new History();
+    ds1.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    ds1.sharedEntries.attachSharedEntriesFrom(ds2);
+
+    ds1.reset();
+
+    expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
+      .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing3.id]]);
+
+    history.undo();
+
+    expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
+      .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing3.id], drawing0.id, drawing1.id, drawing2.id]);
+
+    // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
+    const storage = ds1['storage'];
+    expect(storage.head?.value.descriptor.ref).toEqual([ds2.id, drawing2.id]);
     expect(storage.tail?.value.descriptor.ref).toEqual(drawing2.id);
   });
 

@@ -43,6 +43,16 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.initEntries(drawings);
   }
 
+  public reset(): void {
+    this.beginTransaction();
+    Array.from(this)
+      .filter((entry) => isString(entry.descriptor.ref))
+      .forEach((entry) => this.remove(entry.descriptor.ref as string));
+    this.endTransaction();
+
+    this.idHelper.forGroup(this.id).reset();
+  }
+
   public set historicalIncidentReportProcessor(value: HistoricalIncidentReportProcessor) {
     this.historicalIncidentReportProcessorValue = value;
   }
