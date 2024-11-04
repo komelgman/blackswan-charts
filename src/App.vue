@@ -23,7 +23,7 @@ import {
   TimePeriod,
 } from '@/model/chart/types';
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
-import { DataBinding, type ContentLoaderFabric } from '@/model/databinding';
+import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
 import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
 
 /**
@@ -209,7 +209,7 @@ const drawings = {
   },
 };
 
-const fabric: ContentLoaderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
+const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
   const content: OHLCv = {
     available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
     loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
@@ -220,6 +220,8 @@ const fabric: ContentLoaderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co:
       [0.35, 0.7, 0.3, 0.55, 300],
     ] as [Price, Price, Price, Price, number][],
   };
+
+  let contentOptions = co;
 
   const process = () => {
     const values = content?.values || [];
@@ -241,7 +243,6 @@ const fabric: ContentLoaderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co:
   };
 
   const intervalId = setInterval(process, 1000);
-  let contentOptions = co;
 
   return {
     options: contentOptions,

@@ -25,11 +25,12 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
   private readonly entriesByContentKey: Map<string, [DataSource, DataSourceEntry][]> = new Map();
   private readonly entryRefToContentKey: Map<string, string> = new Map();
   private readonly pipe: DataPipe<O, ContentType>;
+  private readonly removeChartEventListener: Function;
 
   constructor(chart: Chart, pipe: DataPipe<O, ContentType>) {
     this.pipe = pipe;
 
-    chart.addPaneRegistrationEventListener((e) => {
+    this.removeChartEventListener = chart.addPaneRegistrationEventListener((e) => {
       if (e.type === 'install') {
         this.bindDataSource(toRaw(e.pane.model.dataSource));
       } else {
@@ -40,6 +41,18 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     for (const pane of chart.panes) {
       this.bindDataSource(toRaw(pane.model.dataSource));
     }
+  }
+
+  public unbind(): void {
+    this.removeChartEventListener();
+
+    Array.from(this.entriesByContentKey.values())
+      .flatMap((entries) => entries.map(([ds, entry]) => {
+        entry.descriptor.options.data.content = undefined;
+        return ds;
+      }))
+      .filter((ds, index, array) => array.findIndex((other) => other.id === ds.id) === index)
+      .forEach((ds) => this.unbindDataSource(ds));
   }
 
   private bindDataSource(dataSource: DataSource): void {
@@ -84,7 +97,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     }
 
     const prevContentKey = this.entryRefToContentKey.get(this.toEntryRef(ds, entry));
-    const curContentOptions = this.pipe.contentOptions(entry);
+    const curContentOptions = this.pipe.getContentOptions(entry);
     if (!curContentOptions) {
       if (prevContentKey) {
         this.unbindEntryByContentKey(ds, entry, prevContentKey);
@@ -104,7 +117,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
       const contentOptionsCollection: O[] = (this.entriesByContentKey.get(curContentKey) || [])
         .map(([, e]) => e.descriptor.options.data.contentOptions);
 
-      this.pipe.updateLoaderOptions(contentOptionsCollection);
+      this.pipe.updateSubscription(contentOptionsCollection);
     }
   }
 
@@ -113,7 +126,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
       return;
     }
 
-    const contentOptions = this.pipe.contentOptions(entry);
+    const contentOptions = this.pipe.getContentOptions(entry);
     if (!contentOptions) {
       return;
     }
@@ -129,7 +142,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     this.entryRefToContentKey.set(this.toEntryRef(ds, entry), contentKey);
 
     if (startLoading) {
-      this.pipe.startContentLoading(contentOptions, this.updateContentWithRetry.bind(this));
+      this.pipe.subscribe(contentOptions, this.updateContentWithRetry.bind(this));
     } else {
       this.updateContentWithRetry(contentKey, this.pipe.getContent(contentKey));
     }
@@ -167,7 +180,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
 
     this.deleteFromEntryRefToContentOptions(ds, entry);
 
-    const contentOptions = this.pipe.contentOptions(entry);
+    const contentOptions = this.pipe.getContentOptions(entry);
     if (!contentOptions) {
       return;
     }
@@ -199,7 +212,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
 
     if (storedEntries.length === 0) {
       this.entriesByContentKey.delete(contentKey);
-      this.pipe.stopContentLoading(contentKey);
+      this.pipe.unsubscribe(contentKey);
     }
   }
 

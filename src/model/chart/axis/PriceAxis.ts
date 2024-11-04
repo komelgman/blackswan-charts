@@ -25,12 +25,12 @@ export interface PriceAxisOptions extends AxisOptions<Price> {
 
 @PostConstruct
 export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostConstruct {
-  private cache!: [/* virtualFrom */ number, /* scaleK */ number, /* unscaleK */ number];
+  private cache!: [virtualFrom: number, scaleK: number, unscaleK: number];
   private fractionValue: number = 0;
 
   protected scaleValue: PriceAxisScale;
   protected invertedValue: Inverted;
-  protected contentWidthValue: Wrapped<number> = { value: -1 }; // watch doesn't work with scalar
+  protected contentWidthValue: Wrapped<number> = { value: -1 };
 
   public constructor(
     id: EntityId,

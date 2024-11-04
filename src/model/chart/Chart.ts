@@ -62,8 +62,10 @@ export class Chart {
     this.dataSourceInterconnect = new DataSourceInterconnect();
   }
 
-  public addPaneRegistrationEventListener(listener: PaneRegistrationEventListener): void {
+  public addPaneRegistrationEventListener(listener: PaneRegistrationEventListener): Function {
     this.paneRegEventListeners.push(listener);
+
+    return () => this.removePaneRegistrationEventListener(listener);
   }
 
   public removePaneRegistrationEventListener(listener: PaneRegistrationEventListener): void {

@@ -8,6 +8,7 @@ import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/rendere
 import { merge } from '@/misc/object.merge';
 import type { DeepPartial } from '@/model/type-defs';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
+import { deepEqual } from '@/misc/object.deepEqual';
 
 export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
   private readonly renderer: OHLCvPlotRenderer<O>;
@@ -27,7 +28,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     const optionsUpdate = this.getContentOptionsUpdate(entry, viewport);
     const { dataSource } = viewport;
 
-    if (optionsUpdate) {
+    if (!deepEqual(optionsUpdate, {})) {
       toRaw(dataSource).noHistoryManagedEntriesProcess(
         [entry.descriptor.ref],
         (e: DataSourceEntry<OHLCvPlot<any>>) => {
@@ -41,17 +42,17 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     }
   }
 
-  protected getContentOptionsUpdate(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): DeepPartial<OHLCvContentOptions> | undefined {
+  protected getContentOptionsUpdate(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): DeepPartial<OHLCvContentOptions> {
     const { timeAxis } = viewport;
     const { content: ohlc, contentOptions: options } = entry.descriptor.options.data;
 
     if (!ohlc || !options) {
-      return undefined;
+      return {};
     }
 
     const timeRangeFrom = timeAxis.range.from;
     const timeRangeTo = timeAxis.range.to;
-    let result = undefined;
+    const result = {};
     if (timeRangeFrom < ohlc.loaded.from && ohlc.loaded.from > ohlc.available.from) {
       // todo: set requested range to entry
     }

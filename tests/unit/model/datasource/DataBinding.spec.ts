@@ -10,8 +10,7 @@ import {
 } from '@/model/datasource/types';
 import IdHelper from '@/model/tools/IdHelper';
 import { Chart } from '@/model/chart/Chart';
-import { DataBinding, type ContentOptions, type ExternalContent } from '@/model/databinding/DataBinding';
-import { type DataPipe } from '@/model/databinding/DataPipe';
+import { DataBinding, type ContentOptions, type ExternalContent, type DataPipe } from '@/model/databinding';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 
 interface TestContentOptions extends ContentOptions<'TestContentOptions'> {
@@ -26,7 +25,7 @@ interface TestContentType {
 interface TestDrawingOptions extends ExternalContent<TestContentOptions, TestContentType> { }
 
 class TestDataPipe implements DataPipe<TestContentOptions, TestContentType> {
-  contentOptions(entry: DataSourceEntry): TestContentOptions | undefined {
+  getContentOptions(entry: DataSourceEntry): TestContentOptions | undefined {
     const contentOptions = entry.descriptor.options.data?.contentOptions;
     return this.canHandle(contentOptions) ? contentOptions : undefined;
   }
@@ -39,16 +38,16 @@ class TestDataPipe implements DataPipe<TestContentOptions, TestContentType> {
     return contentOptions.contentKey;
   }
 
-  startContentLoading(contentOptions: TestContentOptions, contentUpdateCallback: (contentKye: string, content: TestContentType) => void): void {
+  subscribe(contentOptions: TestContentOptions, contentUpdateCallback: (contentKye: string, content: TestContentType) => void): void {
     const contentKey = this.toContentKey(contentOptions);
     contentUpdateCallback(contentKey, { message: contentKey.toUpperCase() });
   }
 
-  updateLoaderOptions(newContentOptions: TestContentOptions[]): void {
+  updateSubscription(newContentOptions: TestContentOptions[]): void {
     // nothing
   }
 
-  stopContentLoading(contentKey: string): void {
+  unsubscribe(contentKey: string): void {
     // nothing
   }
 
@@ -136,47 +135,47 @@ describe('DataBinding', () => {
   });
 
   it('should call pipe.startContentLoading when new DataBinding()', () => {
-    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
+    const subscribeSpy = vi.spyOn(dataPipe, 'subscribe');
 
     const binding = new DataBinding(chart, dataPipe);
 
-    expect(startContentLoadingSpy).toHaveBeenCalledTimes(2);
-    expect(startContentLoadingSpy).toHaveBeenNthCalledWith(1, {
+    expect(subscribeSpy).toHaveBeenCalledTimes(2);
+    expect(subscribeSpy).toHaveBeenNthCalledWith(1, {
       contentKey: 'test1.contentKey',
       type: 'TestContentOptions',
     }, expect.any(Function));
-    expect(startContentLoadingSpy).toHaveBeenNthCalledWith(2, {
+    expect(subscribeSpy).toHaveBeenNthCalledWith(2, {
       contentKey: 'test2.contentKey',
       type: 'TestContentOptions',
     }, expect.any(Function));
   });
 
   it('should call pipe.startContentLoading once when chart.createPane() with entries with equal contentKey', () => {
-    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
+    const subscribeSpy = vi.spyOn(dataPipe, 'subscribe');
     const binding = new DataBinding(chart, dataPipe);
-    startContentLoadingSpy.mockClear();
+    subscribeSpy.mockClear();
 
     const ds2 = new DataSource({ idHelper }, clone([drawing3, drawing4, drawing5]));
     chart.createPane(ds2);
 
-    expect(startContentLoadingSpy).toHaveBeenCalledTimes(1);
-    expect(startContentLoadingSpy).toHaveBeenNthCalledWith(1, {
+    expect(subscribeSpy).toHaveBeenCalledTimes(1);
+    expect(subscribeSpy).toHaveBeenNthCalledWith(1, {
       contentKey: 'test4.contentKey',
       type: 'TestContentOptions',
     }, expect.any(Function));
   });
 
   it('should call pipe.startContentLoading when add new drawing to dataSource', () => {
-    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
+    const subscribeSpy = vi.spyOn(dataPipe, 'subscribe');
     const binding = new DataBinding(chart, dataPipe);
-    startContentLoadingSpy.mockClear();
+    subscribeSpy.mockClear();
 
     ds1.beginTransaction();
     ds1.add(clone(drawing4));
     ds1.endTransaction();
 
-    expect(startContentLoadingSpy).toHaveBeenCalledTimes(1);
-    expect(startContentLoadingSpy).toHaveBeenNthCalledWith(1, {
+    expect(subscribeSpy).toHaveBeenCalledTimes(1);
+    expect(subscribeSpy).toHaveBeenNthCalledWith(1, {
       contentKey: 'test4.contentKey',
       type: 'TestContentOptions',
     }, expect.any(Function));
@@ -197,9 +196,9 @@ describe('DataBinding', () => {
   });
 
   it('should call pipe.stopContentLoading when remove last entry with contentKey', () => {
-    const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
+    const unsubscribeSpy = vi.spyOn(dataPipe, 'unsubscribe');
     const binding = new DataBinding(chart, dataPipe);
-    stopContentLoadingSpy.mockClear();
+    unsubscribeSpy.mockClear();
     ds1.beginTransaction();
     ds1.add(clone(drawing4));
     ds1.add(clone(drawing5));
@@ -210,12 +209,12 @@ describe('DataBinding', () => {
     ds1.remove(drawing4.id);
     ds1.endTransaction();
 
-    expect(stopContentLoadingSpy).toHaveBeenCalledTimes(1);
-    expect(stopContentLoadingSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing2.data.contentOptions as any as TestContentOptions));
+    expect(unsubscribeSpy).toHaveBeenCalledTimes(1);
+    expect(unsubscribeSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing2.data.contentOptions as any as TestContentOptions));
   });
 
   it('should call pipe.stopContentLoading when remove pane', () => {
-    const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
+    const unsubscribeSpy = vi.spyOn(dataPipe, 'unsubscribe');
     const binding = new DataBinding(chart, dataPipe);
     ds1.beginTransaction();
     ds1.add(clone(drawing4));
@@ -223,22 +222,22 @@ describe('DataBinding', () => {
     ds1.endTransaction();
     const ds2 = new DataSource({ idHelper }, clone([drawing3, drawing4, drawing5]));
     chart.createPane(ds2);
-    stopContentLoadingSpy.mockClear();
+    unsubscribeSpy.mockClear();
 
     chart.removePane(ds1.id);
 
-    expect(stopContentLoadingSpy).toHaveBeenCalledTimes(2);
-    expect(stopContentLoadingSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing1.data.contentOptions as any as TestContentOptions));
-    expect(stopContentLoadingSpy).toHaveBeenNthCalledWith(2, dataPipe.toContentKey(drawing2.data.contentOptions as any as TestContentOptions));
+    expect(unsubscribeSpy).toHaveBeenCalledTimes(2);
+    expect(unsubscribeSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing1.data.contentOptions as any as TestContentOptions));
+    expect(unsubscribeSpy).toHaveBeenNthCalledWith(2, dataPipe.toContentKey(drawing2.data.contentOptions as any as TestContentOptions));
   });
 
   it('should call pipe.(stop|start)ContentLoading when update entry contentOptions', () => {
-    const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
-    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
+    const unsubscribeSpy = vi.spyOn(dataPipe, 'unsubscribe');
+    const subscribeSpy = vi.spyOn(dataPipe, 'subscribe');
     const getContentSpy = vi.spyOn(dataPipe, 'getContent');
     const binding = new DataBinding(chart, dataPipe);
-    stopContentLoadingSpy.mockClear();
-    startContentLoadingSpy.mockClear();
+    unsubscribeSpy.mockClear();
+    subscribeSpy.mockClear();
     getContentSpy.mockClear();
 
     ds1.beginTransaction();
@@ -252,10 +251,10 @@ describe('DataBinding', () => {
     });
     ds1.endTransaction();
 
-    expect(stopContentLoadingSpy).toHaveBeenCalledTimes(1);
-    expect(stopContentLoadingSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing1.data.contentOptions as any as TestContentOptions));
-    expect(startContentLoadingSpy).toHaveBeenCalledTimes(1);
-    expect(startContentLoadingSpy).toHaveBeenNthCalledWith(1, {
+    expect(unsubscribeSpy).toHaveBeenCalledTimes(1);
+    expect(unsubscribeSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing1.data.contentOptions as any as TestContentOptions));
+    expect(subscribeSpy).toHaveBeenCalledTimes(1);
+    expect(subscribeSpy).toHaveBeenNthCalledWith(1, {
       contentKey: 'newNonExists.ContntentKey',
       type: 'TestContentOptions',
     }, expect.any(Function));
@@ -263,12 +262,12 @@ describe('DataBinding', () => {
   });
 
   it('should call pipe.stopContentLoading and pipe.getContent when update entry contentOptions', () => {
-    const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
-    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
+    const unsubscribeSpy = vi.spyOn(dataPipe, 'unsubscribe');
+    const subscribeSpy = vi.spyOn(dataPipe, 'subscribe');
     const getContentSpy = vi.spyOn(dataPipe, 'getContent');
     const binding = new DataBinding(chart, dataPipe);
-    stopContentLoadingSpy.mockClear();
-    startContentLoadingSpy.mockClear();
+    unsubscribeSpy.mockClear();
+    subscribeSpy.mockClear();
     getContentSpy.mockClear();
 
     ds1.beginTransaction();
@@ -282,24 +281,24 @@ describe('DataBinding', () => {
     });
     ds1.endTransaction();
 
-    expect(stopContentLoadingSpy).toHaveBeenCalledTimes(1);
-    expect(stopContentLoadingSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing1.data.contentOptions as any as TestContentOptions));
-    expect(startContentLoadingSpy).toHaveBeenCalledTimes(0);
+    expect(unsubscribeSpy).toHaveBeenCalledTimes(1);
+    expect(unsubscribeSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing1.data.contentOptions as any as TestContentOptions));
+    expect(subscribeSpy).toHaveBeenCalledTimes(0);
     expect(getContentSpy).toHaveBeenCalledTimes(1);
     expect(getContentSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing2.data.contentOptions as any as TestContentOptions));
   });
 
   it('should call pipe.updateLoaderOptions when update entry contentOptions', () => {
-    const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
-    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
-    const updateContentLoaderSpy = vi.spyOn(dataPipe, 'updateLoaderOptions');
+    const unsubscribeSpy = vi.spyOn(dataPipe, 'unsubscribe');
+    const subscribeSpy = vi.spyOn(dataPipe, 'subscribe');
+    const updateSubscriptionSpy = vi.spyOn(dataPipe, 'updateSubscription');
     const binding = new DataBinding(chart, dataPipe);
     const ds2 = new DataSource({ idHelper }, clone([drawing1, drawing3, drawing4, drawing5]));
     chart.createPane(ds2);
 
-    stopContentLoadingSpy.mockClear();
-    startContentLoadingSpy.mockClear();
-    updateContentLoaderSpy.mockClear();
+    unsubscribeSpy.mockClear();
+    subscribeSpy.mockClear();
+    updateSubscriptionSpy.mockClear();
 
     ds2.beginTransaction();
     ds2.update(drawing4.id, {
@@ -311,10 +310,10 @@ describe('DataBinding', () => {
     });
     ds2.endTransaction();
 
-    expect(stopContentLoadingSpy).toHaveBeenCalledTimes(0);
-    expect(startContentLoadingSpy).toHaveBeenCalledTimes(0);
-    expect(updateContentLoaderSpy).toHaveBeenCalledTimes(1);
-    expect(updateContentLoaderSpy).toHaveBeenNthCalledWith(1, [{
+    expect(unsubscribeSpy).toHaveBeenCalledTimes(0);
+    expect(subscribeSpy).toHaveBeenCalledTimes(0);
+    expect(updateSubscriptionSpy).toHaveBeenCalledTimes(1);
+    expect(updateSubscriptionSpy).toHaveBeenNthCalledWith(1, [{
       type: 'TestContentOptions',
       contentKey: drawing4.data.contentOptions?.contentKey,
       contentArgs: 'some value',
@@ -325,16 +324,16 @@ describe('DataBinding', () => {
   });
 
   it('should call pipe.updateLoaderOptions when process entry contentOptions', () => {
-    const stopContentLoadingSpy = vi.spyOn(dataPipe, 'stopContentLoading');
-    const startContentLoadingSpy = vi.spyOn(dataPipe, 'startContentLoading');
-    const updateContentLoaderSpy = vi.spyOn(dataPipe, 'updateLoaderOptions');
+    const unsubscribeSpy = vi.spyOn(dataPipe, 'unsubscribe');
+    const subscribeSpy = vi.spyOn(dataPipe, 'subscribe');
+    const updateSubscriptionSpy = vi.spyOn(dataPipe, 'updateSubscription');
     const binding = new DataBinding(chart, dataPipe);
     const ds2 = new DataSource({ idHelper }, clone([drawing1, drawing3, drawing4, drawing5]));
     chart.createPane(ds2);
 
-    stopContentLoadingSpy.mockClear();
-    startContentLoadingSpy.mockClear();
-    updateContentLoaderSpy.mockClear();
+    unsubscribeSpy.mockClear();
+    subscribeSpy.mockClear();
+    updateSubscriptionSpy.mockClear();
 
     ds2.beginTransaction();
     ds2.noHistoryManagedEntriesProcess(
@@ -346,10 +345,10 @@ describe('DataBinding', () => {
     );
     ds2.endTransaction();
 
-    expect(stopContentLoadingSpy).toHaveBeenCalledTimes(0);
-    expect(startContentLoadingSpy).toHaveBeenCalledTimes(0);
-    expect(updateContentLoaderSpy).toHaveBeenCalledTimes(1);
-    expect(updateContentLoaderSpy).toHaveBeenNthCalledWith(1, [{
+    expect(unsubscribeSpy).toHaveBeenCalledTimes(0);
+    expect(subscribeSpy).toHaveBeenCalledTimes(0);
+    expect(updateSubscriptionSpy).toHaveBeenCalledTimes(1);
+    expect(updateSubscriptionSpy).toHaveBeenNthCalledWith(1, [{
       type: 'TestContentOptions',
       contentKey: drawing4.data.contentOptions?.contentKey,
       contentArgs: 'some value',
@@ -384,6 +383,21 @@ describe('DataBinding', () => {
     expect(dsEventListenerSpy).toHaveBeenCalledTimes(2);
     expect(toRefsFromEventsMap(dsEvents, DataSourceChangeEventReason.UpdateEntry))
       .toEqual([drawing4.id, drawing5.id]);
+  });
+
+  it('test unbind', () => {
+    const unsubscribeSpy = vi.spyOn(dataPipe, 'unsubscribe');
+    const chartSpy = vi.spyOn(chart, 'removePaneRegistrationEventListener');
+    const dsSpy = vi.spyOn(ds1, 'removeChangeEventListener');
+    const binding = new DataBinding(chart, dataPipe);
+
+    binding.unbind();
+
+    expect(chartSpy).toHaveBeenCalledOnce();
+    expect(dsSpy).toHaveBeenCalledOnce();
+    expect(unsubscribeSpy).toHaveBeenCalledTimes(2);
+    expect(unsubscribeSpy).toHaveBeenNthCalledWith(1, dataPipe.toContentKey(drawing1.data.contentOptions as any as TestContentOptions));
+    expect(unsubscribeSpy).toHaveBeenNthCalledWith(2, dataPipe.toContentKey(drawing2.data.contentOptions as any as TestContentOptions));
   });
 
   function toRefsFromEventsMap(events: DataSourceChangeEventsMap, reason: DataSourceChangeEventReason): DrawingReference[] {
