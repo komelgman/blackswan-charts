@@ -1,4 +1,4 @@
-import { reactive } from 'vue';
+import { markRaw, reactive } from 'vue';
 import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
@@ -56,7 +56,7 @@ export class Chart {
     this.history = new History();
     this.panes = reactive([]);
     this.style = reactive(chartStyle);
-    this.sketchers = this.createSketchers(chartStyle, chartOptions?.sketchers);
+    this.sketchers = markRaw(this.createSketchers(chartStyle, chartOptions?.sketchers));
     this.timeAxis = this.createTimeAxis(chartStyle);
     this.dataSourceInterconnect = new DataSourceInterconnect();
   }

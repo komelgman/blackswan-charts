@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { invertColor } from '@/misc/color';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
@@ -72,12 +71,11 @@ export class VLineSketcher extends AbstractSketcher<VLine> {
 
     return (e: DragMoveEvent) => {
       const { dataSource, timeAxis } = viewport;
-      const rawDS = toRaw(dataSource);
       const { options, ref } = entry.descriptor;
       // only one handle and drag by body equals drag by handles.center
       const def = timeAxis.revert(timeAxis.translate(options.data.def) - e.dx);
 
-      rawDS.update(ref, { data: { def } });
+      dataSource.update(ref, { data: { def } });
     };
   }
 }

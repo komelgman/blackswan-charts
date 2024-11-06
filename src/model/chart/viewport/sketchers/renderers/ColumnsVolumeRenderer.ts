@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import {
   type OHLCvPlot,
   type OHLCvBar,
@@ -38,7 +37,7 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
     const { descriptor, drawing } = entry;
     const { priceAxis, timeAxis } = viewport;
     const { range: timeRange } = timeAxis;
-    const { content: ohlc, plotOptions } = toRaw(descriptor?.options.data);
+    const { content: ohlc, plotOptions } = descriptor?.options.data || {};
 
     if (!ohlc || !drawing) {
       throw new Error('Oops.');

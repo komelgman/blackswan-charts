@@ -1,5 +1,5 @@
 import type { WatchStopHandle } from 'vue';
-import { computed, toRaw, watch } from 'vue';
+import { computed, watch } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
@@ -93,10 +93,10 @@ export default class DataSourceInvalidator {
       }
     }
 
-    toRaw(this.viewport.dataSource).invalidated(invalidated);
+    this.viewport.dataSource.invalidated(invalidated);
   }
 
   private resetDataSourceCache(): void {
-    toRaw(this.viewport.dataSource).resetCache();
+    this.viewport.dataSource.resetCache();
   }
 }

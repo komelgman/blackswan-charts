@@ -77,8 +77,8 @@ export async function redo(page: Page): Promise<void> {
 export async function addDrawingToDataSource(page: Page, dsId: string, drawing: any): Promise<void> {
   await page.evaluate(async (opts) => {
     // eslint-disable-next-line
-    const { chart, toRaw } = (window as any).__test_context as ChartWidgetTestContext;
-    const mainDs = toRaw(chart.paneModel(opts.dsId).dataSource);
+    const { chart } = (window as any).__test_context as ChartWidgetTestContext;
+    const mainDs = chart.paneModel(opts.dsId).dataSource;
     mainDs.beginTransaction();
     mainDs.add(opts.drawing);
     mainDs.endTransaction();
@@ -88,8 +88,8 @@ export async function addDrawingToDataSource(page: Page, dsId: string, drawing: 
 export async function removeDrawingsFromDataSource(page: Page, dsId: string, drawingId: string): Promise<void> {
   await page.evaluate(async (opts) => {
     // eslint-disable-next-line
-    const { chart, toRaw } = (window as any).__test_context as ChartWidgetTestContext;
-    const mainDs = toRaw(chart.paneModel(opts.dsId).dataSource);
+    const { chart } = (window as any).__test_context as ChartWidgetTestContext;
+    const mainDs = chart.paneModel(opts.dsId).dataSource;
     mainDs.beginTransaction();
     mainDs.remove(opts.drawingId);
     mainDs.endTransaction();

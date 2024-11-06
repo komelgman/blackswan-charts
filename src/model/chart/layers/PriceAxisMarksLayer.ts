@@ -1,4 +1,4 @@
-import { toRaw, watch } from 'vue';
+import { watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
@@ -69,7 +69,7 @@ export default class PriceAxisMarksLayer extends Layer {
     };
 
     const x = width - PRICE_LABEL_PADDING;
-    for (const { mark } of toRaw(this.viewport.dataSource).filtered(containValidMarks)) {
+    for (const { mark } of this.viewport.dataSource.filtered(containValidMarks)) {
       if (mark === undefined) {
         continue;
       }

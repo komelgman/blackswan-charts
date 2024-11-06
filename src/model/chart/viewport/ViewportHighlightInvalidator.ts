@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import { isEqualDrawingReference, type DataSourceEntry } from '@/model/datasource/types';
@@ -36,7 +35,7 @@ export default class ViewportHighlightInvalidator {
     }
 
     const { dataSource } = this.viewportModel;
-    for (const entry of toRaw(dataSource).visible(true)) {
+    for (const entry of dataSource.visible(true)) {
       if (entry.drawing === undefined) {
         continue;
       }

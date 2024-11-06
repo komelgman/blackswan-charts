@@ -1,4 +1,4 @@
-import { toRaw, watch } from 'vue';
+import { watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import type { Inverted, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
@@ -47,7 +47,7 @@ export default class ViewportDataSourceLayer extends Layer {
       native.translate(-width / 2, -height / 2);
     }
 
-    for (const { drawing } of toRaw(this.ds).visible()) {
+    for (const { drawing } of this.ds.visible()) {
       if (drawing === undefined) {
         throw new Error('drawing === undefined');
       }

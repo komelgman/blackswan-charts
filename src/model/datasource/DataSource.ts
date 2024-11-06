@@ -1,7 +1,8 @@
-import { isProxy, markRaw, toRaw } from 'vue';
+import { isProxy } from 'vue';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
 import { type DeepPartial, type Predicate, isString } from '@/model/type-defs';
+import { NonReactive } from '@/model/type-defs/decorators';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import {
@@ -23,6 +24,7 @@ import type {
 import type { HistoricalIncidentReportProcessor, HistoricalProtocolOptions } from '@/model/history';
 import type IdHelper from '@/model/tools/IdHelper';
 
+@NonReactive
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public readonly id: DataSourceId;
   public readonly sharedEntries: DataSourceSharedEntries;
@@ -35,8 +37,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private protocolOptions: HistoricalProtocolOptions | undefined = undefined;
 
   public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
-    markRaw(this);
-
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
     this.storage = new DataSourceEntriesStorage();
     this.idHelper = options.idHelper;
@@ -150,8 +150,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.historicalIncidentReportProcessor({
       protocolOptions: this.protocolOptions,
       lifeHooks: {
-        afterInverse: () => toRaw(this).flush(),
-        afterApply: () => toRaw(this).flush(),
+        afterInverse: () => this.flush(),
+        afterApply: () => this.flush(),
       },
     });
   }
@@ -404,7 +404,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   private toChangeEvents(reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean = false): DataSourceChangeEvent[] {
-    return entries.map((entry) => ({ entry: toRaw(entry), reason, shared }));
+    return entries.map((entry) => ({ entry, reason, shared }));
   }
 
   private getNewTransactionId(): string {

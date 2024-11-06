@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import type { Chart } from '@/model/chart/Chart';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry } from '@/model/datasource/types';
@@ -32,14 +31,14 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
 
     this.removeChartEventListener = chart.addPaneRegistrationEventListener((e) => {
       if (e.type === 'install') {
-        this.bindDataSource(toRaw(e.pane.model.dataSource));
+        this.bindDataSource(e.pane.model.dataSource);
       } else {
-        this.unbindDataSource(toRaw(e.pane.model.dataSource));
+        this.unbindDataSource(e.pane.model.dataSource);
       }
     });
 
     for (const pane of chart.panes) {
-      this.bindDataSource(toRaw(pane.model.dataSource));
+      this.bindDataSource(pane.model.dataSource);
     }
   }
 

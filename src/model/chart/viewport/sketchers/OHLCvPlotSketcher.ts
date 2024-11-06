@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
 import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions } from '@/model/chart/types';
@@ -29,7 +28,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     const { dataSource } = viewport;
 
     if (!deepEqual(optionsUpdate, {})) {
-      toRaw(dataSource).noHistoryManagedEntriesProcess(
+      dataSource.noHistoryManagedEntriesProcess(
         [entry.descriptor.ref],
         (e: DataSourceEntry<OHLCvPlot<any>>) => {
           const contentOptions = e.descriptor.options.data?.contentOptions;
@@ -69,7 +68,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
 
-    const ohlc = toRaw(entry.descriptor?.options.data).content;
+    const ohlc = entry.descriptor?.options.data.content;
     if (!ohlc) {
       return;
     }

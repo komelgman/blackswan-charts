@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import { invertColor } from '@/misc/color';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
@@ -76,12 +75,11 @@ export class HLineSketcher extends AbstractSketcher<HLine> {
 
     const { dataSource, priceAxis } = viewport;
     return (e: DragMoveEvent) => {
-      const rawDS = toRaw(dataSource);
       const { options } = entry.descriptor;
       // only one handle and drag by body equals drag by handles.center
       const def = priceAxis.revert(priceAxis.translate(options.data.def) - priceAxis.inverted.value * e.dy);
 
-      rawDS.update(entry.descriptor.ref, { data: { def } });
+      dataSource.update(entry.descriptor.ref, { data: { def } });
     };
   }
 }

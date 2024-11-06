@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, toRaw } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayerContext, LayeredCanvasOptions } from '@/components/layered-canvas/types';
@@ -65,7 +65,7 @@ onUnmounted(() => {
 
 function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
   if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
-    const { selected, highlighted } = toRaw(viewportModel);
+    const { selected, highlighted } = viewportModel;
     const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
 
     for (const event of removedEntriesEvents) {

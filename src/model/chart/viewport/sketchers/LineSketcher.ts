@@ -186,7 +186,6 @@ export class LineSketcher extends AbstractSketcher<Line> {
 
     return (e: DragMoveEvent) => {
       const { dataSource, timeAxis, priceAxis } = viewport;
-      const rawDS = toRaw(dataSource);
       const { options, ref } = entry.descriptor;
       let update;
 
@@ -237,7 +236,7 @@ export class LineSketcher extends AbstractSketcher<Line> {
       }
 
       if (update) {
-        rawDS.update(ref, update);
+        dataSource.update(ref, update);
       }
     };
   }

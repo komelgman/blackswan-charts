@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import { isString } from '@/model/type-defs';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
@@ -15,9 +14,11 @@ import type {
   DrawingId,
   DrawingReference,
 } from '@/model/datasource/types';
+import { NonReactive } from '@/model/type-defs/decorators';
 
 declare type Action = (dsse: DataSourceSharedEntries, ref: DrawingReference, descriptor: DrawingDescriptor) => void;
 
+@NonReactive
 export default class DataSourceInterconnect {
   private readonly dsSharedEntries: Map<DataSourceId, DataSourceSharedEntries> = new Map();
 
@@ -27,7 +28,7 @@ export default class DataSourceInterconnect {
       throw new Error(`Illegal state: dataSource with Id=${dsId} already exists`);
     }
 
-    const { sharedEntries } = toRaw(dataSource);
+    const { sharedEntries } = dataSource;
     sharedEntries.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
     for (const [, dsse] of this.dsSharedEntries) {
       sharedEntries.attachSharedEntriesFrom(dsse.dataSource);

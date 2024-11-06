@@ -1,11 +1,13 @@
 import { InitialIncident } from '@/model/history/incidents';
 import { type HistoricalIncidentReport, HistoricalProtocol, HistoricalProtocolSign } from '@/model/history';
+import { NonReactive } from '@/model/type-defs/decorators';
 
 export interface HistoricalProtocolOptions {
   protocolTitle: string;
   timeout?: number;
 }
 
+@NonReactive
 export class History {
   private currentProtocolValue: HistoricalProtocol;
   private lastProtocolTitle: string | undefined;

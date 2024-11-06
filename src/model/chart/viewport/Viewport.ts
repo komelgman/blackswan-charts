@@ -1,4 +1,3 @@
-import { markRaw, toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import type { PriceAxis, Inverted } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
@@ -35,7 +34,7 @@ export class Viewport {
     this.dataSource = dataSource;
     this.timeAxis = timeAxis;
     this.priceAxis = priceAxis;
-    this.sketchers = markRaw(sketchers);
+    this.sketchers = sketchers;
   }
 
   public updateSelection(isCtrlPressed: boolean, isInDrag: boolean = false): void {
@@ -87,7 +86,6 @@ export class Viewport {
 
   public cloneSelected(): void {
     const { dataSource, selected } = this;
-    const rawDS = toRaw(dataSource);
     const tmp: Set<DataSourceEntry> = new Set();
 
     for (const entry of selected) {
@@ -95,12 +93,12 @@ export class Viewport {
         continue;
       }
 
-      const clonedEntry: DataSourceEntry = rawDS.clone(entry);
+      const clonedEntry: DataSourceEntry = dataSource.clone(entry);
       selected.delete(entry);
       tmp.add(clonedEntry);
     }
 
-    rawDS.flush();
+    dataSource.flush();
     selected.clear();
     tmp.forEach((value) => selected.add(value));
   }
@@ -112,7 +110,7 @@ export class Viewport {
     }
 
     dragHandle(e);
-    toRaw(dataSource).flush();
+    dataSource.flush();
   }
 
   public updateDragHandle(): void {

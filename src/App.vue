@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { isProxy } from 'vue';
+import { isProxy, markRaw } from 'vue';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import { Chart } from '@/model/chart/Chart';
@@ -117,15 +117,16 @@ function getRandomLine(idBuilder: IdBuilder) {
     },
     locked: false,
     visible: true,
+    shareWith: '*' as '*',
   };
 }
 
 function getRandomDrawing(idBuilder: IdBuilder): any {
-  return [getRandomLine, getRandomVLine, getRandomHLine][Math.floor(Math.random() * 1)](idBuilder);
+  return [getRandomLine, getRandomVLine, getRandomHLine][Math.floor(Math.random() * 3)](idBuilder);
 }
 
 const idHelper: IdHelper = new IdHelper();
-const randomDrawings = new Array(200).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
+const randomDrawings = new Array(20).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
 const mainDs = new DataSource({ id: 'main', idHelper }, randomDrawings);
 const chartApi = new Chart({
   sketchers: new Map<DrawingType, Sketcher>([]),
@@ -346,7 +347,79 @@ const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, c
   };
 };
 
-const binding = new DataBinding(chartApi, new OHLCvPipe(fabric));
+const valuesCount = 1000000;
+const timePeriod = TimePeriod.m1;
+const firstBarTime = Math.floor((Date.now() - valuesCount * timePeriod) / timePeriod) * timePeriod;
+
+const fabric2: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
+  const content: OHLCv = markRaw({
+    available: {
+      from: firstBarTime as UTCTimestamp,
+      to: firstBarTime + (valuesCount - 1) * timePeriod as UTCTimestamp,
+    },
+    loaded: {
+      from: firstBarTime as UTCTimestamp,
+      to: firstBarTime + (valuesCount - 1) * timePeriod as UTCTimestamp,
+    },
+    step: timePeriod,
+    values: new Array<[Price, Price, Price, Price, number]>(valuesCount),
+  });
+
+  let contentOptions = co;
+  function getOHLCvRecord(prev: OHLCvRecord | undefined): OHLCvRecord {
+    const prevValue = prev ? prev[OHLCV_RECORD_CLOSE] : Math.random() * 2 - 1;
+    const sign = Math.sign((Math.random() - 0.5));
+    const o = prevValue as Price;
+    const c = o + sign * Math.random() * 4 as Price;
+    const t1 = o + sign * (c - o) * Math.random() * 0.5;
+    const t2 = c + sign * (c - o) * Math.random() * 0.5;
+    const t3 = o - sign * (c - o) * Math.random() * 0.5;
+    const t4 = c - sign * (c - o) * Math.random() * 0.5;
+    const v = Math.random() * 1000 + 10;
+
+    return [o, Math.max(t1, t2, t3, t4) as Price, Math.min(t1, t2, t3, t4) as Price, c, v];
+  }
+
+  const contentValues = content.values;
+  for (let i = 0; i < valuesCount; ++i) {
+    contentValues[i] = getOHLCvRecord(i === 0 ? undefined : contentValues[i - 1]);
+  }
+
+  const process = () => {
+    const values = content?.values || [];
+    const lastBar = values[values.length - 1];
+    const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
+    const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
+    const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
+
+    // add new
+    // values.push(lastBar);
+
+    // update last
+    values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
+
+    // replace all
+    // values.splice(0, values.length, newItems);
+
+    callback(ck, content);
+  };
+
+  // const intervalId = setInterval(process, 1000);
+
+  return {
+    options: contentOptions,
+    content,
+    stop: () => {
+      // clearInterval(intervalId);
+    },
+    updateContentOptions: (newContentOptions: OHLCvContentOptions) => {
+      console.log(newContentOptions);
+      contentOptions = newContentOptions;
+    },
+  };
+};
+
+const binding = new DataBinding(chartApi, new OHLCvPipe(fabric2));
 
 mainDs.addChangeEventListener((e) => {
   const events = e.get(DataSourceChangeEventReason.DataInvalid) || [];
@@ -369,16 +442,16 @@ mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
 
 let i = 0;
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) chartApi.clearHistory();`);
-//   chartApi.clearHistory();
-// }, 100 * i++, i);
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.clearHistory();`);
+  chartApi.clearHistory();
+}, 100 * i++, i);
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) chartApi.createPane(~second);`);
-//   const dataSource: DataSource = new DataSource({ id: 'second', idHelper });
-//   chartApi.createPane(dataSource, { preferredSize: 0.3 });
-// }, 100 * i++, i);
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.createPane(~second);`);
+  const dataSource: DataSource = new DataSource({ id: 'second', idHelper });
+  chartApi.createPane(dataSource, { preferredSize: 0.3 });
+}, 100 * i++, i);
 
 // setTimeout((j: number) => {
 //   console.log(`${j}) chartApi.undo();`);
@@ -475,7 +548,10 @@ setTimeout((j: number) => {
   mainDs.add(drawings.volumeBTCUSDT);
   mainDs.endTransaction();
 
-  chartApi.timeAxis.noHistoryManagedUpdate({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
+  chartApi.timeAxis.noHistoryManagedUpdate({ range: {
+    from: firstBarTime as UTCTimestamp,
+    to: firstBarTime + (300) * timePeriod as UTCTimestamp,
+  } });
 }, 100 * i++, i);
 
 // setTimeout((j: number) => {
