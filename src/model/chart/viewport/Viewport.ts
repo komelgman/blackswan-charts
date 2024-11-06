@@ -1,4 +1,4 @@
-import { toRaw } from 'vue';
+import { markRaw, toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
 import type { PriceAxis, Inverted } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
@@ -35,7 +35,7 @@ export class Viewport {
     this.dataSource = dataSource;
     this.timeAxis = timeAxis;
     this.priceAxis = priceAxis;
-    this.sketchers = sketchers;
+    this.sketchers = markRaw(sketchers);
   }
 
   public updateSelection(isCtrlPressed: boolean, isInDrag: boolean = false): void {

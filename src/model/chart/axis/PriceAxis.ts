@@ -1,4 +1,4 @@
-import { reactive } from 'vue';
+import { reactive, toRaw } from 'vue';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 import { clone } from '@/misc/object.clone';
 import Axis from '@/model/chart/axis/Axis';
@@ -145,13 +145,15 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   }
 
   public translate(value: Price): number {
-    const [virtualFrom, scaleK] = this.cache;
-    return (this.scale.func.translate(value) - virtualFrom) * scaleK;
+    const raw = toRaw(this);
+    const [virtualFrom, scaleK] = raw.cache;
+    return (raw.scale.func.translate(value) - virtualFrom) * scaleK;
   }
 
   public revert(screenPos: number): Price {
-    const [virtualFrom, , unscaleK] = this.cache;
-    return this.scale.func.revert(screenPos * unscaleK + virtualFrom);
+    const raw = toRaw(this);
+    const [virtualFrom, , unscaleK] = raw.cache;
+    return raw.scale.func.revert(screenPos * unscaleK + virtualFrom);
   }
 
   protected updateZoom(screenPivot: number, screenDelta: number): void {

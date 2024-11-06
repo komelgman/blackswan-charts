@@ -37,8 +37,8 @@ export class LineSketcher extends AbstractSketcher<Line> {
     const { descriptor, drawing } = entry;
     const { timeAxis, priceAxis } = viewport;
     const { data: line, locked } = descriptor.options;
-    const { range: priceRange, scale: priceScale } = priceAxis;
-    const { range: timeRange } = timeAxis;
+    const { range: priceRange, scale: priceScale } = toRaw(priceAxis);
+    const { range: timeRange } = toRaw(timeAxis);
     const [visible, x0, y0, x1, y1, lineFunc] = this.visiblePoints(line, timeRange, priceRange);
 
     descriptor.visibleInViewport = visible;

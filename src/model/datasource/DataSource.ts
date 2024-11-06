@@ -1,4 +1,4 @@
-import { isProxy, toRaw } from 'vue';
+import { isProxy, markRaw, toRaw } from 'vue';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
 import { type DeepPartial, type Predicate, isString } from '@/model/type-defs';
@@ -35,6 +35,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private protocolOptions: HistoricalProtocolOptions | undefined = undefined;
 
   public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
+    markRaw(this);
+
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
     this.storage = new DataSourceEntriesStorage();
     this.idHelper = options.idHelper;
@@ -340,6 +342,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public flush(): void {
+    this.checkWeAreNotInProxy();
+
     const events: DataSourceChangeEventsMap = new Map(this.changeEvents);
     this.changeEvents.clear();
     this.fire(events);

@@ -25,6 +25,8 @@ import {
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
 import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
 import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
+import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
+import type IdBuilder from './model/tools/IdBuilder';
 
 /**
  * todo
@@ -36,8 +38,95 @@ import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
  * Moving lines in scale that's different to line scale (mouse point should keep on line)
  */
 
+function getRandomColor(): string {
+  // eslint-disable-next-line no-bitwise
+  return `#${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`;
+}
+
+function getLineWidth(): number {
+  return Math.floor(Math.random() * 5) + 1;
+}
+
+function getFill(): number {
+  return Math.floor(Math.random() * 5);
+}
+
+function getScale(): PriceAxisScale {
+  return [PriceScales.regular, PriceScales.log10][Math.floor(Math.random() * 2)];
+}
+
+function getLineBound(): LineBound {
+  return [LineBound.NoBound, LineBound.Both, LineBound.BoundEnd, LineBound.BoundStart][Math.floor(Math.random() * 4)];
+}
+
+function getRandomVLine(idBuilder: IdBuilder) {
+  return {
+    id: idBuilder.getNewId('VLine'),
+    title: 'vline',
+    type: 'VLine',
+    data: {
+      def: Math.random() * 10 * TimePeriod.m1 - 5 * TimePeriod.m1,
+      style: {
+        lineWidth: getLineWidth(),
+        fill: getFill(),
+        color: getRandomColor(),
+      },
+    },
+    locked: false,
+    visible: true,
+  };
+}
+
+function getRandomHLine(idBuilder: IdBuilder) {
+  return {
+    id: idBuilder.getNewId('HLine'),
+    title: 'hline',
+    type: 'HLine',
+    data: {
+      def: Math.random() * 1 - 0.5,
+      style: {
+        lineWidth: getLineWidth(),
+        fill: getFill(),
+        color: getRandomColor(),
+      },
+    },
+    locked: false,
+    visible: true,
+  };
+}
+
+function getRandomLine(idBuilder: IdBuilder) {
+  return {
+    id: idBuilder.getNewId('Line'),
+    title: 'line',
+    type: 'Line',
+    data: {
+      def: [
+        Math.random() * 100 * TimePeriod.m1 - 50 * TimePeriod.m1,
+        Math.random() * 5 - 10,
+        Math.random() * 100 * TimePeriod.m1 - 50 * TimePeriod.m1,
+        Math.random() * 5 - 10,
+      ],
+      boundType: getLineBound(),
+      scale: getScale(),
+      style: {
+        lineWidth: getLineWidth(),
+        fill: getFill(),
+        color: getRandomColor(),
+      },
+    },
+    locked: false,
+    visible: true,
+  };
+}
+
+function getRandomDrawing(idBuilder: IdBuilder): any {
+  return [getRandomLine, getRandomVLine, getRandomHLine][Math.floor(Math.random() * 1)](idBuilder);
+}
+
 const idHelper: IdHelper = new IdHelper();
-const mainDs = new DataSource({ id: 'main', idHelper });
+const randomDrawings = new Array(200).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
+const mainDs = new DataSource({ id: 'main', idHelper }, randomDrawings);
 const chartApi = new Chart({
   sketchers: new Map<DrawingType, Sketcher>([]),
   style: {},
@@ -280,79 +369,79 @@ mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
 
 let i = 0;
 
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.clearHistory();`);
-  chartApi.clearHistory();
-}, 100 * i++, i);
+// setTimeout((j: number) => {
+//   console.log(`${j}) chartApi.clearHistory();`);
+//   chartApi.clearHistory();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.createPane(~second);`);
-  const dataSource: DataSource = new DataSource({ id: 'second', idHelper });
-  chartApi.createPane(dataSource, { preferredSize: 0.3 });
-}, 100 * i++, i);
+// setTimeout((j: number) => {
+//   console.log(`${j}) chartApi.createPane(~second);`);
+//   const dataSource: DataSource = new DataSource({ id: 'second', idHelper });
+//   chartApi.createPane(dataSource, { preferredSize: 0.3 });
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.undo();`);
-  chartApi.undo();
-}, 100 * i++, i);
+// setTimeout((j: number) => {
+//   console.log(`${j}) chartApi.undo();`);
+//   chartApi.undo();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.undo();`);
-  chartApi.undo();
-}, 100 * i++, i);
+// setTimeout((j: number) => {
+//   console.log(`${j}) chartApi.undo();`);
+//   chartApi.undo();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.redo();`);
-  chartApi.redo();
-}, 100 * i++, i);
+// setTimeout((j: number) => {
+//   console.log(`${j}) chartApi.redo();`);
+//   chartApi.redo();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.green025HLineNotShared);`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.green025HLineNotShared);`);
 
-  mainDs.beginTransaction();
-  mainDs.add(drawings.green025HLineNotShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.green025HLineNotShared);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.green025VLineNotShared);`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.green025VLineNotShared);`);
 
-  mainDs.beginTransaction();
-  mainDs.add(drawings.green025VLineNotShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.green025VLineNotShared);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.red010VLineShared);`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.red010VLineShared);`);
 
-  mainDs.beginTransaction();
-  mainDs.add(drawings.red010VLineShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.red010VLineShared);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.red010HLineShared);`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.red010HLineShared);`);
 
-  mainDs.beginTransaction();
-  mainDs.add(drawings.red010HLineShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.red010HLineShared);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.remove(drawings.red010HLineShared.id);`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.remove(drawings.red010HLineShared.id);`);
 
-  mainDs.beginTransaction();
-  mainDs.remove(drawings.red010HLineShared.id);
-  mainDs.endTransaction();
-}, 100 * i++, i);
+//   mainDs.beginTransaction();
+//   mainDs.remove(drawings.red010HLineShared.id);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
 
-  mainDs.beginTransaction();
-  mainDs.add(drawings.greenLineBoundBoth);
-  mainDs.endTransaction();
-}, 100 * i++, i);
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.greenLineBoundBoth);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
 
 // setTimeout((j: number) => {
 //   console.log(`${j}) mainDs.add(drawings.green0to1LineBoundStart);`);
@@ -389,12 +478,12 @@ setTimeout((j: number) => {
   chartApi.timeAxis.noHistoryManagedUpdate({ range: { from: -10 * TimePeriod.m1 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp } });
 }, 100 * i++, i);
 
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.reset();`);
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.reset();`);
 
-  mainDs.reset();
-  mainDs.reset();
-}, 100 * i++, i);
+//   mainDs.reset();
+//   mainDs.reset();
+// }, 100 * i++, i);
 
 // i += 50;
 //

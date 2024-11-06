@@ -40,7 +40,7 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
   renderBarsToEntry(bars: OHLCvBar[], entry: DataSourceEntry<CandlestickPlot>, viewport: Viewport): void {
     const { descriptor, drawing } = entry;
     const { priceAxis, timeAxis } = viewport;
-    const { range: timeRange } = timeAxis;
+    const { range: timeRange } = toRaw(timeAxis);
     const { content: ohlc, plotOptions } = toRaw(descriptor?.options.data);
 
     if (!ohlc || !drawing) {

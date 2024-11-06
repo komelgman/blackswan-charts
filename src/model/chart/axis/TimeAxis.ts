@@ -1,3 +1,4 @@
+import { toRaw } from 'vue';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 import Axis from '@/model/chart/axis/Axis';
 import type AxisOptions from '@/model/chart/axis/AxisOptions';
@@ -38,14 +39,16 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
   }
 
   public translate(value: UTCTimestamp): number {
-    const { from } = this.range;
-    const [scaleK] = this.cache;
+    const raw = toRaw(this);
+    const { from } = raw.range;
+    const [scaleK] = raw.cache;
     return (value - from) * scaleK;
   }
 
   public revert(screenPos: number): UTCTimestamp {
-    const { from } = this.range;
-    const [, unscaleK] = this.cache;
+    const raw = toRaw(this);
+    const { from } = raw.range;
+    const [, unscaleK] = raw.cache;
     return (from + unscaleK * screenPos) as UTCTimestamp;
   }
 
