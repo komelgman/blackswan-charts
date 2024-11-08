@@ -88,11 +88,25 @@ function getMousePosRelativeToElement(e: MouseEvent, element?: Element): Point {
   return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 }
 
+function getElementSize(element: Element | EventTarget | null): { elementHeight: number, elementWidth: number } {
+  const target = element;
+  if (!(target instanceof Element)) {
+    throw new Error('Illegal argument: e instanceof Element)');
+  }
+
+  const rect = target.getBoundingClientRect();
+  return { elementHeight: rect.height, elementWidth: rect.width };
+}
+
 function onMouseLeftBtnClick(e: MouseEvent): void {
   if (!e.defaultPrevented && !isWasDrag) {
     e.preventDefault();
 
-    const event: MouseClickEvent = { ...getMousePosRelativeToElement(e), isCtrl: e.ctrlKey };
+    const event: MouseClickEvent = {
+      ...getElementSize(e.target),
+      ...getMousePosRelativeToElement(e),
+      isCtrl: e.ctrlKey,
+    };
     emit('left-mouse-btn-click', event);
   }
 }
@@ -101,7 +115,11 @@ function onMouseLeftBtnDoubleClick(e: MouseEvent): void {
   if (!e.defaultPrevented) {
     e.preventDefault();
 
-    const event: MouseClickEvent = { ...getMousePosRelativeToElement(e), isCtrl: e.ctrlKey };
+    const event: MouseClickEvent = {
+      ...getElementSize(e.target),
+      ...getMousePosRelativeToElement(e),
+      isCtrl: e.ctrlKey,
+    };
     emit('left-mouse-btn-double-click', event);
   }
 }
@@ -134,6 +152,7 @@ function onDragMove(e: MouseEvent): void {
 
   if (!isWasDrag) {
     const startEvent: MouseClickEvent = {
+      ...getElementSize(dragInElement),
       ...getMousePosRelativeToElement(e, dragInElement),
       isCtrl: e.ctrlKey,
     };
@@ -143,6 +162,7 @@ function onDragMove(e: MouseEvent): void {
 
   const pos: Point = getMousePosRelativeToElement(e, dragInElement);
   const moveEvent: DragMoveEvent = {
+    ...getElementSize(dragInElement),
     ...pos,
     dx: prevPos.x - pos.x,
     dy: prevPos.y - pos.y,
@@ -162,7 +182,7 @@ function onMouseMove(e: MouseEvent): void {
   }
   isSkipMovementsDetection = true;
 
-  const event: MousePositionEvent = getMousePosRelativeToElement(e);
+  const event: MousePositionEvent = { ...getMousePosRelativeToElement(e), ...getElementSize(e.target) };
   emit('mouse-move', event);
 
   // hint: decrease amount of move events
@@ -177,7 +197,7 @@ function onDragEnd(e?: DragEvent): void {
   if (e === undefined || !e.defaultPrevented) {
     if (e !== undefined && isWasDrag) {
       e.preventDefault();
-      const event: MousePositionEvent = getMousePosRelativeToElement(e, dragInElement);
+      const event: MousePositionEvent = { ...getMousePosRelativeToElement(e, dragInElement), ...getElementSize(dragInElement) };
       emit('drag-end', event);
     }
 

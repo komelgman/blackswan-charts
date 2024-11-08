@@ -1,28 +1,34 @@
 <template>
-  <div ref="rootElement" class="timeline pane">
+  <div class="timeline pane">
     <layered-canvas
       :options="canvasOptions"
-      @drag-move="onDrag"
-      @zoom="onZoom"
       @resize="onResize"
+
+      @mouse-move="onMouseMove"
+      @drag-start="onDragStart"
+      @drag-move="onDrag"
+      @drag-end="onDragEnd"
+      @left-mouse-btn-click="onLeftMouseBtnClick"
+      @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
+      @zoom="onZoom"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import TimeAxisLabelsLayer from '@/model/chart/layers/TimeAxisLabelsLayer';
+import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
 interface Props {
   timeAxis: TimeAxis;
+  interactionsHandler: InteractionsHandler<TimeAxis>;
 }
 
-const { timeAxis } = defineProps<Props>();
-const rootElement = ref<HTMLElement>();
+const { timeAxis, interactionsHandler } = defineProps<Props>();
 const canvasOptions: LayeredCanvasOptions = {
   layers: [
     new TimeAxisLabelsLayer(timeAxis),
@@ -32,12 +38,32 @@ const canvasOptions: LayeredCanvasOptions = {
   ],
 };
 
+function onMouseMove(e: MousePositionEvent): void {
+  interactionsHandler.onMouseMove(timeAxis, e);
+}
+
+function onLeftMouseBtnClick(e: MouseClickEvent): void {
+  interactionsHandler.onLeftMouseBtnClick(timeAxis, e);
+}
+
+function onLeftMouseBtnDoubleClick(e: MouseClickEvent): void {
+  interactionsHandler.onLeftMouseBtnDoubleClick(timeAxis, e);
+}
+
+function onDragStart(e: MouseClickEvent): void {
+  interactionsHandler.onDragStart(timeAxis, e);
+}
+
 function onDrag(e: DragMoveEvent): void {
-  timeAxis.zoom(rootElement.value!.getBoundingClientRect().width / 2, -e.dx);
+  interactionsHandler.onDrag(timeAxis, e);
+}
+
+function onDragEnd(e: MousePositionEvent): void {
+  interactionsHandler.onDragEnd(timeAxis, e);
 }
 
 function onZoom(e: ZoomEvent): void {
-  timeAxis.zoom(e.pivot.x, e.delta);
+  interactionsHandler.onZoom(timeAxis, e);
 }
 
 function onResize(e: ResizeEvent): void {

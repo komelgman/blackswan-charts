@@ -6,6 +6,7 @@ enum DataSourceChangeEventReason {
   RemoveEntry = 'RemoveEntry',
   CacheReset = 'CacheReset',
   CacheInvalidated = 'CacheInvalidated',
+  PrimaryResourceChanged = 'PrimaryResourceChanged',
 }
 
 export default DataSourceChangeEventReason;

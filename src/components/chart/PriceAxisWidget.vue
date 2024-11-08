@@ -1,35 +1,44 @@
 <template>
-  <div ref="rootElement" class="priceline pane" :style="cssVars">
+  <div class="priceline pane" :style="cssVars">
     <layered-canvas
       :options="canvasOptions"
-      @drag-move="onDrag"
-      @zoom="onZoom"
       @resize="onResize"
+
+      @mouse-move="onMouseMove"
+      @drag-start="onDragStart"
+      @drag-move="onDrag"
+      @drag-end="onDragEnd"
+      @left-mouse-btn-click="onLeftMouseBtnClick"
+      @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
+      @zoom="onZoom"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
-import type { DragMoveEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
+import { computed, inject, onMounted, onUnmounted } from 'vue';
+import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type { ChartState } from '@/model/chart/Chart';
 import PriceAxisLabelsLayer from '@/model/chart/layers/PriceAxisLabelsLayer';
 import PriceAxisMarksLayer from '@/model/chart/layers/PriceAxisMarksLayer';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
+import type DataSource from '@/model/datasource/DataSource';
+import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
+import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
 interface Props {
-  viewportModel: Viewport;
+  priceAxis: PriceAxis;
+  dataSource: DataSource;
+  interactionsHandler: InteractionsHandler<PriceAxis>;
 }
 
-const { viewportModel } = defineProps<Props>();
-const rootElement = ref<HTMLElement>();
+const { priceAxis, dataSource, interactionsHandler } = defineProps<Props>();
 const chartState = inject<ChartState>('chartState');
-const marksLayer = new PriceAxisMarksLayer(viewportModel);
+const marksLayer = new PriceAxisMarksLayer(dataSource, priceAxis);
 const canvasOptions: LayeredCanvasOptions = {
   layers: [
-    new PriceAxisLabelsLayer(viewportModel.priceAxis),
+    new PriceAxisLabelsLayer(priceAxis),
     marksLayer,
     // priceline mark renderer
     // tool/cross hair label renderer
@@ -44,16 +53,36 @@ onUnmounted(() => {
   marksLayer.uninstallListeners();
 });
 
+function onMouseMove(e: MousePositionEvent): void {
+  interactionsHandler.onMouseMove(priceAxis, e);
+}
+
+function onLeftMouseBtnClick(e: MouseClickEvent): void {
+  interactionsHandler.onLeftMouseBtnClick(priceAxis, e);
+}
+
+function onLeftMouseBtnDoubleClick(e: MouseClickEvent): void {
+  interactionsHandler.onLeftMouseBtnDoubleClick(priceAxis, e);
+}
+
+function onDragStart(e: MouseClickEvent): void {
+  interactionsHandler.onDragStart(priceAxis, e);
+}
+
 function onDrag(e: DragMoveEvent): void {
-  viewportModel.priceAxis.zoom(rootElement.value!.getBoundingClientRect().height / 2, -e.dy);
+  interactionsHandler.onDrag(priceAxis, e);
+}
+
+function onDragEnd(e: MousePositionEvent): void {
+  interactionsHandler.onDragEnd(priceAxis, e);
 }
 
 function onZoom(e: ZoomEvent): void {
-  viewportModel.priceAxis.zoom(e.pivot.y, e.delta);
+  interactionsHandler.onZoom(priceAxis, e);
 }
 
 function onResize(e: ResizeEvent): void {
-  viewportModel.priceAxis.noHistoryManagedUpdate({ screenSize: { main: e.height, second: e.width } });
+  priceAxis.noHistoryManagedUpdate({ screenSize: { main: e.height, second: e.width } });
 }
 
 const cssVars = computed(() => {

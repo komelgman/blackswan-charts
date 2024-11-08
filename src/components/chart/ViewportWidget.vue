@@ -5,13 +5,14 @@
   >
     <layered-canvas
       :options="canvasOptions"
+
+      @mouse-move="onMouseMove"
       @drag-start="onDragStart"
       @drag-end="onDragEnd"
       @drag-move="onDrag"
-      @mouse-move="onMouseMove"
-      @zoom="onZoom"
-      @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
       @left-mouse-btn-click="onLeftMouseBtnClick"
+      @left-mouse-btn-double-click="onLeftMouseBtnDoubleClick"
+      @zoom="onZoom"
     />
   </div>
 </template>
@@ -25,16 +26,17 @@ import ViewportDataSourceLayer from '@/model/chart/layers/ViewportDataSourceLaye
 import ViewportGridLayer from '@/model/chart/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/model/chart/layers/ViewportHighlightingLayer';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
+import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
 interface Props {
   viewportModel: Viewport;
+  interactionsHandler: InteractionsHandler<Viewport>;
 }
 
-const { viewportModel } = defineProps<Props>();
-const highlightInvalidator = new ViewportHighlightInvalidator(viewportModel);
+const { viewportModel, interactionsHandler } = defineProps<Props>();
+const { highlightInvalidator } = viewportModel;
 const dataSourceInvalidator = new DataSourceInvalidator(viewportModel);
 
 const dataSourceLayer = createDataSourceLayer();
@@ -64,9 +66,9 @@ onUnmounted(() => {
 });
 
 function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
-  if (events.has(DataSourceChangeEventReason.RemoveEntry)) {
+  const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
+  if (removedEntriesEvents.length > 0) {
     const { selected, highlighted } = viewportModel;
-    const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
 
     for (const event of removedEntriesEvents) {
       if (highlighted === event.entry) {
@@ -102,61 +104,31 @@ function createHighlightingLayer(): ViewportHighlightingLayer {
 }
 
 function onMouseMove(e: MousePositionEvent): void {
-  highlightInvalidator.invalidate(e);
-}
-
-function onLeftMouseBtnDoubleClick(): void {
-  const { highlighted } = viewportModel;
-  if (highlighted !== undefined) {
-    console.log(`double click on element: ${highlighted.descriptor.ref}`);
-  } else {
-    console.log('double click on viewport');
-  }
+  interactionsHandler.onMouseMove(viewportModel, e);
 }
 
 function onLeftMouseBtnClick(e: MouseClickEvent): void {
-  viewportModel.updateSelection(e.isCtrl);
+  interactionsHandler.onLeftMouseBtnClick(viewportModel, e);
+}
+
+function onLeftMouseBtnDoubleClick(e: MouseClickEvent): void {
+  interactionsHandler.onLeftMouseBtnDoubleClick(viewportModel, e);
 }
 
 function onDragStart(e: MouseClickEvent): void {
-  viewportModel.updateSelection(e.isCtrl, true);
-
-  if (viewportModel.selectionCanBeDragged()) {
-    viewportModel.dataSource.beginTransaction({ protocolTitle: 'drag-in-viewport' });
-
-    if (e.isCtrl) {
-      viewportModel.cloneSelected();
-    }
-  }
-
-  viewportModel.updateDragHandle();
+  interactionsHandler.onDragStart(viewportModel, e);
 }
 
 function onDrag(e: DragMoveEvent): void {
-  if (viewportModel.selectionCanBeDragged()) {
-    highlightInvalidator.invalidate(e);
-    viewportModel.moveSelected(e);
-  } else {
-    const { timeAxis, priceAxis } = viewportModel;
-    timeAxis.move(e.dx);
-    priceAxis.move(e.dy);
-  }
+  interactionsHandler.onDrag(viewportModel, e);
 }
 
-function onDragEnd(): void {
-  const { dataSource } = viewportModel;
-  if (viewportModel.selectionCanBeDragged()) {
-    dataSource.endTransaction();
-  } else {
-    dataSource.historicalIncidentReportProcessor({
-      protocolOptions: { protocolTitle: 'move-in-viewport' },
-      sign: true,
-    });
-  }
+function onDragEnd(e: MousePositionEvent): void {
+  interactionsHandler.onDragEnd(viewportModel, e);
 }
 
 function onZoom(e: ZoomEvent): void {
-  viewportModel.timeAxis.zoom(e.pivot.x, e.delta);
+  interactionsHandler.onZoom(viewportModel, e);
 }
 
 const cssVars = computed(() => {

@@ -1,7 +1,6 @@
-import { isProxy } from 'vue';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
-import { type DeepPartial, type Predicate, isString } from '@/model/type-defs';
+import { type DeepPartial, type Predicate, type Wrapped, isString } from '@/model/type-defs';
 import { NonReactive } from '@/model/type-defs/decorators';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
@@ -23,6 +22,7 @@ import type {
 } from '@/model/datasource/types';
 import type { HistoricalIncidentReportProcessor, HistoricalProtocolOptions } from '@/model/history';
 import type IdHelper from '@/model/tools/IdHelper';
+import { SetPrimaryResource } from '@/model/datasource/incidents/SetPrimaryResource';
 
 @NonReactive
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
@@ -35,6 +35,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private readonly idHelper: IdHelper;
   private historicalIncidentReportProcessorValue: HistoricalIncidentReportProcessor | undefined;
   private protocolOptions: HistoricalProtocolOptions | undefined = undefined;
+  private primaryResourceRefValue: Wrapped<DrawingReference | undefined> = { value: undefined };
 
   public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
@@ -68,8 +69,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   * [Symbol.iterator](): IterableIterator<Readonly<DataSourceEntry>> {
-    this.checkWeAreNotInProxy();
-
     let entry = this.storage.head;
     while (entry !== undefined) {
       yield entry.value;
@@ -78,8 +77,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   * visible(inverse: boolean = false): IterableIterator<Readonly<DataSourceEntry>> {
-    this.checkWeAreNotInProxy();
-
     const it = inverse ? 'prev' : 'next';
     let entry = inverse ? this.storage.tail : this.storage.head;
     while (entry !== undefined) {
@@ -95,8 +92,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   * filtered(predicate: Predicate<DataSourceEntry>): IterableIterator<Readonly<DataSourceEntry>> {
-    this.checkWeAreNotInProxy();
-
     let entry = this.storage.head;
     while (entry !== undefined) {
       const entryValue: DataSourceEntry = entry.value;
@@ -168,6 +163,23 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     this.flush();
   }
 
+  public get primaryResourceRef(): DrawingReference | undefined {
+    return this.primaryResourceRefValue.value;
+  }
+
+  public set primaryResourceRef(value: DrawingReference | undefined) {
+    this.checkWeAreInTransaction();
+
+    this.historicalIncidentReportProcessor({
+      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
+      incident: new SetPrimaryResource({
+        value,
+        target: this.primaryResourceRefValue,
+        addReason: this.addReason.bind(this),
+      }),
+    });
+  }
+
   public get<T>(ref: DrawingReference): DataSourceEntry<T> {
     if (!isString(ref) && ref[0] === this.id) {
       return this.storage.get(ref[1]);
@@ -177,7 +189,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public add<T>(options: DrawingOptions<T>): void {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     if (options.id !== undefined && this.storage.has(options.id)) {
@@ -195,7 +206,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public update<T>(ref: DrawingReference, value: DeepPartial<Omit<DrawingOptions<T>, 'id'>>): void {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     this.historicalIncidentReportProcessor({
@@ -214,7 +224,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     processor: (entry: DataSourceEntry<T>) => void,
     reason: DataSourceChangeEventReason = DataSourceChangeEventReason.UpdateEntry,
   ): void {
-    this.checkWeAreNotInProxy();
     const entries: DataSourceEntry[] = [];
 
     for (const ref of refs) {
@@ -229,7 +238,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public remove(ref: DrawingReference): void {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     this.historicalIncidentReportProcessor({
@@ -243,7 +251,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public clone(entry: DataSourceEntry): DataSourceEntry {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     const cloned: DrawingDescriptor = clone(entry.descriptor);
@@ -268,7 +275,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringToFront(ref: DrawingReference): void {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     // const index: number = this.indexByRef(ref);
@@ -284,7 +290,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendToBack(ref: DrawingReference): void {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     // const index: number = this.indexByRef(ref);
@@ -304,7 +309,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringForward(ref: DrawingReference): void {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     // const index: number = this.indexByRef(ref);
@@ -324,7 +328,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendBackward(ref: DrawingReference): void {
-    this.checkWeAreNotInProxy();
     this.checkWeAreInTransaction();
 
     // const index: number = this.indexByRef(ref);
@@ -342,8 +345,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public flush(): void {
-    this.checkWeAreNotInProxy();
-
     const events: DataSourceChangeEventsMap = new Map(this.changeEvents);
     this.changeEvents.clear();
     this.fire(events);
@@ -380,12 +381,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     }
 
     return Number.parseInt(matches[1], 10);
-  }
-
-  private checkWeAreNotInProxy(): void {
-    if (isProxy(this)) {
-      throw new Error('Invalid state, dataSource shouldn\'t be reactive');
-    }
   }
 
   private checkWeAreInTransaction(): void {

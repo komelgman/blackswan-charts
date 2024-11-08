@@ -126,7 +126,7 @@ function getRandomDrawing(idBuilder: IdBuilder): any {
 }
 
 const idHelper: IdHelper = new IdHelper();
-const randomDrawings = new Array(20).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
+const randomDrawings = new Array(0).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
 const mainDs = new DataSource({ id: 'main', idHelper }, randomDrawings);
 const chartApi = new Chart({
   sketchers: new Map<DrawingType, Sketcher>([]),
@@ -347,7 +347,7 @@ const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, c
   };
 };
 
-const valuesCount = 1000000;
+const valuesCount = 1000;
 const timePeriod = TimePeriod.m1;
 const firstBarTime = Math.floor((Date.now() - valuesCount * timePeriod) / timePeriod) * timePeriod;
 

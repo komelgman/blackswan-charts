@@ -1,9 +1,8 @@
 import { watch } from 'vue';
 import Layer from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
-import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
+import type { InvertedValue, PriceAxis } from '@/model/chart/axis/PriceAxis';
 import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
 import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventListener,
@@ -11,29 +10,32 @@ import {
 } from '@/model/datasource/events';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Predicate } from '@/model/type-defs';
+import type DataSource from '@/model/datasource/DataSource';
 
 export default class PriceAxisMarksLayer extends Layer {
-  private readonly viewport: Viewport;
+  private readonly dataSource: DataSource;
+  private readonly priceAxis: PriceAxis;
 
-  constructor(viewport: Viewport) {
+  constructor(dataSource: DataSource, priceAxis: PriceAxis) {
     super();
 
-    this.viewport = viewport;
+    this.dataSource = dataSource;
+    this.priceAxis = priceAxis;
 
     watch([
-      this.viewport.priceAxis.textStyle,
-      this.viewport.priceAxis.inverted,
+      this.priceAxis.textStyle,
+      this.priceAxis.inverted,
     ], () => {
       this.invalid = true;
     });
   }
 
   public installListeners(): void {
-    this.viewport.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
+    this.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
   }
 
   public uninstallListeners(): void {
-    this.viewport.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
+    this.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
@@ -44,8 +46,8 @@ export default class PriceAxisMarksLayer extends Layer {
   };
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
-    const inverted: InvertedValue = this.viewport.priceAxis.inverted.value;
-    const { textStyle } = this.viewport.priceAxis;
+    const inverted: InvertedValue = this.priceAxis.inverted.value;
+    const { textStyle } = this.priceAxis;
     const half = textStyle.fontSize / 2;
 
     if (inverted < 0) {
@@ -69,7 +71,7 @@ export default class PriceAxisMarksLayer extends Layer {
     };
 
     const x = width - PRICE_LABEL_PADDING;
-    for (const { mark } of this.viewport.dataSource.filtered(containValidMarks)) {
+    for (const { mark } of this.dataSource.filtered(containValidMarks)) {
       if (mark === undefined) {
         continue;
       }

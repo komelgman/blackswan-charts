@@ -6,6 +6,7 @@ import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry, DrawingType, HandleId } from '@/model/datasource/types';
+import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
 
 export interface ViewportOptions {
   priceScale: PriceAxisScale;
@@ -18,6 +19,7 @@ export class Viewport {
   public readonly timeAxis: TimeAxis;
   public readonly priceAxis: PriceAxis;
   public readonly dataSource: DataSource;
+  public readonly highlightInvalidator: ViewportHighlightInvalidator;
 
   public readonly selected: Set<DataSourceEntry> = new Set();
   public highlighted: DataSourceEntry | undefined;
@@ -35,6 +37,7 @@ export class Viewport {
     this.timeAxis = timeAxis;
     this.priceAxis = priceAxis;
     this.sketchers = sketchers;
+    this.highlightInvalidator = new ViewportHighlightInvalidator(this);
   }
 
   public updateSelection(isCtrlPressed: boolean, isInDrag: boolean = false): void {
