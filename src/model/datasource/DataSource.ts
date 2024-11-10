@@ -1,6 +1,6 @@
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
-import { type DeepPartial, type Predicate, type Wrapped, isString } from '@/model/type-defs';
+import { type DeepPartial, type Predicate, isString } from '@/model/type-defs';
 import { NonReactive } from '@/model/type-defs/decorators';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
@@ -20,9 +20,8 @@ import type {
   DrawingOptions,
   DrawingReference,
 } from '@/model/datasource/types';
-import type { HistoricalIncidentReportProcessor, HistoricalProtocolOptions } from '@/model/history';
-import type IdHelper from '@/model/tools/IdHelper';
-import { SetPrimaryResource } from '@/model/datasource/incidents/SetPrimaryResource';
+import type { HistoricalProtocolOptions, HistoricalTransactionManager } from '@/model/history';
+import type { IdHelper } from '@/model/tools';
 
 @NonReactive
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
@@ -33,9 +32,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private readonly changeEvents: DataSourceChangeEventsMap = new Map();
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private readonly idHelper: IdHelper;
-  private historicalIncidentReportProcessorValue: HistoricalIncidentReportProcessor | undefined;
-  private protocolOptions: HistoricalProtocolOptions | undefined = undefined;
-  private primaryResourceRefValue: Wrapped<DrawingReference | undefined> = { value: undefined };
+  private historicalTransactionManager: HistoricalTransactionManager | undefined;
 
   public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
@@ -47,25 +44,23 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public reset(): void {
-    this.beginTransaction();
     Array.from(this)
       .filter((entry) => isString(entry.descriptor.ref))
       .forEach((entry) => this.remove(entry.descriptor.ref as string));
-    this.endTransaction();
 
     this.idHelper.forGroup(this.id).reset();
   }
 
-  public set historicalIncidentReportProcessor(value: HistoricalIncidentReportProcessor) {
-    this.historicalIncidentReportProcessorValue = value;
+  public set transactionManager(value: HistoricalTransactionManager) {
+    this.historicalTransactionManager = value;
   }
 
-  public get historicalIncidentReportProcessor(): HistoricalIncidentReportProcessor {
-    if (this.historicalIncidentReportProcessorValue === undefined) {
-      throw new Error('Illegal state: this.historicalIncidentReportProcessorValue === undefined');
+  public get transactionManager(): HistoricalTransactionManager {
+    if (this.historicalTransactionManager === undefined) {
+      throw new Error('Illegal state: this.historicalTransactionManager === undefined');
     }
 
-    return this.historicalIncidentReportProcessorValue;
+    return this.historicalTransactionManager;
   }
 
   * [Symbol.iterator](): IterableIterator<Readonly<DataSourceEntry>> {
@@ -103,14 +98,23 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     }
   }
 
-  public addChangeEventListener(listener: DataSourceChangeEventListener): void {
+  public addChangeEventListener(listener: DataSourceChangeEventListener, options?: { immediate?: boolean }): Function {
     const index = this.eventListeners.findIndex((v) => v === listener);
     if (index > -1) {
       console.error('Event listener already exists');
-      return;
+      return () => this.removeChangeEventListener(listener);
     }
 
     this.eventListeners.push(listener);
+
+    if (options?.immediate) {
+      const events = this.toChangeEvents(DataSourceChangeEventReason.AddEntry, [...this[Symbol.iterator]()]);
+      const eventsMap: DataSourceChangeEventsMap = new Map();
+      eventsMap.set(DataSourceChangeEventReason.AddEntry, events);
+      listener.call(listener, eventsMap, this);
+    }
+
+    return () => this.removeChangeEventListener(listener);
   }
 
   public removeChangeEventListener(listener: DataSourceChangeEventListener): void {
@@ -140,10 +144,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public beginTransaction(options: HistoricalProtocolOptions | undefined = undefined): void {
-    this.protocolOptions = options ?? { protocolTitle: this.getNewTransactionId() };
-
-    this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions,
+    this.transactionManager.openTransaction(options);
+    this.transactionManager.exeucteInTransaction({
       lifeHooks: {
         afterInverse: () => this.flush(),
         afterApply: () => this.flush(),
@@ -152,32 +154,8 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public endTransaction(): void {
-    this.checkWeAreInTransaction();
-
-    this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
-      sign: true,
-    });
-
-    this.protocolOptions = undefined;
+    this.transactionManager.tryCloseTransaction();
     this.flush();
-  }
-
-  public get primaryResourceRef(): DrawingReference | undefined {
-    return this.primaryResourceRefValue.value;
-  }
-
-  public set primaryResourceRef(value: DrawingReference | undefined) {
-    this.checkWeAreInTransaction();
-
-    this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
-      incident: new SetPrimaryResource({
-        value,
-        target: this.primaryResourceRefValue,
-        addReason: this.addReason.bind(this),
-      }),
-    });
   }
 
   public get<T>(ref: DrawingReference): DataSourceEntry<T> {
@@ -189,14 +167,11 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public add<T>(options: DrawingOptions<T>): void {
-    this.checkWeAreInTransaction();
-
     if (options.id !== undefined && this.storage.has(options.id)) {
       throw new Error(`Entry with this reference already exists: ${options.id}`);
     }
 
-    this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
+    this.transactionManager.exeucteInTransaction({
       incident: new AddNewEntry({
         descriptor: this.createDescriptor(options),
         storage: this.storage,
@@ -206,10 +181,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public update<T>(ref: DrawingReference, value: DeepPartial<Omit<DrawingOptions<T>, 'id'>>): void {
-    this.checkWeAreInTransaction();
-
-    this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
+    this.transactionManager.exeucteInTransaction({
       incident: new UpdateEntry({
         ref,
         storage: this.storage,
@@ -238,10 +210,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public remove(ref: DrawingReference): void {
-    this.checkWeAreInTransaction();
-
-    this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
+    this.transactionManager.exeucteInTransaction({
       incident: new RemoveEntry({
         ref,
         storage: this.storage,
@@ -251,8 +220,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   }
 
   public clone(entry: DataSourceEntry): DataSourceEntry {
-    this.checkWeAreInTransaction();
-
     const cloned: DrawingDescriptor = clone(entry.descriptor);
     if (isString(cloned.ref)) {
       cloned.ref = this.getNewId(cloned.options.type);
@@ -260,8 +227,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
       cloned.ref[1] = this.idHelper.forGroup(cloned.ref[0]).getNewId(cloned.options.type);
     }
 
-    this.historicalIncidentReportProcessor({
-      protocolOptions: this.protocolOptions as HistoricalProtocolOptions,
+    this.transactionManager.exeucteInTransaction({
       incident: new AddNewEntry({
         descriptor: cloned,
         storage: this.storage,
@@ -275,8 +241,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringToFront(ref: DrawingReference): void {
-    this.checkWeAreInTransaction();
-
     // const index: number = this.indexByRef(ref);
     // const { orderedEntries } = this;
     //
@@ -290,8 +254,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendToBack(ref: DrawingReference): void {
-    this.checkWeAreInTransaction();
-
     // const index: number = this.indexByRef(ref);
     // if (index === 0) {
     //   console.warn('index === 0')
@@ -309,8 +271,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public bringForward(ref: DrawingReference): void {
-    this.checkWeAreInTransaction();
-
     // const index: number = this.indexByRef(ref);
     // const { orderedEntries } = this;
     // if (index >= orderedEntries.length - 1) {
@@ -328,8 +288,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   // todo: add to history
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendBackward(ref: DrawingReference): void {
-    this.checkWeAreInTransaction();
-
     // const index: number = this.indexByRef(ref);
     // if (index === 0) {
     //   console.warn('index === 0')
@@ -383,12 +341,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
     return Number.parseInt(matches[1], 10);
   }
 
-  private checkWeAreInTransaction(): void {
-    if (!this.protocolOptions) {
-      throw new Error('Invalid state, dataSource.beginTransaction() should be used before');
-    }
-  }
-
   private addReason(reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean = false): void {
     const changeEvents: DataSourceChangeEvent[] = this.toChangeEvents(reason, entries, shared);
     if (this.changeEvents.has(reason)) {
@@ -400,10 +352,6 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
 
   private toChangeEvents(reason: DataSourceChangeEventReason, entries: DataSourceEntry[], shared: boolean = false): DataSourceChangeEvent[] {
     return entries.map((entry) => ({ entry, reason, shared }));
-  }
-
-  private getNewTransactionId(): string {
-    return this.idHelper.getNewId(`datasource-${this.id}-transaction-`);
   }
 
   private fire(events: DataSourceChangeEventsMap): void {

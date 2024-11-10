@@ -1,12 +1,12 @@
-import { createApp, toRaw } from 'vue';
+import { createApp } from 'vue';
 import { Chart } from '@/model/chart/Chart';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceOptions, DrawingOptions } from '@/model/datasource/types';
-import IdHelper from '@/model/tools/IdHelper';
+import { IdHelper } from '@/model/tools/IdHelper';
 import type ChartWidgetTestContext from '../component/tools/ChartWidgetTestContext';
 
 const idHelper = new IdHelper();
-const chart = new Chart();
+const chart = new Chart(idHelper);
 const newDataSource = (options: DataSourceOptions, drawings: DrawingOptions[]) => new DataSource(options, drawings);
 let $nextTick = (callback: () => void) => callback();
 
@@ -26,7 +26,7 @@ function delay(): Promise<void> {
 }
 
 const context: ChartWidgetTestContext = {
-  mount, idHelper, chart, newDataSource, delay, toRaw,
+  mount, idHelper, chart, newDataSource, delay,
 };
 
 // eslint-disable-next-line

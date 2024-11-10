@@ -11,7 +11,7 @@ import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
-import IdHelper from '@/model/tools/IdHelper';
+import { IdHelper, type IdBuilder } from '@/model/tools';
 import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
 import {
   LineBound,
@@ -26,7 +26,6 @@ import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/view
 import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
 import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import type IdBuilder from './model/tools/IdBuilder';
 
 /**
  * todo
@@ -128,7 +127,7 @@ function getRandomDrawing(idBuilder: IdBuilder): any {
 const idHelper: IdHelper = new IdHelper();
 const randomDrawings = new Array(0).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
 const mainDs = new DataSource({ id: 'main', idHelper }, randomDrawings);
-const chartApi = new Chart({
+const chartApi = new Chart(idHelper, {
   sketchers: new Map<DrawingType, Sketcher>([]),
   style: {},
 });

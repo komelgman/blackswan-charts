@@ -26,7 +26,6 @@ import ViewportDataSourceLayer from '@/model/chart/layers/ViewportDataSourceLaye
 import ViewportGridLayer from '@/model/chart/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/model/chart/layers/ViewportHighlightingLayer';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
@@ -55,32 +54,15 @@ onMounted(() => {
   dataSourceInvalidator.installListeners();
   dataSourceLayer.installListeners();
   highlightingLayer.installListeners();
-  viewportModel.dataSource.addChangeEventListener(dataSourceChangeEventListener);
+  viewportModel.installListeners();
 });
 
 onUnmounted(() => {
   dataSourceInvalidator.uninstallListeners();
   dataSourceLayer.uninstallListeners();
   highlightingLayer.uninstallListeners();
-  viewportModel.dataSource.removeChangeEventListener(dataSourceChangeEventListener);
+  viewportModel.uninstallListeners();
 });
-
-function dataSourceChangeEventListener(events: DataSourceChangeEventsMap): void {
-  const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
-  if (removedEntriesEvents.length > 0) {
-    const { selected, highlighted } = viewportModel;
-
-    for (const event of removedEntriesEvents) {
-      if (highlighted === event.entry) {
-        viewportModel.resetHightlightes();
-      }
-
-      if (selected.has(event.entry)) {
-        selected.delete(event.entry);
-      }
-    }
-  }
-}
 
 function createGridLayer(): ViewportGridLayer {
   const { timeAxis, priceAxis } = viewportModel;

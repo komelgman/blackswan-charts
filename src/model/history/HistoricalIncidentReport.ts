@@ -12,5 +12,3 @@ export interface HistoricalIncidentReport {
   sign?: boolean;
   lifeHooks?: HistoricalIncidentLifeHooks;
 }
-
-export type HistoricalIncidentReportProcessor = (incidentReport: HistoricalIncidentReport) => void;

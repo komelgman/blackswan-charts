@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
-import IdHelper from '@/model/tools/IdHelper';
-import { History } from '@/model/history';
+import { IdHelper } from '@/model/tools/IdHelper';
+import { HistoricalTransactionManager, History } from '@/model/history';
 
 describe('DataSourceSharedEntries', () => {
   let ds1: DataSource;
@@ -95,10 +95,12 @@ describe('DataSourceSharedEntries', () => {
 
   it('test reset data source with shared entries', () => {
     const history: History = new History();
-    ds1.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    ds1.transactionManager = new HistoricalTransactionManager(idHelper, history);
     ds1.sharedEntries.attachSharedEntriesFrom(ds2);
 
+    ds1.beginTransaction();
     ds1.reset();
+    ds1.endTransaction();
 
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing3.id]]);

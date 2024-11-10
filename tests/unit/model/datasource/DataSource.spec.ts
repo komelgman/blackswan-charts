@@ -10,12 +10,14 @@ import {
   type DrawingReference,
   isEqualDrawingReference,
 } from '@/model/datasource/types';
-import { HistoricalProtocolSign, History } from '@/model/history';
-import IdHelper from '@/model/tools/IdHelper';
+import { HistoricalProtocolSign, HistoricalTransactionManager, History } from '@/model/history';
+import { IdHelper } from '@/model/tools';
 
 describe('DataSource', () => {
   let ds: DataSource;
   let storage: DataSourceEntriesStorage;
+  let idHelper: IdHelper;
+
   const drawing1: DrawingOptions = {
     id: 'test1',
     data: 'test entry1',
@@ -65,7 +67,8 @@ describe('DataSource', () => {
   }
 
   beforeEach(async () => {
-    ds = new DataSource({ idHelper: new IdHelper() }, clone([drawing1, drawing2, drawing3]));
+    idHelper = new IdHelper();
+    ds = new DataSource({ idHelper }, clone([drawing1, drawing2, drawing3]));
     storage = ds['storage'];
   });
 
@@ -109,6 +112,29 @@ describe('DataSource', () => {
     expect(drawingReferencesFromIterator).toEqual([drawing1.id, drawing2.id]);
   });
 
+  it('test addChangeEventListener(, { immediate: true })', () => {
+    let events: DataSourceChangeEventsMap = new Map();
+    const options: any = {
+      eventListener: (e: DataSourceChangeEventsMap): void => {
+        events = e;
+      },
+      eventListenerStub: (): void => {},
+    };
+
+    const listenerSpy = vi.spyOn(options, 'eventListener');
+    const stubSpy = vi.spyOn(options, 'eventListenerStub');
+    expect(listenerSpy).not.toHaveBeenCalled();
+
+    ds.addChangeEventListener(options.eventListener, { immediate: true });
+    ds.addChangeEventListener(options.eventListenerStub, { immediate: false });
+
+    expect(stubSpy).not.toHaveBeenCalled();
+    expect(listenerSpy).toHaveBeenCalledOnce();
+    expect(events.size).toBe(1);
+    const entries = (events.get(DataSourceChangeEventReason.AddEntry) || []).map((event) => (event.entry));
+    expect(entries.map((e) => e.descriptor.ref)).toEqual([drawing1.id, drawing2.id, drawing3.id]);
+  });
+
   it('test (add|remove)ChangeEventListener()/resetCache()', () => {
     let entries: DataSourceEntry[] = [];
     const options: any = {
@@ -128,6 +154,27 @@ describe('DataSource', () => {
 
     listenerSpy.mockClear();
     ds.removeChangeEventListener(options.eventListener);
+    ds.resetCache();
+
+    expect(listenerSpy).not.toHaveBeenCalled();
+  });
+
+  it('test addChangeEventListener() and remove by callback', () => {
+    const options: any = {
+      eventListener: (): void => {
+      },
+    };
+
+    const listenerSpy = vi.spyOn(options, 'eventListener');
+    expect(listenerSpy).not.toHaveBeenCalled();
+
+    const removeCallback = ds.addChangeEventListener(options.eventListener);
+    ds.resetCache();
+
+    expect(listenerSpy).toHaveBeenCalledOnce();
+
+    listenerSpy.mockClear();
+    removeCallback();
     ds.resetCache();
 
     expect(listenerSpy).not.toHaveBeenCalled();
@@ -159,10 +206,11 @@ describe('DataSource', () => {
 
   it('test (begin|end)Transaction()', () => {
     const history: History = new History();
-    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
+    ds.transactionManager = transactionManager;
 
     expect(() => ds.endTransaction())
-      .toThrowError(/^Invalid state, dataSource.beginTransaction\(\) should be used before$/);
+      .toThrowError(/^IllegalState: Try close already closed transaction undefined$/);
     expect(history['currentProtocol'].title).toEqual('big-boom');
     expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);
 
@@ -179,7 +227,8 @@ describe('DataSource', () => {
 
   it('test add()/remove() entry', () => {
     const history: History = new History();
-    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
+    ds.transactionManager = transactionManager;
     const newId = ds.getNewId('HLine');
     let addedEntries: DrawingReference[] = [];
     let removedEntries: DrawingReference[] = [];
@@ -243,7 +292,9 @@ describe('DataSource', () => {
 
   it('test update() entry', () => {
     const history: History = new History();
-    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
+    ds.transactionManager = transactionManager;
+
     let updatedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
@@ -276,6 +327,7 @@ describe('DataSource', () => {
 
   it('test clone() entry', () => {
     const history: History = new History();
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
     let clonedEntries: DrawingReference[] = [];
     const options: any = {
       eventListener: (events: DataSourceChangeEventsMap): void => {
@@ -286,7 +338,7 @@ describe('DataSource', () => {
     const listenerSpy = vi.spyOn(options, 'eventListener');
     const entry: DataSourceEntry<unknown> = storage.get(drawing1.id);
 
-    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    ds.transactionManager = transactionManager;
     ds.addChangeEventListener(options.eventListener);
     entry.descriptor.valid = true;
 
@@ -309,9 +361,12 @@ describe('DataSource', () => {
     const history: History = new History();
     const idBulder = ds['idHelper'].forGroup(ds.id);
     const idBuilderResetSpy = vi.spyOn(idBulder, 'reset');
-    ds.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
+    ds.transactionManager = transactionManager;
 
+    ds.beginTransaction();
     ds.reset();
+    ds.endTransaction();
 
     expect(idBuilderResetSpy).toHaveBeenCalledOnce();
     expect(history['currentProtocol'].sign).toEqual(HistoricalProtocolSign.Approved);

@@ -1,6 +1,6 @@
 import type { HasMergeWith } from '@/model/type-defs/optional';
 import type Axis from '@/model/chart/axis/Axis';
-import type AxisOptions from '@/model/chart/axis/AxisOptions';
+import { type AxisOptions } from '@/model/chart/axis/types';
 import {
   type IsEmptyIncident,
   type HistoricalIncidentOptions,
@@ -13,7 +13,7 @@ export interface UpdateRangeOptions<T extends number> extends HistoricalIncident
   range: Range<T>;
 }
 
-export default class UpdateAxisRange<T extends number>
+export class UpdateAxisRange<T extends number>
   extends AbstractHistoricalIncident<UpdateRangeOptions<T>>
   implements HasMergeWith<UpdateAxisRange<T>>, IsEmptyIncident {
   //---------------------------------------------------------------

@@ -3,8 +3,8 @@ import { clone } from '@/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
-import { History } from '@/model/history';
-import IdHelper from '@/model/tools/IdHelper';
+import { HistoricalTransactionManager, History } from '@/model/history';
+import { IdHelper } from '@/model/tools';
 
 describe('DataSourceSharedEntries | DataSource operations', () => {
   let interconnect: DataSourceInterconnect;
@@ -79,12 +79,13 @@ describe('DataSourceSharedEntries | DataSource operations', () => {
     const history: History = new History();
     interconnect = new DataSourceInterconnect();
     idHelper = new IdHelper();
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
     ds1 = new DataSource({ id: 'ds1', idHelper }, clone([drawing0, drawing1, drawing2]));
     ds2 = new DataSource({ id: 'ds2', idHelper }, clone([drawing2, drawing3, drawing4]));
     ds3 = new DataSource({ id: 'ds3', idHelper }, clone([drawing3, drawing5]));
-    ds1.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
-    ds2.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
-    ds3.historicalIncidentReportProcessor = history.reportProcessor.bind(history);
+    ds1.transactionManager = transactionManager;
+    ds2.transactionManager = transactionManager;
+    ds3.transactionManager = transactionManager;
   });
 
   it('test add DataSource', () => {

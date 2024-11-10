@@ -1,18 +1,16 @@
-import { reactive, toRaw } from 'vue';
+import { reactive } from 'vue';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 import { clone } from '@/misc/object.clone';
 import Axis from '@/model/chart/axis/Axis';
-import type AxisOptions from '@/model/chart/axis/AxisOptions';
-import { ZoomType } from '@/model/chart/axis/AxisOptions';
-import UpdatePriceAxisInverted from '@/model/chart/axis/incidents/UpdatePriceAxisInverted';
-import UpdatePriceAxisScale from '@/model/chart/axis/incidents/UpdatePriceAxisScale';
+import { type AxisOptions, ZoomType } from '@/model/chart/axis/types';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { TextStyle } from '@/model/chart/types/styles';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Price } from '@/model/chart/types';
 import type { Wrapped } from '@/model/type-defs';
 import { PostConstruct } from '@/model/type-defs/decorators';
-import type { HistoricalIncidentReportProcessor } from '@/model/history';
+import type { HistoricalTransactionManager } from '@/model/history';
+import { UpdatePriceAxisInverted, UpdatePriceAxisScale } from '@/model/chart/axis/incidents';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;
@@ -20,7 +18,7 @@ export declare type Inverted = Wrapped<InvertedValue>;
 export interface PriceAxisOptions extends AxisOptions<Price> {
   scale?: PriceAxisScale;
   inverted?: boolean;
-  contentWidth?: Wrapped<number>;
+  contentWidth?: number;
 }
 
 @PostConstruct
@@ -28,18 +26,18 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   private cache!: [virtualFrom: number, scaleK: number, unscaleK: number];
   private fractionValue: number = 0;
 
-  protected scaleValue: PriceAxisScale;
-  protected invertedValue: Inverted;
-  protected contentWidthValue: Wrapped<number> = { value: -1 };
+  private scaleValue: PriceAxisScale;
+  private invertedValue: Inverted;
+  private contentWidthValue: Wrapped<number> = { value: -1 };
 
   public constructor(
     id: EntityId,
-    historicalIncidentReportProcessor: HistoricalIncidentReportProcessor,
+    historicalTransactionManager: HistoricalTransactionManager,
     textStyle: TextStyle,
     scale: PriceAxisScale,
     inverted: Inverted,
   ) {
-    super(`${id}-price`, historicalIncidentReportProcessor, textStyle);
+    super(`${id}-price`, historicalTransactionManager, textStyle);
     this.scaleValue = reactive(clone(scale));
     this.invertedValue = reactive(clone(inverted));
   }
@@ -54,13 +52,12 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   }
 
   public invert(): void {
-    this.historicalIncidentReportProcessor({
+    this.transactionManager.transact({
       protocolOptions: { protocolTitle: 'price-axis-update-inverted' },
       incident: new UpdatePriceAxisInverted({
         axis: this,
         inverted: this.inverted.value < 0,
       }),
-      sign: true,
     });
   }
 
@@ -69,13 +66,12 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   }
 
   public set scale(value: PriceAxisScale) {
-    this.historicalIncidentReportProcessor({
+    this.transactionManager.transact({
       protocolOptions: { protocolTitle: 'price-axis-update-scale' },
       incident: new UpdatePriceAxisScale({
         axis: this,
         scale: value,
       }),
-      sign: true,
     });
   }
 
@@ -95,7 +91,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
     }
 
     if (options.contentWidth !== undefined) {
-      Object.assign(this.contentWidthValue, { ...options.contentWidth });
+      Object.assign(this.contentWidthValue, { value: options.contentWidth });
     }
 
     if (options.scale !== undefined) {
@@ -145,18 +141,16 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   }
 
   public translate(value: Price): number {
-    const raw = toRaw(this);
-    const [virtualFrom, scaleK] = raw.cache;
-    return (raw.scale.func.translate(value) - virtualFrom) * scaleK;
+    const [virtualFrom, scaleK] = this.cache;
+    return (this.scale.func.translate(value) - virtualFrom) * scaleK;
   }
 
   public revert(screenPos: number): Price {
-    const raw = toRaw(this);
-    const [virtualFrom, , unscaleK] = raw.cache;
-    return raw.scale.func.revert(screenPos * unscaleK + virtualFrom);
+    const [virtualFrom, , unscaleK] = this.cache;
+    return this.scale.func.revert(screenPos * unscaleK + virtualFrom);
   }
 
-  protected updateZoom(screenPivot: number, screenDelta: number): void {
+  protected zoomInAxisRange(screenPivot: number, screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const { func: scalingFunction } = this.scale;
@@ -176,7 +170,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
     });
   }
 
-  protected updateRange(screenDelta: number): void {
+  protected moveAxisRangeByDelta(screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const { func: scalingFunction } = this.scale;

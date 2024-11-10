@@ -20,13 +20,15 @@ import chartOptionsDefaults from '@/model/default-config/ChartStyle.Defaults';
 import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
 import type { DeepPartial } from '@/model/type-defs';
 import {
-  type HistoricalIncidentReportProcessor,
+  HistoricalTransactionManager,
   History,
 } from '@/model/history';
+import { BaseChartUserInteractions, type ChartUserInteractions } from '@/model/chart/user-interactions';
+import type { IdHelper } from '@/model/tools';
 
 export interface ChartOptions {
-  style: DeepPartial<ChartStyle>,
-  sketchers: Map<DrawingType, Sketcher>
+  style: DeepPartial<ChartStyle>;
+  sketchers: Map<DrawingType, Sketcher>;
 }
 
 export interface ChartState {
@@ -46,19 +48,23 @@ export class Chart {
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly history: History;
   private readonly dataSourceInterconnect: DataSourceInterconnect;
+  public readonly transactionManager: HistoricalTransactionManager;
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
   public readonly panes: PaneDescriptor<Viewport>[];
+  public readonly userInteractions: ChartUserInteractions;
 
-  constructor(chartOptions?: ChartOptions) {
+  constructor(idHelper: IdHelper, chartOptions?: ChartOptions) {
     const chartStyle = this.createChartStyle(chartOptions?.style);
     this.paneRegEventListeners = [];
     this.history = new History();
+    this.transactionManager = new HistoricalTransactionManager(idHelper, this.history);
     this.panes = reactive([]);
     this.style = reactive(chartStyle);
     this.sketchers = markRaw(this.createSketchers(chartStyle, chartOptions?.sketchers));
     this.timeAxis = this.createTimeAxis(chartStyle);
     this.dataSourceInterconnect = new DataSourceInterconnect();
+    this.userInteractions = new BaseChartUserInteractions(this);
   }
 
   public addPaneRegistrationEventListener(listener: PaneRegistrationEventListener): Function {
@@ -99,7 +105,7 @@ export class Chart {
       merge(paneOptions, options);
     }
 
-    dataSource.historicalIncidentReportProcessor = this.historicalIncidentReportProcessor;
+    dataSource.transactionManager = this.transactionManager;
 
     this.history
       .getProtocol({ protocolTitle: 'chart-controller-create-pane' })
@@ -175,10 +181,6 @@ export class Chart {
     return this.panes[this.indexByPaneId(paneId)].model;
   }
 
-  public get historicalIncidentReportProcessor(): HistoricalIncidentReportProcessor {
-    return this.history.reportProcessor.bind(this.history);
-  }
-
   public clearHistory(): void {
     this.history.clear();
   }
@@ -208,7 +210,7 @@ export class Chart {
   }
 
   private createTimeAxis(chartStyle: ChartStyle): TimeAxis {
-    return new TimeAxis(this.historicalIncidentReportProcessor.bind(this), chartStyle.text);
+    return new TimeAxis(this.transactionManager, chartStyle.text);
   }
 
   private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {

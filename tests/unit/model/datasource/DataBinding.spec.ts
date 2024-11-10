@@ -8,7 +8,7 @@ import {
   type DrawingOptions,
   type DrawingReference,
 } from '@/model/datasource/types';
-import IdHelper from '@/model/tools/IdHelper';
+import { IdHelper } from '@/model/tools';
 import { Chart } from '@/model/chart/Chart';
 import { DataBinding, type ContentOptions, type ExternalContent, type DataPipe } from '@/model/databinding';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
@@ -128,7 +128,7 @@ describe('DataBinding', () => {
     idHelper = new IdHelper();
     ds1 = new DataSource({ idHelper }, clone([drawing1, drawing2, drawing3]));
 
-    chart = new Chart();
+    chart = new Chart(idHelper);
     ds1.resetCache();
     chart.createPane(ds1);
     dataPipe = new TestDataPipe();

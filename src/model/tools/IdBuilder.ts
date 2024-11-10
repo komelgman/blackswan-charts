@@ -1,5 +1,5 @@
 export declare type EntityId = string;
-export default class IdBuilder {
+export class IdBuilder {
   private readonly currentValueForPrefix: Map<string, number> = new Map<string, number>();
 
   public update(prefix: string, pretender: number): void {

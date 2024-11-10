@@ -6,7 +6,7 @@ export interface UpdatePriceAxisInvertedOptions extends HistoricalIncidentOption
   inverted: boolean;
 }
 
-export default class UpdatePriceAxisInverted extends AbstractHistoricalIncident<UpdatePriceAxisInvertedOptions> {
+export class UpdatePriceAxisInverted extends AbstractHistoricalIncident<UpdatePriceAxisInvertedOptions> {
   public constructor(options: UpdatePriceAxisInvertedOptions) {
     super(options);
   }

@@ -4,7 +4,9 @@ import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
 import type { DataSourceEntry, DataSourceId, DrawingOptions, DrawingReference } from '@/model/datasource/types';
+import { NonReactive } from '@/model/type-defs/decorators';
 
+@NonReactive
 export default class DataSourceSharedEntries {
   public readonly dataSource: DataSource;
 
@@ -22,8 +24,6 @@ export default class DataSourceSharedEntries {
   }
 
   * sharedWith(externalDataSourceId: DataSourceId): IterableIterator<Readonly<DataSourceEntry>> {
-    // this.checkWeAreNotInProxy();
-
     let entry = this.storage.head;
     while (entry !== undefined) {
       const entryValue: DataSourceEntry = entry.value;
@@ -39,8 +39,6 @@ export default class DataSourceSharedEntries {
   }
 
   public attachSharedEntriesFrom(source: DataSource): void {
-    // this.checkWeAreNotInProxy();
-
     const { storage } = this;
     const headref = storage.head?.value.descriptor.ref;
     for (const entry of source.sharedEntries.sharedWith(this.dataSource.id)) {
@@ -59,8 +57,6 @@ export default class DataSourceSharedEntries {
   }
 
   public detachSharedEntries(dsId: DataSourceId): void {
-    // this.checkWeAreNotInProxy();
-
     let entry = this.storage.head;
     while (entry !== undefined) {
       const { descriptor } = entry.value;

@@ -8,7 +8,7 @@ export interface UpdatePriceAxisScaleOptions extends HistoricalIncidentOptions {
   scale: PriceAxisScale;
 }
 
-export default class UpdatePriceAxisScale extends AbstractHistoricalIncident<UpdatePriceAxisScaleOptions> {
+export class UpdatePriceAxisScale extends AbstractHistoricalIncident<UpdatePriceAxisScaleOptions> {
   private readonly initial: PriceAxisScale;
 
   public constructor(options: UpdatePriceAxisScaleOptions) {

@@ -1,12 +1,18 @@
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
-import type { PriceAxis, Inverted } from '@/model/chart/axis/PriceAxis';
+import type { Inverted, PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
-import type DataSource from '@/model/datasource/DataSource';
-import type { DataSourceEntry, DrawingType, HandleId } from '@/model/datasource/types';
 import ViewportHighlightInvalidator from '@/model/chart/viewport/ViewportHighlightInvalidator';
+import type DataSource from '@/model/datasource/DataSource';
+import {
+  DataSourceChangeEventReason,
+  type DataSourceChangeEvent,
+  type DataSourceChangeEventListener,
+  type DataSourceChangeEventsMap,
+} from '@/model/datasource/events';
+import type { DataSourceEntry, DrawingType, HandleId } from '@/model/datasource/types';
 
 export interface ViewportOptions {
   priceScale: PriceAxisScale;
@@ -40,6 +46,14 @@ export class Viewport {
     this.highlightInvalidator = new ViewportHighlightInvalidator(this);
   }
 
+  public installListeners(): void {
+    this.dataSource.addChangeEventListener(this.dataSourceChangeEventListener, { immediate: true });
+  }
+
+  public uninstallListeners(): void {
+    this.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
+  }
+
   public updateSelection(isCtrlPressed: boolean, isInDrag: boolean = false): void {
     const { highlighted, selected } = this;
 
@@ -56,7 +70,7 @@ export class Viewport {
     }
   }
 
-  public resetHightlightes(): void {
+  private resetHightlightes(): void {
     this.highlighted = undefined;
     this.highlightedHandleId = undefined;
     this.cursor = undefined;
@@ -163,5 +177,26 @@ export class Viewport {
     }
 
     return sketcher;
+  }
+
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
+    const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
+    if (removedEntriesEvents.length > 0) {
+      this.updateSelectionForRemovedEntries(removedEntriesEvents);
+    }
+  };
+
+  private updateSelectionForRemovedEntries(removedEntriesEvents: DataSourceChangeEvent[]): void {
+    const { selected, highlighted } = this;
+
+    for (const event of removedEntriesEvents) {
+      if (highlighted === event.entry) {
+        this.resetHightlightes();
+      }
+
+      if (selected.has(event.entry)) {
+        selected.delete(event.entry);
+      }
+    }
   }
 }

@@ -1,26 +1,27 @@
-import { toRaw } from 'vue';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 import Axis from '@/model/chart/axis/Axis';
-import type AxisOptions from '@/model/chart/axis/AxisOptions';
-import { ZoomType } from '@/model/chart/axis/AxisOptions';
+import { type AxisOptions, ZoomType } from '@/model/chart/axis/types';
 import type { UTCTimestamp } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
 import { PostConstruct } from '@/model/type-defs/decorators';
-import type { HistoricalIncidentReportProcessor } from '@/model/history';
+import type { HistoricalTransactionManager } from '@/model/history';
+
+export interface TimeAxisOptions extends AxisOptions<UTCTimestamp> {
+}
 
 @PostConstruct
-export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestamp>> implements HasPostConstruct {
+export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> implements HasPostConstruct {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
 
-  public constructor(historicalIncidentReportProcessor: HistoricalIncidentReportProcessor, textOptions: TextStyle) {
-    super('time', historicalIncidentReportProcessor, textOptions);
+  public constructor(historicalTransactionManager: HistoricalTransactionManager, textOptions: TextStyle) {
+    super('time', historicalTransactionManager, textOptions);
   }
 
   public postConstruct(): void {
     this.invalidateCache();
   }
 
-  public noHistoryManagedUpdate(options: AxisOptions<UTCTimestamp>): void {
+  public noHistoryManagedUpdate(options: TimeAxisOptions): void {
     super.noHistoryManagedUpdate(options);
 
     if (options.range !== undefined || options.screenSize?.main !== undefined) {
@@ -39,20 +40,18 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
   }
 
   public translate(value: UTCTimestamp): number {
-    const raw = toRaw(this);
-    const { from } = raw.range;
-    const [scaleK] = raw.cache;
+    const { from } = this.range;
+    const [scaleK] = this.cache;
     return (value - from) * scaleK;
   }
 
   public revert(screenPos: number): UTCTimestamp {
-    const raw = toRaw(this);
-    const { from } = raw.range;
-    const [, unscaleK] = raw.cache;
+    const { from } = this.range;
+    const [, unscaleK] = this.cache;
     return (from + unscaleK * screenPos) as UTCTimestamp;
   }
 
-  protected updateZoom(screenPivot: number, screenDelta: number): void {
+  protected zoomInAxisRange(screenPivot: number, screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     if (screenSize < 0) {
@@ -71,7 +70,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, AxisOptions<UTCTimestam
     });
   }
 
-  protected updateRange(screenDelta: number): void {
+  protected moveAxisRangeByDelta(screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     if (screenSize < 0) {

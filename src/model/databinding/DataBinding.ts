@@ -55,11 +55,7 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
   }
 
   private bindDataSource(dataSource: DataSource): void {
-    for (const entry of dataSource) {
-      this.tryBindEntry(dataSource, entry);
-    }
-
-    dataSource.addChangeEventListener(this.dataSourceEventListener);
+    dataSource.addChangeEventListener(this.dataSourceEventListener, { immediate: true });
   }
 
   private unbindDataSource(dataSource: DataSource): void {

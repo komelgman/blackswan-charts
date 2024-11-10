@@ -1,5 +1,5 @@
 import type { DataSourceId } from '@/model/datasource/types';
-import type IdHelper from '@/model/tools/IdHelper';
+import type { IdHelper } from '@/model/tools';
 
 export interface DataSourceOptions {
   id?: DataSourceId;

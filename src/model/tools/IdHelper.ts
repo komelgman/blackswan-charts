@@ -1,6 +1,6 @@
-import IdBuilder from '@/model/tools/IdBuilder';
+import { IdBuilder } from '@/model/tools';
 
-export default class IdHelper extends IdBuilder {
+export class IdHelper extends IdBuilder {
   private readonly idBuilders: Map<string, IdBuilder> = new Map<string, IdBuilder>();
   public forGroup(group: string): IdBuilder {
     const { idBuilders } = this;

@@ -92,9 +92,6 @@ import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
-import type { MouseClickEvent, DragMoveEvent, ZoomEvent, MousePositionEvent } from '@/components/layered-canvas/events';
-import type TimeAxis from '@/model/chart/axis/TimeAxis';
 
 interface Props {
   chart: Chart;
@@ -103,103 +100,7 @@ interface Props {
 const props = defineProps<Props>();
 const rootElement = ref<ComponentPublicInstance>();
 const contextmenu = ref();
-
-const priceAxisInteractionsHandler: InteractionsHandler<PriceAxis> = {
-  onLeftMouseBtnDoubleClick(source: PriceAxis, e: MouseClickEvent): void {
-    console.log({ method: 'onLeftMouseBtnDoubleClick', source, e });
-  },
-
-  onDrag(source: PriceAxis, e: DragMoveEvent): void {
-    source.zoom(e.elementHeight / 2, -e.dy);
-  },
-
-  onZoom(source: PriceAxis, e: ZoomEvent): void {
-    source.zoom(e.pivot.y, e.delta);
-  },
-
-  onLeftMouseBtnClick(): void { },
-  onMouseMove(): void { },
-  onDragStart(): void { },
-  onDragEnd(): void { },
-};
-
-const timeAxisInteractionsHandler: InteractionsHandler<TimeAxis> = {
-  onLeftMouseBtnDoubleClick(source: TimeAxis, e: MouseClickEvent): void {
-    console.log({ method: 'onLeftMouseBtnDoubleClick', source, e });
-  },
-
-  onDrag(source: TimeAxis, e: DragMoveEvent): void {
-    source.zoom(e.elementWidth / 2, -e.dx);
-  },
-
-  onZoom(source: TimeAxis, e: ZoomEvent): void {
-    source.zoom(e.pivot.x, e.delta);
-  },
-
-  onLeftMouseBtnClick(): void { },
-  onMouseMove(): void { },
-  onDragStart(): void { },
-  onDragEnd(): void { },
-};
-
-const viewportInteractionsHandler: InteractionsHandler<Viewport> = {
-  onMouseMove(source: Viewport, e: MousePositionEvent): void {
-    source.highlightInvalidator.invalidate(e);
-  },
-
-  onLeftMouseBtnClick(source: Viewport, e: MouseClickEvent): void {
-    source.updateSelection(e.isCtrl);
-  },
-
-  onLeftMouseBtnDoubleClick(source: Viewport): void {
-    const { highlighted } = source;
-    if (highlighted !== undefined) {
-      console.log(`double click on element: ${highlighted.descriptor.ref}`);
-    } else {
-      console.log('double click on viewport');
-    }
-  },
-
-  onDragStart(source: Viewport, e: MouseClickEvent): void {
-    source.updateSelection(e.isCtrl, true);
-
-    if (source.selectionCanBeDragged()) {
-      source.dataSource.beginTransaction({ protocolTitle: 'drag-in-viewport' });
-
-      if (e.isCtrl) {
-        source.cloneSelected();
-      }
-    }
-    source.updateDragHandle();
-  },
-
-  onDrag(source: Viewport, e: DragMoveEvent): void {
-    if (source.selectionCanBeDragged()) {
-      source.highlightInvalidator.invalidate(e);
-      source.moveSelected(e);
-    } else {
-      const { timeAxis, priceAxis } = source;
-      timeAxis.move(e.dx);
-      priceAxis.move(e.dy);
-    }
-  },
-
-  onDragEnd(source: Viewport): void {
-    const { dataSource } = source;
-    if (source.selectionCanBeDragged()) {
-      dataSource.endTransaction();
-    } else {
-      dataSource.historicalIncidentReportProcessor({
-        protocolOptions: { protocolTitle: 'move-in-viewport' },
-        sign: true,
-      });
-    }
-  },
-
-  onZoom(source: Viewport, e: ZoomEvent): void {
-    source.timeAxis.zoom(e.pivot.x, e.delta);
-  },
-};
+const { priceAxisInteractionsHandler, timeAxisInteractionsHandler, viewportInteractionsHandler } = props.chart.userInteractions;
 
 const chartStyle = computed<ChartStyle>(() => props.chart.style);
 provide('chartStyle', chartStyle);
@@ -286,13 +187,13 @@ function onMouseLeave(): void {
 }
 
 function onPaneSizeChanged(event: PanesSizeChangedEvent): void {
-  props.chart.historicalIncidentReportProcessor({
+  props.chart.transactionManager.transact({
     protocolOptions: { protocolTitle: 'chart-pane-size-changed', timeout: 1000 },
     incident: new PanesSizeChanged({
       event,
     }),
     immediate: false,
-  });
+  }, { signOnClose: false });
 }
 
 function onPaneRegEventListener(event: PaneRegistrationEvent): void {
