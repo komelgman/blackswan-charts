@@ -3,6 +3,10 @@ export interface Cloneable<T> {
 }
 
 export function clone<T>(object: T): T {
+  if (object === undefined) {
+    return undefined as T;
+  }
+
   const source = object as any;
   if ((source as Cloneable<T>).clone !== undefined) {
     return (source as Cloneable<T>).clone();

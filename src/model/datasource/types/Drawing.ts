@@ -3,7 +3,7 @@ import { isString } from '@/model/type-defs';
 
 import type { DataSourceId } from '@/model/datasource/types';
 import type { EntityId } from '@/model/tools/IdBuilder';
-import type { Point } from '@/model/chart/types';
+import type { Point, Price, Range, UTCTimestamp } from '@/model/chart/types';
 
 export declare type DrawingId = EntityId;
 export declare type ExternalDrawingId = [DataSourceId, DrawingId];
@@ -48,6 +48,7 @@ export interface DrawingHandle extends Graphics, HasCursor, HasCenterPos {
 export interface Drawing {
   parts: Graphics[];
   handles: Record<HandleId, DrawingHandle>;
+  preferred?: { timeAxis: Range<UTCTimestamp>, priceAxis: Range<Price> };
   renderer?: string;
 }
 

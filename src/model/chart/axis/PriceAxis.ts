@@ -1,12 +1,11 @@
-import { reactive } from 'vue';
-import type { HasPostConstruct } from '@/model/type-defs/optional';
+import { computed, reactive } from 'vue';
 import { clone } from '@/misc/object.clone';
 import Axis from '@/model/chart/axis/Axis';
 import { type AxisOptions, ZoomType } from '@/model/chart/axis/types';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { TextStyle } from '@/model/chart/types/styles';
 import type { EntityId } from '@/model/tools/IdBuilder';
-import type { Price } from '@/model/chart/types';
+import type { Price, Range } from '@/model/chart/types';
 import type { Wrapped } from '@/model/type-defs';
 import { PostConstruct } from '@/model/type-defs/decorators';
 import type { HistoricalTransactionManager } from '@/model/history';
@@ -22,7 +21,7 @@ export interface PriceAxisOptions extends AxisOptions<Price> {
 }
 
 @PostConstruct
-export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostConstruct {
+export class PriceAxis extends Axis<Price, PriceAxisOptions> {
   private cache!: [virtualFrom: number, scaleK: number, unscaleK: number];
   private fractionValue: number = 0;
 
@@ -43,6 +42,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
   }
 
   public postConstruct(): void {
+    super.postConstruct();
     this.invalidateFraction();
     this.invalidateCache();
   }
@@ -105,6 +105,10 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> implements HasPostC
     if (options.range || options.scale || options.screenSize?.main) {
       this.invalidateCache();
     }
+  }
+
+  protected get preferredRange(): Readonly<Wrapped<Range<Price> | undefined>> {
+    return computed(() => this.primaryEntry.preferredPriceRange).value;
   }
 
   private invalidateFraction(): void {

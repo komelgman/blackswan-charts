@@ -89,6 +89,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
         parts: [],
         handles: {},
         renderer: this.renderer.name,
+        // preferred: calcPreffered(),
       } as Drawing;
     }
 

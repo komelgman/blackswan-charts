@@ -1,42 +1,83 @@
-import { reactive } from 'vue';
+import { reactive, shallowReactive } from 'vue';
 import type DataSource from '@/model/datasource/DataSource';
-import type { DrawingReference } from '@/model/datasource/types/Drawing';
+import { isEqualDrawingReference, type DrawingReference } from '@/model/datasource/types/Drawing';
 import type { UTCTimestamp, Range, Price } from '@/model/chart/types';
+import type { Wrapped } from '../type-defs';
+import { NonReactive } from '../type-defs/decorators';
+import { DataSourceChangeEventReason } from './events';
+import { deepEqual } from '@/misc/object.deepEqual';
 
 export declare type PrimaryEntryRef = { ds: DataSource, entryRef: DrawingReference };
 
-export interface PrimaryEntry {
-  get timeRange(): Range<UTCTimestamp>;
-  get priceRange(): Range<Price>;
-}
+@NonReactive
+export class PrimaryEntry {
+  private readonly preferredTimeRangeValue: Wrapped<Range<UTCTimestamp> | undefined> = reactive({ value: undefined });
+  private readonly preferredPriceRangeValue: Wrapped<Range<Price> | undefined> = reactive({ value: undefined });
+  private readonly entryRefValue: Wrapped<PrimaryEntryRef | undefined> = shallowReactive({ value: undefined });
+  private eventListenerRemover: Function | undefined;
 
-export abstract class AbstractPrimaryEntry<DataType> implements PrimaryEntry {
-  private readonly dataSource: DataSource;
-  private readonly entryRef: DrawingReference;
-  private readonly type: string;
-  protected readonly timeRangeValue: Range<UTCTimestamp> = reactive({ from: 0 as UTCTimestamp, to: 0 as UTCTimestamp });
-  protected readonly priceRangeValue: Range<Price> = reactive({ from: 0 as Price, to: 0 as Price });
-
-  public constructor(dataSource: DataSource, entryRef: DrawingReference, type: string) {
-    this.dataSource = dataSource;
-    this.entryRef = entryRef;
-    this.type = type;
+  public get entryRef(): Readonly<Wrapped<PrimaryEntryRef | undefined>> {
+    return this.entryRefValue;
   }
 
-  public get timeRange(): Range<UTCTimestamp> {
-    return this.timeRangeValue;
-  }
-
-  public get priceRange(): Range<Price> {
-    return this.priceRangeValue;
-  }
-
-  protected get entry(): DataType {
-    const result = this.dataSource.get(this.entryRef);
-    if (this.type !== result.descriptor.options.type) {
-      throw new Error(`IllegalState: requested type = ${this.type} but type = ${result.descriptor.options.type} found`);
+  public set entryRef(value: PrimaryEntryRef | undefined) {
+    if (this.entryRefValue.value) {
+      this.stopWatching();
     }
 
-    return result as DataType;
+    this.entryRefValue.value = value;
+
+    if (this.entryRefValue.value) {
+      this.startWatching();
+    }
+  }
+
+  public get preferredTimeRange(): Wrapped<Range<UTCTimestamp> | undefined> {
+    return this.preferredTimeRangeValue;
+  }
+
+  public get preferredPriceRange(): Wrapped<Range<Price> | undefined> {
+    return this.preferredPriceRangeValue;
+  }
+
+  private startWatching() {
+    if (!this.entryRef.value) {
+      throw new Error('Oops');
+    }
+
+    const { ds, entryRef } = this.entryRef.value;
+    this.eventListenerRemover = ds.addChangeEventListener((events) => {
+      const validEntryEvents = events.get(DataSourceChangeEventReason.CacheInvalidated) || [];
+      const entry = validEntryEvents.find((event) => isEqualDrawingReference(event.entry.descriptor.ref, entryRef))?.entry;
+
+      if (entry) {
+        if (!deepEqual(this.preferredTimeRangeValue.value, entry.drawing?.preferred?.timeAxis)) {
+          this.preferredTimeRangeValue.value = entry.drawing?.preferred?.timeAxis;
+        }
+
+        if (!deepEqual(this.preferredPriceRangeValue.value, entry.drawing?.preferred?.priceAxis)) {
+          this.preferredPriceRangeValue.value = entry.drawing?.preferred?.priceAxis;
+        }
+      }
+    });
+
+    try {
+      const entry = ds.get(entryRef);
+      if (entry && entry.drawing) {
+        Object.assign(this.preferredTimeRangeValue, { value: entry.drawing.preferred?.timeAxis });
+        Object.assign(this.preferredPriceRangeValue, { value: entry.drawing.preferred?.priceAxis });
+      }
+    } catch (e) {
+      if (!(e instanceof Error) || !e.message.startsWith('Illegal argument: ref not found')) {
+        throw e;
+      }
+    }
+  }
+
+  private stopWatching() {
+    if (this.eventListenerRemover) {
+      this.eventListenerRemover();
+      this.eventListenerRemover = undefined;
+    }
   }
 }

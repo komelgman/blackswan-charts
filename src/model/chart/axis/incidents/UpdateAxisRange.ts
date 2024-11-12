@@ -11,6 +11,7 @@ import type { Range } from '@/model/chart/types';
 export interface UpdateRangeOptions<T extends number> extends HistoricalIncidentOptions {
   axis: Axis<T, AxisOptions<T>>;
   range: Range<T>;
+  ignoreEmptyChecking?: boolean;
 }
 
 export class UpdateAxisRange<T extends number>
@@ -46,6 +47,10 @@ export class UpdateAxisRange<T extends number>
   }
 
   public isEmptyIncident(): boolean {
+    if (this.options.ignoreEmptyChecking) {
+      return false;
+    }
+
     const { from, to } = this.options.range;
     return this.initial.from === from && this.initial.to === to;
   }

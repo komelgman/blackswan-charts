@@ -547,18 +547,11 @@ setTimeout((j: number) => {
   mainDs.add(drawings.volumeBTCUSDT);
   mainDs.endTransaction();
 
-  chartApi.timeAxis.noHistoryManagedUpdate({ range: {
-    from: firstBarTime as UTCTimestamp,
-    to: firstBarTime + (300) * timePeriod as UTCTimestamp,
-  } });
+  // chartApi.timeAxis.noHistoryManagedUpdate({ range: {
+  //   from: firstBarTime as UTCTimestamp,
+  //   to: firstBarTime + (300) * timePeriod as UTCTimestamp,
+  // } });
 }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.reset();`);
-
-//   mainDs.reset();
-//   mainDs.reset();
-// }, 100 * i++, i);
 
 // i += 50;
 //

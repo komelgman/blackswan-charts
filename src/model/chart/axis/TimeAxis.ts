@@ -1,16 +1,16 @@
-import type { HasPostConstruct } from '@/model/type-defs/optional';
 import Axis from '@/model/chart/axis/Axis';
 import { type AxisOptions, ZoomType } from '@/model/chart/axis/types';
-import type { UTCTimestamp } from '@/model/chart/types';
+import type { UTCTimestamp, Range } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
 import { PostConstruct } from '@/model/type-defs/decorators';
 import type { HistoricalTransactionManager } from '@/model/history';
+import type { Wrapped } from '@/model/type-defs';
 
 export interface TimeAxisOptions extends AxisOptions<UTCTimestamp> {
 }
 
 @PostConstruct
-export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> implements HasPostConstruct {
+export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
 
   public constructor(historicalTransactionManager: HistoricalTransactionManager, textOptions: TextStyle) {
@@ -18,6 +18,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> implem
   }
 
   public postConstruct(): void {
+    super.postConstruct();
     this.invalidateCache();
   }
 
@@ -27,6 +28,10 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> implem
     if (options.range !== undefined || options.screenSize?.main !== undefined) {
       this.invalidateCache();
     }
+  }
+
+  protected get preferredRange(): Readonly<Wrapped<Range<UTCTimestamp> | undefined>> {
+    return this.primaryEntry.preferredTimeRange;
   }
 
   private invalidateCache(): void {

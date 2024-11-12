@@ -5,15 +5,15 @@ import {
   AbstractHistoricalIncident,
 } from '@/model/history';
 
-export interface UpdateControlMode<T extends number> extends HistoricalIncidentOptions {
+export interface UpdateControlModeOptions<T extends number> extends HistoricalIncidentOptions {
   axis: Axis<T, AxisOptions<T>>;
   controlMode: ControlMode;
 }
 
-export class UpdateAxisControlMode<T extends number> extends AbstractHistoricalIncident<UpdateControlMode<T>> {
+export class UpdateAxisControlMode<T extends number> extends AbstractHistoricalIncident<UpdateControlModeOptions<T>> {
   private readonly initial: ControlMode;
 
-  public constructor(options: UpdateControlMode<T>) {
+  public constructor(options: UpdateControlModeOptions<T>) {
     super(options);
 
     this.initial = options.axis.controlMode.value;
