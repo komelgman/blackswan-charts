@@ -74,26 +74,28 @@ export default class DataSourceInvalidator {
     }
 
     const invalidated: DataSourceEntry[] = [];
+    const { viewport } = this;
 
     for (const entry of entries) {
-      if (entry.descriptor.valid) {
-        console.warn(`Entry ${entry.descriptor.ref} already valid`);
+      const { valid, ref, options } = entry.descriptor;
+      if (valid) {
+        console.warn(`Entry ${ref} already valid`);
         continue;
       }
 
-      const drawingType: DrawingType = entry.descriptor.options.type;
-      if (!this.viewport.hasSketcher(drawingType)) {
+      const drawingType: DrawingType = options.type;
+      const sketcher: Sketcher = viewport.getSketcher(drawingType);
+      if (!sketcher) {
         console.warn(`unknown drawing type ${drawingType}`);
         continue;
       }
 
-      const sketcher: Sketcher = this.viewport.getSketcher(drawingType);
-      if (sketcher.invalidate(entry, this.viewport)) {
+      if (sketcher.invalidate(entry, viewport)) {
         invalidated.push(entry);
       }
     }
 
-    this.viewport.dataSource.invalidated(invalidated);
+    viewport.dataSource.invalidated(invalidated);
   }
 
   private resetDataSourceCache(): void {
