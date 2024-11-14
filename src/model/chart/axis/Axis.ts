@@ -2,14 +2,13 @@ import { reactive, shallowReactive, watch, type WatchHandle } from 'vue';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
 import { ControlMode, type AxisOptions } from '@/model/chart/axis/types';
-import { UpdateAxisControlMode, UpdateAxisRange } from '@/model/chart/axis/incidents';
+import { UpdateAxisControlMode, UpdateAxisRange, UpdateAxisPrimaryEntryRef } from '@/model/chart/axis/incidents';
 import type { TextStyle } from '@/model/chart/types/styles';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/chart/types';
 import type { HistoricalProtocolOptions, HistoricalTransactionManager } from '@/model/history';
 import type { Wrapped } from '@/model/type-defs';
 import { PrimaryEntry, type PrimaryEntryRef } from '@/model/datasource/PrimaryEntry';
-import { UpdateAxisPrimaryEntryRef } from './incidents/UpdateAxisPrimaryEntryRef';
 import { deepEqual } from '@/misc/object.deepEqual';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 
@@ -20,12 +19,12 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   private readonly rangeValue: Range<T> = shallowReactive({ from: -1 as T, to: 1 as T }) as Range<T>;
   private readonly textStyleValue: TextStyle;
   private readonly screenSizeValue: LogicSize = reactive({ main: -1, second: -1 });
-  private prefRangeWatchHandle?: WatchHandle;
 
   protected readonly primaryEntry: PrimaryEntry = new PrimaryEntry();
   protected readonly transactionManager: HistoricalTransactionManager;
 
   private controlModeValue: Wrapped<ControlMode> = shallowReactive({ value: ControlMode.MANUAL });
+  private prefRangeWatchHandle?: WatchHandle;
 
   protected constructor(id: EntityId, historicalTransactionManager: HistoricalTransactionManager, textStyle: TextStyle) {
     this.transactionManager = historicalTransactionManager;
@@ -47,6 +46,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
         if (controlMode.value === ControlMode.MANUAL) {
           this.prefRangeWatchHandle?.pause();
         } else {
+          this.primaryEntry.invalidate();
           this.noHistoryManagedUpdate({ range: this.preferredRange.value } as Options);
           this.prefRangeWatchHandle?.resume();
         }
@@ -101,11 +101,11 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
 
     this.transactionManager.openTransaction({ protocolTitle: 'axis-update-primary-entry' });
 
-    if (value && this.controlMode.value === MANUAL) {
+    if (value && this.isManualControlMode()) {
       this.controlMode = AUTO;
     }
 
-    if (!value && this.controlMode.value !== MANUAL) {
+    if (!value && !this.isManualControlMode()) {
       this.controlMode = MANUAL;
     }
 
@@ -117,6 +117,10 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     });
 
     this.transactionManager.tryCloseTransaction();
+  }
+
+  public isManualControlMode() {
+    return this.controlMode.value === ControlMode.MANUAL;
   }
 
   public get controlMode(): Readonly<Wrapped<ControlMode>> {
@@ -169,16 +173,12 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   private updateRange(protocolOptions: HistoricalProtocolOptions, updateRangeTrigger: Function): void {
-    const { AUTO, MANUAL, LOCKED } = ControlMode;
+    const { LOCKED } = ControlMode;
     if (this.controlMode.value === LOCKED) {
       return;
     }
 
     this.transactionManager.openTransaction(protocolOptions);
-
-    if (this.controlMode.value === AUTO) {
-      this.controlMode = MANUAL;
-    }
 
     this.transactionManager.exeucteInTransaction({
       skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,

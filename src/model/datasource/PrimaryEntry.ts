@@ -2,9 +2,9 @@ import { reactive, shallowReactive } from 'vue';
 import type DataSource from '@/model/datasource/DataSource';
 import { isEqualDrawingReference, type DrawingReference } from '@/model/datasource/types/Drawing';
 import type { UTCTimestamp, Range, Price } from '@/model/chart/types';
-import type { Wrapped } from '../type-defs';
-import { NonReactive } from '../type-defs/decorators';
-import { DataSourceChangeEventReason } from './events';
+import type { Wrapped } from '@/model/type-defs';
+import { NonReactive } from '@/model/type-defs/decorators';
+import { DataSourceChangeEventReason } from '@/model/datasource/events';
 import { deepEqual } from '@/misc/object.deepEqual';
 
 export declare type PrimaryEntryRef = { ds: DataSource, entryRef: DrawingReference };
@@ -15,6 +15,20 @@ export class PrimaryEntry {
   private readonly preferredPriceRangeValue: Wrapped<Range<Price> | undefined> = reactive({ value: undefined });
   private readonly entryRefValue: Wrapped<PrimaryEntryRef | undefined> = shallowReactive({ value: undefined });
   private eventListenerRemover: Function | undefined;
+
+  public invalidate() {
+    if (this.entryRefValue.value) {
+      const { ds, entryRef } = this.entryRefValue.value;
+
+      try {
+        ds.noHistoryManagedEntriesProcess([entryRef], (entry) => { entry.descriptor.valid = false; });
+      } catch (e) {
+        if (!(e instanceof Error) || !e.message.startsWith('Illegal argument: ref not found')) {
+          throw e;
+        }
+      }
+    }
+  }
 
   public get entryRef(): Readonly<Wrapped<PrimaryEntryRef | undefined>> {
     return this.entryRefValue;
