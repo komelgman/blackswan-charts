@@ -44,15 +44,42 @@ export function invertColor(color: string, bw: boolean = true): string {
 }
 
 /**
+ * Lightens or darkens a hex color
  * @param color Hex value format: #ffffff or ffffff
- * @param decimal lighten or darken decimal value, example 0.5 to lighten by 50% or 1.5 to darken by 50%.
+ * @param percent Decimal value where:
+ * - values < 1 lighten the color (0.5 = 50% lighter)
+ * - values > 1 darken the color (1.5 = 50% darker)
+ * - value = 1 returns original color
+ * @returns Hex color string with # prefix
  */
-export function shadeColor(color: string, decimal: number = 0.1): string {
-  let [r, g, b] = hexToRgb(color);
+export function shadeColor(color: string, percent: number = 0.1): string {
+  // Remove # if present
+  const clearHex = color.replace('#', '');
 
-  r = Math.max(Math.round(r / decimal), 255);
-  g = Math.max(Math.round(g / decimal), 255);
-  b = Math.max(Math.round(b / decimal), 255);
+  // Convert hex to RGB
+  const r = parseInt(clearHex.substring(0, 2), 16);
+  const g = parseInt(clearHex.substring(2, 4), 16);
+  const b = parseInt(clearHex.substring(4, 6), 16);
 
-  return rgbToHex(r, g, b);
+  // Calculate new values
+  const calculateShade = (value: number): number => {
+    if (percent < 1) {
+      return Math.min(255, Math.round(value + (255 - value) * (1 - percent)));
+    }
+
+    return Math.max(0, Math.round(value * (2 - percent)));
+  };
+
+  // Apply shading
+  const newR = calculateShade(r);
+  const newG = calculateShade(g);
+  const newB = calculateShade(b);
+
+  // Convert back to hex
+  const toHex = (n: number): string => {
+    const hex = n.toString(16);
+    return hex.length === 1 ? `0${hex}` : hex;
+  };
+
+  return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
 }
