@@ -15,6 +15,8 @@ export const enum TimePeriod {
   year = 'Year',
 }
 
+// todo: refactor to timeUtil.forStep(step) => { barToTime(), timeToBar(), avgDuration, getDuration() }
+
 const toTimeConverters: Map<TimePeriod, (from: UTCTimestamp, bar: number) => UTCTimestamp> = new Map([
   [TimePeriod.m1, (from, bar) => from + bar * TimePeriod.m1 as UTCTimestamp],
   [TimePeriod.m5, (from, bar) => from + bar * TimePeriod.m5 as UTCTimestamp],
@@ -37,15 +39,6 @@ const toTimeConverters: Map<TimePeriod, (from: UTCTimestamp, bar: number) => UTC
     return date.getTime() as UTCTimestamp;
   }],
 ]);
-
-export function barToTime(from: UTCTimestamp, bar: number, withStep: TimePeriod): UTCTimestamp {
-  const converter = toTimeConverters.get(withStep);
-  if (!converter) {
-    throw new Error(`Ooops. Not supported time period: ${withStep}`);
-  }
-
-  return converter(from, bar);
-}
 
 const toBarConverters: Map<TimePeriod, (from: UTCTimestamp, time: UTCTimestamp) => number> = new Map([
   [TimePeriod.m1, (from, time) => (time - from) / TimePeriod.m1],
@@ -80,6 +73,15 @@ const toBarConverters: Map<TimePeriod, (from: UTCTimestamp, time: UTCTimestamp) 
   }],
 ]);
 
+export function barToTime(from: UTCTimestamp, bar: number, withStep: TimePeriod): UTCTimestamp {
+  const converter = toTimeConverters.get(withStep);
+  if (!converter) {
+    throw new Error(`Ooops. Not supported time period: ${withStep}`);
+  }
+
+  return converter(from, bar);
+}
+
 export function timeToBar(from: UTCTimestamp, time: UTCTimestamp, withStep: TimePeriod): number {
   const converter = toBarConverters.get(withStep);
   if (!converter) {
@@ -87,4 +89,65 @@ export function timeToBar(from: UTCTimestamp, time: UTCTimestamp, withStep: Time
   }
 
   return converter(from, time);
+}
+
+export function getBarDuration(time: UTCTimestamp, step: TimePeriod): UTCTimestamp {
+  switch (step) {
+    case TimePeriod.m1:
+    case TimePeriod.m5:
+    case TimePeriod.m15:
+    case TimePeriod.m30:
+    case TimePeriod.h1:
+    case TimePeriod.h4:
+    case TimePeriod.day:
+    case TimePeriod.week:
+      return step as UTCTimestamp;
+
+    case TimePeriod.month: {
+      const date = new Date(time);
+      const year = date.getUTCFullYear();
+      const month = date.getUTCMonth();
+      const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
+      const daysInMonth = lastDayOfMonth.getUTCDate();
+
+      return (daysInMonth * 24 * 60 * 60 * 1000) as UTCTimestamp;
+    }
+
+    case TimePeriod.year: {
+      const date = new Date(time);
+      const year = date.getUTCFullYear();
+      const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+      const daysInYear = isLeapYear ? 366 : 365;
+
+      return (daysInYear * 24 * 60 * 60 * 1000) as UTCTimestamp;
+    }
+
+    default:
+      throw new Error(`Unsupported time period: ${step}`);
+  }
+}
+
+export function getBarDurationAvg(withStep: TimePeriod): UTCTimestamp {
+  switch (withStep) {
+    case TimePeriod.m1:
+    case TimePeriod.m5:
+    case TimePeriod.m15:
+    case TimePeriod.m30:
+    case TimePeriod.h1:
+    case TimePeriod.h4:
+    case TimePeriod.day:
+    case TimePeriod.week:
+      return withStep as UTCTimestamp;
+
+    case TimePeriod.month: {
+      return (30.44 * 24 * 60 * 60 * 1000) as UTCTimestamp; // average
+    }
+
+    case TimePeriod.year: {
+      return (12 * 30.44 * 24 * 60 * 60 * 1000) as UTCTimestamp;
+    }
+
+    default:
+      throw new Error(`Unsupported time period: ${withStep}`);
+  }
 }
