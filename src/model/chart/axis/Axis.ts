@@ -6,7 +6,7 @@ import { UpdateAxisControlMode, UpdateAxisRange, UpdateAxisPrimaryEntryRef } fro
 import type { TextStyle } from '@/model/chart/types/styles';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { LogicSize, Range } from '@/model/chart/types';
-import type { HistoricalProtocolOptions, HistoricalTransactionManager } from '@/model/history';
+import type { HistoricalTransactionManager } from '@/model/history';
 import type { Wrapped } from '@/model/type-defs';
 import { PrimaryEntry, type PrimaryEntryRef } from '@/model/datasource/PrimaryEntry';
 import { deepEqual } from '@/misc/object.deepEqual';
@@ -160,26 +160,47 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   public abstract revert(screenPos: number): T;
 
   public move(screenDelta: number): void {
-    this.updateRange({ protocolTitle: 'move-in-viewport' }, () => this.moveAxisRangeByDelta(screenDelta));
-  }
-
-  public zoom(screenPivot: number, screenDelta: number): void {
-    const protocolOptions = {
-      protocolTitle: `zoom-axis-${this.id}`,
-      timeout: 1000,
-    };
-
-    this.updateRange(protocolOptions, () => this.zoomInAxisRange(screenPivot, screenDelta));
-  }
-
-  private updateRange(protocolOptions: HistoricalProtocolOptions, updateRangeTrigger: Function): void {
-    const { LOCKED } = ControlMode;
+    const { LOCKED, MANUAL } = ControlMode;
     if (this.controlMode.value === LOCKED) {
       return;
     }
 
-    this.transactionManager.openTransaction(protocolOptions);
+    this.transactionManager.openTransaction({ protocolTitle: 'move-in-viewport' });
 
+    if (this.isNeedToResetControlModeWhenManualMove()) {
+      this.controlMode = MANUAL;
+    }
+
+    this.updateRange(() => this.moveAxisRangeByDelta(screenDelta));
+
+    this.transactionManager.tryCloseTransaction();
+  }
+
+  public zoom(screenPivot: number, screenDelta: number): void {
+    const { LOCKED, MANUAL } = ControlMode;
+    if (this.controlMode.value === LOCKED) {
+      return;
+    }
+
+    const protocolOptions = {
+      protocolTitle: `zoom-axis-${this.id}`,
+      timeout: 1000, // todo: move to options
+    };
+
+    this.transactionManager.openTransaction(protocolOptions);
+    if (this.isNeedToResetControlModeWhenManualZoom()) {
+      this.controlMode = MANUAL;
+    }
+    this.updateRange(() => this.zoomAxisRange(screenPivot, screenDelta));
+    this.transactionManager.tryCloseTransaction();
+  }
+
+  protected abstract isNeedToResetControlModeWhenManualMove(): boolean;
+  protected abstract isNeedToResetControlModeWhenManualZoom(): boolean;
+  protected abstract moveAxisRangeByDelta(screenDelta: number): void;
+  protected abstract zoomAxisRange(screenPivot: number, screenDelta: number): void;
+
+  private updateRange(updateRangeTrigger: Function): void {
     this.transactionManager.exeucteInTransaction({
       skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
       incident: new UpdateAxisRange({
@@ -197,11 +218,5 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
         range: { ...this.range },
       }),
     });
-
-    this.transactionManager.tryCloseTransaction();
   }
-
-  protected abstract moveAxisRangeByDelta(screenDelta: number): void;
-
-  protected abstract zoomInAxisRange(screenPivot: number, screenDelta: number): void;
 }

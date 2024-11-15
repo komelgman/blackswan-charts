@@ -1,5 +1,5 @@
 import Axis from '@/model/chart/axis/Axis';
-import { type AxisOptions, ZoomType } from '@/model/chart/axis/types';
+import { type AxisOptions, ControlMode, ZoomType } from '@/model/chart/axis/types';
 import type { UTCTimestamp, Range } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
 import { PostConstruct } from '@/model/type-defs/decorators';
@@ -56,7 +56,15 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
     return (from + unscaleK * screenPos) as UTCTimestamp;
   }
 
-  protected zoomInAxisRange(screenPivot: number, screenDelta: number): void {
+  protected isNeedToResetControlModeWhenManualMove(): boolean {
+    return this.controlMode.value === ControlMode.AUTO;
+  }
+
+  protected isNeedToResetControlModeWhenManualZoom(): boolean {
+    return false;
+  }
+
+  protected zoomAxisRange(screenPivot: number, screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     if (screenSize < 0) {

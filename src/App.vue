@@ -14,6 +14,7 @@ import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
 import { IdHelper, type IdBuilder } from '@/model/tools';
 import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
 import {
+  getBarDuration,
   LineBound,
   OHLCV_RECORD_CLOSE,
   OHLCV_RECORD_HIGH,
@@ -26,6 +27,8 @@ import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/view
 import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
 import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
+import { ControlMode } from '@/model/chart/axis/types';
+import { shadeColor } from '@/misc/color';
 
 /**
  * todo
@@ -184,12 +187,12 @@ const drawings = {
         style: {
           type: 'Columns',
           bearish: {
-            body: '#EF5350',
-            border: '#EF5350',
+            body: shadeColor('#EF5350', 1.3),
+            border: shadeColor('#EF5350', 1.5),
           },
           bullish: {
-            body: '#26A29A',
-            border: '#26A29A',
+            body: shadeColor('#26A29A', 1.3),
+            border: shadeColor('#26A29A', 1.5),
           },
         },
       },
@@ -385,17 +388,13 @@ const fabric2: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, 
   }
 
   const process = () => {
-    const values = content?.values || [];
-    const lastBar = values[values.length - 1];
-    const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
-    const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
-    const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
-
     // add new
-    // values.push(lastBar);
+    content.available.to = (content.available.to + getBarDuration(content.available.to, content.step)) as UTCTimestamp;
+    content.loaded.to = (content.loaded.to + getBarDuration(content.loaded.to, content.step)) as UTCTimestamp;
+    contentValues.push(getOHLCvRecord(contentValues[contentValues.length - 1]));
 
     // update last
-    values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
+    // values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
 
     // replace all
     // values.splice(0, values.length, newItems);
@@ -403,13 +402,13 @@ const fabric2: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, 
     callback(ck, content);
   };
 
-  // const intervalId = setInterval(process, 1000);
+  const intervalId = setInterval(process, 1000);
 
   return {
     options: contentOptions,
     content,
     stop: () => {
-      // clearInterval(intervalId);
+      clearInterval(intervalId);
     },
     updateContentOptions: (newContentOptions: OHLCvContentOptions) => {
       console.log(newContentOptions);
@@ -543,14 +542,30 @@ setTimeout((j: number) => {
   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
 
   mainDs.beginTransaction();
-  mainDs.add(drawings.ohlcvBTCUSDT);
   mainDs.add(drawings.volumeBTCUSDT);
+  mainDs.add(drawings.ohlcvBTCUSDT);
   mainDs.endTransaction();
+
+  chartApi.paneModel('main').timeAxis.primaryEntryRef = { ds: mainDs, entryRef: drawings.ohlcvBTCUSDT.id };
+  chartApi.paneModel('main').priceAxis.primaryEntryRef = { ds: mainDs, entryRef: drawings.ohlcvBTCUSDT.id };
+  chartApi.paneModel('main').timeAxis.controlMode = ControlMode.AUTO;
+  chartApi.paneModel('main').priceAxis.controlMode = ControlMode.AUTO;
 
   // chartApi.timeAxis.noHistoryManagedUpdate({ range: {
   //   from: firstBarTime as UTCTimestamp,
   //   to: firstBarTime + (300) * timePeriod as UTCTimestamp,
   // } });
+}, 100 * i++, i);
+
+i += 50;
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
+
+  console.log(`timeAxis.controlMode from ${chartApi.paneModel('main').timeAxis.controlMode.value} to AUTO`);
+  chartApi.paneModel('main').timeAxis.controlMode = ControlMode.AUTO;
+  chartApi.paneModel('second').priceAxis.primaryEntryRef = { ds: chartApi.paneModel('second').dataSource, entryRef: ['main', 'ohlcv1'] };
+  // chartApi.paneModel('main').priceAxis.controlMode = ControlMode.AUTO;
 }, 100 * i++, i);
 
 // i += 50;

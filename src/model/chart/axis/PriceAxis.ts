@@ -1,7 +1,7 @@
 import { computed, reactive } from 'vue';
 import { clone } from '@/misc/object.clone';
 import Axis from '@/model/chart/axis/Axis';
-import { type AxisOptions, ZoomType } from '@/model/chart/axis/types';
+import { type AxisOptions, ControlMode, ZoomType } from '@/model/chart/axis/types';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { TextStyle } from '@/model/chart/types/styles';
 import type { EntityId } from '@/model/tools/IdBuilder';
@@ -135,13 +135,17 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
   }
 
   private invalidateCache(): void {
-    const virtualFrom = this.scale.func.translate(this.range.from);
-    const virtualTo = this.scale.func.translate(this.range.to);
+    this.cache = this.calcRangeScalingParams(this.range);
+  }
+
+  private calcRangeScalingParams(range: Range<Price>): [virtualFrom: number, scaleK: number, unscaleK: number] {
+    const virtualFrom = this.scale.func.translate(range.from);
+    const virtualTo = this.scale.func.translate(range.to);
     const virtualSize = virtualTo - virtualFrom;
     const scaleK = this.screenSize.main / virtualSize;
     const unscaleK = virtualSize / this.screenSize.main;
 
-    this.cache = [virtualFrom, scaleK, unscaleK];
+    return [virtualFrom, scaleK, unscaleK];
   }
 
   public translate(value: Price): number {
@@ -154,7 +158,29 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
     return this.scale.func.revert(screenPos * unscaleK + virtualFrom);
   }
 
-  protected zoomInAxisRange(screenPivot: number, screenDelta: number): void {
+  // shift price value in percent of axis screen size
+  public scaledShift(value: Price, shift: number, range: Range<Price> | undefined = undefined): Price {
+    const [virtualFrom, scaleK, unscaleK] = this.calcRangeScalingParams(range || this.range);
+    const scaleFunc = this.scale.func;
+
+    const translated = (scaleFunc.translate(value) - virtualFrom) * scaleK;
+    const shifted = translated + shift * this.screenSize.main;
+
+    return scaleFunc.revert(shifted * unscaleK + virtualFrom);
+  }
+
+  public applyPaddingToRange(range: Range<Price>, fromPading: number, toPadding: number): Range<Price> {
+    const [virtualFrom, scaleK, unscaleK] = this.calcRangeScalingParams(range);
+    const scaleFunc = this.scale.func;
+
+    const k = this.screenSize.main / (1 - Math.abs(fromPading) - Math.abs(toPadding));
+    const shiftedFrom = (scaleFunc.translate(range.from) - virtualFrom) * scaleK + fromPading * k;
+    const shiftedTo = (scaleFunc.translate(range.to) - virtualFrom) * scaleK + toPadding * k;
+
+    return { from: scaleFunc.revert(shiftedFrom * unscaleK + virtualFrom), to: scaleFunc.revert(shiftedTo * unscaleK + virtualFrom) };
+  }
+
+  protected zoomAxisRange(screenPivot: number, screenDelta: number): void {
     const { main: screenSize } = this.screenSize;
     const { from, to } = this.range;
     const { func: scalingFunction } = this.scale;
@@ -172,6 +198,14 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
         to: scalingFunction.revert(virtualTo - delta * ((screenSize - screenPivot) / screenSize)),
       },
     });
+  }
+
+  protected isNeedToResetControlModeWhenManualMove(): boolean {
+    return this.controlMode.value === ControlMode.AUTO;
+  }
+
+  protected isNeedToResetControlModeWhenManualZoom(): boolean {
+    return this.controlMode.value === ControlMode.AUTO;
   }
 
   protected moveAxisRangeByDelta(screenDelta: number): void {

@@ -32,7 +32,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
     this.priceAxisInteractionsHandler = this.createPriceAxisInteractionsHandler();
   }
 
-  installVisiblePanesWatcher() {
+  private installVisiblePanesWatcher() {
     watch(this.visiblePanes, (curState, prevState) => {
       curState
         .filter((pane) => prevState.findIndex((prev) => prev.id === pane.id) < 0)
@@ -94,7 +94,9 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
           source.moveSelected(e);
         } else {
           source.timeAxis.move(e.dx);
-          source.priceAxis.move(e.dy);
+          if (source.priceAxis.isManualControlMode()) {
+            source.priceAxis.move(e.dy);
+          }
         }
       },
 

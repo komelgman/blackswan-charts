@@ -48,7 +48,7 @@ export interface DrawingHandle extends Graphics, HasCursor, HasCenterPos {
 export interface Drawing {
   parts: Graphics[];
   handles: Record<HandleId, DrawingHandle>;
-  preferred?: { timeAxis: Range<UTCTimestamp>, priceAxis: Range<Price> };
+  preferred?: { timeAxis?: Range<UTCTimestamp>, priceAxis?: Range<Price> };
   renderer?: string;
 }
 
