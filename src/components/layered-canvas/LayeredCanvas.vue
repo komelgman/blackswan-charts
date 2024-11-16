@@ -23,7 +23,7 @@ import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import type {
   DragMoveEvent,
   MouseClickEvent,
-  MousePositionEvent,
+  GenericMouseEvent,
   ResizeEvent,
   ZoomEvent,
 } from '@/components/layered-canvas/events';
@@ -44,8 +44,8 @@ const emit = defineEmits<{
   (e: 'zoom', event: ZoomEvent): void;
   (e: 'drag-start', event: MouseClickEvent): void;
   (e: 'drag-move', event: DragMoveEvent): void;
-  (e: 'drag-end', event: MousePositionEvent): void;
-  (e: 'mouse-move', event: MousePositionEvent): void;
+  (e: 'drag-end', event: GenericMouseEvent): void;
+  (e: 'mouse-move', event: GenericMouseEvent): void;
   (e: 'resize', event: ResizeEvent): void;
 }>();
 
@@ -78,35 +78,29 @@ onUnmounted(() => {
   }
 });
 
-function getMousePosRelativeToElement(e: MouseEvent, element?: Element): Point {
-  const target = element || e.target;
-  if (!(e instanceof MouseEvent) || !(target instanceof Element)) {
-    throw new Error('Illegal argument: e instanceof MouseEvent)');
+function buildGenericMouseEvent(e: MouseEvent, element: Element | EventTarget | null): GenericMouseEvent {
+  if (!(e instanceof MouseEvent) || !(element instanceof Element)) {
+    throw new Error('Illegal arguments: e instanceof MouseEvent && element instanceof Element)');
   }
 
-  const rect = target.getBoundingClientRect();
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-}
+  const rect = element.getBoundingClientRect();
 
-function getElementSize(element: Element | EventTarget | null): { elementHeight: number, elementWidth: number } {
-  const target = element;
-  if (!(target instanceof Element)) {
-    throw new Error('Illegal argument: e instanceof Element)');
-  }
-
-  const rect = target.getBoundingClientRect();
-  return { elementHeight: rect.height, elementWidth: rect.width };
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top,
+    elementHeight: rect.height,
+    elementWidth: rect.width,
+    isAltPressed: e.altKey,
+    isCtrlPressed: e.ctrlKey,
+    isShiftPressed: e.shiftKey,
+  };
 }
 
 function onMouseLeftBtnClick(e: MouseEvent): void {
   if (!e.defaultPrevented && !isWasDrag) {
     e.preventDefault();
 
-    const event: MouseClickEvent = {
-      ...getElementSize(e.target),
-      ...getMousePosRelativeToElement(e),
-      isCtrl: e.ctrlKey,
-    };
+    const event: MouseClickEvent = buildGenericMouseEvent(e, e.target);
     emit('left-mouse-btn-click', event);
   }
 }
@@ -115,11 +109,7 @@ function onMouseLeftBtnDoubleClick(e: MouseEvent): void {
   if (!e.defaultPrevented) {
     e.preventDefault();
 
-    const event: MouseClickEvent = {
-      ...getElementSize(e.target),
-      ...getMousePosRelativeToElement(e),
-      isCtrl: e.ctrlKey,
-    };
+    const event: MouseClickEvent = buildGenericMouseEvent(e, e.target);
     emit('left-mouse-btn-double-click', event);
   }
 }
@@ -129,7 +119,7 @@ function onWheel(e: WheelEvent): void {
     return;
   }
 
-  const event: ZoomEvent = { pivot: getMousePosRelativeToElement(e), delta: e.deltaY };
+  const event: ZoomEvent = { ...buildGenericMouseEvent(e, e.target), zoomDelta: e.deltaY };
   emit('zoom', event);
 }
 
@@ -138,7 +128,7 @@ function onDragStart(e: MouseEvent): void {
     isDrag = true;
     isWasDrag = false;
     dragInElement = e.target;
-    prevPos = getMousePosRelativeToElement(e);
+    prevPos = buildGenericMouseEvent(e, e.target);
     removeMoveListener = onDocument('mousemove', onDragMove, true);
     removeEndListener = onceDocument('mouseup', onDragEnd);
   }
@@ -151,24 +141,19 @@ function onDragMove(e: MouseEvent): void {
   isSkipMovementsDetection = true;
 
   if (!isWasDrag) {
-    const startEvent: MouseClickEvent = {
-      ...getElementSize(dragInElement),
-      ...getMousePosRelativeToElement(e, dragInElement),
-      isCtrl: e.ctrlKey,
-    };
+    const startEvent: MouseClickEvent = buildGenericMouseEvent(e, dragInElement);
     emit('drag-start', startEvent);
     isWasDrag = true;
   }
 
-  const pos: Point = getMousePosRelativeToElement(e, dragInElement);
+  const simpleEvent: GenericMouseEvent = buildGenericMouseEvent(e, dragInElement);
   const moveEvent: DragMoveEvent = {
-    ...getElementSize(dragInElement),
-    ...pos,
-    dx: prevPos.x - pos.x,
-    dy: prevPos.y - pos.y,
+    ...simpleEvent,
+    dx: prevPos.x - simpleEvent.x,
+    dy: prevPos.y - simpleEvent.y,
   };
   emit('drag-move', moveEvent);
-  prevPos = pos;
+  prevPos = simpleEvent;
 
   // hint: decrease amount of drag events
   setTimeout(() => {
@@ -182,7 +167,7 @@ function onMouseMove(e: MouseEvent): void {
   }
   isSkipMovementsDetection = true;
 
-  const event: MousePositionEvent = { ...getMousePosRelativeToElement(e), ...getElementSize(e.target) };
+  const event: GenericMouseEvent = buildGenericMouseEvent(e, e.target);
   emit('mouse-move', event);
 
   // hint: decrease amount of move events
@@ -197,7 +182,7 @@ function onDragEnd(e?: DragEvent): void {
   if (e === undefined || !e.defaultPrevented) {
     if (e !== undefined && isWasDrag) {
       e.preventDefault();
-      const event: MousePositionEvent = { ...getMousePosRelativeToElement(e, dragInElement), ...getElementSize(dragInElement) };
+      const event: GenericMouseEvent = buildGenericMouseEvent(e, dragInElement);
       emit('drag-end', event);
     }
 

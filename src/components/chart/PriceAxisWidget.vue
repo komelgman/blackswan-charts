@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, onUnmounted } from 'vue';
-import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type { ChartState } from '@/model/chart/Chart';
@@ -53,7 +53,7 @@ onUnmounted(() => {
   marksLayer.uninstallListeners();
 });
 
-function onMouseMove(e: MousePositionEvent): void {
+function onMouseMove(e: GenericMouseEvent): void {
   interactionsHandler.onMouseMove(priceAxis, e);
 }
 
@@ -73,7 +73,7 @@ function onDrag(e: DragMoveEvent): void {
   interactionsHandler.onDrag(priceAxis, e);
 }
 
-function onDragEnd(e: MousePositionEvent): void {
+function onDragEnd(e: GenericMouseEvent): void {
   interactionsHandler.onDragEnd(priceAxis, e);
 }
 

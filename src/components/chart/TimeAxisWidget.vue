@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
@@ -38,7 +38,7 @@ const canvasOptions: LayeredCanvasOptions = {
   ],
 };
 
-function onMouseMove(e: MousePositionEvent): void {
+function onMouseMove(e: GenericMouseEvent): void {
   interactionsHandler.onMouseMove(timeAxis, e);
 }
 
@@ -58,7 +58,7 @@ function onDrag(e: DragMoveEvent): void {
   interactionsHandler.onDrag(timeAxis, e);
 }
 
-function onDragEnd(e: MousePositionEvent): void {
+function onDragEnd(e: GenericMouseEvent): void {
   interactionsHandler.onDragEnd(timeAxis, e);
 }
 

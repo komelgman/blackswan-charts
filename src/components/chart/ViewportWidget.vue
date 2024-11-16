@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue';
-import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayerContext, LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import ViewportDataSourceLayer from '@/model/chart/layers/ViewportDataSourceLayer';
@@ -85,7 +85,7 @@ function createHighlightingLayer(): ViewportHighlightingLayer {
   return new ViewportHighlightingLayer(viewportModel);
 }
 
-function onMouseMove(e: MousePositionEvent): void {
+function onMouseMove(e: GenericMouseEvent): void {
   interactionsHandler.onMouseMove(viewportModel, e);
 }
 
@@ -105,7 +105,7 @@ function onDrag(e: DragMoveEvent): void {
   interactionsHandler.onDrag(viewportModel, e);
 }
 
-function onDragEnd(e: MousePositionEvent): void {
+function onDragEnd(e: GenericMouseEvent): void {
   interactionsHandler.onDragEnd(viewportModel, e);
 }
 

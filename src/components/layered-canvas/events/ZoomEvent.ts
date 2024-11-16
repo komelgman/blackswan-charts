@@ -1,6 +1,5 @@
-import type { Point } from '@/model/chart/types';
+import type { GenericMouseEvent } from './GenericMouseEvent';
 
-export interface ZoomEvent {
-  pivot: Point;
-  delta: number;
+export interface ZoomEvent extends GenericMouseEvent {
+  zoomDelta: number;
 }

@@ -4,7 +4,7 @@ import type { InteractionsHandler } from '@/model/chart/user-interactions/Intera
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { Chart } from '@/model/chart/Chart';
-import type { DragMoveEvent, MouseClickEvent, MousePositionEvent, ZoomEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import type { PaneDescriptor } from '@/components/layout/types';
 
 // todo: keyboard interactions
@@ -54,12 +54,12 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
 
   private createViewportInteractionsHandler(): InteractionsHandler<Viewport> {
     return {
-      onMouseMove(source: Viewport, e: MousePositionEvent): void {
+      onMouseMove(source: Viewport, e: GenericMouseEvent): void {
         source.highlightInvalidator.invalidate(e);
       },
 
       onLeftMouseBtnClick(source: Viewport, e: MouseClickEvent): void {
-        source.updateSelection(e.isCtrl);
+        source.updateSelection(e.isCtrlPressed);
       },
 
       onLeftMouseBtnDoubleClick(source: Viewport): void {
@@ -72,14 +72,14 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onDragStart(source: Viewport, e: MouseClickEvent): void {
-        source.updateSelection(e.isCtrl, true);
+        source.updateSelection(e.isCtrlPressed, true);
 
         if (source.selectionCanBeDragged()) {
           source.dataSource.beginTransaction({
             protocolTitle: 'drag-in-viewport',
           });
 
-          if (e.isCtrl) {
+          if (e.isCtrlPressed) {
             source.cloneSelected();
           }
         } else {
@@ -109,7 +109,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onZoom(source: Viewport, e: ZoomEvent): void {
-        source.timeAxis.zoom(e.pivot.x, e.delta);
+        source.timeAxis.zoom(e.isCtrlPressed ? e.x : source.timeAxis.screenSize.main, e.zoomDelta);
       },
     };
   }
@@ -125,7 +125,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onZoom(source: TimeAxis, e: ZoomEvent): void {
-        source.zoom(e.pivot.x, e.delta);
+        source.zoom(e.isCtrlPressed ? e.x : source.screenSize.main, e.zoomDelta);
       },
 
       onLeftMouseBtnClick(): void {},
@@ -146,7 +146,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onZoom(source: PriceAxis, e: ZoomEvent): void {
-        source.zoom(e.pivot.y, e.delta);
+        source.zoom(e.y, e.zoomDelta);
       },
 
       onLeftMouseBtnClick(): void {},

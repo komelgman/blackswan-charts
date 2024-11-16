@@ -77,8 +77,8 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
 
     this.noHistoryManagedUpdate({
       range: {
-        from: from + delta as UTCTimestamp,
-        to,
+        from: from + (delta * (screenPivot / screenSize)) as UTCTimestamp,
+        to: to - (delta * ((screenSize - screenPivot) / screenSize)) as UTCTimestamp,
       },
     });
   }

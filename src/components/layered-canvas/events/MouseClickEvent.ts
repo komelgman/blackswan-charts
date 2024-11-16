@@ -1,5 +1,5 @@
-import type { MousePositionEvent } from '@/components/layered-canvas/events';
+import type { GenericMouseEvent } from '@/components/layered-canvas/events';
 
-export interface MouseClickEvent extends MousePositionEvent {
-  isCtrl: boolean;
+export interface MouseClickEvent extends GenericMouseEvent {
+  // todo: may be left/right buttons??
 }
