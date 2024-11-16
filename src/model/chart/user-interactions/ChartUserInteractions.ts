@@ -59,7 +59,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onLeftMouseBtnClick(source: Viewport, e: MouseClickEvent): void {
-        source.updateSelection(e.isCtrlPressed);
+        source.updateSelection(e.isCtrlPressed); // todo: check that is cloneSelected actually used in this case
       },
 
       onLeftMouseBtnDoubleClick(source: Viewport): void {
@@ -71,6 +71,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
         }
       },
 
+      // todo: move it to model class
       onDragStart(source: Viewport, e: MouseClickEvent): void {
         source.updateSelection(e.isCtrlPressed, true);
 
@@ -88,6 +89,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
         source.updateDragHandle();
       },
 
+      // todo: move it to model class
       onDrag(source: Viewport, e: DragMoveEvent): void {
         if (source.selectionCanBeDragged()) {
           source.highlightInvalidator.invalidate(e);

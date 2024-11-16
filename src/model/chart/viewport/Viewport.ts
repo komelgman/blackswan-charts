@@ -54,15 +54,15 @@ export class Viewport {
     this.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
-  public updateSelection(isCtrlPressed: boolean, isInDrag: boolean = false): void {
+  public updateSelection(cloneSelectedIfIsPresent: boolean, isInDragMode: boolean = false): void {
     const { highlighted, selected } = this;
 
-    if (this.selectionShouldBeCleared(isInDrag, isCtrlPressed)) {
+    if (this.selectionShouldBeCleared(cloneSelectedIfIsPresent, isInDragMode)) {
       selected.clear();
     }
 
     if (highlighted !== undefined) {
-      if (isCtrlPressed && !isInDrag && selected.has(highlighted)) {
+      if (cloneSelectedIfIsPresent && !isInDragMode && selected.has(highlighted)) {
         selected.delete(highlighted);
       } else {
         selected.add(highlighted);
@@ -92,13 +92,13 @@ export class Viewport {
     return false;
   }
 
-  private selectionShouldBeCleared(isInDrag: boolean, isCtrlPressed: boolean): boolean {
+  private selectionShouldBeCleared(cloneSelectedIfIsPresent: boolean, isInDragMode: boolean): boolean {
     const { highlighted, selected, highlightedHandleId } = this;
 
-    return (isInDrag && highlightedHandleId !== undefined) // drag handle
-      || (!isCtrlPressed && isInDrag && highlighted !== undefined && !selected.has(highlighted)) // start dragging no selected element
-      || (isInDrag && highlighted === undefined)
-      || (!isInDrag && !isCtrlPressed); // click without ctrl
+    return (isInDragMode && highlightedHandleId !== undefined) // drag handle
+      || (!cloneSelectedIfIsPresent && isInDragMode && highlighted !== undefined && !selected.has(highlighted)) // start dragging no selected element
+      || (isInDragMode && highlighted === undefined)
+      || (!isInDragMode && !cloneSelectedIfIsPresent); // click without ctrl
   }
 
   public cloneSelected(): void {
