@@ -97,17 +97,9 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   public set primaryEntryRef(value: PrimaryEntryRef | undefined) {
-    const { AUTO, MANUAL } = ControlMode;
-
     this.transactionManager.openTransaction({ protocolTitle: 'axis-update-primary-entry' });
 
-    if (value && this.isManualControlMode()) {
-      this.controlMode = AUTO;
-    }
-
-    if (!value && !this.isManualControlMode()) {
-      this.controlMode = MANUAL;
-    }
+    this.ajustStateWhenPrimaryEntryRefChanged(value);
 
     this.transactionManager.exeucteInTransaction({
       incident: new UpdateAxisPrimaryEntryRef({
@@ -117,6 +109,18 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     });
 
     this.transactionManager.tryCloseTransaction();
+  }
+
+  protected ajustStateWhenPrimaryEntryRefChanged(newValue: PrimaryEntryRef | undefined): void {
+    const { AUTO, MANUAL } = ControlMode;
+
+    if (newValue && this.isManualControlMode()) {
+      this.controlMode = AUTO;
+    }
+
+    if (!newValue && !this.isManualControlMode()) {
+      this.controlMode = MANUAL;
+    }
   }
 
   public isManualControlMode() {
@@ -156,28 +160,21 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   public abstract translate(value: T): number;
-
   public abstract revert(screenPos: number): T;
 
   public move(screenDelta: number): void {
-    const { LOCKED, MANUAL } = ControlMode;
+    const { LOCKED } = ControlMode;
     if (this.controlMode.value === LOCKED) {
       return;
     }
 
     this.transactionManager.openTransaction({ protocolTitle: 'move-in-viewport' });
-
-    if (this.isNeedToResetControlModeWhenManualMove()) {
-      this.controlMode = MANUAL;
-    }
-
-    this.updateRange(() => this.moveAxisRangeByDelta(screenDelta));
-
+    this.ajustStateWhenMovedManually(screenDelta);
     this.transactionManager.tryCloseTransaction();
   }
 
   public zoom(screenPivot: number, screenDelta: number): void {
-    const { LOCKED, MANUAL } = ControlMode;
+    const { LOCKED } = ControlMode;
     if (this.controlMode.value === LOCKED) {
       return;
     }
@@ -188,19 +185,14 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     };
 
     this.transactionManager.openTransaction(protocolOptions);
-    if (this.isNeedToResetControlModeWhenManualZoom()) {
-      this.controlMode = MANUAL;
-    }
-    this.updateRange(() => this.zoomAxisRange(screenPivot, screenDelta));
-    this.transactionManager.tryCloseTransaction();
+    this.ajustStateWhenZoomedManually(screenPivot, screenDelta);
+    this.transactionManager.tryCloseTransaction({ signOnClose: false });
   }
 
-  protected abstract isNeedToResetControlModeWhenManualMove(): boolean;
-  protected abstract isNeedToResetControlModeWhenManualZoom(): boolean;
-  protected abstract moveAxisRangeByDelta(screenDelta: number): void;
-  protected abstract zoomAxisRange(screenPivot: number, screenDelta: number): void;
+  protected abstract ajustStateWhenMovedManually(screenDelta: number): void;
+  protected abstract ajustStateWhenZoomedManually(screenPivot: number, screenDelta: number): void;
 
-  private updateRange(updateRangeTrigger: Function): void {
+  protected updateRange(updateRangeTrigger: Function): void {
     this.transactionManager.exeucteInTransaction({
       skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
       incident: new UpdateAxisRange({

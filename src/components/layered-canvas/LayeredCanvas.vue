@@ -119,7 +119,7 @@ function onWheel(e: WheelEvent): void {
     return;
   }
 
-  const event: ZoomEvent = { ...buildGenericMouseEvent(e, e.target), zoomDelta: e.deltaY };
+  const event: ZoomEvent = { ...buildGenericMouseEvent(e, e.target), screenDelta: e.deltaY };
   emit('zoom', event);
 }
 

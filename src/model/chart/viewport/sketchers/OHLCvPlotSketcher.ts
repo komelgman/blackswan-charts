@@ -118,7 +118,13 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
 
     if (timeAxis.controlMode.value !== MANUAL) {
       // todo: add preferred barWidth to chart style options and calculate bar count from prefBarWidth and timeAxis.screenSize
-      timeRange = { from: (ohlc.available.to - barDuration * 280) as UTCTimestamp, to: (ohlc.available.to + barDuration * 20) as UTCTimestamp };
+
+      const to = (ohlc.available.to + barDuration * 20) as UTCTimestamp;
+      const from = timeAxis.isJustFollow()
+        ? (to - (timeAxis.range.to - timeAxis.range.from)) as UTCTimestamp
+        : (to - barDuration * 300) as UTCTimestamp;
+
+      timeRange = { from, to };
     }
 
     if (priceAxis.controlMode.value !== MANUAL) {

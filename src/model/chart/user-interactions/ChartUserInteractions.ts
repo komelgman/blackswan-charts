@@ -111,7 +111,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onZoom(source: Viewport, e: ZoomEvent): void {
-        source.timeAxis.zoom(e.isCtrlPressed ? e.x : source.timeAxis.screenSize.main, e.zoomDelta);
+        source.timeAxis.zoom(e.isCtrlPressed ? e.x : source.timeAxis.screenSize.main, e.screenDelta);
       },
     };
   }
@@ -127,7 +127,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onZoom(source: TimeAxis, e: ZoomEvent): void {
-        source.zoom(e.isCtrlPressed ? e.x : source.screenSize.main, e.zoomDelta);
+        source.zoom(e.isCtrlPressed ? e.x : source.screenSize.main, e.screenDelta);
       },
 
       onLeftMouseBtnClick(): void {},
@@ -148,7 +148,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
       },
 
       onZoom(source: PriceAxis, e: ZoomEvent): void {
-        source.zoom(e.y, e.zoomDelta);
+        source.zoom(e.y, e.screenDelta);
       },
 
       onLeftMouseBtnClick(): void {},

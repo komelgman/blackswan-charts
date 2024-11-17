@@ -5,13 +5,16 @@ import type { TextStyle } from '@/model/chart/types/styles';
 import { PostConstruct } from '@/model/type-defs/decorators';
 import type { HistoricalTransactionManager } from '@/model/history';
 import type { Wrapped } from '@/model/type-defs';
+import { UpdateTimeAxisJustfollow } from '@/model/chart/axis/incidents';
 
 export interface TimeAxisOptions extends AxisOptions<UTCTimestamp> {
+  justfollow?: boolean;
 }
 
 @PostConstruct
 export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
   private cache!: [/* scaleK */ number, /* unscaleK */ number];
+  private readonly isJustFollowValue: Wrapped<boolean> = { value: false };
 
   public constructor(historicalTransactionManager: HistoricalTransactionManager, textOptions: TextStyle) {
     super('time', historicalTransactionManager, textOptions);
@@ -28,6 +31,32 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
     if (options.range !== undefined || options.screenSize?.main !== undefined) {
       this.invalidateCache();
     }
+
+    if (options.justfollow !== undefined) {
+      Object.assign(this.isJustFollowValue, { value: options.justfollow });
+    }
+  }
+
+  public isJustFollow(): boolean {
+    return this.isJustFollowValue.value;
+  }
+
+  public get justFollow(): Wrapped<boolean> {
+    return this.isJustFollowValue;
+  }
+
+  public set justFollow(value: boolean) {
+    if (this.isJustFollow() === value) {
+      return;
+    }
+
+    this.transactionManager.transact({
+      protocolOptions: { protocolTitle: 'time-axis-update-justfollow' },
+      incident: new UpdateTimeAxisJustfollow({
+        axis: this,
+        justfollow: value,
+      }),
+    });
   }
 
   protected get preferredRange(): Readonly<Wrapped<Range<UTCTimestamp> | undefined>> {
@@ -56,46 +85,73 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
     return (from + unscaleK * screenPos) as UTCTimestamp;
   }
 
-  protected isNeedToResetControlModeWhenManualMove(): boolean {
-    return this.controlMode.value === ControlMode.AUTO;
+  protected ajustStateWhenZoomedManually(screenPivot: number, screenDelta: number): void {
+    this.ajustControlModeAndJustfollowWhenZoomedManually(screenPivot);
+    this.ajustRangeWhenZoomedManually(screenPivot, screenDelta);
   }
 
-  protected isNeedToResetControlModeWhenManualZoom(): boolean {
-    return false;
-  }
-
-  protected zoomAxisRange(screenPivot: number, screenDelta: number): void {
-    const { main: screenSize } = this.screenSize;
-    const { from, to } = this.range;
-    if (screenSize < 0) {
+  private ajustControlModeAndJustfollowWhenZoomedManually(screenPivot: number) {
+    const { AUTO, MANUAL } = ControlMode;
+    if (this.controlMode.value !== AUTO) {
       return;
     }
 
-    const size = to - from;
-    const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
-    const delta = size * zoomType.valueOf();
+    if (screenPivot !== this.screenSize.main) {
+      this.controlMode = MANUAL;
+    } else {
+      this.justFollow = true;
+    }
+  }
 
-    this.noHistoryManagedUpdate({
-      range: {
-        from: from + (delta * (screenPivot / screenSize)) as UTCTimestamp,
-        to: to - (delta * ((screenSize - screenPivot) / screenSize)) as UTCTimestamp,
-      },
+  private ajustRangeWhenZoomedManually(screenPivot: number, screenDelta: number) {
+    this.updateRange(() => {
+      const { main: screenSize } = this.screenSize;
+      const { from, to } = this.range;
+      if (screenSize < 0) {
+        return;
+      }
+
+      const size = to - from;
+      const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
+      const delta = size * zoomType.valueOf();
+
+      this.noHistoryManagedUpdate({
+        range: {
+          from: from + (delta * (screenPivot / screenSize)) as UTCTimestamp,
+          to: to - (delta * ((screenSize - screenPivot) / screenSize)) as UTCTimestamp,
+        },
+      });
     });
   }
 
-  protected moveAxisRangeByDelta(screenDelta: number): void {
-    const { main: screenSize } = this.screenSize;
-    const { from, to } = this.range;
-    if (screenSize < 0) {
-      return;
+  protected ajustStateWhenMovedManually(screenDelta: number): void {
+    this.ajustControlModeAndJustfollowWhenMovedManually();
+    this.ajustRangeWhenMovedManually(screenDelta);
+  }
+
+  private ajustControlModeAndJustfollowWhenMovedManually() {
+    if (this.controlMode.value === ControlMode.AUTO) {
+      this.controlMode = ControlMode.MANUAL;
     }
 
-    const size = to - from;
-    const unscaleK = size / screenSize;
-    const revert = (screenPos: number): UTCTimestamp => (from + unscaleK * screenPos) as UTCTimestamp;
+    this.justFollow = false;
+  }
 
-    this.noHistoryManagedUpdate({
-      range: { from: revert(screenDelta), to: revert(screenSize + screenDelta) },
+  private ajustRangeWhenMovedManually(screenDelta: number) {
+    this.updateRange(() => {
+      const { main: screenSize } = this.screenSize;
+      const { from, to } = this.range;
+      if (screenSize < 0) {
+        return;
+      }
+
+      const size = to - from;
+      const unscaleK = size / screenSize;
+      const revert = (screenPos: number): UTCTimestamp => (from + unscaleK * screenPos) as UTCTimestamp;
+
+      this.noHistoryManagedUpdate({
+        range: { from: revert(screenDelta), to: revert(screenSize + screenDelta) },
+      });
     });
   }
 }

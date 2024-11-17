@@ -180,51 +180,63 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
     return { from: scaleFunc.revert(shiftedFrom * unscaleK + virtualFrom), to: scaleFunc.revert(shiftedTo * unscaleK + virtualFrom) };
   }
 
-  protected zoomAxisRange(screenPivot: number, screenDelta: number): void {
-    const { main: screenSize } = this.screenSize;
-    const { from, to } = this.range;
-    const { func: scalingFunction } = this.scale;
+  protected ajustStateWhenZoomedManually(screenPivot: number, screenDelta: number): void {
+    this.ajustControlModeWhenChangedManually();
+    this.ajustRangeWhenZoomedManually(screenPivot, screenDelta);
+  }
 
-    const virtualFrom = scalingFunction.translate(from);
-    const virtualTo = scalingFunction.translate(to);
-    const virtualSize = virtualTo - virtualFrom;
+  protected ajustStateWhenMovedManually(screenDelta: number): void {
+    this.ajustControlModeWhenChangedManually();
+    this.ajustRangeWhenMovedManually(screenDelta);
+  }
 
-    const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
-    const delta = virtualSize * zoomType.valueOf();
+  private ajustControlModeWhenChangedManually(): void {
+    if (this.controlMode.value === ControlMode.AUTO) {
+      this.controlMode = ControlMode.MANUAL;
+    }
+  }
 
-    this.noHistoryManagedUpdate({
-      range: {
-        from: scalingFunction.revert(virtualFrom + delta * (screenPivot / screenSize)),
-        to: scalingFunction.revert(virtualTo - delta * ((screenSize - screenPivot) / screenSize)),
-      },
+  private ajustRangeWhenZoomedManually(screenPivot: number, screenDelta: number) {
+    this.updateRange(() => {
+      const { main: screenSize } = this.screenSize;
+      const { from, to } = this.range;
+      const { func: scalingFunction } = this.scale;
+
+      const virtualFrom = scalingFunction.translate(from);
+      const virtualTo = scalingFunction.translate(to);
+      const virtualSize = virtualTo - virtualFrom;
+
+      const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
+      const delta = virtualSize * zoomType.valueOf();
+
+      this.noHistoryManagedUpdate({
+        range: {
+          from: scalingFunction.revert(virtualFrom + delta * (screenPivot / screenSize)),
+          to: scalingFunction.revert(virtualTo - delta * ((screenSize - screenPivot) / screenSize)),
+        },
+      });
     });
   }
 
-  protected isNeedToResetControlModeWhenManualMove(): boolean {
-    return this.controlMode.value === ControlMode.AUTO;
-  }
+  private ajustRangeWhenMovedManually(screenDelta: number): void {
+    this.updateRange(() => {
+      const { main: screenSize } = this.screenSize;
+      const { from, to } = this.range;
+      const { func: scalingFunction } = this.scale;
 
-  protected isNeedToResetControlModeWhenManualZoom(): boolean {
-    return this.controlMode.value === ControlMode.AUTO;
-  }
+      const virtualFrom = scalingFunction.translate(from);
+      const virtualTo = scalingFunction.translate(to);
+      const virtualSize = virtualTo - virtualFrom;
+      const unscaleK = virtualSize / screenSize;
 
-  protected moveAxisRangeByDelta(screenDelta: number): void {
-    const { main: screenSize } = this.screenSize;
-    const { from, to } = this.range;
-    const { func: scalingFunction } = this.scale;
+      const revert = (screenPos: number): Price => scalingFunction.revert(virtualFrom + unscaleK * screenPos);
 
-    const virtualFrom = scalingFunction.translate(from);
-    const virtualTo = scalingFunction.translate(to);
-    const virtualSize = virtualTo - virtualFrom;
-    const unscaleK = virtualSize / screenSize;
-
-    const revert = (screenPos: number): Price => scalingFunction.revert(virtualFrom + unscaleK * screenPos);
-
-    this.noHistoryManagedUpdate({
-      range: {
-        from: revert(this.inverted.value * screenDelta),
-        to: revert(screenSize + this.inverted.value * screenDelta),
-      },
+      this.noHistoryManagedUpdate({
+        range: {
+          from: revert(this.inverted.value * screenDelta),
+          to: revert(screenSize + this.inverted.value * screenDelta),
+        },
+      });
     });
   }
 }
