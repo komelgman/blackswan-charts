@@ -102,6 +102,6 @@ const cssVars = computed(() => {
   width: var(--widgetWidth);
   max-width: var(--widgetWidth);
   min-width: var(--widgetWidth);
-  cursor: n-resize;
+  cursor: row-resize;
 }
 </style>

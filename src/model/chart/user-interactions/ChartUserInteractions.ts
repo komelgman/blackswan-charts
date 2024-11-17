@@ -1,11 +1,10 @@
-import { computed, watch, type ComputedRef } from 'vue';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { Chart } from '@/model/chart/Chart';
 import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@/components/layered-canvas/events';
-import type { PaneDescriptor } from '@/components/layout/types';
+import { ControlMode } from '../axis/types';
 
 // todo: keyboard interactions
 export interface ChartUserInteractions {
@@ -16,40 +15,17 @@ export interface ChartUserInteractions {
 
 export class BaseChartUserInteractions implements ChartUserInteractions {
   private readonly chart: Chart;
-  private readonly visiblePanes: ComputedRef<PaneDescriptor<Viewport>[]>;
+
   public readonly viewportInteractionsHandler: InteractionsHandler<Viewport>;
   public readonly timeAxisInteractionsHandler: InteractionsHandler<TimeAxis>;
   public readonly priceAxisInteractionsHandler: InteractionsHandler<PriceAxis>;
 
   public constructor(chart: Chart) {
     this.chart = chart;
-    this.visiblePanes = computed(() => this.chart.panes.filter((item) => item.visible === undefined || item.visible));
-
-    this.installVisiblePanesWatcher();
 
     this.viewportInteractionsHandler = this.createViewportInteractionsHandler();
     this.timeAxisInteractionsHandler = this.createTimeAxisInteractionsHandler();
     this.priceAxisInteractionsHandler = this.createPriceAxisInteractionsHandler();
-  }
-
-  private installVisiblePanesWatcher() {
-    watch(this.visiblePanes, (curState, prevState) => {
-      curState
-        .filter((pane) => prevState.findIndex((prev) => prev.id === pane.id) < 0)
-        .forEach((pane) => this.bindPane(pane));
-
-      prevState
-        .filter((pane) => curState.findIndex((cur) => cur.id === pane.id) < 0)
-        .forEach((pane) => this.unbindPane(pane));
-    });
-  }
-
-  private bindPane(pane: PaneDescriptor<Viewport>) {
-    console.log({ bind: pane });
-  }
-
-  private unbindPane(pane: PaneDescriptor<Viewport>) {
-    console.log({ unbind: pane });
   }
 
   private createViewportInteractionsHandler(): InteractionsHandler<Viewport> {
@@ -118,12 +94,12 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
 
   private createTimeAxisInteractionsHandler(): InteractionsHandler<TimeAxis> {
     return {
-      onLeftMouseBtnDoubleClick(source: TimeAxis, e: MouseClickEvent): void {
-        console.log({ method: 'onLeftMouseBtnDoubleClick', source, e });
+      onLeftMouseBtnDoubleClick(source: TimeAxis): void {
+        source.controlMode = ControlMode.AUTO;
       },
 
       onDrag(source: TimeAxis, e: DragMoveEvent): void {
-        source.zoom(e.elementWidth / 2, -e.dx);
+        source.zoom(source.screenSize.main, -e.dx);
       },
 
       onZoom(source: TimeAxis, e: ZoomEvent): void {
@@ -139,8 +115,8 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
 
   private createPriceAxisInteractionsHandler(): InteractionsHandler<PriceAxis> {
     return {
-      onLeftMouseBtnDoubleClick(source: PriceAxis, e: MouseClickEvent): void {
-        console.log({ method: 'onLeftMouseBtnDoubleClick', source, e });
+      onLeftMouseBtnDoubleClick(source: PriceAxis): void {
+        source.controlMode = ControlMode.AUTO;
       },
 
       onDrag(source: PriceAxis, e: DragMoveEvent): void {
