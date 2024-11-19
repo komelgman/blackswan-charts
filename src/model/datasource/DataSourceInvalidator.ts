@@ -1,5 +1,5 @@
 import type { WatchStopHandle } from 'vue';
-import { computed, watch } from 'vue';
+import { computed, toRaw, watch } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
@@ -67,35 +67,35 @@ export default class DataSourceInvalidator {
     }
   };
 
-  private invalidate(entries: DataSourceEntry[]): void {
+  private async invalidate(entries: DataSourceEntry[]): Promise<void> {
     if (this.context === undefined) {
       this.invalid = entries;
       return;
     }
 
-    const invalidated: DataSourceEntry[] = [];
-    const { viewport } = this;
+    const viewport = toRaw(this.viewport);
 
-    for (const entry of entries) {
+    const invalidatedPromises = entries.map(async (entry) => {
       const { valid, ref, options } = entry.descriptor;
       if (valid) {
         console.warn(`Entry ${ref} already valid`);
-        continue;
+        return null;
       }
 
       const drawingType: DrawingType = options.type;
       const sketcher: Sketcher = viewport.getSketcher(drawingType);
       if (!sketcher) {
         console.warn(`unknown drawing type ${drawingType}`);
-        continue;
+        return null;
       }
 
-      if (sketcher.invalidate(entry, viewport)) {
-        invalidated.push(entry);
-      }
-    }
+      const isInvalidated = await sketcher.invalidate(entry, viewport);
+      return isInvalidated ? entry : null;
+    });
 
-    viewport.dataSource.invalidated(invalidated);
+    const invalidatedEntries = (await Promise.all(invalidatedPromises)).filter((e) => e !== null);
+
+    viewport.dataSource.invalidated(invalidatedEntries);
   }
 
   private resetDataSourceCache(): void {

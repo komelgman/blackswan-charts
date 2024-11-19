@@ -57,6 +57,7 @@ let prevPos: Point;
 let removeMoveListener: EventRemover;
 let removeEndListener: EventRemover;
 let isSkipMovementsDetection = false;
+let isSkipWheelDetection = false;
 let isDrag = false;
 let dragInElement: Element;
 let isWasDrag = false;
@@ -115,12 +116,18 @@ function onMouseLeftBtnDoubleClick(e: MouseEvent): void {
 }
 
 function onWheel(e: WheelEvent): void {
-  if (!(e instanceof MouseEvent) || !(e.target instanceof Element)) {
+  if (!(e instanceof MouseEvent) || !(e.target instanceof Element) || isSkipWheelDetection) {
     return;
   }
+  isSkipWheelDetection = true;
 
   const event: ZoomEvent = { ...buildGenericMouseEvent(e, e.target), screenDelta: e.deltaY };
   emit('zoom', event);
+
+  // hint: decrease amount of drag events
+  setTimeout(() => {
+    isSkipWheelDetection = false;
+  }, 15);
 }
 
 function onDragStart(e: MouseEvent): void {

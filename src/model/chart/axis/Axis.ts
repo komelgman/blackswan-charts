@@ -166,6 +166,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   }
 
   public abstract translate(value: T): number;
+  public abstract translateBatchInPlace(values: any[][], indicies: number[]): void;
   public abstract revert(screenPos: number): T;
 
   public move(screenDelta: number): void {

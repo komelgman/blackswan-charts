@@ -53,18 +53,19 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
     const barSpace: number = timeAxis.translate(barToTime(timeRange.from, 1, ohlc.step) as UTCTimestamp);
     const barGap = Math.max(1, Math.ceil(0.4 * barSpace));
     const barWidth = barSpace - barGap;
+    const options: CandleGraphicsOptions = { style: plotOptions.barStyle, x: 0, width: 0, yo: 0, yh: 0, yl: 0, yc: 0 };
+
+    priceAxis.translateBatchInPlace(bars, [OHLCV_BAR_OPEN, OHLCV_BAR_HIGH, OHLCV_BAR_LOW, OHLCV_BAR_CLOSE]);
+    timeAxis.translateBatchInPlace(bars, [OHLCV_BAR_TIMESTAMP]);
 
     for (let i = 0; i < bars.length; ++i) {
       const bar = bars[i];
-      const options: CandleGraphicsOptions = {
-        x: timeAxis.translate(bar[OHLCV_BAR_TIMESTAMP]),
-        width: barWidth,
-        yo: priceAxis.translate(bar[OHLCV_BAR_OPEN]),
-        yh: priceAxis.translate(bar[OHLCV_BAR_HIGH]),
-        yl: priceAxis.translate(bar[OHLCV_BAR_LOW]),
-        yc: priceAxis.translate(bar[OHLCV_BAR_CLOSE]),
-        style: plotOptions.barStyle,
-      };
+      options.x = bar[OHLCV_BAR_TIMESTAMP];
+      options.width = barWidth;
+      options.yo = bar[OHLCV_BAR_OPEN];
+      options.yh = bar[OHLCV_BAR_HIGH];
+      options.yl = bar[OHLCV_BAR_LOW];
+      options.yc = bar[OHLCV_BAR_CLOSE];
 
       if (parts[i] === undefined) {
         parts[i] = new CandleGraphics(options);

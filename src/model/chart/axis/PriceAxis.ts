@@ -1,4 +1,4 @@
-import { computed, reactive } from 'vue';
+import { computed, reactive, toRaw } from 'vue';
 import { clone } from '@/misc/object.clone';
 import Axis from '@/model/chart/axis/Axis';
 import { type AxisOptions, ControlMode, ZoomType } from '@/model/chart/axis/types';
@@ -150,6 +150,19 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
   public translate(value: Price): number {
     const [virtualFrom, scaleK] = this.cache;
     return (this.scale.func.translate(value) - virtualFrom) * scaleK;
+  }
+
+  public translateBatchInPlace(values: any[][], indicies: number[]): void {
+    const [virtualFrom, scaleK] = this.cache;
+    const scaleFunc = toRaw(this.scale.func);
+
+    for (let i = 0; i < values.length; ++i) {
+      const value = values[i];
+      for (let j = 0; j < indicies.length; j++) {
+        const index = indicies[j];
+        value[index] = (scaleFunc.translate(value[index] as Price) - virtualFrom) * scaleK;
+      }
+    }
   }
 
   public revert(screenPos: number): Price {

@@ -79,6 +79,19 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
     return (value - from) * scaleK;
   }
 
+  public translateBatchInPlace(values: any[][], indicies: number[]): void {
+    const [scaleK] = this.cache;
+    const { from } = this.range;
+
+    for (let i = 0; i < values.length; ++i) {
+      const value = values[i];
+      for (let j = 0; j < indicies.length; j++) {
+        const index = indicies[j];
+        value[index] = (value[index] - from) * scaleK;
+      }
+    }
+  }
+
   public revert(screenPos: number): UTCTimestamp {
     const { from } = this.range;
     const [, unscaleK] = this.cache;
