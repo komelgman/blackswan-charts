@@ -77,7 +77,7 @@ export default class DataSourceSharedEntries {
     this.addReason(DataSourceChangeEventReason.UpdateEntry, [entry], true);
   }
 
-  public addEntry(entryRef: DrawingReference, options: Omit<DrawingOptions, 'id'>) {
+  public addEntry(entryRef: DrawingReference, options: DrawingOptions) {
     const { storage } = this;
     const [, tail] = storage.getHeadTailForEntry(entryRef);
     const entry = this.createEntry(entryRef, options);
@@ -101,7 +101,7 @@ export default class DataSourceSharedEntries {
     this.addReason(DataSourceChangeEventReason.DataInvalid, [entry], true);
   }
 
-  private createEntry(ref: DrawingReference, options: Omit<DrawingOptions, 'id'>): DataSourceEntry {
+  private createEntry(ref: DrawingReference, options: DrawingOptions): DataSourceEntry {
     if (isString(ref)) {
       return { descriptor: { ref, options } };
     }

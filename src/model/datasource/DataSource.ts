@@ -326,7 +326,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
         .update(type, this.getNumberFromId(type, id));
     }
 
-    return merge({ ref: id, options: { ...options } }, { options: { id: null } })[0] as DrawingDescriptor;
+    return merge({ ref: id, options: clone(options) })[0] as DrawingDescriptor;
   }
 
   private getNumberFromId(type: string, id: DrawingId): number {

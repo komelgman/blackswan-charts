@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+
 declare type Item = [Record<string, any>, Record<string, any>, Record<string, any>, string];
 
 const PROP_IS_NOT_SET = null;
@@ -24,15 +26,16 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
     const srcPropValue: any = srcObj[property];
     const dstPropValue: any = dstObj[property];
 
-    if (srcPropValue?.constructor !== Object || dstPropValue?.constructor !== Object) {
-      const srcHasOwnProp = hasOwnProperty.call(srcObj, property);
-      const dstHasOwnProp = hasOwnProperty.call(dstObj, property);
+    const srcHasOwnProp = hasOwnProperty.call(srcObj, property);
+    const dstHasOwnProp = hasOwnProperty.call(dstObj, property);
+    const isScalar = srcPropValue?.constructor !== Object || dstPropValue?.constructor !== Object;
 
+    if (isScalar) {
       if (srcPropValue === dstPropValue && dstHasOwnProp && srcHasOwnProp) {
         continue;
       }
 
-      if (oldObj !== undefined && !hasOwnProperty.call(oldObj, property)
+      if (oldObj && !hasOwnProperty.call(oldObj, property)
         && (dstHasOwnProp || srcPropValue !== PROP_IS_NOT_SET)) {
         oldObj[property] = dstHasOwnProp ? dstPropValue : PROP_IS_NOT_SET;
       }
@@ -43,17 +46,40 @@ export function merge(dst: Record<string, any>, ...sources: Record<string, any>[
         dstObj[property] = srcPropValue;
       }
     } else {
-      if (!hasOwnProperty.call(oldObj, property)) {
-        oldObj[property] = {};
+      if (oldObj && !hasOwnProperty.call(oldObj, property)) {
+        oldObj[property] = dstHasOwnProp ? { __deleteIfEmpty: true } : PROP_IS_NOT_SET;
       }
 
       for (const prop in srcPropValue) {
-        if (hasOwnProperty.call(srcPropValue, prop)) {
+        if (oldObj && hasOwnProperty.call(srcPropValue, prop)) {
           items.push([dstPropValue, oldObj[property], srcPropValue, prop]);
         }
       }
     }
   }
 
-  return [dst, unmerge];
+  return [dst, removeEmptyObjects(unmerge)];
+}
+
+function removeEmptyObjects(obj: any): any {
+  const { hasOwnProperty } = Object.prototype;
+  for (const key in obj) {
+    if (hasOwnProperty.call(obj, key)) {
+      const keyValue = obj[key];
+      const deleteIfEmpty = keyValue && keyValue.__deleteIfEmpty;
+      if (deleteIfEmpty) {
+        delete obj[key].__deleteIfEmpty;
+      }
+
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        obj[key] = removeEmptyObjects(obj[key]);
+      }
+
+      if (deleteIfEmpty && typeof obj[key] === 'object' && obj[key] !== null && Object.keys(obj[key]).length === 0) {
+        delete obj[key];
+      }
+    }
+  }
+
+  return obj;
 }

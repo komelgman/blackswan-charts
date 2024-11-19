@@ -4,7 +4,7 @@ import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { Chart } from '@/model/chart/Chart';
 import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@/components/layered-canvas/events';
-import { ControlMode } from '../axis/types';
+import { ControlMode } from '@/model/chart/axis/types';
 
 // todo: keyboard interactions
 export interface ChartUserInteractions {

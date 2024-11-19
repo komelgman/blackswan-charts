@@ -31,7 +31,7 @@ export interface DrawingOptions<DataType = any> {
 
 export interface DrawingDescriptor<DataType = any> {
   ref: DrawingReference;
-  options: Omit<DrawingOptions<DataType>, 'id'>;
+  options: DrawingOptions<DataType>;
   valid?: boolean;
   visibleInViewport?: boolean;
 }

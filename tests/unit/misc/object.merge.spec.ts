@@ -89,12 +89,22 @@ describe('merge objects', () => {
         { p1: { p11: null } },
       ],
     },
+    {
+      a: { p1: { abc: { a: null } } },
+      b: { p1: { abc: { a: null } } },
+      ex: [
+        { p1: { abc: { a: null } } },
+        { },
+      ],
+    },
+
   ])('merge($a, $b) -> $ex', ({ a, b, ex }) => {
     expect(merge(a, b)).toStrictEqual(ex);
   });
 
   test('merge 3 objects', () => {
     expect(merge({}, { p1: 1 }, { p1: 2 })).toStrictEqual([{ p1: 2 }, { p1: null }]);
+    expect(merge({}, { p1: { p2: 1 } }, { p1: { p2: 2 } })).toStrictEqual([{ p1: { p2: 2 } }, { p1: null }]);
     expect(merge({ p1: 0 }, { p1: 1 }, { p1: 2, p2: 1 })).toStrictEqual([{ p1: 2, p2: 1 }, { p1: 0, p2: null }]);
   });
 });

@@ -1,6 +1,6 @@
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
-import type { Inverted, PriceAxis } from '@/model/chart/axis/PriceAxis';
-import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
+import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
+import type { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
@@ -12,11 +12,18 @@ import {
   type DataSourceChangeEventListener,
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
-import type { DataSourceEntry, DrawingType, HandleId } from '@/model/datasource/types';
+import type { DataSourceEntry, DrawingReference, DrawingType, HandleId } from '@/model/datasource/types';
+import type { Price, Range } from '@/model/chart/types';
+import type { ControlMode } from '@/model/chart/axis/types';
 
 export interface ViewportOptions {
-  priceScale: PriceAxisScale;
-  priceInverted: Inverted;
+  priceAxis: {
+    scale: keyof typeof PriceScales;
+    inverted: boolean;
+    primaryEntry?: DrawingReference;
+    range: Range<Price>;
+    controlMode: ControlMode;
+  }
 }
 
 export class Viewport {

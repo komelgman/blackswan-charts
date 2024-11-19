@@ -82,6 +82,12 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     return this.rangeValue;
   }
 
+  public set range(value: Range<T>) {
+    this.transactionManager.openTransaction({ protocolTitle: 'axis-update-range' });
+    this.updateRange(() => this.noHistoryManagedUpdate({ range: { ...value } } as Options));
+    this.transactionManager.tryCloseTransaction();
+  }
+
   public get screenSize(): Readonly<LogicSize> {
     return this.screenSizeValue;
   }

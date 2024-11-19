@@ -24,8 +24,8 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
   private createMenu(): MenuItem[] {
     const { axis } = this;
     const isInverted: boolean = this.axis.inverted.value === 1;
-    const isRegularScale: boolean = axis.scale.title === 'Regular';
-    const isLog10Scale: boolean = axis.scale.title === 'Log(10)';
+    const isRegularScale: boolean = axis.scale.id === 'regular';
+    const isLog10Scale: boolean = axis.scale.id === 'log10';
 
     return [
       {
@@ -58,6 +58,6 @@ export default class PriceAxisContextMenu implements ContextMenuOptionsProvider 
   }
 
   private updateScaleHandler(scale: PriceAxisScale): void {
-    this.axis.scale = scale;
+    this.axis.scale = scale.id;
   }
 }

@@ -10,12 +10,13 @@ import type { Wrapped } from '@/model/type-defs';
 import { PostConstruct } from '@/model/type-defs/decorators';
 import type { HistoricalTransactionManager } from '@/model/history';
 import { UpdatePriceAxisInverted, UpdatePriceAxisScale } from '@/model/chart/axis/incidents';
+import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 
 export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;
 
 export interface PriceAxisOptions extends AxisOptions<Price> {
-  scale?: PriceAxisScale;
+  scale?: keyof typeof PriceScales;
   inverted?: boolean;
   contentWidth?: number;
 }
@@ -33,12 +34,10 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
     id: EntityId,
     historicalTransactionManager: HistoricalTransactionManager,
     textStyle: TextStyle,
-    scale: PriceAxisScale,
-    inverted: Inverted,
   ) {
     super(`${id}-price`, historicalTransactionManager, textStyle);
-    this.scaleValue = reactive(clone(scale));
-    this.invertedValue = reactive(clone(inverted));
+    this.scaleValue = reactive(clone(PriceScales.regular));
+    this.invertedValue = reactive(clone({ value: -1 }));
   }
 
   public postConstruct(): void {
@@ -65,7 +64,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
     return this.scaleValue;
   }
 
-  public set scale(value: PriceAxisScale) {
+  public set scale(value: keyof typeof PriceScales) {
     this.transactionManager.transact({
       protocolOptions: { protocolTitle: 'price-axis-update-scale' },
       incident: new UpdatePriceAxisScale({
@@ -95,7 +94,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
     }
 
     if (options.scale !== undefined) {
-      Object.assign(this.scaleValue, clone(options.scale));
+      Object.assign(this.scaleValue, clone(PriceScales[options.scale]));
     }
 
     if (options.range !== undefined) {

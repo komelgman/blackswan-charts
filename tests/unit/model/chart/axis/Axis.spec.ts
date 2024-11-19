@@ -5,7 +5,6 @@ import { HistoricalTransactionManager, History } from '@/model/history';
 import { IdHelper } from '@/model/tools';
 import DataSource from '@/model/datasource/DataSource';
 import defaultChartStyle from '@/model/default-config/ChartStyle.Defaults';
-import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 import type Axis from '@/model/chart/axis/Axis';
 import { ControlMode } from '@/model/chart/axis/types';
@@ -38,7 +37,7 @@ describe('Axis', () => {
 
     ds = new DataSource({ id: 'main', idHelper });
     ds.transactionManager = transactionManager;
-    axis = new PriceAxis('price', transactionManager, defaultChartStyle.text, PriceScales.regular, { value: -1 });
+    axis = new PriceAxis('price', transactionManager, defaultChartStyle.text);
   });
 
   it('.controlMode should be changed to AUTO when axis.primaryEntryRef changed', async () => {

@@ -1,8 +1,7 @@
-import { markRaw, reactive } from 'vue';
+import { computed, markRaw, reactive, watch, type ComputedRef } from 'vue';
 import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
-import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import AddNewPane from '@/model/chart/incidents/AddNewPane';
 import InvalidatePanesSizes from '@/model/chart/incidents/InvalidatePanesSizes';
@@ -13,7 +12,7 @@ import UpdateChartStyle from '@/model/chart/incidents/UpdateChartStyle';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import { Viewport, type ViewportOptions } from '@/model/chart/viewport/Viewport';
-import type DataSource from '@/model/datasource/DataSource';
+import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/types';
 import chartOptionsDefaults from '@/model/default-config/ChartStyle.Defaults';
@@ -24,7 +23,9 @@ import {
   History,
 } from '@/model/history';
 import { BaseChartUserInteractions, type ChartUserInteractions } from '@/model/chart/user-interactions';
-import type { IdHelper } from '@/model/tools';
+import { IdHelper } from '@/model/tools';
+import type { Price, Range } from '@/model/chart/types';
+import { ControlMode } from '@/model/chart/axis/types';
 
 export interface ChartOptions {
   style: DeepPartial<ChartStyle>;
@@ -44,27 +45,33 @@ export interface PaneRegistrationEvent {
 declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) => void;
 
 export class Chart {
+  private readonly visiblePanes: ComputedRef<PaneDescriptor<Viewport>[]>;
   private readonly paneRegEventListeners: PaneRegistrationEventListener[];
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly history: History;
   private readonly dataSourceInterconnect: DataSourceInterconnect;
+  public readonly idHelper: IdHelper;
   public readonly transactionManager: HistoricalTransactionManager;
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
   public readonly panes: PaneDescriptor<Viewport>[];
   public readonly userInteractions: ChartUserInteractions;
 
-  constructor(idHelper: IdHelper, chartOptions?: ChartOptions) {
+  constructor(idHelper?: IdHelper, chartOptions?: ChartOptions) {
     const chartStyle = this.createChartStyle(chartOptions?.style);
+    this.idHelper = idHelper || new IdHelper();
     this.paneRegEventListeners = [];
     this.history = new History();
-    this.transactionManager = new HistoricalTransactionManager(idHelper, this.history);
+    this.transactionManager = new HistoricalTransactionManager(this.idHelper, this.history);
     this.panes = reactive([]);
     this.style = reactive(chartStyle);
     this.sketchers = markRaw(this.createSketchers(chartStyle, chartOptions?.sketchers));
     this.timeAxis = this.createTimeAxis(chartStyle);
     this.dataSourceInterconnect = new DataSourceInterconnect();
     this.userInteractions = new BaseChartUserInteractions(this);
+
+    this.visiblePanes = computed(() => this.panes.filter((item) => item.visible === undefined || item.visible));
+    this.installVisiblePanesWatcher();
   }
 
   public addPaneRegistrationEventListener(listener: PaneRegistrationEventListener): Function {
@@ -84,12 +91,13 @@ export class Chart {
   }
 
   public updateStyle(options: DeepPartial<ChartStyle>): void {
-    this.history
-      .getProtocol({ protocolTitle: 'chart-controller-update-style' })
-      .addIncident(new UpdateChartStyle({
+    this.transactionManager.transact({
+      protocolOptions: { protocolTitle: 'chart-controller-update-style' },
+      incident: new UpdateChartStyle({
         style: this.style,
         update: options,
-      }));
+      }),
+    });
   }
 
   public createPane(dataSource: DataSource, options?: Partial<PaneOptions<ViewportOptions>>): PaneId {
@@ -97,8 +105,12 @@ export class Chart {
 
     const paneOptions: PaneOptions<ViewportOptions> = {
       minSize: 100,
-      priceScale: PriceScales.regular,
-      priceInverted: { value: -1 },
+      priceAxis: {
+        scale: 'regular',
+        inverted: false,
+        range: { from: -1, to: 1 } as Range<Price>,
+        controlMode: ControlMode.MANUAL,
+      },
     };
 
     if (options !== undefined) {
@@ -107,9 +119,9 @@ export class Chart {
 
     dataSource.transactionManager = this.transactionManager;
 
-    this.history
-      .getProtocol({ protocolTitle: 'chart-controller-create-pane' })
-      .addIncident(new AddNewPane({
+    this.transactionManager.openTransaction({ protocolTitle: 'chart-controller-create-pane' });
+    this.transactionManager.exeucteInTransaction({
+      incident: new AddNewPane({
         dataSource,
         paneOptions,
         panes: this.panes,
@@ -118,13 +130,18 @@ export class Chart {
         sketchers: this.sketchers,
         afterApply: () => this.installPane(dataSource.id),
         beforeInverse: () => this.uninstallPane(dataSource.id),
-      }))
-      .addIncident(new InvalidatePanesSizes({
+      }),
+    });
+
+    this.transactionManager.exeucteInTransaction({
+      incident: new InvalidatePanesSizes({
         panes: this.panes,
         initial: initialSizes,
         changed: this.getPanesSizes(),
-      }))
-      .trySign();
+      }),
+    });
+
+    this.transactionManager.tryCloseTransaction();
 
     return dataSource.id;
   }
@@ -132,49 +149,60 @@ export class Chart {
   public removePane(paneId: PaneId): void {
     const initialSizes = this.getPanesSizes();
 
-    this.history
-      .getProtocol({ protocolTitle: 'chart-controller-remove-pane' })
-      .addIncident(new RemovePane({
+    this.transactionManager.openTransaction({ protocolTitle: 'chart-controller-remove-pane' });
+    this.transactionManager.exeucteInTransaction({
+      incident: new RemovePane({
         panes: this.panes,
         paneIndex: this.indexByPaneId(paneId),
         beforeApply: () => this.uninstallPane(paneId),
         afterInverse: () => this.installPane(paneId),
-      }))
-      .addIncident(new InvalidatePanesSizes({
+      }),
+    });
+
+    this.transactionManager.exeucteInTransaction({
+      incident: new InvalidatePanesSizes({
         panes: this.panes,
         initial: initialSizes,
         changed: this.getPanesSizes(),
-      }))
-      .trySign();
+      }),
+    });
+
+    this.transactionManager.tryCloseTransaction();
   }
 
   public swapPanes(paneId1: PaneId, paneId2: PaneId): void {
-    this.history
-      .getProtocol({ protocolTitle: 'chart-controller-swap-panes' })
-      .addIncident(new SwapPanes({
+    this.transactionManager.transact({
+      protocolOptions: { protocolTitle: 'chart-controller-swap-panes' },
+      incident: new SwapPanes({
         panes: this.panes,
         pane1Index: this.indexByPaneId(paneId1),
         pane2Index: this.indexByPaneId(paneId2),
-      }))
-      .trySign();
+      }),
+    });
   }
 
   public togglePane(paneId: PaneId): void {
     const paneIndex = this.indexByPaneId(paneId);
     const initialSizes = this.getPanesSizes();
 
-    this.history
-      .getProtocol({ protocolTitle: 'chart-controller-toggle-pane' })
-      .addIncident(new TogglePane({
+    this.transactionManager.openTransaction({ protocolTitle: 'chart-controller-toggle-pane' });
+
+    this.transactionManager.exeucteInTransaction({
+      incident: new TogglePane({
         panes: this.panes,
         paneIndex,
-      }))
-      .addIncident(new InvalidatePanesSizes({
+      }),
+    });
+
+    this.transactionManager.exeucteInTransaction({
+      incident: new InvalidatePanesSizes({
         panes: this.panes,
         initial: initialSizes,
         changed: this.getPanesSizes(),
-      }))
-      .trySign();
+      }),
+    });
+
+    this.transactionManager.tryCloseTransaction();
   }
 
   public paneModel(paneId: PaneId): Viewport {
@@ -265,5 +293,26 @@ export class Chart {
     }
 
     return result;
+  }
+
+  private installVisiblePanesWatcher() {
+    watch(this.visiblePanes, (curState, prevState) => {
+      curState
+        .filter((pane) => prevState.findIndex((prev) => prev.id === pane.id) < 0)
+        .forEach((pane) => this.bindPane(pane));
+      prevState
+        .filter((pane) => curState.findIndex((cur) => cur.id === pane.id) < 0)
+        .forEach((pane) => this.unbindPane(pane));
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private bindPane(pane: PaneDescriptor<Viewport>) {
+    // console.log({ bind: pane });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private unbindPane(pane: PaneDescriptor<Viewport>) {
+    // console.log({ unbind: pane });
   }
 }

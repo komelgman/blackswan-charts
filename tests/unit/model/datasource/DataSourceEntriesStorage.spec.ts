@@ -9,6 +9,7 @@ describe('DataSourceEntriesStorage', () => {
     descriptor: {
       ref: 'e1',
       options: {
+        id: 'e1',
         data: 'test entry1',
         type: 't1',
         locked: false,
@@ -21,6 +22,7 @@ describe('DataSourceEntriesStorage', () => {
     descriptor: {
       ref: 'e2',
       options: {
+        id: 'e2',
         data: 'test entry2',
         type: 't1',
         locked: false,
@@ -33,6 +35,7 @@ describe('DataSourceEntriesStorage', () => {
     descriptor: {
       ref: 'e3',
       options: {
+        id: 'e3',
         data: 'test entry3',
         type: 't1',
         locked: false,
