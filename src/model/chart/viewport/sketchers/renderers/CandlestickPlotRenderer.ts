@@ -2,7 +2,6 @@ import { toRaw } from 'vue';
 import {
   type OHLCvPlot,
   type OHLCvBar,
-  barToTime,
   type UTCTimestamp,
   type CandleType,
   type CandleColors,
@@ -11,6 +10,7 @@ import {
   OHLCV_BAR_HIGH,
   OHLCV_BAR_LOW,
   OHLCV_BAR_CLOSE,
+  TIME_PERIODS,
 } from '@/model/chart/types';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
@@ -47,10 +47,16 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
       throw new Error('Oops.');
     }
 
+    const timePeriod = TIME_PERIODS.get(ohlc.step);
+    if (!timePeriod) {
+      console.error(`Illegal time period was found "${ohlc.step}"`);
+      return;
+    }
+
     resizeInPlace(drawing?.parts, bars.length);
 
     const parts = drawing?.parts;
-    const barSpace: number = timeAxis.translate(barToTime(timeRange.from, 1, ohlc.step) as UTCTimestamp);
+    const barSpace: number = timeAxis.translate(timePeriod.barToTime(timeRange.from, 1) as UTCTimestamp);
     const barGap = Math.max(1, Math.ceil(0.4 * barSpace));
     const barWidth = barSpace - barGap;
     const options: CandleGraphicsOptions = { style: plotOptions.barStyle, x: 0, width: 0, yo: 0, yh: 0, yl: 0, yc: 0 };

@@ -14,14 +14,10 @@ import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
 import { IdHelper, type IdBuilder } from '@/model/tools';
 import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
 import {
-  getBarDuration,
   LineBound,
   OHLCV_RECORD_CLOSE,
-  OHLCV_RECORD_HIGH,
-  OHLCV_RECORD_LOW,
-  OHLCV_RECORD_OPEN,
-  OHLCV_RECORD_VOLUME,
-  TimePeriod,
+  TIME_PERIODS,
+  TimePeriodName,
 } from '@/model/chart/types';
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
 import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
@@ -61,13 +57,19 @@ function getLineBound(): LineBound {
   return [LineBound.NoBound, LineBound.Both, LineBound.BoundEnd, LineBound.BoundStart][Math.floor(Math.random() * 4)];
 }
 
+const tp = TIME_PERIODS.get(TimePeriodName.m1);
+if (!tp) {
+  throw new Error('Oops');
+}
+const m1Duration: number = tp.averageBarDuration;
+
 function getRandomVLine(idBuilder: IdBuilder) {
   return {
     id: idBuilder.getNewId('VLine'),
     title: 'vline',
     type: 'VLine',
     data: {
-      def: Math.random() * 10 * TimePeriod.m1 - 5 * TimePeriod.m1,
+      def: Math.random() * 10 * m1Duration - 5 * m1Duration,
       style: {
         lineWidth: getLineWidth(),
         fill: getFill(),
@@ -104,9 +106,9 @@ function getRandomLine(idBuilder: IdBuilder) {
     type: 'Line',
     data: {
       def: [
-        Math.random() * 100 * TimePeriod.m1 - 50 * TimePeriod.m1,
+        Math.random() * 100 * m1Duration - 50 * m1Duration,
         Math.random() * 5 - 10,
-        Math.random() * 100 * TimePeriod.m1 - 50 * TimePeriod.m1,
+        Math.random() * 100 * m1Duration - 50 * m1Duration,
         Math.random() * 5 - 10,
       ],
       boundType: getLineBound(),
@@ -145,7 +147,7 @@ const drawings = {
         type: 'OHLCvContentOptions',
         symbol: 'BTCUSDT',
         provider: 'BINANCE',
-        step: TimePeriod.m5,
+        step: TimePeriodName.m5,
       },
       plotOptions: {
         type: 'CandlestickPlot',
@@ -180,7 +182,7 @@ const drawings = {
         type: 'OHLCvContentOptions',
         symbol: 'BTCUSDT',
         provider: 'BINANCE',
-        step: TimePeriod.m5,
+        step: TimePeriodName.m5,
       },
       plotOptions: {
         type: 'VolumeIndicator',
@@ -207,7 +209,7 @@ const drawings = {
     title: 'line1',
     type: 'Line',
     data: {
-      def: [-1 * 10 * TimePeriod.m1, -0.25, 1 * 10 * TimePeriod.m1, 0.75],
+      def: [-1 * 10 * m1Duration, -0.25, 1 * 10 * m1Duration, 0.75],
       boundType: LineBound.NoBound,
       scale: PriceScales.log10,
       style: { lineWidth: 2, fill: 1, color: '#AA0000' },
@@ -222,7 +224,7 @@ const drawings = {
     title: 'line2',
     type: 'Line',
     data: {
-      def: [0, 0.75, 0.75 * 10 * TimePeriod.m1, 0.75],
+      def: [0, 0.75, 0.75 * 10 * m1Duration, 0.75],
       boundType: LineBound.Both,
       scale: PriceScales.regular,
       style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -237,7 +239,7 @@ const drawings = {
     title: 'line3',
     type: 'Line',
     data: {
-      def: [(0 + 0.25) * 10 * TimePeriod.m1, 0, (0.75 + 0.25) * 10 * TimePeriod.m1, 0.75],
+      def: [(0 + 0.25) * 10 * m1Duration, 0, (0.75 + 0.25) * 10 * m1Duration, 0.75],
       boundType: LineBound.BoundStart,
       scale: PriceScales.regular,
       style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -252,7 +254,7 @@ const drawings = {
     title: 'line4',
     type: 'Line',
     data: {
-      def: [(0 + 0.5) * 10 * TimePeriod.m1, 0, (0.75 + 0.5) * 10 * TimePeriod.m1, 0.75],
+      def: [(0 + 0.5) * 10 * m1Duration, 0, (0.75 + 0.5) * 10 * m1Duration, 0.75],
       boundType: LineBound.BoundEnd,
       scale: PriceScales.regular,
       style: { lineWidth: 2, fill: 1, color: '#00AA00' },
@@ -266,7 +268,7 @@ const drawings = {
     id: 'vline1',
     title: 'vline1',
     type: 'VLine',
-    data: { def: -0.25 * 10 * TimePeriod.m1, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
+    data: { def: -0.25 * 10 * m1Duration, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
     locked: false,
     visible: true,
   },
@@ -284,7 +286,7 @@ const drawings = {
     id: 'vline2',
     title: 'vline2',
     type: 'VLine',
-    data: { def: -0.1 * 10 * TimePeriod.m1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
+    data: { def: -0.1 * 10 * m1Duration, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
     shareWith: '*' as '*',
     locked: false,
     visible: true,
@@ -301,59 +303,11 @@ const drawings = {
   },
 };
 
-const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
-  const content: OHLCv = {
-    available: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
-    loaded: { from: 0 as UTCTimestamp, to: 10 * TimePeriod.m1 as UTCTimestamp },
-    step: TimePeriod.m1,
-    values: [
-      [0.3, 0.5, 0.1, 0.15, 1000],
-      [0.15, 0.6, 0.0, 0.45, 1500],
-      [0.35, 0.7, 0.3, 0.55, 300],
-    ] as [Price, Price, Price, Price, number][],
-  };
-
-  let contentOptions = co;
-
-  const process = () => {
-    const values = content?.values || [];
-    const lastBar = values[values.length - 1];
-    const c = (lastBar[OHLCV_RECORD_CLOSE] + Math.random() * lastBar[OHLCV_RECORD_CLOSE] * 0.2 - lastBar[OHLCV_RECORD_CLOSE] * 0.1) as Price;
-    const h = Math.max(lastBar[OHLCV_RECORD_HIGH], c) as Price;
-    const l = Math.min(lastBar[OHLCV_RECORD_LOW], c) as Price;
-
-    // add new
-    // values.push(lastBar);
-
-    // update last
-    values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
-
-    // replace all
-    // values.splice(0, values.length, newItems);
-
-    callback(ck, content);
-  };
-
-  const intervalId = setInterval(process, 1000);
-
-  return {
-    options: contentOptions,
-    content,
-    stop: () => {
-      clearInterval(intervalId);
-    },
-    updateContentOptions: (newContentOptions: OHLCvContentOptions) => {
-      console.log(newContentOptions);
-      contentOptions = newContentOptions;
-    },
-  };
-};
-
 const valuesCount = 1000;
-const timePeriod = TimePeriod.m1;
+const timePeriod = m1Duration;
 const firstBarTime = Math.floor((Date.now() - valuesCount * timePeriod) / timePeriod) * timePeriod;
 
-const fabric2: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
+const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
   const content: OHLCv = markRaw({
     available: {
       from: firstBarTime as UTCTimestamp,
@@ -363,7 +317,7 @@ const fabric2: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, 
       from: firstBarTime as UTCTimestamp,
       to: firstBarTime + (valuesCount - 1) * timePeriod as UTCTimestamp,
     },
-    step: timePeriod,
+    step: TimePeriodName.m1,
     values: new Array<[Price, Price, Price, Price, number]>(valuesCount),
   });
 
@@ -388,9 +342,13 @@ const fabric2: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, 
   }
 
   const process = () => {
+    const contentTp = TIME_PERIODS.get(content.step);
+    if (!contentTp) {
+      throw new Error('Oops');
+    }
     // add new
-    content.available.to = (content.available.to + getBarDuration(content.available.to, content.step)) as UTCTimestamp;
-    content.loaded.to = (content.loaded.to + getBarDuration(content.loaded.to, content.step)) as UTCTimestamp;
+    content.available.to = (content.available.to + contentTp.getBarDuration(content.available.to)) as UTCTimestamp;
+    content.loaded.to = (content.loaded.to + contentTp.getBarDuration(content.loaded.to)) as UTCTimestamp;
     contentValues.push(getOHLCvRecord(contentValues[contentValues.length - 1]));
 
     // update last
@@ -417,7 +375,7 @@ const fabric2: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, 
   };
 };
 
-const binding = new DataBinding(chartApi, new OHLCvPipe(fabric2));
+const binding = new DataBinding(chartApi, new OHLCvPipe(fabric));
 
 mainDs.addChangeEventListener((e) => {
   const events = e.get(DataSourceChangeEventReason.DataInvalid) || [];

@@ -1,7 +1,7 @@
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
-import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions, Price } from '@/model/chart/types';
-import { barToTime, getBarDurationAvg, OHLCV_RECORD_HIGH, OHLCV_RECORD_LOW, timeToBar } from '@/model/chart/types';
+import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions, Price, TimePeriod } from '@/model/chart/types';
+import { OHLCV_RECORD_HIGH, OHLCV_RECORD_LOW, TIME_PERIODS } from '@/model/chart/types';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import { merge } from '@/misc/object.merge';
@@ -74,6 +74,12 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
       return;
     }
 
+    const timePeriod = TIME_PERIODS.get(ohlc.step);
+    if (!timePeriod) {
+      console.error(`Illegal time period was found "${ohlc.step}"`);
+      return;
+    }
+
     const { drawing } = entry;
     if (drawing === undefined || drawing.renderer !== this.renderer.name) {
       entry.drawing = {
@@ -84,10 +90,10 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
       } as Drawing;
     }
 
-    this.updatePrefferedRanges(ohlc, entry, viewport);
+    this.updatePrefferedRanges(ohlc, timePeriod, entry, viewport);
 
     const { descriptor } = entry;
-    const bars: OHLCvBar[] = this.visibleBars(ohlc, viewport.timeAxis.range);
+    const bars: OHLCvBar[] = this.visibleBars(ohlc, timePeriod, viewport.timeAxis.range);
 
     descriptor.visibleInViewport = bars.length > 0;
     descriptor.valid = true;
@@ -99,7 +105,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     this.renderBarsToEntry(bars, entry, viewport);
   }
 
-  protected updatePrefferedRanges(ohlc: OHLCv, entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
+  protected updatePrefferedRanges(ohlc: OHLCv, timePeriod: TimePeriod, entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
     const { drawing } = entry;
     if (!drawing) {
       throw new Error('IllegalState: drawing should be initalised');
@@ -112,7 +118,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
       return;
     }
 
-    const barDuration = getBarDurationAvg(ohlc.step);
+    const barDuration = timePeriod.averageBarDuration;
     let timeRange: Range<UTCTimestamp> | undefined;
     let priceRange: Range<Price> | undefined;
 
@@ -129,10 +135,10 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
 
     if (priceAxis.controlMode.value !== MANUAL) {
       const tmp = timeRange || timeAxis.range;
-      const { loaded, step: ohlcStep, values: ohlcValues } = ohlc;
+      const { loaded, values: ohlcValues } = ohlc;
 
-      if (loaded.from < tmp.to && barToTime(loaded.from, ohlcValues.length, ohlcStep) >= tmp.from) {
-        const [firstIndex, lastIndex] = this.rangeToBarIndexes(ohlc, tmp);
+      if (loaded.from < tmp.to && timePeriod.barToTime(loaded.from, ohlcValues.length) >= tmp.from) {
+        const [firstIndex, lastIndex] = this.rangeToBarIndexes(ohlc, timePeriod, tmp);
 
         if (firstIndex !== lastIndex) {
           let low = Number.MAX_VALUE;
@@ -159,30 +165,30 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     this.renderer.renderBarsToEntry(bars, entry, viewport);
   }
 
-  protected visibleBars(ohlc: OHLCv, timeRange: Readonly<Range<UTCTimestamp>>): OHLCvBar[] {
-    const { loaded, step: ohlcStep, values: ohlcValues } = ohlc;
+  protected visibleBars(ohlc: OHLCv, timePeriod: TimePeriod, timeRange: Readonly<Range<UTCTimestamp>>): OHLCvBar[] {
+    const { loaded, values: ohlcValues } = ohlc;
     const { from: ohlcFrom } = loaded;
-    const [firstIndex, lastIndex] = this.rangeToBarIndexes(ohlc, timeRange);
+    const [firstIndex, lastIndex] = this.rangeToBarIndexes(ohlc, timePeriod, timeRange);
     const result: OHLCvBar[] = new Array(lastIndex - firstIndex);
 
     for (let i = firstIndex; i <= lastIndex; ++i) {
-      result[i - firstIndex] = [barToTime(ohlcFrom, i, ohlcStep) as UTCTimestamp, ...ohlcValues[i]];
+      result[i - firstIndex] = [timePeriod.barToTime(ohlcFrom, i) as UTCTimestamp, ...ohlcValues[i]];
     }
 
     return result;
   }
 
-  protected rangeToBarIndexes(ohlc: OHLCv, timeRange: Range<UTCTimestamp>): [firstBar: number, lastBar: number] {
-    const { loaded, step: ohlcStep, values: ohlcValues } = ohlc;
+  protected rangeToBarIndexes(ohlc: OHLCv, timePeriod: TimePeriod, timeRange: Range<UTCTimestamp>): [firstBar: number, lastBar: number] {
+    const { loaded, values: ohlcValues } = ohlc;
     const { from: ohlcFrom } = loaded;
     const barCount = ohlcValues.length - 1;
 
-    if (ohlcFrom > timeRange.to || barToTime(ohlcFrom, barCount + 1, ohlcStep) < timeRange.from) {
+    if (ohlcFrom > timeRange.to || timePeriod.barToTime(ohlcFrom, barCount + 1) < timeRange.from) {
       return [0, 0];
     }
 
-    const firstVisibleBar = Math.floor(timeToBar(ohlcFrom, timeRange.from, ohlcStep));
-    const lastVisibleBar = Math.ceil(timeToBar(ohlcFrom, timeRange.to, ohlcStep));
+    const firstVisibleBar = Math.floor(timePeriod.timeToBar(ohlcFrom, timeRange.from));
+    const lastVisibleBar = Math.ceil(timePeriod.timeToBar(ohlcFrom, timeRange.to));
 
     const firstIndex = Math.max(0, firstVisibleBar);
     const lastIndex = Math.min(barCount, lastVisibleBar);

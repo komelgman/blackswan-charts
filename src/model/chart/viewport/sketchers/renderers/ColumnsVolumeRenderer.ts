@@ -1,7 +1,6 @@
 import {
   type OHLCvPlot,
   type OHLCvBar,
-  barToTime,
   type UTCTimestamp,
   type CandleType,
   type BarColors,
@@ -9,6 +8,7 @@ import {
   OHLCV_BAR_OPEN,
   OHLCV_BAR_CLOSE,
   OHLCV_BAR_TIMESTAMP,
+  TIME_PERIODS,
 } from '@/model/chart/types';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import { DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR } from '@/model/chart/viewport/sketchers';
@@ -43,6 +43,12 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
       throw new Error('Oops.');
     }
 
+    const timePeriod = TIME_PERIODS.get(ohlc.step);
+    if (!timePeriod) {
+      console.error(`Illegal time period was found "${ohlc.step}"`);
+      return;
+    }
+
     const maxValue = Math.max(...bars.map((bar) => bar[OHLCV_BAR_VOLUME] || 0));
     if (maxValue === 0) {
       return;
@@ -51,7 +57,7 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
     resizeInPlace(drawing?.parts, bars.length);
 
     const parts = drawing?.parts;
-    const barSpace: number = timeAxis.translate(barToTime(timeRange.from, 1, ohlc.step) as UTCTimestamp);
+    const barSpace: number = timeAxis.translate(timePeriod.barToTime(timeRange.from, 1) as UTCTimestamp);
     const barGap = Math.max(1, Math.ceil(0.4 * barSpace));
     const barWidth = barSpace - barGap;
     const heightFactor = (plotOptions.heightFactor || DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR) * (priceAxis.screenSize.main / maxValue);
