@@ -53,7 +53,6 @@ export default abstract class Layer {
     if (!this.invalid) {
       return;
     }
-    this.invalid = false;
 
     const { native, width, height, dpr } = this.ctx;
     let isSizeChanged = false;
@@ -70,11 +69,7 @@ export default abstract class Layer {
       isSizeChanged = true;
     }
 
-    // sometimes (very often) ctx getContext returns the same context
-    // and there might be previous transformation
-    // so let's reset it to be sure that everything is ok
-    // do no use resetTransform to respect Edge
-    native.setTransform(1, 0, 0, 1, 0, 0);
+    native.resetTransform();
     native.scale(dpr, dpr);
     native.save();
     if (!isSizeChanged) {
@@ -83,6 +78,7 @@ export default abstract class Layer {
 
     this.render(native, width, height, dpr);
     native.restore();
+    this.invalid = false;
   }
 
   protected abstract render(native: CanvasRenderingContext2D, width: number, height: number, dpr: number): void;

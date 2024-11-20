@@ -67,35 +67,36 @@ export default class DataSourceInvalidator {
     }
   };
 
-  private async invalidate(entries: DataSourceEntry[]): Promise<void> {
+  private invalidate(entries: DataSourceEntry[]): void {
+    // todo: perf
+    // posible way to optimisation
+    // gather enties by type
+    // implement sketcher as worker thread
+    // apply sketcher to all gathered entries in one call
+
     if (this.context === undefined) {
       this.invalid = entries;
       return;
     }
-
+    const invalidated: DataSourceEntry[] = [];
     const viewport = toRaw(this.viewport);
-
-    const invalidatedPromises = entries.map(async (entry) => {
+    for (const entry of entries) {
       const { valid, ref, options } = entry.descriptor;
       if (valid) {
         console.warn(`Entry ${ref} already valid`);
-        return null;
+        continue;
       }
-
       const drawingType: DrawingType = options.type;
       const sketcher: Sketcher = viewport.getSketcher(drawingType);
       if (!sketcher) {
         console.warn(`unknown drawing type ${drawingType}`);
-        return null;
+        continue;
       }
-
-      const isInvalidated = await sketcher.invalidate(entry, viewport);
-      return isInvalidated ? entry : null;
-    });
-
-    const invalidatedEntries = (await Promise.all(invalidatedPromises)).filter((e) => e !== null);
-
-    viewport.dataSource.invalidated(invalidatedEntries);
+      if (sketcher.invalidate(entry, viewport)) {
+        invalidated.push(entry);
+      }
+    }
+    viewport.dataSource.invalidated(invalidated);
   }
 
   private resetDataSourceCache(): void {
