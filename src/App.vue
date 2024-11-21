@@ -17,7 +17,7 @@ import {
   LineBound,
   OHLCV_RECORD_CLOSE,
   TIME_PERIODS,
-  TimePeriodName,
+  TimePeriods,
 } from '@/model/chart/types';
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
 import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
@@ -57,7 +57,7 @@ function getLineBound(): LineBound {
   return [LineBound.NoBound, LineBound.Both, LineBound.BoundEnd, LineBound.BoundStart][Math.floor(Math.random() * 4)];
 }
 
-const tp = TIME_PERIODS.get(TimePeriodName.m1);
+const tp = TIME_PERIODS.get(TimePeriods.h1);
 if (!tp) {
   throw new Error('Oops');
 }
@@ -147,7 +147,7 @@ const drawings = {
         type: 'OHLCvContentOptions',
         symbol: 'BTCUSDT',
         provider: 'BINANCE',
-        step: TimePeriodName.m5,
+        step: TimePeriods.h1,
       },
       plotOptions: {
         type: 'CandlestickPlot',
@@ -182,7 +182,7 @@ const drawings = {
         type: 'OHLCvContentOptions',
         symbol: 'BTCUSDT',
         provider: 'BINANCE',
-        step: TimePeriodName.m5,
+        step: TimePeriods.h1,
       },
       plotOptions: {
         type: 'VolumeIndicator',
@@ -317,7 +317,7 @@ const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, c
       from: firstBarTime as UTCTimestamp,
       to: firstBarTime + (valuesCount - 1) * timePeriod as UTCTimestamp,
     },
-    step: TimePeriodName.m1,
+    step: TimePeriods.h1,
     values: new Array<[Price, Price, Price, Price, number]>(valuesCount),
   });
 

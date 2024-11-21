@@ -1,31 +1,30 @@
 import { computed, watch } from 'vue';
-import makeFont from '@/misc/make-font';
 import AbstractInvalidator from '@/model/chart/axis/label/AbstractInvalidator';
-import type { LabelOptions } from '@/model/chart/axis/label/LabelOptions';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import type { LogicSize, UTCTimestamp } from '@/model/chart/types';
-
-// const SECOND = 1000;
-// const MINUTE = SECOND * 60;
-// const MINUTE5 = MINUTE * 5;
-// const MINUTE15 = MINUTE * 15;
-// const MINUTE30 = MINUTE * 30;
-// const HOUR = MINUTE * 60;
-// const HOUR4 = HOUR * 4;
-// const HOUR12 = HOUR * 12;
-// const DAY = HOUR * 24;
-// const WEEK = DAY * 7;
-// const MONTH = WEEK * 4;
-// const YEAR = DAY * 365;
+import {
+  MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
+  MS_PER_MONTH,
+  MS_PER_SECOND,
+  MS_PER_YEAR,
+  TIME_PERIODS,
+  TimePeriods,
+  type TimePeriod,
+  type UTCTimestamp,
+} from '@/model/chart/types';
 
 // Grid time steps
-// const TIMESCALES = [
-//   YEAR * 10, YEAR * 5, YEAR * 3, YEAR * 2, YEAR,
-//   MONTH * 6, MONTH * 4, MONTH * 3, MONTH * 2, MONTH,
-//   DAY * 15, DAY * 10, DAY * 7, DAY * 5, DAY * 3, DAY * 2, DAY,
-//   HOUR * 12, HOUR * 6, HOUR * 3, HOUR * 1.5, HOUR,
-//   MINUTE30, MINUTE15, MINUTE * 10, MINUTE5, MINUTE * 2, MINUTE,
-// ];
+const TIME_INTERVALS = [
+  MS_PER_YEAR,
+  MS_PER_MONTH * 6, MS_PER_MONTH * 4, MS_PER_MONTH * 3, MS_PER_MONTH * 2, MS_PER_MONTH,
+  MS_PER_DAY * 15, MS_PER_DAY * 10, MS_PER_DAY * 7, MS_PER_DAY * 5, MS_PER_DAY * 3, MS_PER_DAY * 2, MS_PER_DAY,
+  MS_PER_HOUR * 12, MS_PER_HOUR * 6, MS_PER_HOUR * 4, MS_PER_HOUR * 2, MS_PER_HOUR,
+  MS_PER_MINUTE * 30, MS_PER_MINUTE * 15, MS_PER_MINUTE * 10, MS_PER_MINUTE * 5, MS_PER_MINUTE * 2, MS_PER_MINUTE,
+  MS_PER_SECOND * 30, MS_PER_SECOND * 15, MS_PER_SECOND * 10, MS_PER_SECOND * 5, MS_PER_SECOND * 2, MS_PER_SECOND,
+];
+
+const CUSTOM_ALIGN_MAP = new Map([[TimePeriods.day, TIME_PERIODS.get(TimePeriods.month)]]);
 
 export default class TimeLabelsInvalidator extends AbstractInvalidator {
   public readonly axis: TimeAxis;
@@ -51,50 +50,47 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
     this.axis.labels.clear();
 
     const { main: screenSize } = this.axis.screenSize;
-    const labelSize = this.maxLabelSize.main;
-    const labelsCount = screenSize / (2 * labelSize);
-    const step = screenSize / labelsCount;
-    const zeroPos: number = this.axis.translate(0 as UTCTimestamp);
-    const shift = zeroPos % step;
+    const labelSize = (this.axis.textStyle.fontSize + 4) * 5;
+    const labelsCount = Math.round(screenSize / (2 * labelSize));
+    const { from, to } = this.axis.range;
 
-    for (let pos = shift; pos < screenSize; pos += step) {
-      const labelInfo: LabelOptions<UTCTimestamp> = this.findLabel(this.axis.revert(pos));
-      this.axis.labels.set(this.axis.translate(labelInfo.value), labelInfo.caption);
+    const dayPeriod = TIME_PERIODS.get(TimePeriods.day) as TimePeriod;
+    const interval = this.selectOptimalInterval(from, to, labelsCount);
+    const optimalPeriod = this.selectOptimalPeriod(interval);
+    const alignToPeriod = CUSTOM_ALIGN_MAP.get(optimalPeriod.name) || optimalPeriod.up || optimalPeriod;
+    const shift = Math.floor(alignToPeriod.floor(from) / interval) * interval as UTCTimestamp;
+
+    if (interval <= dayPeriod.averageBarDuration) {
+      for (let time = shift; time < to; time = time + interval as UTCTimestamp) {
+        this.axis.labels.set(this.axis.translate(time), optimalPeriod.label(time));
+      }
+    } else {
+      console.log({
+        a: Math.floor((alignToPeriod.floor(to) - alignToPeriod.floor(from)) / alignToPeriod.averageBarDuration),
+        b: labelsCount,
+      });
+
+      for (let time = shift; time < to; time = time + interval as UTCTimestamp) {
+        this.axis.labels.set(this.axis.translate(alignToPeriod.floor(time)), alignToPeriod.label(time));
+      }
     }
   }
 
-  private get maxLabelSize(): LogicSize {
-    return {
-      main: (this.axis.textStyle.fontSize + 4) * 5, // magic from tradingview
-      second: this.axis.textStyle.fontSize,
-    };
+  private selectOptimalPeriod(interval: number): TimePeriod {
+    const timePeriods = Array.from(TIME_PERIODS.values());
+    return timePeriods.find((v) => v.averageBarDuration <= interval) ?? TIME_PERIODS.get(TimePeriods.minimal) as TimePeriod;
   }
 
-  private findLabel(value: UTCTimestamp): LabelOptions<UTCTimestamp> {
-    const goodLookingValue: UTCTimestamp = this.nearest(value);
-    const caption = this.getCaption(goodLookingValue);
-    const { native } = this.context;
+  private selectOptimalInterval(from: UTCTimestamp, to: UTCTimestamp, labelsCount: number): number {
+    const totalDuration = to - from;
 
-    native.save();
-    native.font = makeFont(this.axis.textStyle);
-    const size = native.measureText(caption).width;
-    native.restore();
+    for (const interval of TIME_INTERVALS) {
+      const estimatedLabelsCount = Math.floor(totalDuration / interval);
+      if (estimatedLabelsCount > labelsCount) {
+        return interval;
+      }
+    }
 
-    return {
-      value: goodLookingValue,
-      caption,
-      size: {
-        main: size,
-        second: this.axis.textStyle.fontSize,
-      },
-    };
-  }
-
-  private getCaption(value: UTCTimestamp): string {
-    return `${value}`;
-  }
-
-  private nearest(value: UTCTimestamp): UTCTimestamp {
-    return value; // todo
+    return TIME_INTERVALS[0];
   }
 }

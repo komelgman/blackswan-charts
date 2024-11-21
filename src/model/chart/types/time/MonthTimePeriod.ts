@@ -1,10 +1,29 @@
-import { NonReactive } from '@/model/type-defs/decorators';
-import { type UTCTimestamp, type TimePeriod, MILLISECONDS_PER_DAY, type Millisecons } from '@/model/chart/types';
+import { type UTCTimestamp, type TimePeriod, MS_PER_DAY, type Millisecons, MS_PER_MONTH, TimePeriods } from '@/model/chart/types';
+
+const MONTHS_ABBR: string[] = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 // todo: test it
-@NonReactive
 export class MonthTimePeriod implements TimePeriod {
-  public readonly averageBarDuration: Millisecons = 30.44 * MILLISECONDS_PER_DAY as Millisecons;
+  public readonly up: TimePeriod | undefined = undefined;
+  public readonly name: TimePeriods = TimePeriods.month;
+  public readonly averageBarDuration: Millisecons = MS_PER_MONTH as Millisecons;
+
+  public constructor(up: TimePeriod) {
+    this.up = up;
+  }
 
   public barToTime(from: UTCTimestamp, bar: number): UTCTimestamp {
     const date = new Date(from);
@@ -29,6 +48,41 @@ export class MonthTimePeriod implements TimePeriod {
     const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
     const daysInMonth = lastDayOfMonth.getUTCDate();
 
-    return (daysInMonth * MILLISECONDS_PER_DAY) as Millisecons;
+    return (daysInMonth * MS_PER_DAY) as Millisecons;
+  }
+
+  public floor(time: UTCTimestamp): UTCTimestamp {
+    const date = new Date(time);
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+
+    return date.getTime() as UTCTimestamp;
+  }
+
+  public round(time: UTCTimestamp): UTCTimestamp {
+    const date = new Date(time);
+    const currentMonth = date.getUTCMonth();
+    const currentDate = date.getUTCDate();
+
+    if (currentDate >= 15) {
+      date.setUTCMonth(currentMonth + 1);
+    }
+
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+
+    return date.getTime() as UTCTimestamp;
+  }
+
+  public is(time: UTCTimestamp): boolean {
+    return this.floor(time) === time;
+  }
+
+  public label(time: UTCTimestamp): string {
+    if (this.up?.is(time)) {
+      return this.up.label(time);
+    }
+
+    return MONTHS_ABBR[new Date(time).getUTCMonth()];
   }
 }

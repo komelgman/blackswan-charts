@@ -1,10 +1,10 @@
-import { NonReactive } from '@/model/type-defs/decorators';
-import { type UTCTimestamp, type TimePeriod, MILLISECONDS_PER_DAY, type Millisecons } from '@/model/chart/types';
+import { type UTCTimestamp, type TimePeriod, MS_PER_DAY, type Millisecons, MS_PER_YEAR, TimePeriods } from '@/model/chart/types';
 
 // todo: test it
-@NonReactive
 export class YearTimePeriod implements TimePeriod {
-  public readonly averageBarDuration: Millisecons = 365.25 * MILLISECONDS_PER_DAY as Millisecons;
+  public readonly up: TimePeriod | undefined = undefined;
+  public readonly name: TimePeriods = TimePeriods.year;
+  public readonly averageBarDuration: Millisecons = MS_PER_YEAR as Millisecons;
 
   public barToTime(from: UTCTimestamp, bar: number): UTCTimestamp {
     const date = new Date(from);
@@ -28,6 +28,22 @@ export class YearTimePeriod implements TimePeriod {
     const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
     const daysInYear = isLeapYear ? 366 : 365;
 
-    return (daysInYear * MILLISECONDS_PER_DAY) as Millisecons;
+    return (daysInYear * MS_PER_DAY) as Millisecons;
+  }
+
+  public floor(time: UTCTimestamp): UTCTimestamp {
+    const date = new Date(time);
+    date.setUTCMonth(0, 1);
+    date.setUTCHours(0, 0, 0, 0);
+
+    return date.getTime() as UTCTimestamp;
+  }
+
+  public is(time: UTCTimestamp): boolean {
+    return this.floor(time) === time;
+  }
+
+  public label(time: UTCTimestamp): string {
+    return `${new Date(time).getUTCFullYear()}`;
   }
 }

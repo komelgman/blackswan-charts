@@ -1,5 +1,5 @@
 import type { HasType } from '@/model/type-defs/optional';
-import type { UTCTimestamp, Price, Range, TimePeriodName } from '@/model/chart/types';
+import type { UTCTimestamp, Price, Range, TimePeriods } from '@/model/chart/types';
 import type { ExternalContent } from '@/model/databinding';
 
 export const OHLCV_RECORD_OPEN = 0;
@@ -13,7 +13,7 @@ export declare type OHLCvRecord = [o: Price, h: Price, l: Price, c: Price, v?: n
 export declare type OHLCv = {
   loaded: Range<UTCTimestamp>;
   available: Range<UTCTimestamp>;
-  step: TimePeriodName;
+  step: TimePeriods;
   values: OHLCvRecord[];
 };
 
@@ -25,7 +25,7 @@ export declare type OHLCvPlot<O extends OHLCvPlotOptions> = ExternalContent<OHLC
 
 export declare type OHLCvContentOptions = HasType<'OHLCvContentOptions'> & {
   symbol: string;
-  step: TimePeriodName;
+  step: TimePeriods;
   provider?: string;
   visibleTimeRange?: Range<UTCTimestamp>;
   extendedRange?: {
