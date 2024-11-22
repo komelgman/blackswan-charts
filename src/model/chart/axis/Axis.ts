@@ -1,4 +1,4 @@
-import { reactive, shallowReactive, watch, type WatchHandle } from 'vue';
+import { markRaw, reactive, shallowReactive, watch, type WatchHandle } from 'vue';
 import { clone } from '@/misc/object.clone';
 import { merge } from '@/misc/object.merge';
 import { ControlMode, type AxisOptions } from '@/model/chart/axis/types';
@@ -13,8 +13,7 @@ import { deepEqual } from '@/misc/object.deepEqual';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> implements HasPostConstruct {
-  public readonly labels: Map<number, string> = shallowReactive(new Map<number, string>());
-
+  private readonly labelsValue: Wrapped<Map<number, string>>;
   private readonly id: EntityId;
   private readonly rangeValue: Range<T> = shallowReactive({ from: -1 as T, to: 1 as T }) as Range<T>;
   private readonly textStyleValue: TextStyle;
@@ -27,8 +26,9 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   private prefRangeWatchHandle?: WatchHandle;
 
   protected constructor(id: EntityId, historicalTransactionManager: HistoricalTransactionManager, textStyle: TextStyle) {
-    this.transactionManager = historicalTransactionManager;
+    this.labelsValue = shallowReactive({ value: markRaw(new Map<number, string>()) });
     this.textStyleValue = reactive(textStyle);
+    this.transactionManager = historicalTransactionManager;
     this.id = id;
   }
 
@@ -76,6 +76,14 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     if (options.controlMode !== undefined) {
       merge(this.controlModeValue, { value: options.controlMode });
     }
+
+    if (options.labels !== undefined) {
+      Object.assign(this.labelsValue, { value: markRaw(options.labels) });
+    }
+  }
+
+  public get labels(): Readonly<Wrapped<Map<number, string>>> {
+    return this.labelsValue;
   }
 
   public get range(): Readonly<Range<T>> {

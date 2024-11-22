@@ -25,7 +25,6 @@ const TIME_INTERVALS = [
 ];
 
 // todo: perf optimizations
-// todo: refatcor axis.label to be non reactive
 // todo: add cache
 export default class TimeLabelsInvalidator extends AbstractInvalidator {
   public readonly axis: TimeAxis;
@@ -48,7 +47,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
       return;
     }
 
-    this.axis.labels.clear();
+    const labels = new Map<number, string>();
 
     const { main: screenSize } = this.axis.screenSize;
     const labelSize = (this.axis.textStyle.fontSize + 4) * 5;
@@ -63,7 +62,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
 
     if (interval <= dayPeriod.averageBarDuration) {
       for (let time = alignedFrom; time < to; time = time + interval as UTCTimestamp) {
-        this.axis.labels.set(this.axis.translate(time), optimalPeriod.label(time));
+        labels.set(this.axis.translate(time), optimalPeriod.label(time));
       }
     } else {
       const alignedTo = alignToPeriod.ceil(to);
@@ -94,10 +93,12 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
             continue;
           }
 
-          this.axis.labels.set(this.axis.translate(labelTime), optimalPeriod.label(labelTime));
+          labels.set(this.axis.translate(labelTime), optimalPeriod.label(labelTime));
         }
       }
     }
+
+    this.axis.noHistoryManagedUpdate({ labels });
   }
 
   private selectOptimalInterval(from: UTCTimestamp, to: UTCTimestamp, labelsCount: number): number {

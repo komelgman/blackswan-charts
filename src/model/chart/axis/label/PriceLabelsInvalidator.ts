@@ -29,7 +29,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
       return;
     }
 
-    this.axis.labels.clear();
+    const labels = new Map<number, string>();
 
     const { main: screenSize } = this.axis.screenSize;
     const logicLabelSize: LogicSize = this.maxLabelSize;
@@ -39,11 +39,12 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     const zeroPos: number = this.axis.translate(0 as Price);
     const shift = Math.sign(zeroPos) * (zeroPos % step);
 
-    this.axis.noHistoryManagedUpdate({ contentWidth: logicLabelSize.second });
     for (let pos = shift; pos < screenSize; pos += step) {
       const labelInfo: LabelOptions<Price> = this.findLabel(this.axis.revert(pos));
-      this.axis.labels.set(this.axis.translate(labelInfo.value), labelInfo.caption);
+      labels.set(this.axis.translate(labelInfo.value), labelInfo.caption);
     }
+
+    this.axis.noHistoryManagedUpdate({ contentWidth: logicLabelSize.second, labels });
   }
 
   public get maxLabelSize(): LogicSize {

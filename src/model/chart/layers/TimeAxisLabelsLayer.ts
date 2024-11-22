@@ -28,7 +28,7 @@ export default class TimeAxisLabelsLayer extends Layer {
   }
 
   protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
-    const { labels, textStyle } = this.timeAxis;
+    const { labels: { value: timeLabels }, textStyle } = this.timeAxis;
 
     native.textBaseline = 'middle';
     native.textAlign = 'center';
@@ -36,7 +36,7 @@ export default class TimeAxisLabelsLayer extends Layer {
     native.font = makeFont(textStyle);
 
     const y: number = height * 0.5;
-    for (const [x, label] of labels) {
+    for (const [x, label] of timeLabels) {
       native.fillText(label, x, y);
     }
   }

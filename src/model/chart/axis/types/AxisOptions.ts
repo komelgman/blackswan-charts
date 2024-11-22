@@ -9,4 +9,5 @@ export interface AxisOptions<T> {
   screenSize?: LogicSize;
   controlMode?: ControlMode
   primaryEntryRef?: PrimaryEntryRef;
+  labels?: Map<number, string>; // todo: Label
 }

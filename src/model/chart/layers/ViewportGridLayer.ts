@@ -30,15 +30,15 @@ export default class ViewportGridLayer extends Layer {
     }
 
     native.lineWidth = 1;
-    native.strokeStyle = '#1f212f'; // todo
+    native.strokeStyle = '#1f212f'; // todo: options
     native.beginPath();
 
-    const { labels: priceLabels } = this.priceAxis;
+    const { labels: { value: priceLabels } } = this.priceAxis;
     for (const y of priceLabels.keys()) {
       drawHorizontalLine(native, inverted * y, 0, width);
     }
 
-    const { labels: timeLabels } = this.timeAxis;
+    const { labels: { value: timeLabels } } = this.timeAxis;
     for (const x of timeLabels.keys()) {
       drawVerticalLine(native, x, 0, inverted * height);
     }

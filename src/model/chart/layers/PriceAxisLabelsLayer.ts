@@ -36,7 +36,7 @@ export default class PriceAxisLabelsLayer extends Layer {
       native.translate(0, height);
     }
 
-    const { labels, textStyle } = this.priceAxis;
+    const { labels: { value: priceLabels }, textStyle } = this.priceAxis;
 
     native.textBaseline = 'middle';
     native.textAlign = 'end';
@@ -44,7 +44,7 @@ export default class PriceAxisLabelsLayer extends Layer {
     native.font = makeFont(textStyle);
 
     const x = width - PRICE_LABEL_PADDING;
-    for (const [y, label] of labels) {
+    for (const [y, label] of priceLabels) {
       native.fillText(label, x, inverted * y);
     }
   }

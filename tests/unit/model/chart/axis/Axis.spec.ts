@@ -198,7 +198,7 @@ describe('Axis', () => {
     const spy = vi.fn();
 
     watch(axis.labels, spy, { flush: 'sync' });
-    axis.labels.set(0, '0 usd');
+    axis.noHistoryManagedUpdate({ labels: new Map([[0, '0 usd']]) });
 
     expect(spy).toHaveBeenCalled();
   });
