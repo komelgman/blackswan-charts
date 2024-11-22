@@ -24,8 +24,6 @@ const TIME_INTERVALS = [
   MS_PER_SECOND * 30, MS_PER_SECOND * 15, MS_PER_SECOND * 10, MS_PER_SECOND * 5, MS_PER_SECOND * 2, MS_PER_SECOND,
 ];
 
-const CUSTOM_ALIGN_MAP = new Map([[TimePeriods.day, TIME_PERIODS_MAP.get(TimePeriods.month)]]);
-
 // todo: perf optimizations
 // todo: refatcor axis.label to be non reactive
 // todo: add cache
@@ -60,7 +58,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
     const dayPeriod = TIME_PERIODS_MAP.get(TimePeriods.day) as TimePeriod;
     const interval = this.selectOptimalInterval(from, to, labelsCount);
     const optimalPeriod = this.selectOptimalPeriod(interval);
-    const alignToPeriod = CUSTOM_ALIGN_MAP.get(optimalPeriod.name) || optimalPeriod.up || optimalPeriod;
+    const alignToPeriod = this.selectAlignToPeriod(optimalPeriod);
     const alignedFrom = alignToPeriod.floor(from) as UTCTimestamp;
 
     if (interval <= dayPeriod.averageBarDuration) {
@@ -92,7 +90,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
 
         for (let k = a; k < b; k += c || 1) {
           labelTime = tmpAll[k];
-          if (tb - labelTime < (interval / 2)) {
+          if (tb - labelTime < (interval * (2 / 3))) {
             continue;
           }
 
@@ -100,12 +98,6 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
         }
       }
     }
-  }
-
-  private selectOptimalPeriod(interval: number): TimePeriod {
-    const timePeriods = Array.from(TIME_PERIODS_MAP.values());
-    return timePeriods.find((v) => (v.averageBarDuration <= interval) && (v.name !== TimePeriods.week))
-      ?? TIME_PERIODS_MAP.get(TimePeriods.minimal) as TimePeriod;
   }
 
   private selectOptimalInterval(from: UTCTimestamp, to: UTCTimestamp, labelsCount: number): number {
@@ -119,5 +111,27 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
     }
 
     return TIME_INTERVALS[TIME_INTERVALS.length - 1];
+  }
+
+  private selectAlignToPeriod(optimalPeriod: TimePeriod): TimePeriod {
+    if (optimalPeriod.name === TimePeriods.day) {
+      return TIME_PERIODS_MAP.get(TimePeriods.month) as TimePeriod;
+    }
+
+    if (optimalPeriod.averageBarDuration < MS_PER_HOUR) {
+      return TIME_PERIODS_MAP.get(TimePeriods.h1) as TimePeriod;
+    }
+
+    if (optimalPeriod.averageBarDuration < MS_PER_DAY) {
+      return TIME_PERIODS_MAP.get(TimePeriods.day) as TimePeriod;
+    }
+
+    return optimalPeriod.up ?? optimalPeriod;
+  }
+
+  private selectOptimalPeriod(interval: number): TimePeriod {
+    const timePeriods = Array.from(TIME_PERIODS_MAP.values());
+    return timePeriods.find((v) => (v.averageBarDuration <= interval) && (v.name !== TimePeriods.week))
+      ?? TIME_PERIODS_MAP.get(TimePeriods.minimal) as TimePeriod;
   }
 }
