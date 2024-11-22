@@ -5,6 +5,10 @@ import type { LabelOptions } from '@/model/chart/axis/label/LabelOptions';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { LogicSize, Price } from '@/model/chart/types';
 
+// todo: perf optimizations
+// use cache
+// dont use reactive axis in cycle
+// todo: refactor code to get more good loocking values
 // const SCALES = [0.05, 0.1, 0.2, 0.25, 0.5, 0.8, 1, 2, 5];
 export default class PriceLabelsInvalidator extends AbstractInvalidator {
   public readonly axis: PriceAxis;
