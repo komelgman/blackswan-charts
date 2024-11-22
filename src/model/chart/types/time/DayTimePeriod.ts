@@ -1,4 +1,5 @@
-import { RegularTimePeriod, type UTCTimestamp } from '@/model/chart/types';
+import { RegularTimePeriod } from '@/model/chart/types/time';
+import { type UTCTimestamp } from '@/model/chart/types';
 
 export class DayTimePeriod extends RegularTimePeriod {
   public label(time: UTCTimestamp): string {

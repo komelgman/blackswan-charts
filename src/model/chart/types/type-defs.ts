@@ -1,8 +1,9 @@
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import type { Nominal } from '@/model/type-defs';
-import type { UTCTimestamp } from '@/model/chart/types';
 
 export declare type Price = Nominal<number, 'Price'>;
+export declare type UTCTimestamp = Nominal<number, 'UTCTimestamp'>;
+export declare type Millisecons = Nominal<number, 'Millisecons'>;
 
 export declare type Range<T> = { from: T, to: T };
 export declare type Point = { x: number, y: number };

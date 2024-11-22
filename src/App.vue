@@ -16,8 +16,6 @@ import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp
 import {
   LineBound,
   OHLCV_RECORD_CLOSE,
-  TIME_PERIODS,
-  TimePeriods,
 } from '@/model/chart/types';
 import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
 import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
@@ -25,6 +23,7 @@ import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import { ControlMode } from '@/model/chart/axis/types';
 import { shadeColor } from '@/misc/color';
+import { TIME_PERIODS_MAP, TimePeriods } from '@/model/chart/types/time';
 
 /**
  * todo
@@ -57,7 +56,7 @@ function getLineBound(): LineBound {
   return [LineBound.NoBound, LineBound.Both, LineBound.BoundEnd, LineBound.BoundStart][Math.floor(Math.random() * 4)];
 }
 
-const tp = TIME_PERIODS.get(TimePeriods.h1);
+const tp = TIME_PERIODS_MAP.get(TimePeriods.h1);
 if (!tp) {
   throw new Error('Oops');
 }
@@ -342,7 +341,7 @@ const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, c
   }
 
   const process = () => {
-    const contentTp = TIME_PERIODS.get(content.step);
+    const contentTp = TIME_PERIODS_MAP.get(content.step);
     if (!contentTp) {
       throw new Error('Oops');
     }

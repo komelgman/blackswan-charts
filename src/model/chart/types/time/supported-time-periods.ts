@@ -1,54 +1,36 @@
-import type { Nominal } from '@/model/type-defs';
-import {
-  DAY_LABEL_FORMATTER,
-  HHMM_LABEL_FORMATTER,
-  SS_LABEL_FORMATTER,
-  RegularTimePeriod,
-  YearTimePeriod,
-  MonthTimePeriod,
-  DayTimePeriod,
-  type TimePeriod,
-} from '@/model/chart/types/';
+import type { Millisecons, UTCTimestamp } from '@/model/chart/types';
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, MS_PER_SECOND, TimePeriods, type TimePeriod } from './TimePeriod';
+import { RegularTimePeriod, type LabelFormatter } from './RegularTimePeriod';
+import { CentryTimePeriod } from './CentryTimePeriod';
+import { YearTimePeriod } from './YearTimePeriod';
+import { MonthTimePeriod } from './MonthTimePeriod';
+import { DayTimePeriod } from './DayTimePeriod';
 
-export declare type UTCTimestamp = Nominal<number, 'UTCTimestamp'>;
-export declare type Millisecons = Nominal<number, 'Millisecons'>;
+const { s1, s5, s15, s30, m1, m5, m15, m30, h1, h4, day, week, month, year, centry } = TimePeriods;
+const HHMM_LABEL_FORMATTER: LabelFormatter = (t: UTCTimestamp) => {
+  const date = new Date(t);
+  return `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
+};
 
-export const MS_PER_SECOND = 1000 as Millisecons;
-export const MS_PER_MINUTE = 60 * MS_PER_SECOND as Millisecons;
-export const MS_PER_HOUR = 60 * MS_PER_MINUTE as Millisecons;
-export const MS_PER_DAY = 24 * MS_PER_HOUR as Millisecons;
-export const MS_PER_MONTH = 30.44 * MS_PER_DAY as Millisecons;
-export const MS_PER_YEAR = 365.25 * MS_PER_DAY as Millisecons;
+const SS_LABEL_FORMATTER: LabelFormatter = (t: UTCTimestamp) => {
+  const date = new Date(t);
+  return `${String(date.getUTCSeconds()).padStart(2, '0')}s`;
+};
 
-export enum TimePeriods {
-  minimal = 's1',
-  maximal = 'year',
-  s1 = 's1',
-  s5 = 's5',
-  s15 = 's15',
-  s30 = 's30',
-  m1 = 'm1',
-  m5 = 'm5',
-  m15 = 'm15',
-  m30 = 'm30',
-  h1 = 'h1',
-  h4 = 'h4',
-  day = 'day',
-  week = 'week',
-  month = 'month',
-  year = 'year',
-}
+const DAY_LABEL_FORMATTER: LabelFormatter = (t: UTCTimestamp) => {
+  const date = new Date(t);
+  return `${date.getUTCDate()}`;
+};
 
-const { s1, s5, s15, s30, m1, m5, m15, m30, h1, h4, day, week, month, year } = TimePeriods;
-
-let upPeriod = new YearTimePeriod();
+let upPeriod = new CentryTimePeriod();
 function build(f: () => TimePeriod): TimePeriod {
   upPeriod = f();
   return upPeriod;
 }
 
-export const TIME_PERIODS: Map<TimePeriods, TimePeriod> = new Map([
-  [year, upPeriod],
+export const TIME_PERIODS_MAP: Map<TimePeriods, TimePeriod> = new Map([
+  [centry, upPeriod],
+  [year, build(() => new YearTimePeriod(upPeriod))],
   [month, build(() => new MonthTimePeriod(upPeriod))],
   [week, build(() => new RegularTimePeriod(week, 7 * MS_PER_DAY as Millisecons, upPeriod, DAY_LABEL_FORMATTER))],
   [day, build(() => new DayTimePeriod(day, 1 * MS_PER_DAY as Millisecons, upPeriod, DAY_LABEL_FORMATTER))],

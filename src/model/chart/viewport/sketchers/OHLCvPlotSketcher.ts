@@ -1,7 +1,9 @@
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
-import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions, Price, TimePeriod } from '@/model/chart/types';
-import { OHLCV_RECORD_HIGH, OHLCV_RECORD_LOW, TIME_PERIODS } from '@/model/chart/types';
+import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions, Price } from '@/model/chart/types';
+import { OHLCV_RECORD_HIGH, OHLCV_RECORD_LOW } from '@/model/chart/types';
+import type { TimePeriod } from '@/model/chart/types/time';
+import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import { merge } from '@/misc/object.merge';
@@ -74,7 +76,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
       return;
     }
 
-    const timePeriod = TIME_PERIODS.get(ohlc.step);
+    const timePeriod = TIME_PERIODS_MAP.get(ohlc.step);
     if (!timePeriod) {
       console.error(`Illegal time period was found "${ohlc.step}"`);
       return;

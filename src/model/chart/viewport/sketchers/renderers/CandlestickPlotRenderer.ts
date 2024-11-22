@@ -10,8 +10,8 @@ import {
   OHLCV_BAR_HIGH,
   OHLCV_BAR_LOW,
   OHLCV_BAR_CLOSE,
-  TIME_PERIODS,
 } from '@/model/chart/types';
+import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import type { CandleGraphicsOptions } from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
 import CandleGraphics from '@/model/chart/viewport/sketchers/graphics/CandleGraphics';
@@ -47,7 +47,7 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
       throw new Error('Oops.');
     }
 
-    const timePeriod = TIME_PERIODS.get(ohlc.step);
+    const timePeriod = TIME_PERIODS_MAP.get(ohlc.step);
     if (!timePeriod) {
       console.error(`Illegal time period was found "${ohlc.step}"`);
       return;

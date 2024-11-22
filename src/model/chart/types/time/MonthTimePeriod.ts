@@ -1,4 +1,5 @@
-import { type UTCTimestamp, type TimePeriod, MS_PER_DAY, type Millisecons, MS_PER_MONTH, TimePeriods } from '@/model/chart/types';
+import { type TimePeriod, MS_PER_DAY, MS_PER_MONTH, TimePeriods } from '@/model/chart/types/time';
+import { type UTCTimestamp, type Millisecons } from '@/model/chart/types';
 
 const MONTHS_ABBR: string[] = [
   'Jan',
@@ -53,6 +54,24 @@ export class MonthTimePeriod implements TimePeriod {
 
   public floor(time: UTCTimestamp): UTCTimestamp {
     const date = new Date(time);
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+
+    return date.getTime() as UTCTimestamp;
+  }
+
+  public ceil(time: UTCTimestamp): UTCTimestamp {
+    const date = new Date(time);
+
+    if (date.getUTCDate() === 1
+      && date.getUTCHours() === 0
+      && date.getUTCMinutes() === 0
+      && date.getUTCSeconds() === 0
+      && date.getUTCMilliseconds() === 0) {
+      return time;
+    }
+
+    date.setUTCMonth(date.getUTCMonth() + 1);
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
 

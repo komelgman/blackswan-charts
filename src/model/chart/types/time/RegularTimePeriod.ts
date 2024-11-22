@@ -1,21 +1,7 @@
-import { type UTCTimestamp, type TimePeriod, type Millisecons, TimePeriods } from '@/model/chart/types';
+import { type TimePeriod, TimePeriods } from '@/model/chart/types/time';
+import { type UTCTimestamp, type Millisecons } from '@/model/chart/types';
 
 export declare type LabelFormatter = (t: UTCTimestamp) => string;
-
-export const HHMM_LABEL_FORMATTER: LabelFormatter = (t: UTCTimestamp) => {
-  const date = new Date(t);
-  return `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
-};
-
-export const SS_LABEL_FORMATTER: LabelFormatter = (t: UTCTimestamp) => {
-  const date = new Date(t);
-  return `${String(date.getUTCSeconds()).padStart(2, '0')}s`;
-};
-
-export const DAY_LABEL_FORMATTER: LabelFormatter = (t: UTCTimestamp) => {
-  const date = new Date(t);
-  return `${date.getUTCDate()}`;
-};
 
 export class RegularTimePeriod implements TimePeriod {
   public readonly up: TimePeriod | undefined = undefined;
@@ -49,6 +35,14 @@ export class RegularTimePeriod implements TimePeriod {
   public floor(time: UTCTimestamp): UTCTimestamp {
     const remainder = time % this.duration;
     return (time - remainder) as UTCTimestamp;
+  }
+
+  public ceil(time: UTCTimestamp): UTCTimestamp {
+    const remainder = time % this.duration;
+    if (remainder === 0) {
+      return time;
+    }
+    return (time + (this.duration - remainder)) as UTCTimestamp;
   }
 
   public is(time: UTCTimestamp): boolean {

@@ -8,8 +8,8 @@ import {
   OHLCV_BAR_OPEN,
   OHLCV_BAR_CLOSE,
   OHLCV_BAR_TIMESTAMP,
-  TIME_PERIODS,
 } from '@/model/chart/types';
+import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import { DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR } from '@/model/chart/viewport/sketchers';
 import type { DataSourceEntry } from '@/model/datasource/types';
@@ -43,7 +43,7 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
       throw new Error('Oops.');
     }
 
-    const timePeriod = TIME_PERIODS.get(ohlc.step);
+    const timePeriod = TIME_PERIODS_MAP.get(ohlc.step);
     if (!timePeriod) {
       console.error(`Illegal time period was found "${ohlc.step}"`);
       return;

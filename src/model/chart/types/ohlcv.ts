@@ -1,5 +1,6 @@
 import type { HasType } from '@/model/type-defs/optional';
-import type { UTCTimestamp, Price, Range, TimePeriods } from '@/model/chart/types';
+import type { UTCTimestamp, Price, Range } from '@/model/chart/types';
+import type { TimePeriods } from '@/model/chart/types/time';
 import type { ExternalContent } from '@/model/databinding';
 
 export const OHLCV_RECORD_OPEN = 0;

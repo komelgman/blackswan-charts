@@ -1,6 +1,7 @@
 import { computed, watch } from 'vue';
 import AbstractInvalidator from '@/model/chart/axis/label/AbstractInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
+import { type UTCTimestamp } from '@/model/chart/types';
 import {
   MS_PER_DAY,
   MS_PER_HOUR,
@@ -8,24 +9,26 @@ import {
   MS_PER_MONTH,
   MS_PER_SECOND,
   MS_PER_YEAR,
-  TIME_PERIODS,
+  TIME_PERIODS_MAP,
   TimePeriods,
   type TimePeriod,
-  type UTCTimestamp,
-} from '@/model/chart/types';
+} from '@/model/chart/types/time';
 
 // Grid time steps
 const TIME_INTERVALS = [
-  MS_PER_YEAR,
+  MS_PER_YEAR * 25, MS_PER_YEAR * 20, MS_PER_YEAR * 10, MS_PER_YEAR * 4, MS_PER_YEAR * 2, MS_PER_YEAR,
   MS_PER_MONTH * 6, MS_PER_MONTH * 4, MS_PER_MONTH * 3, MS_PER_MONTH * 2, MS_PER_MONTH,
-  MS_PER_DAY * 15, MS_PER_DAY * 10, MS_PER_DAY * 7, MS_PER_DAY * 5, MS_PER_DAY * 3, MS_PER_DAY * 2, MS_PER_DAY,
+  MS_PER_DAY * 15, MS_PER_DAY * 10, MS_PER_DAY * 6, MS_PER_DAY * 3, MS_PER_DAY * 2, MS_PER_DAY,
   MS_PER_HOUR * 12, MS_PER_HOUR * 6, MS_PER_HOUR * 4, MS_PER_HOUR * 2, MS_PER_HOUR,
   MS_PER_MINUTE * 30, MS_PER_MINUTE * 15, MS_PER_MINUTE * 10, MS_PER_MINUTE * 5, MS_PER_MINUTE * 2, MS_PER_MINUTE,
   MS_PER_SECOND * 30, MS_PER_SECOND * 15, MS_PER_SECOND * 10, MS_PER_SECOND * 5, MS_PER_SECOND * 2, MS_PER_SECOND,
 ];
 
-const CUSTOM_ALIGN_MAP = new Map([[TimePeriods.day, TIME_PERIODS.get(TimePeriods.month)]]);
+const CUSTOM_ALIGN_MAP = new Map([[TimePeriods.day, TIME_PERIODS_MAP.get(TimePeriods.month)]]);
 
+// todo: perf optimizations
+// todo: refatcor axis.label to be non reactive
+// todo: add cache
 export default class TimeLabelsInvalidator extends AbstractInvalidator {
   public readonly axis: TimeAxis;
 
@@ -51,34 +54,58 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
 
     const { main: screenSize } = this.axis.screenSize;
     const labelSize = (this.axis.textStyle.fontSize + 4) * 5;
-    const labelsCount = Math.round(screenSize / (2 * labelSize));
+    const labelsCount = screenSize / (2 * labelSize);
     const { from, to } = this.axis.range;
 
-    const dayPeriod = TIME_PERIODS.get(TimePeriods.day) as TimePeriod;
+    const dayPeriod = TIME_PERIODS_MAP.get(TimePeriods.day) as TimePeriod;
     const interval = this.selectOptimalInterval(from, to, labelsCount);
     const optimalPeriod = this.selectOptimalPeriod(interval);
     const alignToPeriod = CUSTOM_ALIGN_MAP.get(optimalPeriod.name) || optimalPeriod.up || optimalPeriod;
-    const shift = Math.floor(alignToPeriod.floor(from) / interval) * interval as UTCTimestamp;
+    const alignedFrom = alignToPeriod.floor(from) as UTCTimestamp;
 
     if (interval <= dayPeriod.averageBarDuration) {
-      for (let time = shift; time < to; time = time + interval as UTCTimestamp) {
+      for (let time = alignedFrom; time < to; time = time + interval as UTCTimestamp) {
         this.axis.labels.set(this.axis.translate(time), optimalPeriod.label(time));
       }
     } else {
-      console.log({
-        a: Math.floor((alignToPeriod.floor(to) - alignToPeriod.floor(from)) / alignToPeriod.averageBarDuration),
-        b: labelsCount,
-      });
+      const alignedTo = alignToPeriod.ceil(to);
+      const tmpAll: UTCTimestamp[] = [];
+      const tmpUp: number[] = [];
+      let time = alignedFrom;
+      let i = 0;
+      do {
+        tmpAll.push(time);
+        if (alignToPeriod.is(time)) {
+          tmpUp.push(i);
+        }
+        time = time + optimalPeriod.getBarDuration(time) as UTCTimestamp;
+        i++;
+      } while (time <= alignedTo);
 
-      for (let time = shift; time < to; time = time + interval as UTCTimestamp) {
-        this.axis.labels.set(this.axis.translate(alignToPeriod.floor(time)), alignToPeriod.label(time));
+      let labelTime = 0 as UTCTimestamp;
+      for (let j = 0; j < tmpUp.length - 1; j++) {
+        const a = tmpUp[j];
+        const ta = tmpAll[a];
+        const b = tmpUp[j + 1];
+        const tb = tmpAll[b];
+        const c = Math.round(((b - a) * interval) / (tb - ta));
+
+        for (let k = a; k < b; k += c || 1) {
+          labelTime = tmpAll[k];
+          if (tb - labelTime < (interval / 2)) {
+            continue;
+          }
+
+          this.axis.labels.set(this.axis.translate(labelTime), optimalPeriod.label(labelTime));
+        }
       }
     }
   }
 
   private selectOptimalPeriod(interval: number): TimePeriod {
-    const timePeriods = Array.from(TIME_PERIODS.values());
-    return timePeriods.find((v) => v.averageBarDuration <= interval) ?? TIME_PERIODS.get(TimePeriods.minimal) as TimePeriod;
+    const timePeriods = Array.from(TIME_PERIODS_MAP.values());
+    return timePeriods.find((v) => (v.averageBarDuration <= interval) && (v.name !== TimePeriods.week))
+      ?? TIME_PERIODS_MAP.get(TimePeriods.minimal) as TimePeriod;
   }
 
   private selectOptimalInterval(from: UTCTimestamp, to: UTCTimestamp, labelsCount: number): number {
@@ -91,6 +118,6 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
       }
     }
 
-    return TIME_INTERVALS[0];
+    return TIME_INTERVALS[TIME_INTERVALS.length - 1];
   }
 }
