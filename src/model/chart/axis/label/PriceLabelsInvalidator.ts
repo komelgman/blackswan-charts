@@ -51,7 +51,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     this.axis.noHistoryManagedUpdate({ contentWidth: logicLabelSize.second, labels });
   }
 
-  public get maxLabelSize(): LogicSize {
+  private get maxLabelSize(): LogicSize {
     // todo: use cache
     const { range } = this.axis;
     const v = Math.abs(range.from) < Math.abs(range.to) ? range.to : range.from;

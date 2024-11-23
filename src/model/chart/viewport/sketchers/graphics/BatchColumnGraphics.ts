@@ -8,21 +8,19 @@ export interface VolumeColumnGraphicsOptions {
   colors: BarColors;
 }
 
-export default class VolumeColumnGraphics implements Graphics {
-  private columnPath!: Path2D;
-  private colors!: BarColors;
+export default class BatchCandleGraphics implements Graphics {
+  private columnPath: Path2D;
+  private colors: BarColors;
+  private columnWidth: number;
 
-  constructor(options: VolumeColumnGraphicsOptions) {
-    this.invalidate(options);
+  constructor(columnWidth: number, colors: BarColors) {
+    this.columnWidth = columnWidth;
+    this.colors = colors;
+    this.columnPath = new Path2D();
   }
 
-  public invalidate(options: VolumeColumnGraphicsOptions): void {
-    const { x, width, height, colors } = options;
-
-    this.colors = colors;
-
-    this.columnPath = new Path2D();
-    this.columnPath.rect(x - width / 2, 0, width, height);
+  public add(x: number, height: number): void {
+    this.columnPath.rect(x - this.columnWidth / 2, 0, this.columnWidth, height);
   }
 
   public hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean {

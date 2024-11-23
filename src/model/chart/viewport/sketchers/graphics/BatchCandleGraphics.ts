@@ -1,51 +1,38 @@
 import type { Graphics } from '@/model/datasource/types';
-import type { CandleColors, Point } from '@/model/chart/types';
+import type { CandleColors, CandleType, Point } from '@/model/chart/types';
 import type { CandlestickBarStyle } from '@/model/chart/viewport/sketchers/renderers';
 
-export interface CandleGraphicsOptions {
-  x: number;
-  width: number;
-  yo: number;
-  yh: number;
-  yl: number;
-  yc: number;
-  style: CandlestickBarStyle;
-}
+export default class BatchCandleGraphics implements Graphics {
+  private readonly barPath: Path2D;
+  private readonly wickPath: Path2D;
+  private readonly style: CandlestickBarStyle;
+  private readonly colors: CandleColors;
+  private readonly candleWidth: number;
+  private readonly isEnoughSpaceForBar: boolean;
 
-export default class CandleGraphics implements Graphics {
-  private barPath!: Path2D;
-  private wickPath!: Path2D;
-  private style!: CandlestickBarStyle;
-  private colors!: CandleColors;
-
-  constructor(options: CandleGraphicsOptions) {
-    this.invalidate(options);
+  constructor(candleWidth: number, style: CandlestickBarStyle, type: CandleType) {
+    this.candleWidth = candleWidth;
+    this.style = style;
+    this.colors = style[type];
+    this.barPath = new Path2D();
+    this.wickPath = new Path2D();
+    this.isEnoughSpaceForBar = candleWidth >= 2; // options.minBarWidth
   }
 
-  public invalidate(options: CandleGraphicsOptions): void {
-    const { x, width, yo, yh, yl, yc, style } = options;
-    const candleType = yo > yc ? 'bearish' : 'bullish';
-
-    this.style = style;
-    this.colors = this.style[candleType];
-
-    const { showWick, showBody, showBorder } = this.style;
-    const isEnoughSpaceForBar = width >= 2; // options.minBarWidth
+  public add(x: number, yo: number, yh: number, yl: number, yc: number): void {
+    const { candleWidth, isEnoughSpaceForBar, style: { showWick, showBody, showBorder } } = this;
 
     if (showBorder || showBody) {
-      this.barPath = new Path2D();
-      this.barPath.rect(x - width / 2, yc, width, yo - yc);
+      this.barPath.rect(x - candleWidth / 2, yc, candleWidth, yo - yc);
     }
 
     if (showWick) {
       if ((showBorder || showBody) && isEnoughSpaceForBar) {
-        this.wickPath = new Path2D();
         this.wickPath.moveTo(x, yh);
         this.wickPath.lineTo(x, Math.max(yo, yc));
         this.wickPath.moveTo(x, yl);
         this.wickPath.lineTo(x, Math.min(yo, yc));
       } else {
-        this.wickPath = new Path2D();
         this.wickPath.moveTo(x, yh);
         this.wickPath.lineTo(x, yl);
       }
@@ -61,7 +48,8 @@ export default class CandleGraphics implements Graphics {
 
     // * debug
     // ctx.strokeStyle = '#454545';
-    // ctx.stroke(this.path);
+    // ctx.stroke(this.barPath);
+    // ctx.stroke(this.wickPath);
     ctx.restore();
 
     return result;
