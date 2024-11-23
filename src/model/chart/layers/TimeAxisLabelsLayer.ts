@@ -1,5 +1,5 @@
 import { computed, watch } from 'vue';
-import Layer from '@/components/layered-canvas/model/Layer';
+import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
@@ -27,17 +27,17 @@ export default class TimeAxisLabelsLayer extends Layer {
     });
   }
 
-  protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
+  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
     const { labels: { value: timeLabels }, textStyle } = this.timeAxis;
 
-    native.textBaseline = 'middle';
-    native.textAlign = 'center';
-    native.fillStyle = textStyle.color;
-    native.font = makeFont(textStyle);
+    renderingContext.textBaseline = 'middle';
+    renderingContext.textAlign = 'center';
+    renderingContext.fillStyle = textStyle.color;
+    renderingContext.font = makeFont(textStyle);
 
     const y: number = height * 0.5;
     for (const [x, label] of timeLabels) {
-      native.fillText(label, x, y);
+      renderingContext.fillText(label, x, y);
     }
   }
 }

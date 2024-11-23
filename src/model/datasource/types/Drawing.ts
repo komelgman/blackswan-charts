@@ -4,6 +4,7 @@ import { isString } from '@/model/type-defs';
 import type { DataSourceId } from '@/model/datasource/types';
 import type { EntityId } from '@/model/tools/IdBuilder';
 import type { Point, Price, Range, UTCTimestamp } from '@/model/chart/types';
+import type { LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 
 export declare type DrawingId = EntityId;
 export declare type ExternalDrawingId = [DataSourceId, DrawingId];
@@ -38,8 +39,8 @@ export interface DrawingDescriptor<DataType = any> {
 
 export interface Graphics {
   type?: string;
-  render(ctx: CanvasRenderingContext2D): void;
-  hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean;
+  render(ctx: LayerRenderingContext): void;
+  hitTest(ctx: LayerRenderingContext, screenPos: Point): boolean;
 }
 
 export interface DrawingHandle extends Graphics, HasCursor, HasCenterPos {

@@ -68,11 +68,11 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
 
     let size = -1;
     if (this.context !== undefined) {
-      const { native } = this.context;
-      native.save();
-      native.font = makeFont(this.axis.textStyle);
-      size = native.measureText(caption).width;
-      native.restore();
+      const { renderingContext } = this.context;
+      renderingContext.save();
+      renderingContext.font = makeFont(this.axis.textStyle);
+      size = renderingContext.measureText(caption).width;
+      renderingContext.restore();
     }
 
     return {

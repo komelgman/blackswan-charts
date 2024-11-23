@@ -1,6 +1,7 @@
 import { setLineStyle } from '@/misc/line-functions';
 import type { DrawingHandle } from '@/model/datasource/types';
 import type { Point, RectStyle } from '@/model/chart/types';
+import type { LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 
 export default class SquareHandle implements DrawingHandle {
   private readonly nonLockedCursor: string;
@@ -56,7 +57,7 @@ export default class SquareHandle implements DrawingHandle {
     }
   }
 
-  public hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean {
+  public hitTest(ctx: LayerRenderingContext, screenPos: Point): boolean {
     ctx.save();
     ctx.setLineDash([]);
     const result = ctx.isPointInPath(this.path, screenPos.x, screenPos.y);
@@ -65,7 +66,7 @@ export default class SquareHandle implements DrawingHandle {
     return result;
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
+  public render(ctx: LayerRenderingContext): void {
     ctx.save();
     if (this.style.border !== undefined) {
       setLineStyle(ctx, this.style.border);

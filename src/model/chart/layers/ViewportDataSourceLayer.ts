@@ -1,5 +1,5 @@
 import { watch } from 'vue';
-import Layer from '@/components/layered-canvas/model/Layer';
+import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { Inverted, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
 import {
@@ -38,13 +38,13 @@ export default class ViewportDataSourceLayer extends Layer {
     }
   };
 
-  protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
+  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
     const inverted: InvertedValue = this.inverted.value;
     if (inverted < 0) {
-      native.translate(width / 2, height / 2);
-      native.rotate(Math.PI);
-      native.scale(-1, 1);
-      native.translate(-width / 2, -height / 2);
+      renderingContext.translate(width / 2, height / 2);
+      renderingContext.rotate(Math.PI);
+      renderingContext.scale(-1, 1);
+      renderingContext.translate(-width / 2, -height / 2);
     }
 
     for (const { drawing } of this.ds.visible()) {
@@ -54,7 +54,7 @@ export default class ViewportDataSourceLayer extends Layer {
 
       const { parts } = drawing;
       for (const graphics of parts) {
-        graphics.render(this.ctx.native);
+        graphics.render(renderingContext);
       }
     }
   }

@@ -1,6 +1,7 @@
 import { setLineStyle } from '@/misc/line-functions';
 import type { Graphics } from '@/model/datasource/types';
 import type { LineStyle, Point } from '@/model/chart/types';
+import type { LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 
 export default abstract class AbstractLineGraphics<GraphicOptions> implements Graphics {
   protected path!: Path2D;
@@ -13,7 +14,7 @@ export default abstract class AbstractLineGraphics<GraphicOptions> implements Gr
 
   public abstract invalidate(options: GraphicOptions): void;
 
-  public hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean {
+  public hitTest(ctx: LayerRenderingContext, screenPos: Point): boolean {
     ctx.save();
     ctx.setLineDash([]);
     ctx.lineWidth = this.style.lineWidth + 2;
@@ -27,7 +28,7 @@ export default abstract class AbstractLineGraphics<GraphicOptions> implements Gr
     return result;
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
+  public render(ctx: LayerRenderingContext): void {
     ctx.save();
     setLineStyle(ctx, this.style);
     ctx.scale(1, 1);

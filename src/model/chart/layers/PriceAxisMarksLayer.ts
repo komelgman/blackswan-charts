@@ -1,5 +1,5 @@
 import { watch } from 'vue';
-import Layer from '@/components/layered-canvas/model/Layer';
+import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue, PriceAxis } from '@/model/chart/axis/PriceAxis';
 import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
@@ -45,18 +45,18 @@ export default class PriceAxisMarksLayer extends Layer {
     }
   };
 
-  protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
+  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
     const inverted: InvertedValue = this.priceAxis.inverted.value;
     const { textStyle } = this.priceAxis;
     const half = textStyle.fontSize / 2;
 
     if (inverted < 0) {
-      native.translate(0, height);
+      renderingContext.translate(0, height);
     }
 
-    native.textBaseline = 'middle';
-    native.textAlign = 'end';
-    native.font = makeFont(textStyle);
+    renderingContext.textBaseline = 'middle';
+    renderingContext.textAlign = 'end';
+    renderingContext.font = makeFont(textStyle);
 
     const containValidMarks: Predicate<DataSourceEntry> = ({ descriptor, drawing, mark }): boolean => {
       const { options } = descriptor;
@@ -78,14 +78,14 @@ export default class PriceAxisMarksLayer extends Layer {
 
       const y: number = inverted * mark.screenPos;
 
-      native.beginPath();
-      native.lineWidth = 1;
-      native.fillStyle = mark.bgColor;
-      native.rect(0, y - half - 3, width, textStyle.fontSize + 4);
-      native.fill();
+      renderingContext.beginPath();
+      renderingContext.lineWidth = 1;
+      renderingContext.fillStyle = mark.bgColor;
+      renderingContext.rect(0, y - half - 3, width, textStyle.fontSize + 4);
+      renderingContext.fill();
 
-      native.fillStyle = mark.textColor;
-      native.fillText(mark.text, x, y);
+      renderingContext.fillStyle = mark.textColor;
+      renderingContext.fillText(mark.text, x, y);
     }
   }
 }

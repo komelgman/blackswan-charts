@@ -1,5 +1,5 @@
 import { computed, watch } from 'vue';
-import Layer from '@/components/layered-canvas/model/Layer';
+import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
@@ -30,22 +30,22 @@ export default class PriceAxisLabelsLayer extends Layer {
     });
   }
 
-  protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
+  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
     const inverted: InvertedValue = this.priceAxis.inverted.value;
     if (inverted < 0) {
-      native.translate(0, height);
+      renderingContext.translate(0, height);
     }
 
     const { labels: { value: priceLabels }, textStyle } = this.priceAxis;
 
-    native.textBaseline = 'middle';
-    native.textAlign = 'end';
-    native.fillStyle = textStyle.color;
-    native.font = makeFont(textStyle);
+    renderingContext.textBaseline = 'middle';
+    renderingContext.textAlign = 'end';
+    renderingContext.fillStyle = textStyle.color;
+    renderingContext.font = makeFont(textStyle);
 
     const x = width - PRICE_LABEL_PADDING;
     for (const [y, label] of priceLabels) {
-      native.fillText(label, x, inverted * y);
+      renderingContext.fillText(label, x, inverted * y);
     }
   }
 }

@@ -1,7 +1,8 @@
+import type { LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { LineStyle, Range } from '@/model/chart/types';
 import { LineFillStyle } from '@/model/chart/types';
 
-export function setLineStyle(ctx: CanvasRenderingContext2D, style: LineStyle): void {
+export function setLineStyle(ctx: LayerRenderingContext, style: LineStyle): void {
   let dashPattern: number[];
   const { lineWidth, fill, color } = style;
 
@@ -35,21 +36,21 @@ export function setLineStyle(ctx: CanvasRenderingContext2D, style: LineStyle): v
   ctx.setLineDash(dashPattern);
 }
 
-export function drawHorizontalLine(ctx: CanvasRenderingContext2D, y: number, left: number, right: number): void {
+export function drawHorizontalLine(ctx: LayerRenderingContext, y: number, left: number, right: number): void {
   const correction = 0; // (ctx.lineWidth % 2) ? 0.5 : 0;
   ctx.moveTo(left, y + correction);
   ctx.lineTo(right, y + correction);
   ctx.stroke();
 }
 
-export function drawVerticalLine(ctx: CanvasRenderingContext2D, x: number, top: number, bottom: number): void {
+export function drawVerticalLine(ctx: LayerRenderingContext, x: number, top: number, bottom: number): void {
   const correction = 0; // (ctx.lineWidth % 2) ? 0.5 : 0;
   ctx.moveTo(x + correction, top);
   ctx.lineTo(x + correction, bottom);
   ctx.stroke();
 }
 
-export function strokeInPixel(ctx: CanvasRenderingContext2D, drawFunction: () => void): void {
+export function strokeInPixel(ctx: LayerRenderingContext, drawFunction: () => void): void {
   ctx.save();
   if (ctx.lineWidth % 2) {
     ctx.translate(0.5, 0.5);

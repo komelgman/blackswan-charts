@@ -1,5 +1,5 @@
 import { computed, watch } from 'vue';
-import Layer from '@/components/layered-canvas/model/Layer';
+import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry } from '@/model/datasource/types';
@@ -41,7 +41,7 @@ export default class ViewportHighlightingLayer extends Layer {
     }
   };
 
-  protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
+  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
     const { highlighted, selected } = this.viewport;
     if (highlighted === undefined && selected.size === 0) {
       return;
@@ -49,31 +49,31 @@ export default class ViewportHighlightingLayer extends Layer {
 
     const inverted: InvertedValue = this.viewport.priceAxis.inverted.value;
     if (inverted < 0) {
-      native.translate(width / 2, height / 2);
-      native.rotate(Math.PI);
-      native.scale(-1, 1);
-      native.translate(-width / 2, -height / 2);
+      renderingContext.translate(width / 2, height / 2);
+      renderingContext.rotate(Math.PI);
+      renderingContext.scale(-1, 1);
+      renderingContext.translate(-width / 2, -height / 2);
     }
 
     for (const entry of selected) {
-      this.highlight(entry, native);
+      this.highlight(entry, renderingContext);
     }
 
     if (highlighted !== undefined && !selected.has(highlighted)) {
-      this.highlight(highlighted, native);
+      this.highlight(highlighted, renderingContext);
     }
   }
 
-  private highlight(entry: DataSourceEntry, native: CanvasRenderingContext2D): void {
+  private highlight(entry: DataSourceEntry, renderingContext: LayerRenderingContext): void {
     const { descriptor, drawing } = entry;
 
     if (descriptor.options.visible && descriptor.visibleInViewport && drawing !== undefined) {
       for (const part of drawing.parts) {
-        part.render(native);
+        part.render(renderingContext);
       }
 
       for (const [, handle] of Object.entries(drawing.handles)) {
-        handle.render(native);
+        handle.render(renderingContext);
       }
     }
   }

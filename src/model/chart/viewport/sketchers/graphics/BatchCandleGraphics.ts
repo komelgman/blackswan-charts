@@ -1,6 +1,7 @@
 import type { Graphics } from '@/model/datasource/types';
 import type { CandleColors, CandleType, Point } from '@/model/chart/types';
 import type { CandlestickBarStyle } from '@/model/chart/viewport/sketchers/renderers';
+import type { LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 
 export default class BatchCandleGraphics implements Graphics {
   private readonly barPath: Path2D;
@@ -39,7 +40,7 @@ export default class BatchCandleGraphics implements Graphics {
     }
   }
 
-  public hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean {
+  public hitTest(ctx: LayerRenderingContext, screenPos: Point): boolean {
     const { x, y } = screenPos;
     ctx.save();
     ctx.setLineDash([]);
@@ -55,7 +56,7 @@ export default class BatchCandleGraphics implements Graphics {
     return result;
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
+  public render(ctx: LayerRenderingContext): void {
     const { showWick, showBody, showBorder } = this.style;
 
     ctx.save();

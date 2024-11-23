@@ -1,3 +1,4 @@
+import type { LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { BarColors, Point } from '@/model/chart/types';
 import type { Graphics } from '@/model/datasource/types';
 
@@ -23,7 +24,7 @@ export default class BatchCandleGraphics implements Graphics {
     this.columnPath.rect(x - this.columnWidth / 2, 0, this.columnWidth, height);
   }
 
-  public hitTest(ctx: CanvasRenderingContext2D, screenPos: Point): boolean {
+  public hitTest(ctx: LayerRenderingContext, screenPos: Point): boolean {
     const { x, y } = screenPos;
     ctx.save();
     ctx.setLineDash([]);
@@ -38,7 +39,7 @@ export default class BatchCandleGraphics implements Graphics {
     return result;
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
+  public render(ctx: LayerRenderingContext): void {
     ctx.save();
     ctx.setLineDash([]);
     ctx.scale(1, 1);

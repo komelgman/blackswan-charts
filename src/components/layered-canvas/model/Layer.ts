@@ -1,11 +1,14 @@
 import type { LayerContext, LayerContextChangeListener } from '@/components/layered-canvas/types';
 
+export declare type LayerRenderingContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+
 export default abstract class Layer {
   private static sharedId: number = 0;
 
   public readonly id: number;
 
   protected ctx!: LayerContext;
+  protected buffer: OffscreenCanvasRenderingContext2D | null;
 
   private readonly listeners: LayerContextChangeListener[] = [];
   private invalidValue!: boolean;
@@ -13,6 +16,7 @@ export default abstract class Layer {
   protected constructor() {
     this.id = Layer.sharedId;
     Layer.sharedId += 1;
+    this.buffer = new OffscreenCanvas(1, 1).getContext('2d');
   }
 
   set invalid(value: boolean) {
@@ -54,32 +58,46 @@ export default abstract class Layer {
       return;
     }
 
-    const { native, width, height, dpr } = this.ctx;
+    const { renderingContext, width, height, dpr } = this.ctx;
     let isSizeChanged = false;
     const requestedWidth = Math.floor(width * dpr);
     const requestedHeight = Math.floor(height * dpr);
+    const activeContext = this.buffer !== null ? this.buffer : renderingContext;
 
-    if (native.canvas.width !== requestedWidth) {
-      native.canvas.width = requestedWidth;
+    if (activeContext.canvas.width !== requestedWidth) {
+      activeContext.canvas.width = requestedWidth;
       isSizeChanged = true;
     }
 
-    if (native.canvas.height !== requestedHeight) {
-      native.canvas.height = requestedHeight;
+    if (activeContext.canvas.height !== requestedHeight) {
+      activeContext.canvas.height = requestedHeight;
       isSizeChanged = true;
     }
 
-    native.resetTransform();
-    native.scale(dpr, dpr);
-    native.save();
+    activeContext.resetTransform();
+    activeContext.scale(dpr, dpr);
+    activeContext.save();
     if (!isSizeChanged) {
-      native.clearRect(0, 0, width, height);
+      activeContext.clearRect(0, 0, width, height);
     }
 
-    this.render(native, width, height, dpr);
-    native.restore();
+    this.render(activeContext, width, height, dpr);
+    activeContext.restore();
+
+    if (activeContext === this.buffer) {
+      if (isSizeChanged) {
+        renderingContext.canvas.height = requestedHeight;
+        renderingContext.canvas.width = requestedWidth;
+      } else {
+        renderingContext.clearRect(0, 0, width, height);
+      }
+
+      const bitmapOne = activeContext.canvas.transferToImageBitmap();
+      renderingContext.drawImage(bitmapOne, 0, 0);
+    }
+
     this.invalid = false;
   }
 
-  protected abstract render(native: CanvasRenderingContext2D, width: number, height: number, dpr: number): void;
+  protected abstract render(renderingContext: LayerRenderingContext, width: number, height: number, dpr: number): void;
 }

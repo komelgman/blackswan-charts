@@ -223,7 +223,7 @@ function setupLayers(): void {
       }
 
       props.options.layers[layerId].setContext({
-        native: context,
+        renderingContext: context,
         width,
         height,
         dpr,

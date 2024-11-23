@@ -1,5 +1,5 @@
 import { watch } from 'vue';
-import Layer from '@/components/layered-canvas/model/Layer';
+import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import { drawHorizontalLine, drawVerticalLine } from '@/misc/line-functions';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
@@ -23,27 +23,27 @@ export default class ViewportGridLayer extends Layer {
     });
   }
 
-  protected render(native: CanvasRenderingContext2D, width: number, height: number): void {
+  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
     const inverted: InvertedValue = this.priceAxis.inverted.value;
     if (inverted < 0) {
-      native.translate(0, height);
+      renderingContext.translate(0, height);
     }
 
-    native.lineWidth = 1;
-    native.strokeStyle = '#1f212f'; // todo: options
-    native.beginPath();
+    renderingContext.lineWidth = 1;
+    renderingContext.strokeStyle = '#1f212f'; // todo: options
+    renderingContext.beginPath();
 
     const { labels: { value: priceLabels } } = this.priceAxis;
     for (const y of priceLabels.keys()) {
-      drawHorizontalLine(native, inverted * y, 0, width);
+      drawHorizontalLine(renderingContext, inverted * y, 0, width);
     }
 
     const { labels: { value: timeLabels } } = this.timeAxis;
     for (const x of timeLabels.keys()) {
-      drawVerticalLine(native, x, 0, inverted * height);
+      drawVerticalLine(renderingContext, x, 0, inverted * height);
     }
 
-    native.scale(1, 1);
-    native.stroke();
+    renderingContext.scale(1, 1);
+    renderingContext.stroke();
   }
 }

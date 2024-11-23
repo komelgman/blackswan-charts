@@ -266,18 +266,18 @@ export class LineSketcher extends AbstractSketcher<Line> {
       return noVisiblePoints;
     }
 
-    let result: any[] = [];
+    const result: any[] = [];
 
     const dydx = ldy / ldx;
     const lineFunc = (x: UTCTimestamp) => (line.scale.func.revert(line.scale.func.translate(ly0) + dydx * (x - lx0)));
     const leftSideCross = lineFunc(timeRange.from);
     if (inRange(leftSideCross, priceRange)) {
-      result = [...result, timeRange.from, leftSideCross];
+      result.push(timeRange.from, leftSideCross);
     }
 
     const rightSideCross = lineFunc(timeRange.to);
     if (inRange(rightSideCross, priceRange)) {
-      result = [...result, timeRange.to, rightSideCross];
+      result.push(timeRange.to, rightSideCross);
     }
 
     if (result.length === 4) {
@@ -287,7 +287,7 @@ export class LineSketcher extends AbstractSketcher<Line> {
     const dxdy = ldx / ldy;
     const botSideCross = lx0 + dxdy * (lineScale.translate(priceRange.from) - lineScale.translate(ly0));
     if (inRange(botSideCross, timeRange)) {
-      result = [...result, botSideCross, priceRange.from];
+      result.push(botSideCross, priceRange.from);
     }
 
     if (result.length === 4) {
@@ -296,7 +296,7 @@ export class LineSketcher extends AbstractSketcher<Line> {
 
     const topSideCross = lx0 + dxdy * (lineScale.translate(priceRange.to) - lineScale.translate(ly0));
     if (inRange(topSideCross, timeRange)) {
-      result = [...result, topSideCross, priceRange.to];
+      result.push(topSideCross, priceRange.to);
     }
 
     if (result.length === 4) {
