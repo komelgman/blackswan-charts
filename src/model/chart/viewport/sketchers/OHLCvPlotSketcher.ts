@@ -1,7 +1,7 @@
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
 import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions, Price } from '@/model/chart/types';
-import { OHLCV_RECORD_HIGH, OHLCV_RECORD_LOW } from '@/model/chart/types';
+import { OHLCV_RECORD_CLOSE, OHLCV_RECORD_HIGH, OHLCV_RECORD_LOW, OHLCV_RECORD_OPEN, OHLCV_RECORD_VOLUME } from '@/model/chart/types';
 import type { TimePeriod } from '@/model/chart/types/time';
 import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
@@ -174,7 +174,15 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     const result: OHLCvBar[] = new Array(lastIndex - firstIndex);
 
     for (let i = firstIndex; i <= lastIndex; ++i) {
-      result[i - firstIndex] = [timePeriod.barToTime(ohlcFrom, i) as UTCTimestamp, ...ohlcValues[i]];
+      const record = ohlcValues[i];
+      result[i - firstIndex] = [
+        timePeriod.barToTime(ohlcFrom, i) as UTCTimestamp,
+        record[OHLCV_RECORD_OPEN],
+        record[OHLCV_RECORD_HIGH],
+        record[OHLCV_RECORD_LOW],
+        record[OHLCV_RECORD_CLOSE],
+        record[OHLCV_RECORD_VOLUME],
+      ];
     }
 
     return result;

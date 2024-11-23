@@ -302,7 +302,7 @@ const drawings = {
   },
 };
 
-const valuesCount = 10000;
+const valuesCount = 100000;
 const timePeriod = m1Duration;
 const firstBarTime = Math.floor((Date.now() - valuesCount * timePeriod) / timePeriod) * timePeriod;
 
