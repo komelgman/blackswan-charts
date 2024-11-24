@@ -15,18 +15,18 @@ import { retry } from '@/misc/function.retry';
 
 export interface ContentOptions<T extends string> extends HasType<T> {}
 
-export interface ExternalContent<O extends ContentOptions<string>, ContentType> {
+export interface ExternalContent<O extends ContentOptions<string>, Content> {
   contentOptions?: O;
-  content?: ContentType;
+  content?: Content;
 }
 
-export class DataBinding<O extends ContentOptions<string>, ContentType> {
+export class DataBinding<O extends ContentOptions<string>, Content> {
   private readonly entriesByContentKey: Map<string, [DataSource, DataSourceEntry][]> = new Map();
   private readonly entryRefToContentKey: Map<string, string> = new Map();
-  private readonly pipe: DataPipe<O, ContentType>;
+  private readonly pipe: DataPipe<O, Content>;
   private readonly removeChartEventListener: Function;
 
-  constructor(chart: Chart, pipe: DataPipe<O, ContentType>) {
+  constructor(chart: Chart, pipe: DataPipe<O, Content>) {
     this.pipe = pipe;
 
     this.removeChartEventListener = chart.addPaneRegistrationEventListener((e) => {
@@ -143,9 +143,11 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
     }
   }
 
-  private updateContentWithRetry(contentKey: string, content: ContentType) {
+  private updateContentWithRetry(contentKey: string, content: Content) {
+    console.log({ contentKey });
+    const retries = 5;
     const retryOptions = {
-      retries: 5,
+      retries,
       factor: 2,
       minTimeout: 10,
       maxTimeout: 500,
@@ -153,11 +155,11 @@ export class DataBinding<O extends ContentOptions<string>, ContentType> {
 
     retry(retryOptions, async () => this.updateContent(contentKey, content))
       .catch((error) => {
-        console.error('Failed to update content after retries:', error);
+        console.error(`Failed to update content with key ${contentKey} after ${retries} retries:`, error);
       });
   }
 
-  private updateContent(contentKey: string, content: ContentType) {
+  private updateContent(contentKey: string, content: Content) {
     const shouldBeUpdated = this.entriesByContentKey.get(contentKey) || [];
 
     for (const [ds, entry] of shouldBeUpdated) {
