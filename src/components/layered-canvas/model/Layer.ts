@@ -21,7 +21,7 @@ export default abstract class Layer {
 
   set invalid(value: boolean) {
     if (!this.invalidValue && value) {
-      setTimeout(() => requestAnimationFrame(this.invalidate.bind(this)), 0);
+      requestAnimationFrame(this.invalidate.bind(this));
     }
 
     this.invalidValue = value;
