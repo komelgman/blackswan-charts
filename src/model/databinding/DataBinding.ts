@@ -144,7 +144,6 @@ export class DataBinding<O extends ContentOptions<string>, Content> {
   }
 
   private updateContentWithRetry(contentKey: string, content: Content) {
-    console.log({ contentKey });
     const retries = 5;
     const retryOptions = {
       retries,

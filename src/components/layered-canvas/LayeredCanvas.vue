@@ -165,7 +165,7 @@ function onDragMove(e: MouseEvent): void {
   // hint: decrease amount of drag events
   setTimeout(() => {
     isSkipMovementsDetection = false;
-  }, 10);
+  }, 10); // todo: options
 }
 
 function onMouseMove(e: MouseEvent): void {
@@ -180,7 +180,7 @@ function onMouseMove(e: MouseEvent): void {
   // hint: decrease amount of move events
   setTimeout(() => {
     isSkipMovementsDetection = false;
-  }, 10);
+  }, 10); // todo: options
 }
 
 function onDragEnd(e?: DragEvent): void {
