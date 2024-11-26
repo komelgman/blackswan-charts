@@ -1,3 +1,3 @@
-export type { LayerContext } from './LayerContext';
-export type { LayerContextChangeListener } from './LayerContextChangeListener';
-export type { LayeredCanvasOptions } from './LayeredCanvasOptions';
+export * from './LayerContext';
+export * from './LayerContextChangeListener';
+export * from './LayeredCanvasOptions';

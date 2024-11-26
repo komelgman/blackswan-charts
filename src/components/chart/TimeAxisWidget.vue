@@ -19,8 +19,8 @@
 import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
+import { TimeAxisLabelsLayer } from '@/model/chart/axis/layers';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import TimeAxisLabelsLayer from '@/model/chart/layers/TimeAxisLabelsLayer';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
 interface Props {

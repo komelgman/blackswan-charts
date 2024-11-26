@@ -21,11 +21,10 @@ import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, Zo
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import type { ChartState } from '@/model/chart/Chart';
-import PriceAxisLabelsLayer from '@/model/chart/layers/PriceAxisLabelsLayer';
-import PriceAxisMarksLayer from '@/model/chart/layers/PriceAxisMarksLayer';
 import type DataSource from '@/model/datasource/DataSource';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
+import { PriceAxisLabelsLayer, PriceAxisMarksLayer } from '@/model/chart/axis/layers';
 
 interface Props {
   priceAxis: PriceAxis;

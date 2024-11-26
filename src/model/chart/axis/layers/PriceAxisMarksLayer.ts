@@ -1,8 +1,6 @@
 import { watch } from 'vue';
-import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue, PriceAxis } from '@/model/chart/axis/PriceAxis';
-import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
 import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventListener,
@@ -11,8 +9,10 @@ import {
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Predicate } from '@/model/type-defs';
 import type DataSource from '@/model/datasource/DataSource';
+import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
+import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
 
-export default class PriceAxisMarksLayer extends Layer {
+export class PriceAxisMarksLayer extends DirectRenderLayer {
   private readonly dataSource: DataSource;
   private readonly priceAxis: PriceAxis;
 
@@ -45,10 +45,16 @@ export default class PriceAxisMarksLayer extends Layer {
     }
   };
 
-  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
+  protected doRender(): void {
     const inverted: InvertedValue = this.priceAxis.inverted.value;
     const { textStyle } = this.priceAxis;
     const half = textStyle.fontSize / 2;
+    const { height, width } = this.context;
+    const { renderingContext } = this;
+
+    if (!renderingContext) {
+      return;
+    }
 
     if (inverted < 0) {
       renderingContext.translate(0, height);

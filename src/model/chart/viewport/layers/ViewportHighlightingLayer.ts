@@ -1,5 +1,4 @@
 import { computed, watch } from 'vue';
-import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry } from '@/model/datasource/types';
@@ -8,8 +7,10 @@ import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
+import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
+import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
 
-export default class ViewportHighlightingLayer extends Layer {
+export default class ViewportHighlightingLayer extends DirectRenderLayer {
   private readonly viewport: Viewport;
 
   constructor(viewport: Viewport) {
@@ -33,7 +34,6 @@ export default class ViewportHighlightingLayer extends Layer {
   public uninstallListeners(): void {
     this.viewport.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
-
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
     if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
@@ -41,9 +41,16 @@ export default class ViewportHighlightingLayer extends Layer {
     }
   };
 
-  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
+  protected doRender(): void {
     const { highlighted, selected } = this.viewport;
     if (highlighted === undefined && selected.size === 0) {
+      return;
+    }
+
+    const { height, width } = this.context;
+    const { renderingContext } = this;
+
+    if (!renderingContext) {
       return;
     }
 
@@ -64,7 +71,7 @@ export default class ViewportHighlightingLayer extends Layer {
     }
   }
 
-  private highlight(entry: DataSourceEntry, renderingContext: LayerRenderingContext): void {
+  private highlight(entry: DataSourceEntry, renderingContext: CanvasRenderingContext): void {
     const { descriptor, drawing } = entry;
 
     if (descriptor.options.visible && descriptor.visibleInViewport && drawing !== undefined) {

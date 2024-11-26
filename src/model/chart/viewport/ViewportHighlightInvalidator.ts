@@ -17,7 +17,7 @@ export default class ViewportHighlightInvalidator {
       return;
     }
 
-    const { renderingContext, width, height, dpr } = this.layerContext;
+    const { utilityCanvasContext, width, height, dpr } = this.layerContext;
     const inverted = this.viewportModel.priceAxis.inverted.value;
     const { highlighted, selected } = this.viewportModel;
     this.viewportModel.highlighted = undefined;
@@ -25,13 +25,13 @@ export default class ViewportHighlightInvalidator {
     this.viewportModel.cursor = undefined;
     const screenPos: Point = { x: pos.x * dpr, y: pos.y * dpr };
 
-    renderingContext.save();
+    utilityCanvasContext.save();
 
     if (inverted < 0) {
-      renderingContext.translate(width / 2, height / 2);
-      renderingContext.rotate(Math.PI);
-      renderingContext.scale(-1, 1);
-      renderingContext.translate(-width / 2, -height / 2);
+      utilityCanvasContext.translate(width / 2, height / 2);
+      utilityCanvasContext.rotate(Math.PI);
+      utilityCanvasContext.scale(-1, 1);
+      utilityCanvasContext.translate(-width / 2, -height / 2);
     }
 
     const { dataSource } = this.viewportModel;
@@ -43,7 +43,7 @@ export default class ViewportHighlightInvalidator {
       if (selected.has(entry as DataSourceEntry)
         || (highlighted !== undefined && isEqualDrawingReference(entry.descriptor.ref, highlighted.descriptor.ref))) {
         for (const [handleId, graphics] of Object.entries(entry.drawing.handles)) {
-          if (graphics.hitTest(renderingContext, screenPos)) {
+          if (graphics.hitTest(utilityCanvasContext, screenPos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;
             this.viewportModel.highlightedHandleId = handleId;
             this.viewportModel.cursor = graphics.cursor || 'pointer';
@@ -54,7 +54,7 @@ export default class ViewportHighlightInvalidator {
 
       if (this.viewportModel.highlighted === undefined) {
         for (const graphics of entry.drawing.parts) {
-          if (graphics.hitTest(renderingContext, screenPos)) {
+          if (graphics.hitTest(utilityCanvasContext, screenPos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;
             this.viewportModel.cursor = 'pointer';
             break;
@@ -63,6 +63,6 @@ export default class ViewportHighlightInvalidator {
       }
     }
 
-    renderingContext.restore();
+    utilityCanvasContext.restore();
   }
 }

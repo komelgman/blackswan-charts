@@ -1,10 +1,10 @@
 import { watch } from 'vue';
-import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import { drawHorizontalLine, drawVerticalLine } from '@/misc/line-functions';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
+import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
 
-export default class ViewportGridLayer extends Layer {
+export default class ViewportGridLayer extends DirectRenderLayer {
   private readonly priceAxis: PriceAxis;
   private readonly timeAxis: TimeAxis;
 
@@ -23,7 +23,14 @@ export default class ViewportGridLayer extends Layer {
     });
   }
 
-  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
+  protected doRender(): void {
+    const { height, width } = this.context;
+    const { renderingContext } = this;
+
+    if (!renderingContext) {
+      return;
+    }
+
     const inverted: InvertedValue = this.priceAxis.inverted.value;
     if (inverted < 0) {
       renderingContext.translate(0, height);

@@ -28,11 +28,6 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
   }
 
   public invalidate(): void {
-    if (this.context === undefined) {
-      console.warn('this.context === undefined');
-      return;
-    }
-
     const labels = new Map<number, string>();
 
     const { main: screenSize } = this.axis.screenSize;
@@ -62,17 +57,13 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     const goodLookingValue = this.nearest(value);
     const caption = this.getCaption(goodLookingValue);
 
-    if (this.context === undefined) {
-      console.warn('this.context === undefined');
-    }
-
     let size = -1;
     if (this.context !== undefined) {
-      const { renderingContext } = this.context;
-      renderingContext.save();
-      renderingContext.font = makeFont(this.axis.textStyle);
-      size = renderingContext.measureText(caption).width;
-      renderingContext.restore();
+      const { utilityCanvasContext: utilityContext } = this.context;
+      utilityContext.save();
+      utilityContext.font = makeFont(this.axis.textStyle);
+      size = utilityContext.measureText(caption).width;
+      utilityContext.restore();
     }
 
     return {

@@ -89,9 +89,9 @@ import PriceAxisContextMenu from '@/model/chart/context-menu/PriceAxisContextMen
 import TimeAxisContextMenu from '@/model/chart/context-menu/TimeAxisContextMenu';
 import ViewportContextMenu from '@/model/chart/context-menu/ViewportContextMenu';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
-import { PRICE_LABEL_PADDING } from '@/model/chart/layers/PriceAxisLabelsLayer';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
+import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
 
 interface Props {
   chart: Chart;

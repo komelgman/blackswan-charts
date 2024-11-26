@@ -1,5 +1,4 @@
 import { watch } from 'vue';
-import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { Inverted, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
 import {
@@ -7,8 +6,9 @@ import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
+import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
 
-export default class ViewportDataSourceLayer extends Layer {
+export default class ViewportDataSourceLayer extends DirectRenderLayer {
   private readonly ds: DataSource;
   private readonly inverted: Inverted;
 
@@ -30,7 +30,6 @@ export default class ViewportDataSourceLayer extends Layer {
   public uninstallListeners(): void {
     this.ds.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
-
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
     if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
@@ -38,8 +37,15 @@ export default class ViewportDataSourceLayer extends Layer {
     }
   };
 
-  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
+  protected doRender(): void {
     const inverted: InvertedValue = this.inverted.value;
+    const { height, width } = this.context;
+    const { renderingContext } = this;
+
+    if (!renderingContext) {
+      return;
+    }
+
     if (inverted < 0) {
       renderingContext.translate(width / 2, height / 2);
       renderingContext.rotate(Math.PI);

@@ -9,6 +9,11 @@
     @click.left="onMouseLeftBtnClick"
   >
     <canvas
+      ref="utilityCanvas"
+      style="user-select: none;-webkit-tap-highlight-color: transparent;"
+    />
+
+    <canvas
       ref="nativeLayers"
       v-for="(layer, index) in layers"
       :key="layer.id"
@@ -50,6 +55,7 @@ const emit = defineEmits<{
 }>();
 
 const rootElement = ref<HTMLElement>();
+const utilityCanvas = ref<HTMLCanvasElement>();
 const nativeLayers = ref<HTMLCanvasElement[]>([]);
 const resizeObserver = new ResizeObserver(setupLayers);
 const { layers } = props.options;
@@ -209,21 +215,25 @@ function setupLayers(): void {
       throw new Error('rootElement must be present');
     }
 
+    if (!utilityCanvas.value) {
+      throw new Error('utilityCanvas must be present');
+    }
+
     const { width, height } = rootElement.value.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
+    const utilityCanvasContext = utilityCanvas.value.getContext('2d') as CanvasRenderingContext2D;
+
+    utilityCanvas.value.style.width = `${width}px`;
+    utilityCanvas.value.style.height = `${height}px`;
 
     for (let layerId = 0; layerId < nativeLayers.value.length; layerId += 1) {
       const layerCanvas: HTMLCanvasElement = nativeLayers.value[layerId];
       layerCanvas.style.width = `${width}px`;
       layerCanvas.style.height = `${height}px`;
 
-      const context = layerCanvas.getContext('2d');
-      if (!context) {
-        throw new Error('context === null');
-      }
-
       props.options.layers[layerId].setContext({
-        renderingContext: context,
+        mainCanvas: layerCanvas,
+        utilityCanvasContext,
         width,
         height,
         dpr,

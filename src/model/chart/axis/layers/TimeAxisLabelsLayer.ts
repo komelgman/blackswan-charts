@@ -1,11 +1,11 @@
 import { computed, watch } from 'vue';
-import Layer, { type LayerRenderingContext } from '@/components/layered-canvas/model/Layer';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
+import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
 
-export default class TimeAxisLabelsLayer extends Layer {
+export class TimeAxisLabelsLayer extends DirectRenderLayer {
   private readonly timeAxis: TimeAxis;
   private readonly labelsInvalidator: TimeLabelsInvalidator;
 
@@ -27,8 +27,14 @@ export default class TimeAxisLabelsLayer extends Layer {
     });
   }
 
-  protected render(renderingContext: LayerRenderingContext, width: number, height: number): void {
+  protected doRender(): void {
     const { labels: { value: timeLabels }, textStyle } = this.timeAxis;
+    const { height } = this.context;
+    const { renderingContext } = this;
+
+    if (!renderingContext) {
+      return;
+    }
 
     renderingContext.textBaseline = 'middle';
     renderingContext.textAlign = 'center';
