@@ -1,5 +1,3 @@
-export type CanvasCtxLike = Pick<CanvasRenderingContext2D, 'measureText'>;
-
 const defaultReplacementRe = /[2-9]/g;
 
 export class TextWidthCache {
@@ -21,7 +19,7 @@ export class TextWidthCache {
     // so there's no point in resetting it
   }
 
-  public measureText(ctx: CanvasCtxLike, text: string, optimizationReplacementRe?: RegExp): number {
+  public measureText(ctx: CanvasText, text: string, optimizationReplacementRe?: RegExp): number {
     const re = optimizationReplacementRe || defaultReplacementRe;
     const cacheString = String(text).replace(re, '0');
 
