@@ -15,14 +15,20 @@ export default abstract class Layer {
     Layer.sharedId += 1;
   }
 
+  revalidateOnNextFrame: boolean = false;
   set invalid(value: boolean) {
     if (!this.invalidValue && value) {
       requestAnimationFrame(this.invalidate.bind(this));
     } else if (value) {
-      setTimeout(() => { this.invalid = value; }, 5);
+      this.revalidateOnNextFrame = true;
     }
 
     this.invalidValue = value;
+
+    if (this.revalidateOnNextFrame && !value) {
+      this.revalidateOnNextFrame = false;
+      this.invalid = true;
+    }
   }
 
   get invalid(): boolean {
