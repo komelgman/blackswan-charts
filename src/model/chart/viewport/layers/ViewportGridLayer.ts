@@ -41,16 +41,17 @@ export default class ViewportGridLayer extends DirectRenderLayer {
     renderingContext.beginPath();
 
     const { labels: { value: priceLabels } } = this.priceAxis;
-    for (const y of priceLabels.keys()) {
+    for (const [y] of priceLabels) {
       drawHorizontalLine(renderingContext, inverted * y, 0, width);
     }
 
     const { labels: { value: timeLabels } } = this.timeAxis;
-    for (const x of timeLabels.keys()) {
+    for (const [x] of timeLabels) {
       drawVerticalLine(renderingContext, x, 0, inverted * height);
     }
 
     renderingContext.scale(1, 1);
+    renderingContext.translate(0.5, 0.5);
     renderingContext.stroke();
   }
 }
