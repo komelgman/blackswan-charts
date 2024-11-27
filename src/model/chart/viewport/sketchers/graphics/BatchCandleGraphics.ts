@@ -21,21 +21,21 @@ export default class BatchCandleGraphics implements Graphics {
   }
 
   public add(x: number, yo: number, yh: number, yl: number, yc: number): void {
-    const { candleWidth, isEnoughSpaceForBar, style: { showWick, showBody, showBorder } } = this;
+    const { candleWidth, isEnoughSpaceForBar, style: { showWick, showBody, showBorder }, barPath, wickPath } = this;
 
-    if (showBorder || showBody) {
-      this.barPath.rect(x - candleWidth / 2, yc, candleWidth, yo - yc);
+    if ((showBorder || showBody) && isEnoughSpaceForBar) {
+      barPath.rect(x - candleWidth / 2, yc, candleWidth, yo - yc);
     }
 
     if (showWick) {
       if ((showBorder || showBody) && isEnoughSpaceForBar) {
-        this.wickPath.moveTo(x, yh);
-        this.wickPath.lineTo(x, Math.max(yo, yc));
-        this.wickPath.moveTo(x, yl);
-        this.wickPath.lineTo(x, Math.min(yo, yc));
+        wickPath.moveTo(x, yh);
+        wickPath.lineTo(x, Math.max(yo, yc));
+        wickPath.moveTo(x, yl);
+        wickPath.lineTo(x, Math.min(yo, yc));
       } else {
-        this.wickPath.moveTo(x, yh);
-        this.wickPath.lineTo(x, yl);
+        wickPath.moveTo(x, yh);
+        wickPath.lineTo(x, yl);
       }
     }
   }
