@@ -13,6 +13,7 @@ import {
   TimePeriods,
   type TimePeriod,
 } from '@/model/chart/types/time';
+import type { Label } from '@/model/chart/axis/label/Label';
 
 // Grid time steps
 const TIME_INTERVALS = [
@@ -40,7 +41,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
   }
 
   public invalidate(): void {
-    const labels = new Map<number, string>();
+    const labels: Label[] = [];
 
     const { main: screenSize } = this.axis.screenSize;
     const labelSize = (this.axis.textStyle.fontSize + 4) * 5;
@@ -55,7 +56,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
 
     if (interval <= dayPeriod.averageBarDuration) {
       for (let time = alignedFrom; time < to; time = time + interval as UTCTimestamp) {
-        labels.set(this.axis.translate(time), optimalPeriod.label(time));
+        labels.push([this.axis.translate(time), optimalPeriod.label(time)]);
       }
     } else {
       const alignedTo = alignToPeriod.ceil(to);
@@ -86,7 +87,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
             continue;
           }
 
-          labels.set(this.axis.translate(labelTime), optimalPeriod.label(labelTime));
+          labels.push([this.axis.translate(labelTime), optimalPeriod.label(labelTime)]);
         }
       }
     }

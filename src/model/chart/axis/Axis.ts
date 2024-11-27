@@ -11,9 +11,10 @@ import type { Wrapped } from '@/model/type-defs';
 import { PrimaryEntry, type PrimaryEntryRef } from '@/model/datasource/PrimaryEntry';
 import { deepEqual } from '@/misc/object.deepEqual';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
+import type { Label } from '@/model/chart/axis/label/Label';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> implements HasPostConstruct {
-  private readonly labelsValue: Wrapped<Map<number, string>>;
+  private readonly labelsValue: Wrapped<Label[]>;
   private readonly id: EntityId;
   private readonly rangeValue: Range<T> = shallowReactive({ from: -1 as T, to: 1 as T }) as Range<T>;
   private readonly textStyleValue: TextStyle;
@@ -26,7 +27,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
   private prefRangeWatchHandle?: WatchHandle;
 
   protected constructor(id: EntityId, historicalTransactionManager: HistoricalTransactionManager, textStyle: TextStyle) {
-    this.labelsValue = shallowReactive({ value: markRaw(new Map<number, string>()) });
+    this.labelsValue = shallowReactive({ value: markRaw([]) });
     this.textStyleValue = reactive(textStyle);
     this.transactionManager = historicalTransactionManager;
     this.id = id;
@@ -82,7 +83,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     }
   }
 
-  public get labels(): Readonly<Wrapped<Map<number, string>>> {
+  public get labels(): Readonly<Wrapped<Label[]>> {
     return this.labelsValue;
   }
 

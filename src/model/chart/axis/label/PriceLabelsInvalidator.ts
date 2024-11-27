@@ -5,6 +5,7 @@ import type { LabelOptions } from '@/model/chart/axis/label/LabelOptions';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { LogicSize, Price, Range } from '@/model/chart/types';
 import { Cache } from '@/model/tools/Cache';
+import type { Label } from '@/model/chart/axis/label/Label';
 
 // todo: refactor code to get more good loocking values
 // const SCALES = [0.05, 0.1, 0.2, 0.25, 0.5, 0.8, 1, 2, 5];
@@ -32,7 +33,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
   }
 
   public invalidate(): void {
-    const labels = new Map<number, string>();
+    const labels: Label[] = [];
 
     const axis = toRaw(this.axis);
     this.currentFont = makeFont(axis.textStyle);
@@ -50,7 +51,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
 
     for (let pos = shift; pos < screenSize; pos += step) {
       const labelInfo: LabelOptions<Price> = this.findLabel(this.axis.revert(pos));
-      labels.set(this.axis.translate(labelInfo.value), labelInfo.caption);
+      labels.push([this.axis.translate(labelInfo.value), labelInfo.caption]);
     }
 
     this.axis.noHistoryManagedUpdate({ contentWidth: logicLabelSize.second, labels });

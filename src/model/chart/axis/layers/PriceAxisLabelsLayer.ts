@@ -56,14 +56,13 @@ export class PriceAxisLabelsLayer extends Layer {
     const inverted: InvertedValue = this.priceAxis.inverted.value;
     const { labels: { value: priceLabels }, textStyle } = this.priceAxis;
     const labelFont = makeFont(textStyle);
-    const labelsArray = Array.from(priceLabels.entries());
 
     this.worker.postMessage({
       width,
       height,
       dpr,
       inverted,
-      labels: labelsArray,
+      labels: priceLabels,
       labelColor: textStyle.color,
       labelFont,
       xPos: width - PRICE_LABEL_PADDING,
