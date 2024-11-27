@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import ResizeObserver from 'resize-observer-polyfill';
-import { nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import type {
   DragMoveEvent,
   MouseClickEvent,
@@ -210,38 +210,36 @@ function onDragEnd(e?: DragEvent): void {
 }
 
 function setupLayers(): void {
-  nextTick().then(() => {
-    if (!rootElement.value) {
-      throw new Error('rootElement must be present');
-    }
+  if (!rootElement.value) {
+    throw new Error('rootElement must be present');
+  }
 
-    if (!utilityCanvas.value) {
-      throw new Error('utilityCanvas must be present');
-    }
+  if (!utilityCanvas.value) {
+    throw new Error('utilityCanvas must be present');
+  }
 
-    const { width, height } = rootElement.value.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const utilityCanvasContext = utilityCanvas.value.getContext('2d') as CanvasRenderingContext2D;
+  const { width, height } = rootElement.value.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const utilityCanvasContext = utilityCanvas.value.getContext('2d') as CanvasRenderingContext2D;
 
-    utilityCanvas.value.style.width = `${width}px`;
-    utilityCanvas.value.style.height = `${height}px`;
+  utilityCanvas.value.style.width = `${width}px`;
+  utilityCanvas.value.style.height = `${height}px`;
 
-    for (let layerId = 0; layerId < nativeLayers.value.length; layerId += 1) {
-      const layerCanvas: HTMLCanvasElement = nativeLayers.value[layerId];
-      layerCanvas.style.width = `${width}px`;
-      layerCanvas.style.height = `${height}px`;
+  for (let layerId = 0; layerId < nativeLayers.value.length; layerId += 1) {
+    const layerCanvas: HTMLCanvasElement = nativeLayers.value[layerId];
+    layerCanvas.style.width = `${width}px`;
+    layerCanvas.style.height = `${height}px`;
 
-      props.options.layers[layerId].setContext({
-        mainCanvas: layerCanvas,
-        utilityCanvasContext,
-        width,
-        height,
-        dpr,
-      });
-    }
+    props.options.layers[layerId].setContext({
+      mainCanvas: layerCanvas,
+      utilityCanvasContext,
+      width,
+      height,
+      dpr,
+    });
+  }
 
-    emit('resize', { width, height });
-  });
+  emit('resize', { width, height });
 }
 </script>
 
