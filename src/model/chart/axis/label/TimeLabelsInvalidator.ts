@@ -24,8 +24,6 @@ const TIME_INTERVALS = [
   MS_PER_SECOND * 30, MS_PER_SECOND * 15, MS_PER_SECOND * 10, MS_PER_SECOND * 5, MS_PER_SECOND * 2, MS_PER_SECOND,
 ];
 
-// todo: perf optimizations
-// todo: add cache
 export default class TimeLabelsInvalidator extends AbstractInvalidator {
   public readonly axis: TimeAxis;
 

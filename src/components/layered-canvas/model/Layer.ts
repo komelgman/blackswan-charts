@@ -9,13 +9,13 @@ export default abstract class Layer {
 
   private readonly listeners: LayerContextChangeListener[] = [];
   private invalidValue!: boolean;
+  private revalidateOnNextFrame: boolean = false;
 
   protected constructor() {
     this.id = Layer.sharedId;
     Layer.sharedId += 1;
   }
 
-  revalidateOnNextFrame: boolean = false;
   set invalid(value: boolean) {
     if (!this.invalidValue && value) {
       requestAnimationFrame(this.invalidate.bind(this));
