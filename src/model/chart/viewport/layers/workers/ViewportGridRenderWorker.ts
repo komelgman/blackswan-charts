@@ -8,23 +8,22 @@ import {
   type WorkerMessage,
   type WorkerResponse,
 } from '@/components/layered-canvas/model/canvas-worker/types';
-import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
+import { drawHorizontalLine, drawVerticalLine } from '@/misc/line-functions';
 import type { Label } from '@/model/chart/axis/label/Label';
+import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 
-export declare type PriceLabelsRenderMessage = WorkerMessage<WorkerCommandType.RENDER, {
+export declare type ViewportGridRenderMessage = WorkerMessage<WorkerCommandType.RENDER, {
   width: number,
   height: number,
   dpr: number,
   inverted: InvertedValue,
-  labels: Label[],
-  labelColor: string;
-  labelFont: string;
-  xPos: number;
+  priceLabels: Label[],
+  timeLabels: Label[],
 }>;
 
-const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, message: PriceLabelsRenderMessage): WorkerResponse => {
+const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, message: ViewportGridRenderMessage): WorkerResponse => {
   const ctx = worker.state?.ctx;
-  const { width, height, dpr, inverted, labelColor, labelFont, xPos, labels } = message.payload;
+  const { width, height, dpr, inverted, priceLabels, timeLabels } = message.payload;
 
   if (!ctx) {
     return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
@@ -41,21 +40,26 @@ const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, mes
     ctx.translate(0, height);
   }
 
-  ctx.textBaseline = 'middle';
-  ctx.textAlign = 'end';
-  ctx.fillStyle = labelColor;
-  ctx.font = labelFont;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#1f212f'; // todo: options
+  ctx.beginPath();
 
-  for (const [yPos, label] of labels) {
-    ctx.fillText(label, xPos, inverted * yPos);
+  for (const [y] of priceLabels) {
+    drawHorizontalLine(ctx, inverted * y, 0, width);
   }
 
-  ctx.restore();
+  for (const [x] of timeLabels) {
+    drawVerticalLine(ctx, x, 0, inverted * height);
+  }
+
+  ctx.scale(1, 1);
+  ctx.translate(0.5, 0.5);
+  ctx.stroke();
 
   return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
 };
 
-class PriceLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
+class ViewportGridRenderWorker extends CanvasWorker<CanvasWorkerState> {
   public constructor() {
     super(new Map([
       [WorkerCommandType.INIT, initCommandProcessor],
@@ -65,6 +69,6 @@ class PriceLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
 }
 
 // eslint-disable-next-line no-new
-new PriceLabelsRenderWorker();
+new ViewportGridRenderWorker();
 
-export { };
+export {};

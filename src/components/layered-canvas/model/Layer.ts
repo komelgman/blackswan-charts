@@ -18,7 +18,7 @@ export default abstract class Layer {
 
   set invalid(value: boolean) {
     if (!this.invalidValue && value) {
-      requestAnimationFrame(this.invalidate.bind(this));
+      setTimeout(this.invalidate.bind(this));
     } else if (value) {
       this.revalidateOnNextFrame = true;
     }

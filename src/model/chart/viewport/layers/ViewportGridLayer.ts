@@ -1,15 +1,15 @@
 import { watch } from 'vue';
-import { drawHorizontalLine, drawVerticalLine } from '@/misc/line-functions';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
+import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
+import type { ViewportGridRenderMessage } from '@/model/chart/viewport/layers/workers/ViewportGridRenderWorker';
 
-export default class ViewportGridLayer extends DirectRenderLayer {
+export default class ViewportGridLayer extends WorkerRenderLayer {
   private readonly priceAxis: PriceAxis;
   private readonly timeAxis: TimeAxis;
 
   constructor(timeAxis: TimeAxis, priceAxis: PriceAxis) {
-    super();
+    super(new URL('./workers/ViewportGridRenderWorker.ts', import.meta.url));
 
     this.priceAxis = priceAxis;
     this.timeAxis = timeAxis;
@@ -24,34 +24,21 @@ export default class ViewportGridLayer extends DirectRenderLayer {
   }
 
   protected doRender(): void {
-    const { height, width } = this.context;
-    const { renderingContext } = this;
-
-    if (!renderingContext) {
-      return;
-    }
-
+    const { height, width, dpr } = this.context;
     const inverted: InvertedValue = this.priceAxis.inverted.value;
-    if (inverted < 0) {
-      renderingContext.translate(0, height);
-    }
-
-    renderingContext.lineWidth = 1;
-    renderingContext.strokeStyle = '#1f212f'; // todo: options
-    renderingContext.beginPath();
-
-    const { labels: { value: priceLabels } } = this.priceAxis;
-    for (const [y] of priceLabels) {
-      drawHorizontalLine(renderingContext, inverted * y, 0, width);
-    }
-
     const { labels: { value: timeLabels } } = this.timeAxis;
-    for (const [x] of timeLabels) {
-      drawVerticalLine(renderingContext, x, 0, inverted * height);
-    }
+    const { labels: { value: priceLabels } } = this.priceAxis;
 
-    renderingContext.scale(1, 1);
-    renderingContext.translate(0.5, 0.5);
-    renderingContext.stroke();
+    this.worker.postMessage({
+      type: 'RENDER',
+      payload: {
+        width,
+        height,
+        dpr,
+        inverted,
+        timeLabels,
+        priceLabels,
+      },
+    } as ViewportGridRenderMessage);
   }
 }

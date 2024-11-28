@@ -8,23 +8,21 @@ import {
   type WorkerMessage,
   type WorkerResponse,
 } from '@/components/layered-canvas/model/canvas-worker/types';
-import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type { Label } from '@/model/chart/axis/label/Label';
 
-export declare type PriceLabelsRenderMessage = WorkerMessage<WorkerCommandType.RENDER, {
+export declare type TimeLabelsRenderMessage = WorkerMessage<WorkerCommandType.RENDER, {
   width: number,
   height: number,
   dpr: number,
-  inverted: InvertedValue,
   labels: Label[],
   labelColor: string;
   labelFont: string;
-  xPos: number;
+  yPos: number;
 }>;
 
-const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, message: PriceLabelsRenderMessage): WorkerResponse => {
+const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, message: TimeLabelsRenderMessage): WorkerResponse => {
   const ctx = worker.state?.ctx;
-  const { width, height, dpr, inverted, labelColor, labelFont, xPos, labels } = message.payload;
+  const { width, height, dpr, labelColor, labelFont, labels } = message.payload;
 
   if (!ctx) {
     return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
@@ -37,17 +35,14 @@ const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, mes
   ctx.scale(dpr, dpr);
   ctx.save();
 
-  if (inverted < 0) {
-    ctx.translate(0, height);
-  }
-
   ctx.textBaseline = 'middle';
-  ctx.textAlign = 'end';
+  ctx.textAlign = 'center';
   ctx.fillStyle = labelColor;
   ctx.font = labelFont;
 
-  for (const [yPos, label] of labels) {
-    ctx.fillText(label, xPos, inverted * yPos);
+  const y: number = height * 0.5;
+  for (const [x, label] of labels) {
+    ctx.fillText(label, x, y);
   }
 
   ctx.restore();
@@ -55,7 +50,7 @@ const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, mes
   return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
 };
 
-class PriceLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
+class TimeLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
   public constructor() {
     super(new Map([
       [WorkerCommandType.INIT, initCommandProcessor],
@@ -65,6 +60,6 @@ class PriceLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
 }
 
 // eslint-disable-next-line no-new
-new PriceLabelsRenderWorker();
+new TimeLabelsRenderWorker();
 
-export { };
+export {};

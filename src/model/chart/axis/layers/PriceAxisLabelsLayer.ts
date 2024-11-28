@@ -1,20 +1,19 @@
 import { computed, watch } from 'vue';
-import Layer from '@/components/layered-canvas/model/Layer';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
+import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
+import type { PriceLabelsRenderMessage } from '@/model/chart/axis/layers/workers/PriceAxisLabelsRenderWorker';
 
 export const PRICE_LABEL_PADDING = 8;
 
-export class PriceAxisLabelsLayer extends Layer {
+export class PriceAxisLabelsLayer extends WorkerRenderLayer {
   private readonly priceAxis: PriceAxis;
   private readonly labelsInvalidator: PriceLabelsInvalidator;
-  private readonly worker: Worker;
-  private wasInit: boolean = false;
 
   constructor(priceAxis: PriceAxis) {
-    super();
+    super(new URL('./workers/PriceAxisLabelsRenderWorker.ts', import.meta.url));
 
     this.priceAxis = priceAxis;
     this.labelsInvalidator = new PriceLabelsInvalidator(priceAxis);
@@ -30,27 +29,9 @@ export class PriceAxisLabelsLayer extends Layer {
     ], () => {
       this.invalid = true;
     });
-
-    this.worker = new Worker(new URL('./workers/PriceAxisLabelsRenderWorker.ts', import.meta.url), { type: 'module' });
   }
 
-  public setContext(ctx: LayerContext): void {
-    if (!this.wasInit) {
-      this.wasInit = true;
-      const canvas = ctx.mainCanvas.transferControlToOffscreen();
-      this.worker.postMessage({ canvas }, [canvas]);
-    }
-
-    super.setContext(ctx);
-  }
-
-  protected render(onComplete: Function): void {
-    this.worker.onmessage = (e) => {
-      if (e.data.type === 'RENDER_COMPLETE') {
-        onComplete();
-      }
-    };
-
+  protected doRender(): void {
     const { height, width, dpr } = this.context;
 
     const inverted: InvertedValue = this.priceAxis.inverted.value;
@@ -58,18 +39,17 @@ export class PriceAxisLabelsLayer extends Layer {
     const labelFont = makeFont(textStyle);
 
     this.worker.postMessage({
-      width,
-      height,
-      dpr,
-      inverted,
-      labels: priceLabels,
-      labelColor: textStyle.color,
-      labelFont,
-      xPos: width - PRICE_LABEL_PADDING,
-    });
-  }
-
-  public destroy() {
-    this.worker.terminate();
+      type: 'RENDER',
+      payload: {
+        width,
+        height,
+        dpr,
+        inverted,
+        labels: priceLabels,
+        labelColor: textStyle.color,
+        labelFont,
+        xPos: width - PRICE_LABEL_PADDING,
+      },
+    } as PriceLabelsRenderMessage);
   }
 }

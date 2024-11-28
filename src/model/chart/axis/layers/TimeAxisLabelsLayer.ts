@@ -3,14 +3,15 @@ import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
+import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
+import type { TimeLabelsRenderMessage } from '@/model/chart/axis/layers/workers/TimeAxisLabelsRenderWorker';
 
-export class TimeAxisLabelsLayer extends DirectRenderLayer {
+export class TimeAxisLabelsLayer extends WorkerRenderLayer {
   private readonly timeAxis: TimeAxis;
   private readonly labelsInvalidator: TimeLabelsInvalidator;
 
   constructor(timeAxis: TimeAxis) {
-    super();
+    super(new URL('./workers/TimeAxisLabelsRenderWorker.ts', import.meta.url));
 
     this.timeAxis = timeAxis;
     this.labelsInvalidator = new TimeLabelsInvalidator(timeAxis);
@@ -28,22 +29,21 @@ export class TimeAxisLabelsLayer extends DirectRenderLayer {
   }
 
   protected doRender(): void {
+    const { height, width, dpr } = this.context;
+
     const { labels: { value: timeLabels }, textStyle } = this.timeAxis;
-    const { height } = this.context;
-    const { renderingContext } = this;
+    const labelFont = makeFont(textStyle);
 
-    if (!renderingContext) {
-      return;
-    }
-
-    renderingContext.textBaseline = 'middle';
-    renderingContext.textAlign = 'center';
-    renderingContext.fillStyle = textStyle.color;
-    renderingContext.font = makeFont(textStyle);
-
-    const y: number = height * 0.5;
-    for (const [x, label] of timeLabels) {
-      renderingContext.fillText(label, x, y);
-    }
+    this.worker.postMessage({
+      type: 'RENDER',
+      payload: {
+        width,
+        height,
+        dpr,
+        labels: timeLabels,
+        labelColor: textStyle.color,
+        labelFont,
+      },
+    } as TimeLabelsRenderMessage);
   }
 }
