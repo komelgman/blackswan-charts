@@ -11,7 +11,7 @@ export class TimeAxisLabelsLayer extends WorkerRenderLayer {
   private readonly labelsInvalidator: TimeLabelsInvalidator;
 
   constructor(timeAxis: TimeAxis) {
-    super(new URL('./workers/TimeAxisLabelsRenderWorker.ts', import.meta.url));
+    super(new Worker(new URL('./workers/TimeAxisLabelsRenderWorker.ts', import.meta.url), { type: 'module' }));
 
     this.timeAxis = timeAxis;
     this.labelsInvalidator = new TimeLabelsInvalidator(timeAxis);

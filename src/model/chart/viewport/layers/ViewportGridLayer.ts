@@ -9,7 +9,7 @@ export default class ViewportGridLayer extends WorkerRenderLayer {
   private readonly timeAxis: TimeAxis;
 
   constructor(timeAxis: TimeAxis, priceAxis: PriceAxis) {
-    super(new URL('./workers/ViewportGridRenderWorker.ts', import.meta.url));
+    super(new Worker(new URL('./workers/ViewportGridRenderWorker.ts', import.meta.url), { type: 'module' }));
 
     this.priceAxis = priceAxis;
     this.timeAxis = timeAxis;

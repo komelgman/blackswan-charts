@@ -13,7 +13,7 @@ export class PriceAxisLabelsLayer extends WorkerRenderLayer {
   private readonly labelsInvalidator: PriceLabelsInvalidator;
 
   constructor(priceAxis: PriceAxis) {
-    super(new URL('./workers/PriceAxisLabelsRenderWorker.ts', import.meta.url));
+    super(new Worker(new URL('./workers/PriceAxisLabelsRenderWorker.ts', import.meta.url), { type: 'module' }));
 
     this.priceAxis = priceAxis;
     this.labelsInvalidator = new PriceLabelsInvalidator(priceAxis);

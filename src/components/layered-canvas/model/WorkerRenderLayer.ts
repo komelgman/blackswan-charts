@@ -6,10 +6,10 @@ export abstract class WorkerRenderLayer extends Layer {
   private wasInit: boolean = false;
   protected readonly worker: Worker;
 
-  public constructor(workerFile: URL) {
+  public constructor(worker: Worker) {
     super();
 
-    this.worker = new Worker(workerFile, { type: 'module' });
+    this.worker = worker;
   }
 
   public setContext(ctx: LayerContext): void {
