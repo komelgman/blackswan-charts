@@ -30,6 +30,7 @@ export default class ViewportDataSourceLayer extends DirectRenderLayer {
   public uninstallListeners(): void {
     this.ds.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
+
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
     if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
