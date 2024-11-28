@@ -12,7 +12,7 @@ export default class BatchCandleGraphics implements Graphics {
   private readonly isEnoughSpaceForBar: boolean;
 
   constructor(candleWidth: number, style: CandlestickBarStyle, type: CandleType) {
-    this.candleWidth = candleWidth;
+    this.candleWidth = Math.max(1, candleWidth);
     this.style = style;
     this.colors = style[type];
     this.barPath = new Path2D();
@@ -21,10 +21,11 @@ export default class BatchCandleGraphics implements Graphics {
   }
 
   public add(x: number, yo: number, yh: number, yl: number, yc: number): void {
-    const { candleWidth, isEnoughSpaceForBar, style: { showWick, showBody, showBorder }, barPath, wickPath } = this;
+    const { isEnoughSpaceForBar, style: { showWick, showBody, showBorder }, barPath, wickPath } = this;
 
     if ((showBorder || showBody) && isEnoughSpaceForBar) {
-      barPath.rect(x - candleWidth / 2, yc, candleWidth, yo - yc);
+      barPath.moveTo(x, yo);
+      barPath.lineTo(x, yc);
     }
 
     if (showWick) {
@@ -42,40 +43,45 @@ export default class BatchCandleGraphics implements Graphics {
 
   public hitTest(ctx: CanvasRenderingContext, screenPos: Point): boolean {
     const { x, y } = screenPos;
+
     ctx.save();
+    ctx.scale(1, 1);
     ctx.setLineDash([]);
+
     ctx.lineWidth = 3;
-    const result = ctx.isPointInPath(this.barPath, x, y) || ctx.isPointInStroke(this.wickPath, x, y);
+    const hitWick = ctx.isPointInStroke(this.wickPath, x, y);
 
-    // * debug
-    // ctx.strokeStyle = '#454545';
-    // ctx.stroke(this.barPath);
-    // ctx.stroke(this.wickPath);
+    ctx.lineWidth = this.candleWidth + 3;
+    const result = hitWick || ctx.isPointInStroke(this.barPath, x, y);
+
     ctx.restore();
-
     return result;
   }
 
   public render(ctx: CanvasRenderingContext): void {
     const { showWick, showBody, showBorder } = this.style;
+    const { candleWidth } = this;
 
     ctx.save();
     ctx.setLineDash([]);
     ctx.scale(1, 1);
-    ctx.lineWidth = 1;
+    ctx.lineCap = 'square';
 
     if (showWick) {
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.colors.wick;
       ctx.stroke(this.wickPath);
     }
 
-    if (this.barPath !== undefined && showBody) {
-      ctx.fillStyle = this.colors.body;
-      ctx.fill(this.barPath);
+    if (this.barPath !== undefined && showBorder) {
+      ctx.lineWidth = candleWidth;
+      ctx.strokeStyle = this.colors.border;
+      ctx.stroke(this.barPath);
     }
 
-    if (this.barPath !== undefined && showBorder) {
-      ctx.strokeStyle = this.colors.border;
+    if (this.barPath !== undefined && showBody && this.candleWidth > 3) {
+      ctx.lineWidth = candleWidth - 2;
+      ctx.strokeStyle = this.colors.body;
       ctx.stroke(this.barPath);
     }
 

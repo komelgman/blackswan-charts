@@ -15,25 +15,23 @@ export default class BatchCandleGraphics implements Graphics {
   private columnWidth: number;
 
   constructor(columnWidth: number, colors: BarColors) {
-    this.columnWidth = columnWidth;
+    this.columnWidth = Math.max(1, columnWidth);
     this.colors = colors;
     this.columnPath = new Path2D();
   }
 
   public add(x: number, height: number): void {
-    this.columnPath.rect(x - this.columnWidth / 2, 0, this.columnWidth, height);
+    this.columnPath.moveTo(x, 0);
+    this.columnPath.lineTo(x, height);
   }
 
   public hitTest(ctx: CanvasRenderingContext, screenPos: Point): boolean {
     const { x, y } = screenPos;
     ctx.save();
     ctx.setLineDash([]);
-    ctx.lineWidth = 3;
-    const result = ctx.isPointInPath(this.columnPath, x, y);
+    ctx.lineWidth = 3 + this.columnWidth;
+    const result = ctx.isPointInStroke(this.columnPath, x, y);
 
-    // * debug
-    // ctx.strokeStyle = '#454545';
-    // ctx.stroke(this.path);
     ctx.restore();
 
     return result;
@@ -46,11 +44,16 @@ export default class BatchCandleGraphics implements Graphics {
     ctx.lineWidth = 1;
 
     if (this.columnPath !== undefined) {
-      ctx.fillStyle = this.colors.body;
-      ctx.fill(this.columnPath);
-
+      ctx.lineCap = 'square';
+      ctx.lineWidth = this.columnWidth;
       ctx.strokeStyle = this.colors.border;
       ctx.stroke(this.columnPath);
+
+      if (this.columnWidth > 3) {
+        ctx.lineWidth = this.columnWidth - 2;
+        ctx.strokeStyle = this.colors.body;
+        ctx.stroke(this.columnPath);
+      }
     }
 
     ctx.restore();

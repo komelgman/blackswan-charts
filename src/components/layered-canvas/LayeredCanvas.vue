@@ -130,10 +130,11 @@ function onWheel(e: WheelEvent): void {
   const event: ZoomEvent = { ...buildGenericMouseEvent(e, e.target), screenDelta: e.deltaY };
   emit('zoom', event);
 
-  // hint: decrease amount of drag events
-  setTimeout(() => {
-    isSkipWheelDetection = false;
-  }, 15);
+  setTimeout(resetSkipWeelDetection, 15);
+}
+
+function resetSkipWeelDetection(): void {
+  isSkipWheelDetection = false;
 }
 
 function onDragStart(e: MouseEvent): void {
@@ -168,10 +169,7 @@ function onDragMove(e: MouseEvent): void {
   emit('drag-move', moveEvent);
   prevPos = simpleEvent;
 
-  // hint: decrease amount of drag events
-  setTimeout(() => {
-    isSkipMovementsDetection = false;
-  }, 10); // todo: options
+  setTimeout(resetSkipMovementDetection, 10); // todo: options
 }
 
 function onMouseMove(e: MouseEvent): void {
@@ -183,10 +181,11 @@ function onMouseMove(e: MouseEvent): void {
   const event: GenericMouseEvent = buildGenericMouseEvent(e, e.target);
   emit('mouse-move', event);
 
-  // hint: decrease amount of move events
-  setTimeout(() => {
-    isSkipMovementsDetection = false;
-  }, 10); // todo: options
+  setTimeout(resetSkipMovementDetection, 10); // todo: options
+}
+
+function resetSkipMovementDetection(): void {
+  isSkipMovementsDetection = false;
 }
 
 function onDragEnd(e?: DragEvent): void {
