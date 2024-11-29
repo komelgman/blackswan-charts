@@ -20,7 +20,7 @@
       <template v-slot:default="props">
         <box-layout>
           <viewport-widget
-            :viewport-model="props.model"
+            :viewport="props.model"
             :interactions-handler="viewportInteractionsHandler"
             v-context-menu-directive="{
               model: getViewportContextMenu(props.model),

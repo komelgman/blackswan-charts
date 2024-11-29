@@ -21,100 +21,66 @@
 import { computed, onMounted, onUnmounted } from 'vue';
 import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type { LayerContext, LayeredCanvasOptions } from '@/components/layered-canvas/types';
+import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
 import ViewportDataSourceLayer from '@/model/chart/viewport/layers/ViewportDataSourceLayer';
 import ViewportGridLayer from '@/model/chart/viewport/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/model/chart/viewport/layers/ViewportHighlightingLayer';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
 interface Props {
-  viewportModel: Viewport;
+  viewport: Viewport;
   interactionsHandler: InteractionsHandler<Viewport>;
 }
 
-const { viewportModel, interactionsHandler } = defineProps<Props>();
-const { highlightInvalidator } = viewportModel;
-const dataSourceInvalidator = new DataSourceInvalidator(viewportModel);
+const { viewport, interactionsHandler } = defineProps<Props>();
 
-const dataSourceLayer = createDataSourceLayer();
-const highlightingLayer = createHighlightingLayer();
 const canvasOptions: LayeredCanvasOptions = {
   layers: [
-    createGridLayer(),
-    dataSourceLayer,
-    // priceline renderer
-    highlightingLayer,
-    // tool/crosshair renderer ??? shared with other panes
+    new ViewportGridLayer(viewport.timeAxis, viewport.priceAxis),
+    new ViewportDataSourceLayer(viewport),
+    new ViewportHighlightingLayer(viewport),
   ],
 };
 
 onMounted(() => {
-  dataSourceInvalidator.installListeners();
-  dataSourceLayer.installListeners();
-  highlightingLayer.installListeners();
-  viewportModel.installListeners();
+  viewport.installListeners();
 });
 
 onUnmounted(() => {
-  dataSourceInvalidator.uninstallListeners();
-  dataSourceLayer.uninstallListeners();
-  highlightingLayer.uninstallListeners();
-  viewportModel.uninstallListeners();
+  viewport.uninstallListeners();
 });
 
-function createGridLayer(): ViewportGridLayer {
-  const { timeAxis, priceAxis } = viewportModel;
-  return new ViewportGridLayer(timeAxis, priceAxis);
-}
-
-function createDataSourceLayer(): ViewportDataSourceLayer {
-  const { dataSource, priceAxis } = viewportModel;
-  const result: ViewportDataSourceLayer = new ViewportDataSourceLayer(dataSource, priceAxis.inverted);
-
-  result.addContextChangeListener((newCtx: LayerContext) => {
-    highlightInvalidator.layerContext = newCtx;
-    dataSourceInvalidator.context = newCtx;
-  });
-
-  return result;
-}
-
-function createHighlightingLayer(): ViewportHighlightingLayer {
-  return new ViewportHighlightingLayer(viewportModel);
-}
-
 function onMouseMove(e: GenericMouseEvent): void {
-  interactionsHandler.onMouseMove(viewportModel, e);
+  interactionsHandler.onMouseMove(viewport, e);
 }
 
 function onLeftMouseBtnClick(e: MouseClickEvent): void {
-  interactionsHandler.onLeftMouseBtnClick(viewportModel, e);
+  interactionsHandler.onLeftMouseBtnClick(viewport, e);
 }
 
 function onLeftMouseBtnDoubleClick(e: MouseClickEvent): void {
-  interactionsHandler.onLeftMouseBtnDoubleClick(viewportModel, e);
+  interactionsHandler.onLeftMouseBtnDoubleClick(viewport, e);
 }
 
 function onDragStart(e: MouseClickEvent): void {
-  interactionsHandler.onDragStart(viewportModel, e);
+  interactionsHandler.onDragStart(viewport, e);
 }
 
 function onDrag(e: DragMoveEvent): void {
-  interactionsHandler.onDrag(viewportModel, e);
+  interactionsHandler.onDrag(viewport, e);
 }
 
 function onDragEnd(e: GenericMouseEvent): void {
-  interactionsHandler.onDragEnd(viewportModel, e);
+  interactionsHandler.onDragEnd(viewport, e);
 }
 
 function onZoom(e: ZoomEvent): void {
-  interactionsHandler.onZoom(viewportModel, e);
+  interactionsHandler.onZoom(viewport, e);
 }
 
 const cssVars = computed(() => {
-  const cursor: string = viewportModel.cursor || 'default';
+  const cursor: string = viewport.cursor || 'default';
   return {
     cursor: `${cursor} !important`,
   };

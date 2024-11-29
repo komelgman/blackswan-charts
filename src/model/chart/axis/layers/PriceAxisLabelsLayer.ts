@@ -1,4 +1,4 @@
-import { computed, watch } from 'vue';
+import { computed, watch, type WatchStopHandle } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
@@ -17,12 +17,15 @@ export class PriceAxisLabelsLayer extends WorkerRenderLayer {
 
     this.priceAxis = priceAxis;
     this.labelsInvalidator = new PriceLabelsInvalidator(priceAxis);
+  }
 
-    this.addContextChangeListener((newCtx: LayerContext) => {
-      this.labelsInvalidator.context = newCtx;
-    });
+  public updateContext(ctx: LayerContext): void {
+    this.labelsInvalidator.context = ctx;
+    super.updateContext(ctx);
+  }
 
-    watch([
+  protected installWatcher(): WatchStopHandle {
+    return watch([
       this.priceAxis.labels,
       this.priceAxis.inverted,
       computed(() => this.priceAxis.screenSize.second),

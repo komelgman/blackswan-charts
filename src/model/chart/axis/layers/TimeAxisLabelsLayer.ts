@@ -1,4 +1,4 @@
-import { computed, watch } from 'vue';
+import { computed, watch, type WatchStopHandle } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import makeFont from '@/misc/make-font';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
@@ -15,12 +15,15 @@ export class TimeAxisLabelsLayer extends WorkerRenderLayer {
 
     this.timeAxis = timeAxis;
     this.labelsInvalidator = new TimeLabelsInvalidator(timeAxis);
+  }
 
-    this.addContextChangeListener((newCtx: LayerContext) => {
-      this.labelsInvalidator.context = newCtx;
-    });
+  public updateContext(ctx: LayerContext): void {
+    this.labelsInvalidator.context = ctx;
+    super.updateContext(ctx);
+  }
 
-    watch([
+  protected installWatcher(): WatchStopHandle {
+    return watch([
       this.timeAxis.labels,
       computed(() => this.timeAxis.screenSize.second),
     ], () => {

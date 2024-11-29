@@ -12,14 +12,14 @@ export abstract class WorkerRenderLayer extends Layer {
     this.worker = worker;
   }
 
-  public setContext(ctx: LayerContext): void {
+  public updateContext(ctx: LayerContext): void {
     if (!this.wasInit) {
       this.wasInit = true;
       const canvas = ctx.mainCanvas.transferControlToOffscreen();
       this.worker.postMessage({ type: 'INIT', payload: { canvas } } as InitMessage, [canvas]);
     }
 
-    super.setContext(ctx);
+    super.updateContext(ctx);
   }
 
   protected render(onComplete: Function): void {
@@ -36,5 +36,7 @@ export abstract class WorkerRenderLayer extends Layer {
 
   public destroy() {
     this.worker.terminate();
+    this.wasInit = false;
+    super.destroy();
   }
 }

@@ -1,4 +1,4 @@
-import { watch } from 'vue';
+import { watch, type WatchStopHandle } from 'vue';
 import type { Inverted, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
 import {
@@ -7,36 +7,51 @@ import {
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
 import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
+import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
+import type { LayerContext } from '@/components/layered-canvas/types';
 
 export default class ViewportDataSourceLayer extends DirectRenderLayer {
-  private readonly ds: DataSource;
+  private readonly dataSource: DataSource;
   private readonly inverted: Inverted;
-
-  constructor(ds: DataSource, priceAxisIsInverted: Inverted) {
-    super();
-
-    this.ds = ds;
-    this.inverted = priceAxisIsInverted;
-
-    watch([this.inverted], () => {
-      this.invalid = true;
-    });
-  }
-
-  public installListeners(): void {
-    this.ds.addChangeEventListener(this.dataSourceChangeEventListener);
-  }
-
-  public uninstallListeners(): void {
-    this.ds.removeChangeEventListener(this.dataSourceChangeEventListener);
-  }
-
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
+  private readonly dataSourceInvalidator: DataSourceInvalidator;
+  private readonly dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
     if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
       this.invalid = true;
     }
   };
+
+  constructor(viewport: Viewport) {
+    super();
+
+    const { dataSource, priceAxis } = viewport;
+
+    this.dataSource = dataSource;
+    this.inverted = priceAxis.inverted;
+    this.dataSourceInvalidator = new DataSourceInvalidator(viewport);
+  }
+
+  public updateContext(ctx: LayerContext): void {
+    this.dataSourceInvalidator.context = ctx;
+    super.updateContext(ctx);
+  }
+
+  public init(): void {
+    super.init();
+    this.installListeners();
+  }
+
+  protected installWatcher(): WatchStopHandle {
+    return watch([this.inverted], () => {
+      this.invalid = true;
+    });
+  }
+
+  public destroy(): void {
+    this.uninsatllListeners();
+    super.destroy();
+  }
 
   protected doRender(): void {
     const inverted: InvertedValue = this.inverted.value;
@@ -54,7 +69,7 @@ export default class ViewportDataSourceLayer extends DirectRenderLayer {
       renderingContext.translate(-width / 2, -height / 2);
     }
 
-    for (const { drawing } of this.ds.visible()) {
+    for (const { drawing } of this.dataSource.visible()) {
       if (drawing === undefined) {
         throw new Error('drawing === undefined');
       }
@@ -64,5 +79,15 @@ export default class ViewportDataSourceLayer extends DirectRenderLayer {
         graphics.render(renderingContext);
       }
     }
+  }
+
+  private installListeners() {
+    this.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
+    this.dataSourceInvalidator.installListeners();
+  }
+
+  private uninsatllListeners() {
+    this.dataSourceInvalidator.uninstallListeners();
+    this.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 }

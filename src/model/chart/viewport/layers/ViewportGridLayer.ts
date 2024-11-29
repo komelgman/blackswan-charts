@@ -1,4 +1,4 @@
-import { watch } from 'vue';
+import { watch, type WatchStopHandle } from 'vue';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
@@ -13,8 +13,10 @@ export default class ViewportGridLayer extends WorkerRenderLayer {
 
     this.priceAxis = priceAxis;
     this.timeAxis = timeAxis;
+  }
 
-    watch([
+  protected installWatcher(): WatchStopHandle {
+    return watch([
       this.timeAxis.labels,
       this.priceAxis.labels,
       this.priceAxis.inverted,

@@ -57,7 +57,7 @@ const emit = defineEmits<{
 const rootElement = ref<HTMLElement>();
 const utilityCanvas = ref<HTMLCanvasElement>();
 const nativeLayers = ref<HTMLCanvasElement[]>([]);
-const resizeObserver = new ResizeObserver(setupLayers);
+const resizeObserver = new ResizeObserver(updateLayersContext);
 const { layers } = props.options;
 let prevPos: Point;
 let removeMoveListener: EventRemover;
@@ -67,13 +67,20 @@ let isSkipWheelDetection = false;
 let isDrag = false;
 let dragInElement: Element;
 let isWasDrag = false;
+let utilityCanvasContext: CanvasRenderingContext2D;
 
 onMounted(() => {
   if (!rootElement.value) {
     throw new Error('rootElement must be present');
   }
 
+  utilityCanvasContext = utilityCanvas.value?.getContext('2d') as CanvasRenderingContext2D;
+
   resizeObserver.observe(rootElement.value);
+
+  for (const layer of props.options.layers) {
+    layer.init();
+  }
 });
 
 onUnmounted(() => {
@@ -81,9 +88,41 @@ onUnmounted(() => {
   onDragEnd();
 
   for (const layer of props.options.layers) {
-    layer.clearListeners();
+    layer.destroy();
   }
 });
+
+function updateLayersContext(): void {
+  if (!rootElement.value) {
+    throw new Error('rootElement must be present');
+  }
+
+  if (!utilityCanvas.value) {
+    throw new Error('utilityCanvas must be present');
+  }
+
+  const { width, height } = rootElement.value.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  utilityCanvas.value.style.width = `${width}px`;
+  utilityCanvas.value.style.height = `${height}px`;
+
+  for (let layerId = 0; layerId < nativeLayers.value.length; layerId += 1) {
+    const layerCanvas: HTMLCanvasElement = nativeLayers.value[layerId];
+    layerCanvas.style.width = `${width}px`;
+    layerCanvas.style.height = `${height}px`;
+
+    props.options.layers[layerId].updateContext({
+      mainCanvas: layerCanvas,
+      utilityCanvasContext,
+      width,
+      height,
+      dpr,
+    });
+  }
+
+  emit('resize', { width, height });
+}
 
 function buildGenericMouseEvent(e: MouseEvent, element: Element | EventTarget | null): GenericMouseEvent {
   if (!(e instanceof MouseEvent) || !(element instanceof Element)) {
@@ -206,39 +245,6 @@ function onDragEnd(e?: DragEvent): void {
       removeEndListener();
     }
   }
-}
-
-function setupLayers(): void {
-  if (!rootElement.value) {
-    throw new Error('rootElement must be present');
-  }
-
-  if (!utilityCanvas.value) {
-    throw new Error('utilityCanvas must be present');
-  }
-
-  const { width, height } = rootElement.value.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  const utilityCanvasContext = utilityCanvas.value.getContext('2d') as CanvasRenderingContext2D;
-
-  utilityCanvas.value.style.width = `${width}px`;
-  utilityCanvas.value.style.height = `${height}px`;
-
-  for (let layerId = 0; layerId < nativeLayers.value.length; layerId += 1) {
-    const layerCanvas: HTMLCanvasElement = nativeLayers.value[layerId];
-    layerCanvas.style.width = `${width}px`;
-    layerCanvas.style.height = `${height}px`;
-
-    props.options.layers[layerId].setContext({
-      mainCanvas: layerCanvas,
-      utilityCanvasContext,
-      width,
-      height,
-      dpr,
-    });
-  }
-
-  emit('resize', { width, height });
 }
 </script>
 

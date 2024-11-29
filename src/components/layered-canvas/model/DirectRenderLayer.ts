@@ -4,8 +4,8 @@ import type { CanvasRenderingContext, LayerContext } from '@/components/layered-
 export abstract class DirectRenderLayer extends Layer {
   protected renderingContext!: CanvasRenderingContext;
 
-  public setContext(ctx: LayerContext): void {
-    super.setContext(ctx);
+  public updateContext(ctx: LayerContext): void {
+    super.updateContext(ctx);
     this.renderingContext = this.context.mainCanvas.getContext('2d') as CanvasRenderingContext2D;
   }
 

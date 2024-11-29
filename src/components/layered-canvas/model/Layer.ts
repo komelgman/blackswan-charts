@@ -1,4 +1,5 @@
-import type { LayerContext, LayerContextChangeListener } from '@/components/layered-canvas/types';
+import type { WatchStopHandle } from 'vue';
+import type { LayerContext } from '@/components/layered-canvas/types';
 
 export default abstract class Layer {
   private static sharedId: number = 0;
@@ -7,9 +8,9 @@ export default abstract class Layer {
 
   protected context!: LayerContext;
 
-  private readonly listeners: LayerContextChangeListener[] = [];
   private invalidValue!: boolean;
   private revalidateOnNextFrame: boolean = false;
+  private unwatch: WatchStopHandle | undefined;
 
   protected constructor() {
     this.id = Layer.sharedId;
@@ -35,23 +36,23 @@ export default abstract class Layer {
     return this.invalidValue;
   }
 
-  public setContext(ctx: LayerContext): void {
+  public updateContext(ctx: LayerContext): void {
     this.context = ctx;
-
-    for (const listener of this.listeners) {
-      listener.call(listener, this.context);
-    }
-
     this.invalid = true;
   }
 
-  public addContextChangeListener(listener: LayerContextChangeListener): void {
-    this.listeners.push(listener);
+  public init() {
+    this.unwatch = this.installWatcher();
   }
 
-  public clearListeners(): void {
-    this.listeners.splice(0, this.listeners.length);
+  public destroy() {
+    if (this.unwatch) {
+      this.unwatch();
+      this.unwatch = undefined;
+    }
   }
+
+  protected abstract installWatcher(): WatchStopHandle;
 
   protected invalidate(): void {
     if (this.context === undefined) {

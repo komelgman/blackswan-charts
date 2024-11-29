@@ -1,4 +1,4 @@
-import { watch } from 'vue';
+import { watch, type WatchStopHandle } from 'vue';
 import makeFont from '@/misc/make-font';
 import type { InvertedValue, PriceAxis } from '@/model/chart/axis/PriceAxis';
 import {
@@ -15,14 +15,27 @@ import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRende
 export class PriceAxisMarksLayer extends DirectRenderLayer {
   private readonly dataSource: DataSource;
   private readonly priceAxis: PriceAxis;
+  private readonly dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
+    const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
+    if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
+      this.invalid = true;
+    }
+  };
 
   constructor(dataSource: DataSource, priceAxis: PriceAxis) {
     super();
 
     this.dataSource = dataSource;
     this.priceAxis = priceAxis;
+  }
 
-    watch([
+  public init(): void {
+    super.init();
+    this.installListeners();
+  }
+
+  protected installWatcher(): WatchStopHandle {
+    return watch([
       this.priceAxis.textStyle,
       this.priceAxis.inverted,
     ], () => {
@@ -30,20 +43,10 @@ export class PriceAxisMarksLayer extends DirectRenderLayer {
     });
   }
 
-  public installListeners(): void {
-    this.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
+  public destroy(): void {
+    this.uninstallListeners();
+    super.destroy();
   }
-
-  public uninstallListeners(): void {
-    this.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
-  }
-
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
-    const { CacheInvalidated, RemoveEntry } = DataSourceChangeEventReason;
-    if (events.has(CacheInvalidated) || events.has(RemoveEntry)) {
-      this.invalid = true;
-    }
-  };
 
   protected doRender(): void {
     const inverted: InvertedValue = this.priceAxis.inverted.value;
@@ -93,5 +96,13 @@ export class PriceAxisMarksLayer extends DirectRenderLayer {
       renderingContext.fillStyle = mark.textColor;
       renderingContext.fillText(mark.text, x, y);
     }
+  }
+
+  private installListeners(): void {
+    this.dataSource.addChangeEventListener(this.dataSourceChangeEventListener);
+  }
+
+  private uninstallListeners(): void {
+    this.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 }
