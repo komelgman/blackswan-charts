@@ -19,9 +19,9 @@ export default class ViewportHighlightingLayer extends DirectRenderLayer {
     this.viewport = viewport;
 
     watch([
-      computed(() => this.viewport.priceAxis.inverted),
-      computed(() => this.viewport.highlighted),
-      computed(() => this.viewport.selected),
+      computed(() => viewport.priceAxis.inverted),
+      computed(() => viewport.highlighted),
+      computed(() => viewport.selected),
     ], () => {
       this.invalid = true;
     }, { deep: true });

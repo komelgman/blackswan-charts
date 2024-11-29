@@ -1,16 +1,16 @@
 import { CanvasWorker } from '@/components/layered-canvas/model/canvas-worker/CanvasWorker';
 import {
-  initCommandProcessor,
-  WorkerCommandType,
+  initMessageHandler,
+  WorkerRequestType,
   WorkerResponseType,
   type CanvasWorkerState,
-  type MessageProcessor,
+  type MessageHandler,
   type WorkerMessage,
   type WorkerResponse,
 } from '@/components/layered-canvas/model/canvas-worker/types';
 import type { Label } from '@/model/chart/axis/label/Label';
 
-export declare type TimeLabelsRenderMessage = WorkerMessage<WorkerCommandType.RENDER, {
+export declare type RenderTimeLabelsMessage = WorkerMessage<WorkerRequestType.RENDER, {
   width: number,
   height: number,
   dpr: number,
@@ -20,7 +20,7 @@ export declare type TimeLabelsRenderMessage = WorkerMessage<WorkerCommandType.RE
   yPos: number;
 }>;
 
-const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, message: TimeLabelsRenderMessage): WorkerResponse => {
+const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: RenderTimeLabelsMessage): WorkerResponse => {
   const ctx = worker.state?.ctx;
   const { width, height, dpr, labelColor, labelFont, labels } = message.payload;
 
@@ -47,14 +47,14 @@ const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, mes
 
   ctx.restore();
 
-  return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
+  return { message: { type: WorkerResponseType.SUCCESS, payload: { requestType: message.type } } } as WorkerResponse;
 };
 
 class TimeLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
   public constructor() {
     super(new Map([
-      [WorkerCommandType.INIT, initCommandProcessor],
-      [WorkerCommandType.RENDER, renderCommandProcessor],
+      [WorkerRequestType.INIT, initMessageHandler],
+      [WorkerRequestType.RENDER, renderMessageHandler],
     ]));
   }
 }

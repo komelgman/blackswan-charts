@@ -24,7 +24,7 @@ export abstract class WorkerRenderLayer extends Layer {
 
   protected render(onComplete: Function): void {
     this.worker.onmessage = (e) => {
-      if (e.data.type === 'SUCCESS' && e.data.payload === 'RENDER') {
+      if (e.data.type === 'SUCCESS' && e.data.payload.requestType === 'RENDER') {
         onComplete();
       }
     };

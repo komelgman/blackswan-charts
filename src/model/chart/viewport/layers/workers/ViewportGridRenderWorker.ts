@@ -1,10 +1,10 @@
 import { CanvasWorker } from '@/components/layered-canvas/model/canvas-worker/CanvasWorker';
 import {
-  initCommandProcessor,
-  WorkerCommandType,
+  initMessageHandler,
+  WorkerRequestType,
   WorkerResponseType,
   type CanvasWorkerState,
-  type MessageProcessor,
+  type MessageHandler,
   type WorkerMessage,
   type WorkerResponse,
 } from '@/components/layered-canvas/model/canvas-worker/types';
@@ -12,18 +12,19 @@ import { drawHorizontalLine, drawVerticalLine } from '@/misc/line-functions';
 import type { Label } from '@/model/chart/axis/label/Label';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 
-export declare type ViewportGridRenderMessage = WorkerMessage<WorkerCommandType.RENDER, {
+export declare type RenderViewportGridMessage = WorkerMessage<WorkerRequestType.RENDER, {
   width: number,
   height: number,
   dpr: number,
   inverted: InvertedValue,
   priceLabels: Label[],
   timeLabels: Label[],
+  color: string,
 }>;
 
-const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, message: ViewportGridRenderMessage): WorkerResponse => {
+const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: RenderViewportGridMessage): WorkerResponse => {
   const ctx = worker.state?.ctx;
-  const { width, height, dpr, inverted, priceLabels, timeLabels } = message.payload;
+  const { width, height, dpr, inverted, priceLabels, timeLabels, color } = message.payload;
 
   if (!ctx) {
     return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
@@ -41,29 +42,28 @@ const renderCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, mes
   }
 
   ctx.lineWidth = 1;
-  ctx.strokeStyle = '#1f212f'; // todo: options
+  ctx.strokeStyle = color;
   ctx.beginPath();
 
   for (const [y] of priceLabels) {
-    drawHorizontalLine(ctx, inverted * y, 0, width);
+    drawHorizontalLine(ctx, inverted * Math.round(y), 0, width);
   }
 
   for (const [x] of timeLabels) {
-    drawVerticalLine(ctx, x, 0, inverted * height);
+    drawVerticalLine(ctx, Math.round(x), 0, inverted * height);
   }
 
   ctx.scale(1, 1);
-  ctx.translate(0.5, 0.5);
   ctx.stroke();
 
-  return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
+  return { message: { type: WorkerResponseType.SUCCESS, payload: { requestType: message.type } } } as WorkerResponse;
 };
 
 class ViewportGridRenderWorker extends CanvasWorker<CanvasWorkerState> {
   public constructor() {
     super(new Map([
-      [WorkerCommandType.INIT, initCommandProcessor],
-      [WorkerCommandType.RENDER, renderCommandProcessor],
+      [WorkerRequestType.INIT, initMessageHandler],
+      [WorkerRequestType.RENDER, renderMessageHandler],
     ]));
   }
 }

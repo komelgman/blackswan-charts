@@ -2,7 +2,7 @@ import { watch } from 'vue';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
-import type { ViewportGridRenderMessage } from '@/model/chart/viewport/layers/workers/ViewportGridRenderWorker';
+import type { RenderViewportGridMessage } from '@/model/chart/viewport/layers/workers/ViewportGridRenderWorker';
 
 export default class ViewportGridLayer extends WorkerRenderLayer {
   private readonly priceAxis: PriceAxis;
@@ -38,7 +38,8 @@ export default class ViewportGridLayer extends WorkerRenderLayer {
         inverted,
         timeLabels,
         priceLabels,
+        color: '#1f212f', // todo: options
       },
-    } as ViewportGridRenderMessage);
+    } as RenderViewportGridMessage);
   }
 }

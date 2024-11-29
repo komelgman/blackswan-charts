@@ -4,7 +4,7 @@ import makeFont from '@/misc/make-font';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
-import type { PriceLabelsRenderMessage } from '@/model/chart/axis/layers/workers/PriceAxisLabelsRenderWorker';
+import type { RenderPriceLabelsMessage } from '@/model/chart/axis/layers/workers/PriceAxisLabelsRenderWorker';
 
 export const PRICE_LABEL_PADDING = 8;
 
@@ -50,6 +50,6 @@ export class PriceAxisLabelsLayer extends WorkerRenderLayer {
         labelFont,
         xPos: width - PRICE_LABEL_PADDING,
       },
-    } as PriceLabelsRenderMessage);
+    } as RenderPriceLabelsMessage);
   }
 }

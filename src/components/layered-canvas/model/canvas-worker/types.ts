@@ -1,7 +1,7 @@
 import type { HasType } from '@/model/type-defs/optional';
-import type { CanvasWorker } from './CanvasWorker';
+import type { CanvasWorker } from '@/components/layered-canvas/model/canvas-worker/CanvasWorker';
 
-export enum WorkerCommandType {
+export enum WorkerRequestType {
   INIT = 'INIT',
   RENDER = 'RENDER',
   INVALIDATE = 'INVALIDATE',
@@ -21,24 +21,24 @@ export interface WorkerResponse<P = any, T = any> {
   transfer: T;
 }
 
-export interface WorkerCommand<P = any, T = any> {
-  message: WorkerMessage<WorkerCommandType, P>
+export interface WorkerRequest<P = any, T = any> {
+  message: WorkerMessage<WorkerRequestType, P>
   transfer: T;
 }
 
-export declare type MessageProcessor<WorkerState> = (
+export declare type MessageHandler<WorkerState> = (
   worker: CanvasWorker<WorkerState>,
   message: WorkerMessage
 ) => WorkerResponse | undefined;
 
-export declare type InitMessage = WorkerMessage<WorkerCommandType.INIT, { canvas: OffscreenCanvas }>;
+export declare type InitMessage = WorkerMessage<WorkerRequestType.INIT, { canvas: OffscreenCanvas }>;
 
 export interface CanvasWorkerState {
   ctx: OffscreenCanvasRenderingContext2D;
 }
 
-export const initCommandProcessor: MessageProcessor<CanvasWorkerState> = (worker, message: InitMessage): WorkerResponse => {
+export const initMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: InitMessage): WorkerResponse => {
   worker.state = { ctx: message.payload.canvas.getContext('2d') as OffscreenCanvasRenderingContext2D };
 
-  return { message: { type: WorkerResponseType.SUCCESS } } as WorkerResponse;
+  return { message: { type: WorkerResponseType.SUCCESS, payload: { requestType: message.type } } } as WorkerResponse;
 };

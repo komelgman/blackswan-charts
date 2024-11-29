@@ -4,7 +4,7 @@ import makeFont from '@/misc/make-font';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
-import type { TimeLabelsRenderMessage } from '@/model/chart/axis/layers/workers/TimeAxisLabelsRenderWorker';
+import type { RenderTimeLabelsMessage } from '@/model/chart/axis/layers/workers/TimeAxisLabelsRenderWorker';
 
 export class TimeAxisLabelsLayer extends WorkerRenderLayer {
   private readonly timeAxis: TimeAxis;
@@ -44,6 +44,6 @@ export class TimeAxisLabelsLayer extends WorkerRenderLayer {
         labelColor: textStyle.color,
         labelFont,
       },
-    } as TimeLabelsRenderMessage);
+    } as RenderTimeLabelsMessage);
   }
 }
