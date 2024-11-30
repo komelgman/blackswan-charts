@@ -23,7 +23,7 @@
             :viewport="props.model"
             :interactions-handler="viewportInteractionsHandler"
             v-context-menu-directive="{
-              model: getViewportContextMenu(props.model),
+              model: userInteractions.getViewportContextMenu(props.model),
               instance: contextmenu,
             }"
           />
@@ -35,7 +35,7 @@
             :data-source="props.model.dataSource"
             :interactions-handler="priceAxisInteractionsHandler"
             v-context-menu-directive="{
-              model: getPriceAxisContextMenu(props.model.priceAxis),
+              model: userInteractions.getPriceAxisContextMenu(props.model.priceAxis),
               instance: contextmenu,
             }"
           />
@@ -50,7 +50,7 @@
         :time-axis="chart.timeAxis"
         :interactions-handler="timeAxisInteractionsHandler"
         v-context-menu-directive="{
-          model: getTimeAxisContextMenu(),
+          model: userInteractions.getTimeAxisContextMenu(chart.timeAxis),
           instance: contextmenu,
         }"
       />
@@ -79,18 +79,12 @@ import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
 import ContextMenu from '@/components/context-menu/ContextMenu.vue';
 import vContextMenuDirective from '@/components/context-menu/model/ContextMenuDirective';
-import type { ContextMenuOptionsProvider } from '@/components/context-menu/types';
 import { BoxLayout, Divider, Multipane } from '@/components/layout';
 import type { PanesSizeChangedEvent } from '@/components/layout/events';
 import { Direction, type PaneId } from '@/components/layout/types';
-import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { ChartState, Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
-import PriceAxisContextMenu from '@/model/chart/context-menu/PriceAxisContextMenu';
-import TimeAxisContextMenu from '@/model/chart/context-menu/TimeAxisContextMenu';
-import ViewportContextMenu from '@/model/chart/context-menu/ViewportContextMenu';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import type { ChartStyle } from '@/model/chart/types/styles';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
 import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
 
 interface Props {
@@ -100,7 +94,8 @@ interface Props {
 const props = defineProps<Props>();
 const rootElement = ref<ComponentPublicInstance>();
 const contextmenu = ref();
-const { priceAxisInteractionsHandler, timeAxisInteractionsHandler, viewportInteractionsHandler } = props.chart.userInteractions;
+const { userInteractions } = props.chart;
+const { priceAxisInteractionsHandler, timeAxisInteractionsHandler, viewportInteractionsHandler } = userInteractions;
 
 const chartStyle = computed<ChartStyle>(() => props.chart.style);
 provide('chartStyle', chartStyle);
@@ -112,7 +107,6 @@ const chartState = reactive<ChartState>({
 provide('chartState', chartState);
 
 const unwatchers = new Map<PaneId, WatchStopHandle[]>();
-const contextMenuMap = new WeakMap<any, ContextMenuOptionsProvider>();
 let unwatch: WatchStopHandle;
 
 onMounted(() => {
@@ -149,29 +143,8 @@ onUnmounted(() => {
   unwatch();
 });
 
-function getPriceAxisContextMenu(priceAxis: PriceAxis): ContextMenuOptionsProvider {
-  if (!contextMenuMap.has(priceAxis)) {
-    contextMenuMap.set(priceAxis, new PriceAxisContextMenu(priceAxis));
-  }
-
-  return contextMenuMap.get(priceAxis) as ContextMenuOptionsProvider;
-}
-
-function getTimeAxisContextMenu(): ContextMenuOptionsProvider {
-  const { timeAxis } = props.chart;
-  if (!contextMenuMap.has(timeAxis)) {
-    contextMenuMap.set(timeAxis, new TimeAxisContextMenu(timeAxis));
-  }
-
-  return contextMenuMap.get(timeAxis) as ContextMenuOptionsProvider;
-}
-
-function getViewportContextMenu(viewport: Viewport): ContextMenuOptionsProvider {
-  if (!contextMenuMap.has(viewport)) {
-    contextMenuMap.set(viewport, new ViewportContextMenu(viewport));
-  }
-
-  return contextMenuMap.get(viewport) as ContextMenuOptionsProvider;
+function onKeyDown(e: KeyboardEvent): void {
+  userInteractions.onKeyDown(e);
 }
 
 function onMouseEnter(): void {
@@ -227,21 +200,6 @@ function updatePriceAxisWidth(): void {
   }
 
   chartState.priceWidgetWidth = maxLabelWidth + 2 * PRICE_LABEL_PADDING;
-}
-
-function onKeyDown(e: KeyboardEvent): void {
-  // https://keyjs.dev/
-  const isCommandKey: boolean = e.ctrlKey || e.metaKey;
-  const isZKeyPressed: boolean = e.code === 'KeyZ';
-
-  if (isZKeyPressed && isCommandKey) {
-    e.preventDefault();
-    if (e.shiftKey) {
-      props.chart.redo();
-    } else {
-      props.chart.undo();
-    }
-  }
 }
 
 const cssVars = computed(() => {

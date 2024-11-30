@@ -4,7 +4,7 @@ import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 
-export default class PriceAxisContextMenu implements ContextMenuOptionsProvider {
+export class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private readonly axis: PriceAxis;
   private readonly menu: MenuItem[];
 

@@ -22,7 +22,8 @@ import {
   HistoricalTransactionManager,
   History,
 } from '@/model/history';
-import { BaseChartUserInteractions, type ChartUserInteractions } from '@/model/chart/user-interactions';
+import { type ChartUserInteractions } from '@/model/chart/user-interactions';
+import { DefaultChartUserInteractions } from '@/model/chart/user-interactions/DefaultChartUserInteractions';
 import { IdHelper } from '@/model/tools';
 import type { Price, Range } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
@@ -30,6 +31,7 @@ import { ControlMode } from '@/model/chart/axis/types';
 export interface ChartOptions {
   style: DeepPartial<ChartStyle>;
   sketchers: Map<DrawingType, Sketcher>;
+  userInteractions?: ChartUserInteractions;
 }
 
 export interface ChartState {
@@ -68,7 +70,7 @@ export class Chart {
     this.sketchers = markRaw(this.createSketchers(chartStyle, chartOptions?.sketchers));
     this.timeAxis = this.createTimeAxis(chartStyle);
     this.dataSourceInterconnect = new DataSourceInterconnect();
-    this.userInteractions = new BaseChartUserInteractions(this);
+    this.userInteractions = chartOptions?.userInteractions ?? new DefaultChartUserInteractions(this);
 
     this.visiblePanes = computed(() => this.panes.filter((item) => item.visible === undefined || item.visible));
     this.installVisiblePanesWatcher();
