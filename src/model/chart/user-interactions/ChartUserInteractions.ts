@@ -28,14 +28,14 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
     this.priceAxisInteractionsHandler = this.createPriceAxisInteractionsHandler();
   }
 
-  private createViewportInteractionsHandler(): InteractionsHandler<Viewport> {
+  protected createViewportInteractionsHandler(): InteractionsHandler<Viewport> {
     return {
       onMouseMove(source: Viewport, e: GenericMouseEvent): void {
-        source.highlightInvalidator.invalidate(e);
+        source.updateHighlightes(e);
       },
 
       onLeftMouseBtnClick(source: Viewport, e: MouseClickEvent): void {
-        source.updateSelection(e.isCtrlPressed); // todo: check that is cloneSelected actually used in this case
+        source.updateSelection(e.isCtrlPressed);
       },
 
       onLeftMouseBtnDoubleClick(source: Viewport): void {
@@ -47,43 +47,16 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
         }
       },
 
-      // todo: move it to model class
       onDragStart(source: Viewport, e: MouseClickEvent): void {
-        source.updateSelection(e.isCtrlPressed, true);
-
-        if (source.selectionCanBeDragged()) {
-          source.dataSource.beginTransaction({
-            protocolTitle: 'drag-in-viewport',
-          });
-
-          if (e.isCtrlPressed) {
-            source.cloneSelected();
-          }
-        } else {
-          source.dataSource.transactionManager.openTransaction({ protocolTitle: 'move-in-viewport' });
-        }
-        source.updateDragHandle();
+        source.startDragging(e);
       },
 
-      // todo: move it to model class
       onDrag(source: Viewport, e: DragMoveEvent): void {
-        if (source.selectionCanBeDragged()) {
-          source.highlightInvalidator.invalidate(e);
-          source.moveSelected(e);
-        } else {
-          source.timeAxis.move(e.dx);
-          if (source.priceAxis.isManualControlMode()) {
-            source.priceAxis.move(e.dy);
-          }
-        }
+        source.drag(e);
       },
 
       onDragEnd(source: Viewport): void {
-        if (source.selectionCanBeDragged()) {
-          source.dataSource.endTransaction();
-        } else {
-          source.dataSource.transactionManager.tryCloseTransaction();
-        }
+        source.endDragging();
       },
 
       onZoom(source: Viewport, e: ZoomEvent): void {
@@ -92,7 +65,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
     };
   }
 
-  private createTimeAxisInteractionsHandler(): InteractionsHandler<TimeAxis> {
+  protected createTimeAxisInteractionsHandler(): InteractionsHandler<TimeAxis> {
     return {
       onLeftMouseBtnDoubleClick(source: TimeAxis): void {
         source.controlMode = ControlMode.AUTO;
@@ -113,7 +86,7 @@ export class BaseChartUserInteractions implements ChartUserInteractions {
     };
   }
 
-  private createPriceAxisInteractionsHandler(): InteractionsHandler<PriceAxis> {
+  protected createPriceAxisInteractionsHandler(): InteractionsHandler<PriceAxis> {
     return {
       onLeftMouseBtnDoubleClick(source: PriceAxis): void {
         source.controlMode = ControlMode.AUTO;

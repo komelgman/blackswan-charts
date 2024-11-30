@@ -1,4 +1,4 @@
-import type { DragMoveEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, GenericMouseEvent, MouseClickEvent } from '@/components/layered-canvas/events';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
@@ -61,6 +61,20 @@ export class Viewport {
     this.dataSource.removeChangeEventListener(this.dataSourceChangeEventListener);
   }
 
+  public getSketcher(type: DrawingType): Sketcher {
+    const sketcher: Sketcher | undefined = this.sketchers.get(type);
+
+    if (sketcher === undefined) {
+      throw new Error(`OOPS, sketcher wasn't found for type ${type}`);
+    }
+
+    return sketcher;
+  }
+
+  public updateHighlightes(e: GenericMouseEvent): void {
+    this.highlightInvalidator.invalidate(e);
+  }
+
   public updateSelection(cloneSelectedIfIsPresent: boolean, isInDragMode: boolean = false): void {
     const { highlighted, selected } = this;
 
@@ -77,13 +91,47 @@ export class Viewport {
     }
   }
 
-  private resetHightlightes(): void {
-    this.highlighted = undefined;
-    this.highlightedHandleId = undefined;
-    this.cursor = undefined;
+  public startDragging(e: MouseClickEvent) {
+    this.updateSelection(e.isCtrlPressed, true);
+    const { dataSource } = this;
+    if (this.selectionCanBeDragged()) {
+      dataSource.beginTransaction({
+        protocolTitle: 'drag-in-viewport',
+      });
+
+      if (e.isCtrlPressed) {
+        this.cloneSelected();
+      }
+    } else {
+      dataSource.transactionManager.openTransaction({ protocolTitle: 'move-in-viewport' });
+    }
+
+    this.updateDragHandle();
   }
 
-  public selectionCanBeDragged(): boolean {
+  public drag(e: DragMoveEvent) {
+    const { priceAxis, timeAxis } = this;
+    if (this.selectionCanBeDragged()) {
+      this.highlightInvalidator.invalidate(e);
+      this.moveSelected(e);
+    } else {
+      timeAxis.move(e.dx);
+      if (priceAxis.isManualControlMode()) {
+        priceAxis.move(e.dy);
+      }
+    }
+  }
+
+  public endDragging() {
+    const { dataSource } = this;
+    if (this.selectionCanBeDragged()) {
+      dataSource.endTransaction();
+    } else {
+      dataSource.transactionManager.tryCloseTransaction();
+    }
+  }
+
+  private selectionCanBeDragged(): boolean {
     const { selected } = this;
 
     for (const entry of selected) {
@@ -108,7 +156,7 @@ export class Viewport {
       || (!isInDragMode && !cloneSelectedIfIsPresent); // click without ctrl
   }
 
-  public cloneSelected(): void {
+  private cloneSelected(): void {
     const { dataSource, selected } = this;
     const tmp: Set<DataSourceEntry> = new Set();
 
@@ -127,7 +175,7 @@ export class Viewport {
     tmp.forEach((value) => selected.add(value));
   }
 
-  public moveSelected(e: DragMoveEvent): void {
+  private moveSelected(e: DragMoveEvent): void {
     const { dataSource, dragHandle } = this;
     if (dragHandle === undefined) {
       throw new Error('Illegal state: dragHandle === undefined');
@@ -137,7 +185,7 @@ export class Viewport {
     dataSource.flush();
   }
 
-  public updateDragHandle(): void {
+  private updateDragHandle(): void {
     this.dragHandle = this.getDragHandle();
   }
 
@@ -172,20 +220,6 @@ export class Viewport {
     return result;
   }
 
-  public hasSketcher(type: DrawingType): boolean {
-    return this.sketchers.has(type);
-  }
-
-  public getSketcher(type: DrawingType): Sketcher {
-    const sketcher: Sketcher | undefined = this.sketchers.get(type);
-
-    if (sketcher === undefined) {
-      throw new Error(`OOPS, sketcher wasn't found for type ${type}`);
-    }
-
-    return sketcher;
-  }
-
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
     if (removedEntriesEvents.length > 0) {
@@ -205,5 +239,11 @@ export class Viewport {
         selected.delete(event.entry);
       }
     }
+  }
+
+  private resetHightlightes(): void {
+    this.highlighted = undefined;
+    this.highlightedHandleId = undefined;
+    this.cursor = undefined;
   }
 }
