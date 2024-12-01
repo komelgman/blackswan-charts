@@ -50,7 +50,7 @@ export class HistoricalTransactionManager {
       throw new Error('Oops');
     }
 
-    this.history.reportProcessor({ ...report, protocolOptions: this.protocolOptions });
+    this.history.addReport({ ...report, protocolOptions: this.protocolOptions });
   }
 
   public tryCloseTransaction(options: { signOnClose: boolean } = { signOnClose: true }): boolean {
