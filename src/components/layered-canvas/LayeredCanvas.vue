@@ -33,8 +33,8 @@ import type {
   ZoomEvent,
 } from '@/components/layered-canvas/events';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
-import type { EventRemover } from '@/misc/document-listeners';
-import { onceDocument, onDocument } from '@/misc/document-listeners';
+import type { EventRemover } from '@/model/misc/document-listeners';
+import { onceDocument, onDocument } from '@/model/misc/document-listeners';
 import type { Point } from '@/model/chart/types';
 
 interface Props {

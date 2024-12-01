@@ -1,9 +1,9 @@
 import { toRaw } from 'vue';
 import type { Chart } from '@/model/chart/Chart';
-import { clone } from '@/misc/object.clone';
+import { clone } from '@/model/misc/object.clone';
 import type { PaneDescriptor } from '@/components/layout/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import { merge } from '@/misc/object.merge';
+import { merge } from '@/model/misc/object.merge';
 import type { DrawingOptions } from '@/model/datasource/types';
 import defaultChartStyle from '@/model/default-config/ChartStyle.Defaults';
 import type DataSource from '@/model/datasource/DataSource';

@@ -9,9 +9,9 @@ import {
   type DataSourceChangeEventListener,
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
-import { filterInPlace } from '@/misc/array.filterInPlace';
+import { filterInPlace } from '@/model/misc/array.filterInPlace';
 import type { DataPipe } from '@/model/databinding';
-import { retry } from '@/misc/function.retry';
+import { retry } from '@/model/misc/function.retry';
 
 export interface ContentOptions<T extends string> extends HasType<T> {}
 

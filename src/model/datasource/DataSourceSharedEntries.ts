@@ -1,4 +1,4 @@
-import { clone } from '@/misc/object.clone';
+import { clone } from '@/model/misc/object.clone';
 import { isString } from '@/model/type-defs';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';

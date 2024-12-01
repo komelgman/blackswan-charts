@@ -1,5 +1,5 @@
 import { watch, type WatchStopHandle } from 'vue';
-import makeFont from '@/misc/make-font';
+import { makeFont } from '@/model/misc/function.makeFont';
 import type { InvertedValue, PriceAxis } from '@/model/chart/axis/PriceAxis';
 import {
   DataSourceChangeEventReason,

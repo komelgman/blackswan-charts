@@ -1,6 +1,6 @@
 /* eslint-disable no-sparse-arrays */
 import { expect, test } from 'vitest';
-import { filterInPlace } from '@/misc/array.filterInPlace';
+import { filterInPlace } from '@/model/misc/array.filterInPlace';
 
 test.each([
   { a: [1, 2, 3, 4, 5], p: () => true, ex: [1, 2, 3, 4, 5] },

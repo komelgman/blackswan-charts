@@ -1,5 +1,5 @@
-import math from '@/misc/math';
-import type { Cloneable } from '@/misc/object.clone';
+import math from '@/model/misc/math';
+import type { Cloneable } from '@/model/misc/object.clone';
 import type { PriceScalingFunction } from '@/model/chart/axis/scaling/PriceScalingFunction';
 import type { Price } from '@/model/chart/types';
 

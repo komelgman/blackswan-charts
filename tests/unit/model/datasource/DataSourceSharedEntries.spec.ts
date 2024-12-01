@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clone } from '@/misc/object.clone';
+import { clone } from '@/model/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
-import { IdHelper } from '@/model/tools/IdHelper';
+import { IdHelper } from '@/model/misc/tools';
 import { HistoricalTransactionManager, History } from '@/model/history';
 
 describe('DataSourceSharedEntries', () => {

@@ -1,10 +1,10 @@
 import { computed, toRaw, watch } from 'vue';
-import makeFont from '@/misc/make-font';
+import { makeFont } from '@/model/misc/function.makeFont';
 import AbstractInvalidator from '@/model/chart/axis/label/AbstractInvalidator';
 import type { LabelOptions } from '@/model/chart/axis/label/LabelOptions';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { LogicSize, Price, Range } from '@/model/chart/types';
-import { Cache } from '@/model/tools/Cache';
+import { Cache } from '@/model/misc/tools';
 import type { Label } from '@/model/chart/axis/label/Label';
 
 // todo: refactor code to get more good loocking values

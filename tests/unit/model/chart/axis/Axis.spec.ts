@@ -2,14 +2,14 @@ import { nextTick, watch } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PriceAxis, type PriceAxisOptions } from '@/model/chart/axis/PriceAxis';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper } from '@/model/tools';
+import { IdHelper } from '@/model/misc/tools';
 import DataSource from '@/model/datasource/DataSource';
 import defaultChartStyle from '@/model/default-config/ChartStyle.Defaults';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 import type Axis from '@/model/chart/axis/Axis';
 import { ControlMode } from '@/model/chart/axis/types';
 import type { DrawingOptions } from '@/model/datasource/types';
-import { clone } from '@/misc/object.clone';
+import { clone } from '@/model/misc/object.clone';
 
 describe('Axis', () => {
   const preferred = {

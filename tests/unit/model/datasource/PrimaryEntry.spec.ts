@@ -1,10 +1,10 @@
 import { watch } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import DataSource from '@/model/datasource/DataSource';
-import { IdHelper } from '@/model/tools';
+import { IdHelper } from '@/model/misc/tools';
 import { History, HistoricalTransactionManager } from '@/model/history';
 import type { DataSourceEntry, DrawingOptions } from '@/model/datasource/types';
-import { clone } from '@/misc/object.clone';
+import { clone } from '@/model/misc/object.clone';
 import { PrimaryEntry } from '@/model/datasource/PrimaryEntry';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 

@@ -1,5 +1,5 @@
 import type { HasMergeWith } from '@/model/type-defs/optional';
-import { merge } from '@/misc/object.merge';
+import { merge } from '@/model/misc/object.merge';
 import type { DeepPartial } from '@/model/type-defs';
 import { isEmpty } from '@/model/type-defs';
 import type { ChartStyle } from '@/model/chart/types/styles';

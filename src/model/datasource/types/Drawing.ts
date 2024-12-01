@@ -2,7 +2,7 @@ import type { HasCenterPos, HasCursor } from '@/model/type-defs/optional';
 import { isString } from '@/model/type-defs';
 
 import type { DataSourceId } from '@/model/datasource/types';
-import type { EntityId } from '@/model/tools/IdBuilder';
+import type { EntityId } from '@/model/misc/tools';
 import type { Point, Price, Range, UTCTimestamp } from '@/model/chart/types';
 import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
 

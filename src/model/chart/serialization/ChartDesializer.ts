@@ -1,7 +1,7 @@
 import type { Chart } from '@/model/chart/Chart';
 import defaultChartStyle from '@/model/default-config/ChartStyle.Defaults';
 import type { SerializedChart } from '@/model/chart/serialization/types';
-import { merge } from '@/misc/object.merge';
+import { merge } from '@/model/misc/object.merge';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import DataSource from '@/model/datasource/DataSource';
 

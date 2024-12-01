@@ -4,7 +4,7 @@
 
 import type { TextStyle } from '@/model/chart/types/styles';
 
-export default function makeFont(textOptions: TextStyle): string {
+export function makeFont(textOptions: TextStyle): string {
   const style = textOptions.fontStyle ? `${textOptions.fontStyle} ` : '';
   return `${style}${textOptions.fontSize}px ${textOptions.fontFamily}`;
 }

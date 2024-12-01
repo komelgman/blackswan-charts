@@ -11,7 +11,7 @@ import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
-import { IdHelper, type IdBuilder } from '@/model/tools';
+import { IdHelper, type IdBuilder } from '@/model/misc/tools';
 import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
 import {
   LineBound,
@@ -22,7 +22,7 @@ import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
 import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import { ControlMode } from '@/model/chart/axis/types';
-import { shadeColor } from '@/misc/color';
+import { shadeColor } from '@/model/misc/color';
 import { TIME_PERIODS_MAP, TimePeriods } from '@/model/chart/types/time';
 
 /**

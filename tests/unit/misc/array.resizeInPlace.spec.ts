@@ -1,6 +1,6 @@
 /* eslint-disable no-sparse-arrays */
 import { expect, test } from 'vitest';
-import { resizeInPlace } from '@/misc/array.resizeInPlace';
+import { resizeInPlace } from '@/model/misc/array.resizeInPlace';
 
 test.each([
   { a: [], s: 0, ex: [] },

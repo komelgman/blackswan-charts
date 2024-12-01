@@ -1,7 +1,7 @@
 import type { Chart } from '@/model/chart/Chart';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions, DataSourceOptions } from '@/model/datasource/types';
-import type { IdHelper } from '@/model/tools';
+import type { IdHelper } from '@/model/misc/tools';
 
 export default interface ChartWidgetTestContext {
   delay: () => Promise<void>

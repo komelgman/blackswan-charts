@@ -1,15 +1,15 @@
 import { markRaw, reactive, shallowReactive, watch, type WatchHandle } from 'vue';
-import { clone } from '@/misc/object.clone';
-import { merge } from '@/misc/object.merge';
+import { clone } from '@/model/misc/object.clone';
+import { merge } from '@/model/misc/object.merge';
 import { ControlMode, type AxisOptions } from '@/model/chart/axis/types';
 import { UpdateAxisControlMode, UpdateAxisRange, UpdateAxisPrimaryEntryRef } from '@/model/chart/axis/incidents';
 import type { TextStyle } from '@/model/chart/types/styles';
-import type { EntityId } from '@/model/tools/IdBuilder';
+import type { EntityId } from '@/model/misc/tools';
 import type { LogicSize, Range } from '@/model/chart/types';
 import type { HistoricalTransactionManager } from '@/model/history';
 import type { Wrapped } from '@/model/type-defs';
 import { PrimaryEntry, type PrimaryEntryRef } from '@/model/datasource/PrimaryEntry';
-import { deepEqual } from '@/misc/object.deepEqual';
+import { deepEqual } from '@/model/misc/object.deepEqual';
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 import type { Label } from '@/model/chart/axis/label/Label';
 

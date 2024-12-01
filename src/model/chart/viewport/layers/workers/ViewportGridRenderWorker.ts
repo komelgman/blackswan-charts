@@ -8,7 +8,7 @@ import {
   type WorkerMessage,
   type WorkerResponse,
 } from '@/components/layered-canvas/model/canvas-worker/types';
-import { drawHorizontalLine, drawVerticalLine } from '@/misc/line-functions';
+import { drawHorizontalLine, drawVerticalLine } from '@/model/misc/line-functions';
 import type { Label } from '@/model/chart/axis/label/Label';
 import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 

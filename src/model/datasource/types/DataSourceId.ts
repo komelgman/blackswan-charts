@@ -1,3 +1,3 @@
-import type { EntityId } from '@/model/tools/IdBuilder';
+import type { EntityId } from '@/model/misc/tools';
 
 export declare type DataSourceId = EntityId;

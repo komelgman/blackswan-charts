@@ -1,6 +1,6 @@
 /* eslint-disable no-sparse-arrays */
 import { describe, expect, it, test } from 'vitest';
-import { merge } from '@/misc/object.merge';
+import { merge } from '@/model/misc/object.merge';
 
 describe('merge tuples', () => {
   it('should throw error', () => {

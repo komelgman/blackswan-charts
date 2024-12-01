@@ -1,6 +1,6 @@
 import { computed, watch, type WatchStopHandle } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
-import makeFont from '@/misc/make-font';
+import { makeFont } from '@/model/misc/function.makeFont';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
 import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';

@@ -1,4 +1,4 @@
-import { setLineStyle } from '@/misc/line-functions';
+import { setLineStyle } from '@/model/misc/line-functions';
 import type { Graphics } from '@/model/datasource/types';
 import type { LineStyle, Point } from '@/model/chart/types';
 import type { CanvasRenderingContext } from '@/components/layered-canvas/types';

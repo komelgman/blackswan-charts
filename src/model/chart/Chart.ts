@@ -1,7 +1,7 @@
 import { computed, markRaw, reactive, watch, type ComputedRef } from 'vue';
 import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
-import { clone } from '@/misc/object.clone';
-import { merge } from '@/misc/object.merge';
+import { clone } from '@/model/misc/object.clone';
+import { merge } from '@/model/misc/object.merge';
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import AddNewPane from '@/model/chart/incidents/AddNewPane';
 import InvalidatePanesSizes from '@/model/chart/incidents/InvalidatePanesSizes';
@@ -24,7 +24,7 @@ import {
 } from '@/model/history';
 import { type ChartUserInteractions } from '@/model/chart/user-interactions';
 import { DefaultChartUserInteractions } from '@/model/chart/user-interactions/DefaultChartUserInteractions';
-import { IdHelper } from '@/model/tools';
+import { IdHelper } from '@/model/misc/tools';
 import type { Price, Range } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
 

@@ -1,5 +1,5 @@
-import { clone } from '@/misc/object.clone';
-import { merge } from '@/misc/object.merge';
+import { clone } from '@/model/misc/object.clone';
+import { merge } from '@/model/misc/object.merge';
 import { type DeepPartial, type Predicate, isString } from '@/model/type-defs';
 import { NonReactive } from '@/model/type-defs/decorators';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
@@ -21,7 +21,7 @@ import type {
   DrawingReference,
 } from '@/model/datasource/types';
 import type { HistoricalProtocolOptions, HistoricalTransactionManager } from '@/model/history';
-import type { IdHelper } from '@/model/tools';
+import type { IdHelper } from '@/model/misc/tools';
 
 @NonReactive
 export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {

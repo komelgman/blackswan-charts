@@ -4,10 +4,10 @@ import { Chart } from '@/model/chart/Chart';
 import { ChartSerializer } from '@/model/chart/serialization/ChartSerializer';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/types';
-import { IdHelper } from '@/model/tools';
+import { IdHelper } from '@/model/misc/tools';
 import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type { PaneOptions } from '@/components/layout/types';
-import { clone } from '@/misc/object.clone';
+import { clone } from '@/model/misc/object.clone';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
 

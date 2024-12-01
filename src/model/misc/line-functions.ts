@@ -1,4 +1,4 @@
-import { LineFillStyle, type LineStyle, type Range } from '@/model/chart/types';
+import { LineFillStyle, type LineStyle } from '@/model/chart/types';
 
 export function setLineStyle(ctx: CanvasPathDrawingStyles & CanvasFillStrokeStyles, style: LineStyle): void {
   let dashPattern: number[];
@@ -55,8 +55,4 @@ export function strokeInPixel(ctx: CanvasPathDrawingStyles & CanvasState & Canva
   }
   drawFunction();
   ctx.restore();
-}
-
-export function inRange<T>(p: T, range: Range<T>): boolean {
-  return p >= range.from && p <= range.to;
 }

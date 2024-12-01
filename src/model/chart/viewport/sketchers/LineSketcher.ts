@@ -1,6 +1,6 @@
 import { toRaw } from 'vue';
 import type { DragMoveEvent } from '@/components/layered-canvas/events';
-import { inRange } from '@/misc/line-functions';
+import { inRange } from '@/model/misc/function.inRange';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import AbstractLineGraphics from '@/model/chart/viewport/sketchers/graphics/AbstractLineGraphics';

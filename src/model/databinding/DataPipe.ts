@@ -1,6 +1,6 @@
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { ContentOptions } from '@/model/databinding';
-import { deepEqual } from '@/misc/object.deepEqual';
+import { deepEqual } from '@/model/misc/object.deepEqual';
 
 export interface ContentProvider<O extends ContentOptions<string>, ContentType> {
   get options(): O;

@@ -1,6 +1,6 @@
 import { computed, watch, type WatchStopHandle } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
-import makeFont from '@/misc/make-font';
+import { makeFont } from '@/model/misc/function.makeFont';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';

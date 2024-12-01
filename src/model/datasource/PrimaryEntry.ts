@@ -5,7 +5,7 @@ import type { UTCTimestamp, Range, Price } from '@/model/chart/types';
 import type { Wrapped } from '@/model/type-defs';
 import { NonReactive } from '@/model/type-defs/decorators';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
-import { deepEqual } from '@/misc/object.deepEqual';
+import { deepEqual } from '@/model/misc/object.deepEqual';
 
 export declare type PrimaryEntryRef = { ds: DataSource, entryRef: DrawingReference };
 
