@@ -56,14 +56,25 @@ export default class DataSourceInvalidator {
   }
 
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
-    const entries: Set<DataSourceEntry> = new Set([
-      ...((events.get(DataSourceChangeEventReason.CacheReset) || []).map((e) => (e.entry))),
-      ...((events.get(DataSourceChangeEventReason.AddEntry) || []).map((e) => (e.entry))),
-      ...((events.get(DataSourceChangeEventReason.UpdateEntry) || []).map((e) => (e.entry))),
-    ]);
+    const reasons = [
+      DataSourceChangeEventReason.CacheReset,
+      DataSourceChangeEventReason.AddEntry,
+      DataSourceChangeEventReason.UpdateEntry,
+    ];
 
-    if (entries.size) {
-      this.invalidate(Array.from(entries.values()));
+    const entriesToInvalidate = new Set<DataSourceEntry>();
+
+    for (const reason of reasons) {
+      const reasonEvents = events.get(reason);
+      if (reasonEvents) {
+        for (const event of reasonEvents) {
+          entriesToInvalidate.add(event.entry);
+        }
+      }
+    }
+
+    if (entriesToInvalidate.size) {
+      this.invalidate(Array.from(entriesToInvalidate));
     }
   };
 
