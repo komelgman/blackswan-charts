@@ -41,6 +41,7 @@ export class ChartSerializer {
           primaryEntry: priceAxis.primaryEntryRef.value?.entryRef,
           range: clone(toRaw(priceAxis.range)),
           controlMode: priceAxis.controlMode.value,
+          priority: priceAxis.priority,
         },
       },
       dataSource: {

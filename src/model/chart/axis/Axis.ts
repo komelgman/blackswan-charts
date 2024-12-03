@@ -55,7 +55,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     );
   }
 
-  public noHistoryManagedUpdate(options: Options): void {
+  public noHistoryManagedUpdate(options: Partial<Options>): void {
     const { hasOwnProperty: hasOwn } = Object.prototype;
 
     if (options.range !== undefined && !deepEqual(options.range, this.rangeValue)) {

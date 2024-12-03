@@ -24,12 +24,13 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
     super(options);
 
     const { dataSource, paneOptions, style, timeAxis, sketchers } = this.options;
-    const { primaryEntry } = paneOptions.priceAxis;
+    const { primaryEntry, priority } = paneOptions.priceAxis;
 
     const priceAxis: PriceAxis = new PriceAxis(
       dataSource.id,
       dataSource.transactionManager,
       style.text,
+      priority || Number.MIN_VALUE,
     );
 
     priceAxis.noHistoryManagedUpdate({ ...paneOptions.priceAxis });

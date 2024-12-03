@@ -37,7 +37,7 @@ describe('Axis', () => {
 
     ds = new DataSource({ id: 'main', idHelper });
     ds.transactionManager = transactionManager;
-    axis = new PriceAxis('price', transactionManager, defaultChartStyle.text);
+    axis = new PriceAxis('price', transactionManager, defaultChartStyle.text, 0);
   });
 
   it('.controlMode should be changed to AUTO when axis.primaryEntryRef changed', async () => {

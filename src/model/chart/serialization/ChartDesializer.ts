@@ -19,7 +19,10 @@ export class ChartDeserializer {
 
     data.panes.forEach((paneData) => {
       const ds = new DataSource(
-        { id: paneData.dataSource.id, idHelper: chart.idHelper },
+        {
+          id: paneData.dataSource.id,
+          idHelper: chart.idHelper,
+        },
         paneData.dataSource.drawings,
       );
 

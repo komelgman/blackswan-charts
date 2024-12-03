@@ -16,13 +16,15 @@ export declare type InvertedValue = 1 | -1;
 export declare type Inverted = Wrapped<InvertedValue>;
 
 export interface PriceAxisOptions extends AxisOptions<Price> {
-  scale?: keyof typeof PriceScales;
-  inverted?: boolean;
-  contentWidth?: number;
+  scale: keyof typeof PriceScales;
+  inverted: boolean;
+  contentWidth: number;
+  priority: number;
 }
 
 @PostConstruct
 export class PriceAxis extends Axis<Price, PriceAxisOptions> {
+  public readonly priority: number;
   private cache!: [virtualFrom: number, scaleK: number, unscaleK: number];
   private fractionValue: number = 0;
 
@@ -34,10 +36,12 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
     id: EntityId,
     historicalTransactionManager: HistoricalTransactionManager,
     textStyle: TextStyle,
+    priority: number,
   ) {
     super(`${id}-price`, historicalTransactionManager, textStyle);
     this.scaleValue = reactive(clone(PriceScales.regular));
     this.invertedValue = reactive(clone({ value: -1 }));
+    this.priority = priority;
   }
 
   public postConstruct(): void {
@@ -82,7 +86,7 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
     return this.contentWidthValue;
   }
 
-  public noHistoryManagedUpdate(options: PriceAxisOptions): void {
+  public noHistoryManagedUpdate(options: Partial<PriceAxisOptions>): void {
     super.noHistoryManagedUpdate(options);
 
     if (options.inverted !== undefined) {

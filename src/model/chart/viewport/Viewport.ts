@@ -18,11 +18,12 @@ import type { ControlMode } from '@/model/chart/axis/types';
 
 export interface ViewportOptions {
   priceAxis: {
+    range: Range<Price>;
     scale: keyof typeof PriceScales;
     inverted: boolean;
-    primaryEntry?: DrawingReference;
-    range: Range<Price>;
     controlMode: ControlMode;
+    primaryEntry?: DrawingReference;
+    priority?: number;
   }
 }
 

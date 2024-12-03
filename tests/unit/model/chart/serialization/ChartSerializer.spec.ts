@@ -59,6 +59,7 @@ describe('ChartSerializer', () => {
         primaryEntry: undefined,
         range: { from: -10, to: 10 } as Range<Price>,
         controlMode: ControlMode.AUTO,
+        priority: 3,
       },
     };
 

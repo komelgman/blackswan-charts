@@ -35,6 +35,7 @@ describe('ChartDeserializer', () => {
       primaryEntry: 'someref',
       range: { from: -10, to: 10 } as Range<Price>,
       controlMode: ControlMode.AUTO,
+      priority: 3,
     },
   };
 
@@ -58,7 +59,7 @@ describe('ChartDeserializer', () => {
     };
   });
 
-  it(' chart style should be updated and restored on undo', async () => {
+  it('chart style should be updated and restored on undo', async () => {
     expect(chart.style).toEqual(defaultChartSyle);
 
     const newStyle = merge({}, { ...defaultChartSyle }, { backgroundColor: '#000000' })[0] as ChartStyle;
@@ -98,6 +99,7 @@ describe('ChartDeserializer', () => {
     expect(chart.panes[0].model.priceAxis.inverted.value).toBe(1);
     expect(chart.panes[0].model.priceAxis.primaryEntryRef.value?.ds.id).toBe('main');
     expect(chart.panes[0].model.priceAxis.primaryEntryRef.value?.entryRef).toBe('someref');
+    expect(chart.panes[0].model.priceAxis.priority).toBe(3);
 
     chart.undo();
     expect(chart.panes.length).toBe(1);
@@ -107,6 +109,7 @@ describe('ChartDeserializer', () => {
     expect(chart.panes[0].model.priceAxis.inverted.value).toBe(-1);
     expect(chart.panes[0].model.priceAxis.primaryEntryRef.value?.ds.id).toBeUndefined();
     expect(chart.panes[0].model.priceAxis.primaryEntryRef.value?.entryRef).toBeUndefined();
+    expect(chart.panes[0].model.priceAxis.priority).toBe(Number.MIN_VALUE);
   });
 
   it('.timeAxis should be updated and restored on undo', async () => {

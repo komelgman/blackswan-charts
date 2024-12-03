@@ -27,6 +27,7 @@ import { DefaultChartUserInteractions } from '@/model/chart/user-interactions/De
 import { IdHelper } from '@/model/misc/tools';
 import type { Price, Range } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
+import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 
 export interface ChartOptions {
   style: DeepPartial<ChartStyle>;
@@ -102,7 +103,7 @@ export class Chart {
     });
   }
 
-  public createPane(dataSource: DataSource, options?: Partial<PaneOptions<ViewportOptions>>): PaneId {
+  public createPane(dataSource: DataSource, options?: DeepPartial<PaneOptions<ViewportOptions>>): PaneId {
     const initialSizes = this.getPanesSizes();
 
     const paneOptions: PaneOptions<ViewportOptions> = {
@@ -301,20 +302,48 @@ export class Chart {
     watch(this.visiblePanes, (curState, prevState) => {
       curState
         .filter((pane) => prevState.findIndex((prev) => prev.id === pane.id) < 0)
-        .forEach((pane) => this.bindPane(pane));
+        .forEach((pane) => this.onShowPane(pane));
       prevState
         .filter((pane) => curState.findIndex((cur) => cur.id === pane.id) < 0)
-        .forEach((pane) => this.unbindPane(pane));
+        .forEach((pane) => this.onHidePane(pane));
     });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private bindPane(pane: PaneDescriptor<Viewport>) {
-    // console.log({ bind: pane });
+  private onShowPane(pane: PaneDescriptor<Viewport>) {
+    this.updateTimeAxisPrimaryEntry();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private unbindPane(pane: PaneDescriptor<Viewport>) {
-    // console.log({ unbind: pane });
+  private onHidePane(pane: PaneDescriptor<Viewport>) {
+    this.updateTimeAxisPrimaryEntry();
+  }
+
+  private updateTimeAxisPrimaryEntry() {
+    const { timeAxis } = this;
+    const primaryEntryRef = this.getVisiblePriceAxisWithHighPriority().primaryEntryRef.value;
+    let controlMode;
+    if (primaryEntryRef && timeAxis.primaryEntryRef.value) {
+      controlMode = ControlMode.AUTO;
+    }
+
+    timeAxis.noHistoryManagedUpdate({
+      primaryEntryRef,
+      controlMode,
+    });
+  }
+
+  private getVisiblePriceAxisWithHighPriority(): PriceAxis {
+    const visiblePanes = this.visiblePanes.value;
+    let result: PriceAxis = visiblePanes[0].model.priceAxis;
+
+    for (let i = 1; i < visiblePanes.length; i++) {
+      const tmp = visiblePanes[i].model.priceAxis;
+      if (result.priority < tmp.priority) {
+        result = tmp;
+      }
+    }
+
+    return result;
   }
 }

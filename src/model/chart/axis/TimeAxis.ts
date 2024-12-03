@@ -8,7 +8,7 @@ import type { Wrapped } from '@/model/type-defs';
 import { UpdateTimeAxisJustfollow } from '@/model/chart/axis/incidents';
 
 export interface TimeAxisOptions extends AxisOptions<UTCTimestamp> {
-  justfollow?: boolean;
+  justfollow: boolean;
 }
 
 @PostConstruct
@@ -25,7 +25,7 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
     this.invalidateCache();
   }
 
-  public noHistoryManagedUpdate(options: TimeAxisOptions): void {
+  public noHistoryManagedUpdate(options: Partial<TimeAxisOptions>): void {
     super.noHistoryManagedUpdate(options);
 
     if (options.range !== undefined || options.screenSize?.main !== undefined) {

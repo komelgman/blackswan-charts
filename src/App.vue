@@ -383,7 +383,7 @@ mainDs.addChangeEventListener((e) => {
   }
 });
 
-chartApi.createPane(mainDs, {});
+chartApi.createPane(mainDs, { priceAxis: { primaryEntry: drawings.ohlcvBTCUSDT.id, controlMode: ControlMode.AUTO } });
 
 mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
   for (const [reason, reasonEvents] of events) {
@@ -502,16 +502,6 @@ setTimeout((j: number) => {
   mainDs.add(drawings.volumeBTCUSDT);
   mainDs.add(drawings.ohlcvBTCUSDT);
   mainDs.endTransaction();
-
-  chartApi.paneModel('main').timeAxis.primaryEntryRef = { ds: mainDs, entryRef: drawings.ohlcvBTCUSDT.id };
-  chartApi.paneModel('main').priceAxis.primaryEntryRef = { ds: mainDs, entryRef: drawings.ohlcvBTCUSDT.id };
-  chartApi.paneModel('main').timeAxis.controlMode = ControlMode.AUTO;
-  chartApi.paneModel('main').priceAxis.controlMode = ControlMode.AUTO;
-
-  // chartApi.timeAxis.noHistoryManagedUpdate({ range: {
-  //   from: firstBarTime as UTCTimestamp,
-  //   to: firstBarTime + (300) * timePeriod as UTCTimestamp,
-  // } });
 }, 100 * i++, i);
 
 i += 50;
