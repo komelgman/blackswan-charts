@@ -20,7 +20,7 @@ import { computed, inject } from 'vue';
 import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
 import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
-import type { ChartState } from '@/model/chart/Chart';
+import type { ChartWidgetSharedState } from '@/components/chart/ChartWidget.vue';
 import type DataSource from '@/model/datasource/DataSource';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
@@ -33,7 +33,7 @@ interface Props {
 }
 
 const { priceAxis, dataSource, interactionsHandler } = defineProps<Props>();
-const chartState = inject<ChartState>('chartState');
+const chartState = inject<ChartWidgetSharedState>('chartState');
 const canvasOptions: LayeredCanvasOptions = {
   layers: [
     new PriceAxisLabelsLayer(priceAxis),

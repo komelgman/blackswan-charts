@@ -35,11 +35,6 @@ export interface ChartOptions {
   userInteractions?: ChartUserInteractions;
 }
 
-export interface ChartState {
-  timeWidgetHeight: number;
-  priceWidgetWidth: number;
-}
-
 export interface PaneRegistrationEvent {
   type: 'install' | 'uninstall';
   pane: PaneDescriptor<Viewport>;

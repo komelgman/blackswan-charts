@@ -82,10 +82,15 @@ import vContextMenuDirective from '@/components/context-menu/model/ContextMenuDi
 import { BoxLayout, Divider, Multipane } from '@/components/layout';
 import type { PanesSizeChangedEvent } from '@/components/layout/events';
 import { Direction, type PaneId } from '@/components/layout/types';
-import type { ChartState, Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
+import type { Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
+
+export interface ChartWidgetSharedState {
+  timeWidgetHeight: number;
+  priceWidgetWidth: number;
+}
 
 interface Props {
   chart: Chart;
@@ -100,7 +105,7 @@ const { priceAxisInteractionsHandler, timeAxisInteractionsHandler, viewportInter
 const chartStyle = computed<ChartStyle>(() => props.chart.style);
 provide('chartStyle', chartStyle);
 
-const chartState = reactive<ChartState>({
+const chartState = reactive<ChartWidgetSharedState>({
   priceWidgetWidth: -1,
   timeWidgetHeight: -1,
 });
