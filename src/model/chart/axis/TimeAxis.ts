@@ -28,12 +28,12 @@ export default class TimeAxis extends Axis<UTCTimestamp, TimeAxisOptions> {
   public noHistoryManagedUpdate(options: Partial<TimeAxisOptions>): void {
     super.noHistoryManagedUpdate(options);
 
-    if (options.range !== undefined || options.screenSize?.main !== undefined) {
-      this.invalidateCache();
-    }
-
     if (options.justfollow !== undefined) {
       Object.assign(this.isJustFollowValue, { value: options.justfollow });
+    }
+
+    if (options.range !== undefined || options.screenSize?.main !== undefined) {
+      this.invalidateCache();
     }
   }
 
