@@ -17,9 +17,9 @@ export declare type RenderPriceLabelsMessage = WorkerMessage<WorkerRequestType.R
   dpr: number,
   inverted: InvertedValue,
   labels: Label[],
-  labelColor: string;
-  labelFont: string;
-  xPos: number;
+  labelColor: string,
+  labelFont: string,
+  xPos: number,
 }>;
 
 const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: RenderPriceLabelsMessage): WorkerResponse => {

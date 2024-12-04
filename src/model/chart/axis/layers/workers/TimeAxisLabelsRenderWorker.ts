@@ -15,9 +15,9 @@ export declare type RenderTimeLabelsMessage = WorkerMessage<WorkerRequestType.RE
   height: number,
   dpr: number,
   labels: Label[],
-  labelColor: string;
-  labelFont: string;
-  yPos: number;
+  labelColor: string,
+  labelFont: string,
+  yPos: number,
 }>;
 
 const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: RenderTimeLabelsMessage): WorkerResponse => {

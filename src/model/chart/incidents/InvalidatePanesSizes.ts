@@ -9,11 +9,6 @@ export interface InvalidatePanesSizesOptions extends HistoricalIncidentOptions {
 }
 
 export default class InvalidatePanesSizes extends AbstractHistoricalIncident<InvalidatePanesSizesOptions> {
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: InvalidatePanesSizesOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { changed } = this.options;
     this.setPanesSizes(changed);

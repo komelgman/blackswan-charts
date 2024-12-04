@@ -10,11 +10,6 @@ export interface RemovePaneOptions extends HistoricalIncidentOptions {
 export default class RemovePane extends AbstractHistoricalIncident<RemovePaneOptions> {
   private paneDescriptor!: PaneDescriptor<Viewport>;
 
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: RemovePaneOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { panes, paneIndex } = this.options;
     [this.paneDescriptor] = panes.splice(paneIndex, 1);

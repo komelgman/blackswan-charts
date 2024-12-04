@@ -26,11 +26,6 @@ export class UpdateEntry
   protected marker: string = '--update-drawing-in-datasource';
   private unmerge!: Record<string, unknown>;
 
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: UpdateOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { storage, ref, update, addReason } = this.options;
     const entry = storage.get(ref);

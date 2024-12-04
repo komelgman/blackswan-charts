@@ -93,7 +93,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
 
   public set range(value: Range<T>) {
     this.transactionManager.openTransaction({ protocolTitle: 'axis-update-range' });
-    this.updateRange(() => this.noHistoryManagedUpdate({ range: { ...value } } as Options));
+    this.updateRange(() => this.noHistoryManagedUpdate({ range: value } as Options));
     this.transactionManager.tryCloseTransaction();
   }
 
@@ -157,7 +157,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
       this.transactionManager.exeucteInTransaction({
         incident: new UpdateAxisRange({
           axis: this,
-          range: { ...this.range },
+          range: this.range,
           ignoreEmptyChecking: true,
         }),
         immediate: false,
@@ -213,7 +213,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
       skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
       incident: new UpdateAxisRange({
         axis: this,
-        range: { ...this.range },
+        range: this.range,
       }),
       immediate: false,
     });
@@ -223,7 +223,7 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
     this.transactionManager.exeucteInTransaction({
       incident: new UpdateAxisRange({
         axis: this,
-        range: { ...this.range },
+        range: this.range,
       }),
     });
   }
