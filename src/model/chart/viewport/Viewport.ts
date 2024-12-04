@@ -29,6 +29,12 @@ export interface ViewportOptions {
 
 export class Viewport {
   private readonly sketchers!: Map<DrawingType, Sketcher>;
+  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
+    const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
+    if (removedEntriesEvents.length > 0) {
+      this.updateSelectionForRemovedEntries(removedEntriesEvents);
+    }
+  };
 
   public readonly timeAxis: TimeAxis;
   public readonly priceAxis: PriceAxis;
@@ -220,13 +226,6 @@ export class Viewport {
 
     return result;
   }
-
-  private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
-    const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
-    if (removedEntriesEvents.length > 0) {
-      this.updateSelectionForRemovedEntries(removedEntriesEvents);
-    }
-  };
 
   private updateSelectionForRemovedEntries(removedEntriesEvents: DataSourceChangeEvent[]): void {
     const { selected, highlighted } = this;

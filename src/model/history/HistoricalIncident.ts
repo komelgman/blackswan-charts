@@ -15,7 +15,7 @@ export declare type HistoricalIncidentOptions = HistoricalIncidentLifeHooks;
 export abstract class AbstractHistoricalIncident<Options extends HistoricalIncidentOptions> implements HistoricalIncident {
   public readonly options: Options;
 
-  protected constructor(options: Options) {
+  constructor(options: Options) {
     this.options = options;
   }
 

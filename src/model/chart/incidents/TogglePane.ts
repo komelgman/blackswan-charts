@@ -8,11 +8,6 @@ export interface TogglePaneOptions extends HistoricalIncidentOptions {
 }
 
 export default class TogglePane extends AbstractHistoricalIncident<TogglePaneOptions> {
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: TogglePaneOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { panes, paneIndex } = this.options;
     const targetPane = panes[paneIndex];

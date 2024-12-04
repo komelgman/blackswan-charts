@@ -17,11 +17,6 @@ export default class UpdateChartStyle
   protected marker: string = '--update-chart-style';
   private unmerge!: Record<string, unknown>;
 
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: UpdateChartStyleOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { style, update } = this.options;
     [, this.unmerge] = merge(style, update);

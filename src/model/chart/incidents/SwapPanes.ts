@@ -9,11 +9,6 @@ export interface SwapPanesOptions extends HistoricalIncidentOptions {
 }
 
 export default class SwapPanes extends AbstractHistoricalIncident<SwapPanesOptions> {
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: SwapPanesOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { panes, pane1Index, pane2Index } = this.options;
     const tmp: PaneDescriptor<Viewport> = panes[pane1Index];

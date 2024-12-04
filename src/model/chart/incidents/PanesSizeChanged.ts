@@ -13,11 +13,6 @@ export default class PanesSizeChanged
   //---------------------------------------------------------------
   protected readonly marker: string = '--pane-size-changed';
 
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: PanesSizeChangedOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { changed } = this.options.event;
     this.setPanesSizes(changed);

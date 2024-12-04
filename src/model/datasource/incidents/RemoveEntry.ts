@@ -12,11 +12,6 @@ export interface RemoveEntryOptions extends HistoricalIncidentOptions {
 export class RemoveEntry extends AbstractHistoricalIncident<RemoveEntryOptions> {
   private removedEntry!: [DataSourceEntry, DrawingReference?, DrawingReference?];
 
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: RemoveEntryOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { ref, storage, addReason } = this.options;
 

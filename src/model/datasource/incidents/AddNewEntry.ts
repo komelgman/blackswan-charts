@@ -10,11 +10,6 @@ export interface AddNewEntryOptions extends HistoricalIncidentOptions {
 }
 
 export class AddNewEntry extends AbstractHistoricalIncident<AddNewEntryOptions> {
-  // eslint-disable-next-line no-useless-constructor
-  public constructor(options: AddNewEntryOptions) {
-    super(options);
-  }
-
   protected applyIncident(): void {
     const { descriptor, addReason, storage } = this.options;
     const newEntry: DataSourceEntry = { descriptor };

@@ -9,6 +9,4 @@ export default interface ScalingFunction<T extends number> {
   translate(worldCoordinate: T): number;
 
   revert(virtualCoordinate: number): T;
-
-  translateInRawArray(worldData: never[][], translatedDataIndexes: number[]): void;
 }
