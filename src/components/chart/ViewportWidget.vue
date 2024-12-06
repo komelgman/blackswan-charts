@@ -91,5 +91,6 @@ const cssVars = computed(() => {
 .viewport {
   display: flex;
   flex: 1 1 auto;
+  background-color: var(--viewport-background-color, --primary-background-color);
 }
 </style>

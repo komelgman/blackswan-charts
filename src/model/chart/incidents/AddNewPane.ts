@@ -29,7 +29,7 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
     const priceAxis: PriceAxis = new PriceAxis(
       dataSource.id,
       dataSource.transactionManager,
-      style.text,
+      style.textStyle,
       priority || Number.MIN_VALUE,
     );
 

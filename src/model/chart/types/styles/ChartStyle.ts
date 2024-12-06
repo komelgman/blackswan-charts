@@ -1,12 +1,25 @@
-import type { TextStyle } from '@/model/chart/types/styles';
+import { Themes, type TextStyle } from '@/model/chart/types/styles';
 import type { RectStyle } from '@/model/chart/types';
 
 export interface ChartStyle {
-  text: TextStyle;
+  theme: Themes;
+  textStyle: TextStyle;
   handleStyle: RectStyle;
   backgroundColor: string;
-  menuBackgroundColor: string;
-  menuBackgroundColorOnHover: string;
   borderColor: string;
-  resizeHandleColorOnHover: string;
+  hoveredResizeHandleColor: string;
+  menu: {
+    backgroundColor: string;
+    hoveredItemColor: string;
+  }
+  viewport: {
+    gridColor: string;
+    backgroundColor?: string;
+  }
+  priceAxis: {
+    backgroundColor?: string;
+  }
+  timeAxis: {
+    backgroundColor?: string;
+  }
 }

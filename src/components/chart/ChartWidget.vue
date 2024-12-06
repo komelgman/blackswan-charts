@@ -111,7 +111,7 @@ let unwatch: WatchStopHandle;
 
 onMounted(() => {
   unwatch = watch(
-    () => chartStyle.value.text.fontSize,
+    () => chartStyle.value.textStyle.fontSize,
     (v) => {
       chartState.timeWidgetHeight = v + 16;
     },
@@ -206,15 +206,30 @@ const cssVars = computed(() => {
   const {
     backgroundColor,
     borderColor,
-    resizeHandleColorOnHover,
-    menuBackgroundColor,
-    menuBackgroundColorOnHover,
+    hoveredResizeHandleColor,
+    menu: {
+      backgroundColor: menuBackgroundColor,
+      hoveredItemColor: menuBackgroundColorOnHover,
+    },
+    viewport: {
+      backgroundColor: viewportBackgroundColor,
+    },
+    priceAxis: {
+      backgroundColor: priceAxisBackgroundColor,
+    } = {},
+    timeAxis: {
+      backgroundColor: timeAxisBackgroundColor,
+    } = {},
   } = props.chart.style;
 
   return {
+    backgroundColor: timeAxisBackgroundColor ?? backgroundColor,
     '--primary-background-color': backgroundColor,
+    '--viewport-background-color': viewportBackgroundColor,
+    '--price-axis-background-color': priceAxisBackgroundColor,
+    '--time-axis-background-color': timeAxisBackgroundColor,
     '--border-color': borderColor,
-    '--resize-handle-color-on-hover': resizeHandleColorOnHover,
+    '--resize-handle-color-on-hover': hoveredResizeHandleColor,
     '--menu-background-color': menuBackgroundColor,
     '--menu-background-color-on-hover': menuBackgroundColorOnHover,
   };

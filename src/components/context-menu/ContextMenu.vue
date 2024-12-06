@@ -80,13 +80,15 @@ const calcPosition = (event: MouseEvent): Point => {
 };
 
 const style = computed(() => {
-  if (!chartStyle) {
+  if (!chartStyle?.value) {
     return { };
   }
 
+  const { textStyle } = (chartStyle.value!);
+
   return {
-    font: makeFont(chartStyle.value!.text),
-    color: chartStyle.value!.text.color,
+    font: makeFont(textStyle),
+    color: textStyle.color,
     display: visible.value ? 'block' : 'none',
     paddingLeft: '26px',
     top: `${position.value.y}px`,

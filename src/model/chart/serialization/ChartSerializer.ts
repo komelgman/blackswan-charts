@@ -5,20 +5,28 @@ import type { PaneDescriptor } from '@/components/layout/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import { merge } from '@/model/misc/object.merge';
 import type { DrawingOptions } from '@/model/datasource/types';
-import defaultChartStyle from '@/model/default-config/ChartStyle.Defaults';
 import type DataSource from '@/model/datasource/DataSource';
 import { isString } from '@/model/type-defs';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 
 import type { SerializedChart, SerializedPane, SerializedTimeAxis } from '@/model/chart/serialization/types';
+import { Themes, type ChartStyle, type ChartTheme } from '@/model/chart/types/styles';
 
 export class ChartSerializer {
   public serialize(chart: Chart): SerializedChart {
     return {
-      style: merge(clone(chart.style), defaultChartStyle)[1],
+      theme: this.serealizeTheme(chart.style),
       panes: this.serializePanes(chart),
       timeAxis: this.serializeTimeAxis(chart.timeAxis),
     };
+  }
+
+  private serealizeTheme(style: ChartStyle): ChartTheme {
+    if (style.theme !== Themes.CUSTOM) {
+      return style.theme;
+    }
+
+    return clone(style) as ChartTheme;
   }
 
   private serializePanes(chart: Chart): SerializedPane[] {

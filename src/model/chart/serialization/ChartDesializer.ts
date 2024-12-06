@@ -1,8 +1,5 @@
 import type { Chart } from '@/model/chart/Chart';
-import defaultChartStyle from '@/model/default-config/ChartStyle.Defaults';
 import type { SerializedChart } from '@/model/chart/serialization/types';
-import { merge } from '@/model/misc/object.merge';
-import type { ChartStyle } from '@/model/chart/types/styles';
 import DataSource from '@/model/datasource/DataSource';
 
 export class ChartDeserializer {
@@ -15,7 +12,7 @@ export class ChartDeserializer {
       .map((pane) => pane.id)
       .forEach((paneId) => chart.removePane(paneId));
 
-    chart.updateStyle(merge({}, defaultChartStyle, { ...data.style })[0] as ChartStyle);
+    chart.updateTheme(data.theme);
 
     data.panes.forEach((paneData) => {
       const ds = new DataSource(

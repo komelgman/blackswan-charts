@@ -1,9 +1,8 @@
-import type { ChartStyle } from '@/model/chart/types/styles';
 import type { SerializedPane, SerializedTimeAxis } from '@/model/chart/serialization/types';
-import type { DeepPartial } from '@/model/type-defs';
+import type { ChartTheme } from '@/model/chart/types/styles';
 
 export declare type SerializedChart = {
-  style: DeepPartial<ChartStyle>;
+  theme: ChartTheme;
   panes: SerializedPane[];
   timeAxis: SerializedTimeAxis;
 };

@@ -491,7 +491,6 @@ function setSize(el: HTMLElement | undefined, size: number): void {
 <style lang="scss">
 .boxlayout > {
   .pane {
-    background-color: var(--primary-background-color);
     display: flex;
     flex: 1 1 auto;
     position: relative;
