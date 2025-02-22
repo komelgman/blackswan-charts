@@ -8,7 +8,7 @@
 import { computed } from 'vue';
 import { Thickness } from '@/components/layout/types';
 
-interface Props {
+export interface Props {
   thickness?: Thickness;
 }
 

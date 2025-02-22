@@ -44,7 +44,7 @@ interface Layout {
   maxSize: number | undefined;
 }
 
-interface Props {
+export interface Props {
   resizable?: boolean;
   direction?: Direction;
   items: PaneDescriptor<any>[];

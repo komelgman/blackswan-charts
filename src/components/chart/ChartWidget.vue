@@ -1,8 +1,8 @@
 <template>
   <box-layout
+    ref="rootElement"
     :direction="Direction.Vertical"
     :style="cssVars"
-    ref="rootElement"
     @keydown="onKeyDown"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"

@@ -23,7 +23,7 @@ import { TimeAxisLabelsLayer } from '@/model/chart/axis/layers';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
-interface Props {
+export interface Props {
   timeAxis: TimeAxis;
   interactionsHandler: InteractionsHandler<TimeAxis>;
 }

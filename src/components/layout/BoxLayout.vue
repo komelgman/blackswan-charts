@@ -8,7 +8,7 @@
 import { computed } from 'vue';
 import { Direction } from '@/components/layout/types';
 
-interface Props {
+export interface Props {
   direction?: Direction;
 }
 

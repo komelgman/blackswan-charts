@@ -28,7 +28,7 @@ import ViewportHighlightingLayer from '@/model/chart/viewport/layers/ViewportHig
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 
-interface Props {
+export interface Props {
   viewport: Viewport;
   interactionsHandler: InteractionsHandler<Viewport>;
 }

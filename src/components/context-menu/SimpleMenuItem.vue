@@ -15,7 +15,7 @@
 import { type VNode } from 'vue';
 import type { SimpleMenuItemModel } from '@/components/context-menu/types';
 
-interface Props {
+export interface Props {
   model: SimpleMenuItemModel;
 }
 

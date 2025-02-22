@@ -26,7 +26,7 @@ import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';
 import { PriceAxisLabelsLayer, PriceAxisMarksLayer } from '@/model/chart/axis/layers';
 
-interface Props {
+export interface Props {
   priceAxis: PriceAxis;
   dataSource: DataSource;
   interactionsHandler: InteractionsHandler<PriceAxis>;

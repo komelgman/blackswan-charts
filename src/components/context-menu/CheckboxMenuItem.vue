@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import type { CheckboxMenuItemModel } from '@/components/context-menu/types';
 
-interface Props {
+export interface Props {
   model: CheckboxMenuItemModel;
 }
 
