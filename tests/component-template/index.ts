@@ -1,12 +1,18 @@
 import { createApp } from 'vue';
-import { Chart } from '@/model/chart/Chart';
+import { Chart, type ChartOptions } from '@/model/chart/Chart';
 import DataSource from '@/model/datasource/DataSource';
-import type { DataSourceOptions, DrawingOptions } from '@/model/datasource/types';
+import type { DataSourceOptions, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import { IdHelper } from '@/model/misc/tools';
 import type ChartWidgetTestContext from '../component/tools/ChartWidgetTestContext';
+import { Themes } from '@/model/chart/types/styles';
+import type { Sketcher } from '@/model/chart/viewport/sketchers';
 
+const chartOptions: Partial<ChartOptions> = {
+  sketchers: new Map<DrawingType, Sketcher>([]),
+  theme: Themes.DARK,
+};
 const idHelper = new IdHelper();
-const chart = new Chart(idHelper);
+const chart = new Chart(idHelper, chartOptions);
 const newDataSource = (options: DataSourceOptions, drawings: DrawingOptions[]) => new DataSource(options, drawings);
 let $nextTick = (callback: () => void) => callback();
 
