@@ -7,9 +7,12 @@ import type { DrawingOptions } from '@/model/datasource/types';
 import { IdHelper } from '@/model/misc/tools';
 import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type { PaneOptions } from '@/components/layout/types';
+import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import { clone } from '@/model/misc/object.clone';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
+import { Themes } from '@/model/chart/types/styles';
+import { merge } from '@/model/misc/object.merge';
 
 describe('ChartSerializer', () => {
   const drawing1: DrawingOptions = {
@@ -29,22 +32,21 @@ describe('ChartSerializer', () => {
     const idHelper = new IdHelper();
     ds = new DataSource({ id: 'main', idHelper });
 
-    chart = new Chart(idHelper);
+    chart = new Chart(idHelper, { theme: Themes.DARK });
     serializer = new ChartSerializer();
   });
 
-  it('.style default should be serialized into empty object', async () => {
+  it('.style, non CUSTOM themes should be stored by theme name', async () => {
     const data = serializer.serialize(chart);
 
-    expect(data.style).toEqual({});
+    expect(data.theme).toEqual(Themes.DARK);
   });
 
-  it('.style should be serialized in to diff from default', async () => {
+  it('.style update should set custom theme', async () => {
     chart.updateStyle({ backgroundColor: '#000000' });
 
     const data = serializer.serialize(chart);
-
-    expect(data.style).toEqual({ backgroundColor: '#000000' });
+    expect(data.theme).toEqual(merge(clone(darkTheme), { backgroundColor: '#000000', theme: Themes.CUSTOM })[0]);
   });
 
   it('.paneOptions should be serialized', async () => {

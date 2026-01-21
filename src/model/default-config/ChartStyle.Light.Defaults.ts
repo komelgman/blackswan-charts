@@ -1,11 +1,15 @@
-import type { ChartStyle } from '@/model/chart/types/styles';
+import { type ChartStyle, Themes } from '@/model/chart/types/styles';
 import { LineFillStyle } from '@/model/chart/types';
 
 export const defaultFontFamily = '"Trebuchet MS", Roboto, Ubuntu, sans-serif';
 
 export default {
-  text: {
-    color: '#b2b5be',
+  theme: Themes.LIGHT,
+  backgroundColor: '#fafafa',
+  borderColor: '#a3a0aa',
+  hoveredResizeHandleColor: '#39334633',
+  textStyle: {
+    color: '#393346',
     fontFamily: defaultFontFamily,
     fontSize: 12,
     fontStyle: 'normal',
@@ -18,9 +22,11 @@ export default {
       fill: LineFillStyle.Solid,
     },
   },
-  backgroundColor: '#131722',
-  menuBackgroundColor: '#1e222d',
-  menuBackgroundColorOnHover: '#2e323d',
-  borderColor: '#2a2e39',
-  resizeHandleColorOnHover: '#b2b5be33',
+  menu: {
+    backgroundColor: '#f6f6f6',
+    hoveredItemColor: '#efefef',
+  },
+  viewport: {
+    gridColor: '#e2e2e3',
+  },
 } as ChartStyle;

@@ -1,6 +1,5 @@
 import { computed, markRaw, reactive, watch, type ComputedRef } from 'vue';
 import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
-import { clone } from '@/model/misc/object.clone';
 import { merge } from '@/model/misc/object.merge';
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import AddNewPane from '@/model/chart/incidents/AddNewPane';
@@ -9,13 +8,12 @@ import RemovePane from '@/model/chart/incidents/RemovePane';
 import SwapPanes from '@/model/chart/incidents/SwapPanes';
 import TogglePane from '@/model/chart/incidents/TogglePane';
 import UpdateChartStyle from '@/model/chart/incidents/UpdateChartStyle';
-import type { ChartStyle } from '@/model/chart/types/styles';
+import { Themes, type ChartStyle, type ChartTheme } from '@/model/chart/types/styles';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import { Viewport, type ViewportOptions } from '@/model/chart/viewport/Viewport';
 import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/types';
-import chartOptionsDefaults from '@/model/default-config/ChartStyle.Defaults';
 import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
 import type { DeepPartial } from '@/model/type-defs';
 import {
@@ -28,11 +26,12 @@ import { IdHelper } from '@/model/misc/tools';
 import type { Price, Range } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
+import { getThemeStyle } from '@/model/misc/chart-style.functions';
 
 export interface ChartOptions {
-  style: DeepPartial<ChartStyle>;
+  theme: ChartTheme;
   sketchers: Map<DrawingType, Sketcher>;
-  userInteractions?: ChartUserInteractions;
+  userInteractions: ChartUserInteractions;
 }
 
 export interface PaneRegistrationEvent {
@@ -55,8 +54,8 @@ export class Chart {
   public readonly panes: PaneDescriptor<Viewport>[];
   public readonly userInteractions: ChartUserInteractions;
 
-  constructor(idHelper?: IdHelper, chartOptions?: ChartOptions) {
-    const chartStyle = this.createChartStyle(chartOptions?.style);
+  constructor(idHelper?: IdHelper, chartOptions?: Partial<ChartOptions>) {
+    const chartStyle = getThemeStyle(chartOptions?.theme);
     this.idHelper = idHelper || new IdHelper();
     this.paneRegEventListeners = [];
     this.history = new History();
@@ -88,12 +87,22 @@ export class Chart {
     this.paneRegEventListeners.splice(index, 1);
   }
 
+  public updateTheme(theme: ChartTheme): void {
+    this.transactionManager.transact({
+      protocolOptions: { protocolTitle: 'chart-controller-update-style' },
+      incident: new UpdateChartStyle({
+        style: this.style,
+        update: getThemeStyle(theme),
+      }),
+    });
+  }
+
   public updateStyle(options: DeepPartial<ChartStyle>): void {
     this.transactionManager.transact({
       protocolOptions: { protocolTitle: 'chart-controller-update-style' },
       incident: new UpdateChartStyle({
         style: this.style,
-        update: options,
+        update: { ...options, theme: Themes.CUSTOM },
       }),
     });
   }
@@ -227,16 +236,8 @@ export class Chart {
     this.history.undo();
   }
 
-  private createChartStyle(style?: DeepPartial<ChartStyle>): ChartStyle {
-    if (style) {
-      return merge(clone(chartOptionsDefaults), style)[0] as ChartStyle;
-    }
-
-    return clone(chartOptionsDefaults);
-  }
-
   private createTimeAxis(chartStyle: ChartStyle): TimeAxis {
-    return new TimeAxis(this.transactionManager, chartStyle.text);
+    return new TimeAxis(this.transactionManager, chartStyle.textStyle);
   }
 
   private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {

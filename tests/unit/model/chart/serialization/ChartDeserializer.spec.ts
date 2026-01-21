@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { PaneOptions } from '@/components/layout/types';
+import { ControlMode } from '@/model/chart/axis/types';
 import { Chart } from '@/model/chart/Chart';
+import { ChartDeserializer } from '@/model/chart/serialization/ChartDesializer';
+import type { SerializedTimeAxis } from '@/model/chart/serialization/types';
+import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
+import { Themes, type ChartTheme } from '@/model/chart/types/styles';
+import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/types';
-import { IdHelper } from '@/model/misc/tools';
-import defaultChartSyle from '@/model/default-config/ChartStyle.Defaults';
+import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import { clone } from '@/model/misc/object.clone';
-import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
-import { ControlMode } from '@/model/chart/axis/types';
-import { ChartDeserializer } from '@/model/chart/serialization/ChartDesializer';
 import { merge } from '@/model/misc/object.merge';
-import type { ChartStyle } from '@/model/chart/types/styles';
-import type { SerializedTimeAxis } from '@/model/chart/serialization/types';
-import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
-import type { PaneOptions } from '@/components/layout/types';
+import { IdHelper } from '@/model/misc/tools';
 
 describe('ChartDeserializer', () => {
   const drawing1: DrawingOptions = {
@@ -48,7 +48,7 @@ describe('ChartDeserializer', () => {
     const idHelper = new IdHelper();
     ds = new DataSource({ id: 'main', idHelper }, [clone(drawing1)]);
 
-    chart = new Chart(idHelper);
+    chart = new Chart(idHelper, { theme: Themes.DARK });
     chart.createPane(ds);
     deserializer = new ChartDeserializer();
     timeAxisData = {
@@ -60,24 +60,37 @@ describe('ChartDeserializer', () => {
   });
 
   it('chart style should be updated and restored on undo', async () => {
-    expect(chart.style).toEqual(defaultChartSyle);
+    expect(chart.style).toEqual(darkTheme);
 
-    const newStyle = merge({}, { ...defaultChartSyle }, { backgroundColor: '#000000' })[0] as ChartStyle;
-    deserializer.deserialize(chart, { style: newStyle, panes: [], timeAxis: clone(timeAxisData) });
+    const newTheme = merge({}, { ...darkTheme }, { backgroundColor: '#000000', theme: Themes.CUSTOM })[0] as ChartTheme;
+    deserializer.deserialize(chart, { theme: newTheme, panes: [], timeAxis: clone(timeAxisData) });
 
-    expect(chart.style).toEqual(newStyle);
+    expect(chart.style).toEqual(newTheme);
     expect(chart.style.backgroundColor).toBe('#000000');
+    expect(chart.style.theme).toBe(Themes.CUSTOM);
 
     chart.undo();
 
-    expect(chart.style).toEqual(defaultChartSyle);
+    expect(chart.style).toEqual(darkTheme);
+  });
+
+  it('chart style should be updated and restored on undo', async () => {
+    expect(chart.style).toEqual(darkTheme);
+
+    deserializer.deserialize(chart, { theme: Themes.LIGHT, panes: [], timeAxis: clone(timeAxisData) });
+
+    expect(chart.style.theme).toBe(Themes.LIGHT);
+
+    chart.undo();
+
+    expect(chart.style).toEqual(darkTheme);
   });
 
   it('.panes, exists panes should be removed, and restored on undo', async () => {
     expect(chart.panes.length).toBe(1);
     expect(chart.panes[0].id).toBe(ds.id);
 
-    deserializer.deserialize(chart, { style: {}, panes: [], timeAxis: clone(timeAxisData) });
+    deserializer.deserialize(chart, { theme: Themes.SYSTEM, panes: [], timeAxis: clone(timeAxisData) });
 
     expect(chart.panes.length).toBe(0);
 
@@ -87,7 +100,8 @@ describe('ChartDeserializer', () => {
   });
 
   it('.panes, new panes should be presented, and prev state should be restored on undo', async () => {
-    deserializer.deserialize(chart, { style: {},
+    deserializer.deserialize(chart, {
+      theme: Themes.SYSTEM,
       panes: [{ paneOptions: clone(paneOptions), dataSource: { id: 'main', drawings: [] } }],
       timeAxis: clone(timeAxisData),
     });
@@ -117,7 +131,8 @@ describe('ChartDeserializer', () => {
     expect(chart.timeAxis.controlMode.value).toEqual(ControlMode.MANUAL);
     expect(chart.timeAxis.isJustFollow()).toEqual(false);
 
-    deserializer.deserialize(chart, { style: {},
+    deserializer.deserialize(chart, {
+      theme: Themes.SYSTEM,
       panes: [{ paneOptions: clone(paneOptions), dataSource: { id: 'main', drawings: [] } }],
       timeAxis: { ...clone(timeAxisData), primaryEntry: { dataSourceId: 'main', entryRef: 'someref' } },
     });

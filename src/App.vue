@@ -6,7 +6,7 @@
 import { isProxy, markRaw } from 'vue';
 import ChartWidget from '@/components/chart/ChartWidget.vue';
 import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
-import { Chart } from '@/model/chart/Chart';
+import { Chart, type ChartOptions } from '@/model/chart/Chart';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
@@ -24,6 +24,7 @@ import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import { ControlMode } from '@/model/chart/axis/types';
 import { shadeColor } from '@/model/misc/color';
 import { TIME_PERIODS_MAP, TimePeriods } from '@/model/chart/types/time';
+import { Themes } from '@/model/chart/types/styles';
 
 /**
  * todo
@@ -135,10 +136,11 @@ const idHelper: IdHelper = new IdHelper();
 const randomLinesCount = 0;
 const randomDrawings = new Array(randomLinesCount).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
 const mainDs = new DataSource({ id: 'main', idHelper }, randomDrawings);
-const chartApi = new Chart(idHelper, {
+const chartOptions: Partial<ChartOptions> = {
   sketchers: new Map<DrawingType, Sketcher>([]),
-  style: {},
-});
+  theme: Themes.SYSTEM,
+};
+const chartApi = new Chart(idHelper, chartOptions);
 
 const drawings = {
   ohlcvBTCUSDT: {
