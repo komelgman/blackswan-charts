@@ -1,4 +1,4 @@
-/* eslint-disable function-paren-newline */
+ 
 import {
   HLineSketcher,
   LineSketcher,

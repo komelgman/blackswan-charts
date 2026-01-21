@@ -28,7 +28,7 @@ test.describe('dynamic component loading', () => {
     };
 
     await page.evaluate((o) => {
-      // eslint-disable-next-line
+       
       const { createApp, modules } = (window as any).__testing_tools;
       modules['./components/workaround/ComponentWithAsyncChildren.vue']().then((module: any) => {
         createApp(module.default, { options: o }).mount('#app');

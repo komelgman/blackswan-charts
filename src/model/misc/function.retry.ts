@@ -1,4 +1,4 @@
-/* eslint-disable no-await-in-loop */
+ 
 export interface RetryOptions {
   retries: number;
   factor: number;

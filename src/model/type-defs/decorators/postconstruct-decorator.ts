@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import type { HasPostConstruct } from '@/model/type-defs/optional';
 
 type Constructor<T> = new (...args: any[]) => T;
 
 export default function PostConstruct<T extends Record<string, any>>(ConstructorFunction: Constructor<T>): Constructor<T> {
-  // eslint-disable-next-line func-names
+   
   const newConstructor = function (...args: any[]): T {
-    // eslint-disable-next-line func-names
+     
     const ClassProxy = function (): T {
       const result: T = new ConstructorFunction(...args) satisfies T;
 

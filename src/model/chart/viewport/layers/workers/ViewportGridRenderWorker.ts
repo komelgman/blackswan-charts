@@ -68,7 +68,7 @@ class ViewportGridRenderWorker extends CanvasWorker<CanvasWorkerState> {
   }
 }
 
-// eslint-disable-next-line no-new
+ 
 new ViewportGridRenderWorker();
 
 export {};

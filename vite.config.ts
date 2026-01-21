@@ -1,6 +1,6 @@
-/// <reference types="vitest" />
-import { fileURLToPath, URL } from 'url';
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'url';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 

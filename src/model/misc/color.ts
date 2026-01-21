@@ -3,7 +3,7 @@
 // todo support alpha
 
 export function rgbToHex(red: number, green: number, blue: number): string {
-  // eslint-disable-next-line no-bitwise
+   
   const rgb = (red << 16) | (green << 8) | (blue << 0);
   return `#${(0x1000000 + rgb).toString(16).slice(1)}`;
 }

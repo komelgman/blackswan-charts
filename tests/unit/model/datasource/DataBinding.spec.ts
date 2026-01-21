@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/dot-notation */
+ 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/model/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';

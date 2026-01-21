@@ -19,7 +19,7 @@ export interface Props {
   model: SimpleMenuItemModel;
 }
 
-defineProps<Props>();
+const { model } = defineProps<Props>();
 
 function onKeyPress(e: KeyboardEvent): void {
   if (e.code === 'Enter' || e.code === 'Space') {

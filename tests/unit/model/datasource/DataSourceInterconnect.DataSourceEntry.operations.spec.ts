@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/dot-notation */
+ 
 import type { MockInstance } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/model/misc/object.clone';
@@ -291,9 +291,9 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   });
 
   it('test update shared entry', () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     ds1['storage'].get(drawing1.id).descriptor.valid = true;
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     ds2['storage'].get([ds1.id, drawing1.id]).descriptor.valid = true;
 
     const ds1Entry = getDSEntry(ds1, drawing1.id);
@@ -361,9 +361,9 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   });
 
   it('test update external shared entry', () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     ds1['storage'].get(drawing1.id).descriptor.valid = true;
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     ds2['storage'].get([ds1.id, drawing1.id]).descriptor.valid = true;
 
     const ds1Entry = getDSEntry(ds1, drawing1.id);
@@ -431,12 +431,12 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   });
 
   it('test clone shared entry', () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     const originalEntry: DataSourceEntry = ds1['storage'].get(drawing1.id);
     originalEntry.descriptor.valid = true;
 
     ds1.beginTransaction();
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     const clonedEntry = ds1.clone(ds1['storage'].get(drawing1.id));
     ds1.endTransaction();
 
@@ -489,12 +489,12 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   });
 
   it('test clone external shared entry', () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     const originalEntry: DataSourceEntry = ds1['storage'].get(drawing1.id);
     originalEntry.descriptor.valid = true;
 
     ds2.beginTransaction();
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     const clonedEntry = ds2.clone(ds2['storage'].get([ds1.id, drawing1.id]));
     ds2.endTransaction();
 

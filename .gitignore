@@ -34,3 +34,7 @@ test-results/
 /tests/.component-report/
 /tests/.component-snapshots/
 /tests/component-template/.cache/
+.roo/*
+.gitignore
+AGENTS.md
+.roomodes

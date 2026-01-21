@@ -64,7 +64,7 @@ class PriceLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
   }
 }
 
-// eslint-disable-next-line no-new
+ 
 new PriceLabelsRenderWorker();
 
 export { };

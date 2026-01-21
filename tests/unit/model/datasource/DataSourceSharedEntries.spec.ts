@@ -80,7 +80,7 @@ describe('DataSourceSharedEntries', () => {
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing3.id], drawing0.id, drawing1.id, drawing2.id]);
 
-    // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
+     
     const storage = ds1['storage'];
     expect(storage.head?.value.descriptor.ref).toEqual([ds2.id, drawing2.id]);
     expect(storage.tail?.value.descriptor.ref).toEqual(drawing2.id);
@@ -110,7 +110,7 @@ describe('DataSourceSharedEntries', () => {
     expect(getDrawingReferencesFromIterator(ds1.filtered(() => true)))
       .toEqual([[ds2.id, drawing2.id], [ds2.id, drawing3.id], drawing0.id, drawing1.id, drawing2.id]);
 
-    // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
+     
     const storage = ds1['storage'];
     expect(storage.head?.value.descriptor.ref).toEqual([ds2.id, drawing2.id]);
     expect(storage.tail?.value.descriptor.ref).toEqual(drawing2.id);
@@ -118,7 +118,7 @@ describe('DataSourceSharedEntries', () => {
 
   it('test attach/detach shared entries to empty data source', () => {
     const ds3 = new DataSource({ id: 'ds3', idHelper });
-    // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
+     
     const storage = ds3['storage'];
     ds3.sharedEntries.attachSharedEntriesFrom(ds2);
 

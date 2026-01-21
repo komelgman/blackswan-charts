@@ -59,7 +59,6 @@ class TimeLabelsRenderWorker extends CanvasWorker<CanvasWorkerState> {
   }
 }
 
-// eslint-disable-next-line no-new
 new TimeLabelsRenderWorker();
 
 export {};

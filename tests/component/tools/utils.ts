@@ -11,7 +11,7 @@ export async function delay(time: number): Promise<void> {
 
 export async function createMainPaneAndMountChart(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    // eslint-disable-next-line
+     
     const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
     chart.createPane(newDataSource({ id: 'main', idHelper }, []));
     return mount();
@@ -20,7 +20,7 @@ export async function createMainPaneAndMountChart(page: Page): Promise<void> {
 
 export async function createPane(page: Page, paneId: string, preferredSize: number): Promise<void> {
   await page.evaluate(async (opts) => {
-    // eslint-disable-next-line
+     
     const { chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
     chart.createPane(newDataSource({ id: opts.paneId, idHelper }, []), { preferredSize: opts.preferredSize });
   }, { paneId, preferredSize });
@@ -28,7 +28,7 @@ export async function createPane(page: Page, paneId: string, preferredSize: numb
 
 export async function swapPanes(page: Page, paneId1: string, paneId2: string): Promise<void> {
   await page.evaluate(async (opts) => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     chart.swapPanes(opts.paneId1, opts.paneId2);
   }, { paneId1, paneId2 });
@@ -36,7 +36,7 @@ export async function swapPanes(page: Page, paneId1: string, paneId2: string): P
 
 export async function togglePane(page: Page, paneId: string): Promise<void> {
   await page.evaluate(async (opts) => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     chart.togglePane(opts.paneId);
   }, { paneId });
@@ -44,7 +44,7 @@ export async function togglePane(page: Page, paneId: string): Promise<void> {
 
 export async function removePane(page: Page, paneId: string): Promise<void> {
   await page.evaluate(async (opts) => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     chart.removePane(opts.paneId);
   }, { paneId });
@@ -52,7 +52,7 @@ export async function removePane(page: Page, paneId: string): Promise<void> {
 
 export async function clearHistory(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     chart.clearHistory();
   });
@@ -60,7 +60,7 @@ export async function clearHistory(page: Page): Promise<void> {
 
 export async function undo(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     chart.undo();
   });
@@ -68,7 +68,7 @@ export async function undo(page: Page): Promise<void> {
 
 export async function redo(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     chart.redo();
   });
@@ -76,7 +76,7 @@ export async function redo(page: Page): Promise<void> {
 
 export async function addDrawingToDataSource(page: Page, dsId: string, drawing: any): Promise<void> {
   await page.evaluate(async (opts) => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     const mainDs = chart.paneModel(opts.dsId).dataSource;
     mainDs.beginTransaction();
@@ -87,7 +87,7 @@ export async function addDrawingToDataSource(page: Page, dsId: string, drawing: 
 
 export async function removeDrawingsFromDataSource(page: Page, dsId: string, drawingId: string): Promise<void> {
   await page.evaluate(async (opts) => {
-    // eslint-disable-next-line
+     
     const { chart } = (window as any).__test_context as ChartWidgetTestContext;
     const mainDs = chart.paneModel(opts.dsId).dataSource;
     mainDs.beginTransaction();
@@ -99,8 +99,8 @@ export async function removeDrawingsFromDataSource(page: Page, dsId: string, dra
 export async function dragMouseFromTo(page: Page, x0: number, y0: number, x1: number, y1: number): Promise<void> {
   await page.mouse.move(x0, y0);
   await page.mouse.down({ button: 'left' });
-  // @ts-ignore
-  await page.mouse.move(x1, y1, { steps: Math.sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1)) });
+
+  await page.mouse.move(x1, y1, { steps: Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0))) }); 
   await page.mouse.up();
 }
 

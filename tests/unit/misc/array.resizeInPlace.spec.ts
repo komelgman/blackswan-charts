@@ -1,4 +1,4 @@
-/* eslint-disable no-sparse-arrays */
+ 
 import { expect, test } from 'vitest';
 import { resizeInPlace } from '@/model/misc/array.resizeInPlace';
 

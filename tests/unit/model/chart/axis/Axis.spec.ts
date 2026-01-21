@@ -80,7 +80,7 @@ describe('Axis', () => {
     ds.add(drawing1);
     ds.endTransaction();
     const spy = vi.fn();
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     watch(axis['preferredRange'], spy);
 
     // check that initial value setted
@@ -109,7 +109,7 @@ describe('Axis', () => {
     ds.endTransaction();
 
     const spy = vi.fn();
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+     
     watch(axis['preferredRange'], spy);
 
     const entry = ds.get(drawing1.id);

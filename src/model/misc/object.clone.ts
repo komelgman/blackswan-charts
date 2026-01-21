@@ -17,7 +17,7 @@ export function clone<T>(object: T): T {
   }
 
   const cloned: any = Array.isArray(source) ? new Array(source.length) : {};
-  // eslint-disable-next-line no-restricted-syntax
+   
   for (const property in source) {
     // eslint-disable-next-line no-prototype-builtins
     if (source.hasOwnProperty(property)) {

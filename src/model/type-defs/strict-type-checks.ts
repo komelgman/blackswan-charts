@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 export function isEmpty(obj: Record<string, unknown> | undefined): boolean {
   if (obj === undefined) {
     return true;
   }
 
   const items: [Record<string, unknown>, string][] = [];
-  // eslint-disable-next-line guard-for-in
+   
   for (const i in obj) {
     items.push([obj, i]);
   }
@@ -17,7 +17,7 @@ export function isEmpty(obj: Record<string, unknown> | undefined): boolean {
       return false;
     }
 
-    // eslint-disable-next-line guard-for-in
+     
     for (const i in propertyValue) {
       items.push([propertyValue, i]);
     }

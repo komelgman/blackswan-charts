@@ -1,3 +1,4 @@
+// todo: check that, looks like unused
 export function resizeInPlace<T>(array: T[], newSize: number) {
   if (array.length === newSize) {
     return;

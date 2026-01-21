@@ -1,7 +1,6 @@
 import {
   type OHLCvPlot,
   type OHLCvBar,
-  type UTCTimestamp,
   type CandleType,
   type BarColors,
   OHLCV_BAR_VOLUME,
@@ -47,7 +46,14 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
       return;
     }
 
-    const maxValue = Math.max(...bars.map((bar) => bar[OHLCV_BAR_VOLUME] || 0));
+    let maxValue = 0;
+    for (let i = 0; i < bars.length; i++) {
+      const volume = bars[i][OHLCV_BAR_VOLUME] || 0;
+      if (volume > maxValue) { 
+        maxValue = volume; 
+      }
+    }
+
     if (maxValue === 0) {
       return;
     }
@@ -55,7 +61,7 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
     drawing.parts = [];
 
     const parts = drawing?.parts;
-    const barSpace: number = timeAxis.translate(timePeriod.barToTime(timeRange.from, 1) as UTCTimestamp);
+    const barSpace: number = timeAxis.translate(timePeriod.barToTime(timeRange.from, 1));
     const barGap = Math.max(1, Math.ceil(0.4 * barSpace));
     const barWidth = barSpace - barGap;
     const heightFactor = (plotOptions.heightFactor || DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR) * (priceAxis.screenSize.main / maxValue);

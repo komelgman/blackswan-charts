@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/*  eslint-disable func-names */
+ 
+ 
 import { markRaw } from 'vue';
 
 type Constructor<T> = new (...args: any[]) => T;

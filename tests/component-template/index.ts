@@ -29,5 +29,5 @@ const context: ChartWidgetTestContext = {
   mount, idHelper, chart, newDataSource, delay,
 };
 
-// eslint-disable-next-line
+ 
 (window as any).__test_context = context;

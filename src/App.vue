@@ -12,7 +12,7 @@ import DataSource from '@/model/datasource/DataSource';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
 import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
 import { IdHelper, type IdBuilder } from '@/model/misc/tools';
-import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp } from '@/model/chart/types';
+import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp, Range } from '@/model/chart/types';
 import {
   LineBound,
   OHLCV_RECORD_CLOSE,
@@ -36,7 +36,7 @@ import { TIME_PERIODS_MAP, TimePeriods } from '@/model/chart/types/time';
  */
 
 function getRandomColor(): string {
-  // eslint-disable-next-line no-bitwise
+   
   return `#${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`;
 }
 
@@ -77,6 +77,7 @@ function getRandomVLine(idBuilder: IdBuilder) {
     },
     locked: false,
     visible: true,
+    shareWith: '*',
   };
 }
 
@@ -98,6 +99,8 @@ function getRandomHLine(idBuilder: IdBuilder) {
   };
 }
 
+const EPOCH_START = new Date('1970-01-01').getTime();
+
 function getRandomLine(idBuilder: IdBuilder) {
   return {
     id: idBuilder.getNewId('Line'),
@@ -105,9 +108,9 @@ function getRandomLine(idBuilder: IdBuilder) {
     type: 'Line',
     data: {
       def: [
-        Math.random() * 100 * m1Duration - 50 * m1Duration,
+        EPOCH_START + Math.random() * 100 * m1Duration - 50 * m1Duration,
         Math.random() * 5 - 10,
-        Math.random() * 100 * m1Duration - 50 * m1Duration,
+        EPOCH_START + Math.random() * 100 * m1Duration - 50 * m1Duration,
         Math.random() * 5 - 10,
       ],
       boundType: getLineBound(),
@@ -120,7 +123,7 @@ function getRandomLine(idBuilder: IdBuilder) {
     },
     locked: false,
     visible: true,
-    shareWith: '*' as '*',
+    shareWith: '*' as const,
   };
 }
 
@@ -129,7 +132,8 @@ function getRandomDrawing(idBuilder: IdBuilder): any {
 }
 
 const idHelper: IdHelper = new IdHelper();
-const randomDrawings = new Array(0).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
+const randomLinesCount = 0;
+const randomDrawings = new Array(randomLinesCount).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
 const mainDs = new DataSource({ id: 'main', idHelper }, randomDrawings);
 const chartApi = new Chart(idHelper, {
   sketchers: new Map<DrawingType, Sketcher>([]),
@@ -215,7 +219,7 @@ const drawings = {
     } as Line,
     locked: false,
     visible: true,
-    shareWith: '*' as '*',
+    shareWith: '*' as const,
   },
 
   greenLineBoundBoth: {
@@ -230,7 +234,7 @@ const drawings = {
     } as Line,
     locked: false,
     visible: true,
-    shareWith: '*' as '*',
+    shareWith: '*' as const,
   },
 
   greenLineBoundStart: {
@@ -245,7 +249,7 @@ const drawings = {
     } as Line,
     locked: false,
     visible: true,
-    shareWith: '*' as '*',
+    shareWith: '*' as const,
   },
 
   greenLineBoundEnd: {
@@ -260,7 +264,7 @@ const drawings = {
     } as Line,
     locked: false,
     visible: true,
-    shareWith: '*' as '*',
+    shareWith: '*' as const,
   },
 
   green025VLineNotShared: {
@@ -286,7 +290,7 @@ const drawings = {
     title: 'vline2',
     type: 'VLine',
     data: { def: -0.1 * 10 * m1Duration, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-    shareWith: '*' as '*',
+    shareWith: '*' as const,
     locked: false,
     visible: true,
   },
@@ -296,13 +300,13 @@ const drawings = {
     title: 'hline2',
     type: 'HLine',
     data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-    shareWith: '*' as '*',
+    shareWith: '*' as const,
     locked: false,
     visible: true,
   },
 };
 
-const valuesCount = 100000;
+const valuesCount = 500_000;
 const timePeriod = m1Duration;
 const firstBarTime = Math.floor((Date.now() - valuesCount * timePeriod) / timePeriod) * timePeriod;
 
@@ -383,7 +387,13 @@ mainDs.addChangeEventListener((e) => {
   }
 });
 
-chartApi.createPane(mainDs, { priceAxis: { primaryEntry: drawings.ohlcvBTCUSDT.id, controlMode: ControlMode.AUTO } });
+chartApi.createPane(mainDs, {
+  priceAxis: {
+    primaryEntry: drawings.ohlcvBTCUSDT.id,
+    controlMode: ControlMode.AUTO,
+    priority: 1,
+  },
+});
 
 mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
   for (const [reason, reasonEvents] of events) {
@@ -397,6 +407,16 @@ mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
 
 let i = 0;
 
+chartApi.timeAxis.range = {
+  from: (EPOCH_START - 50 * m1Duration) as UTCTimestamp,
+  to: (EPOCH_START + 50 * m1Duration) as UTCTimestamp,
+};
+
+chartApi.paneModel('main').priceAxis.range = {
+  from: -50 as Price,
+  to: 50 as Price,
+};
+
 setTimeout((j: number) => {
   console.log(`${j}) chartApi.clearHistory();`);
   chartApi.clearHistory();
@@ -405,115 +425,129 @@ setTimeout((j: number) => {
 setTimeout((j: number) => {
   console.log(`${j}) chartApi.createPane(~second);`);
   const dataSource: DataSource = new DataSource({ id: 'second', idHelper });
-  chartApi.createPane(dataSource, { preferredSize: 0.3 });
+  chartApi.createPane(dataSource, {
+    preferredSize: 0.3,
+    priceAxis: {
+      range: { from: -50, to: 50 } as Range<Price>,
+      scale: 'log10',
+    },
+  });
 }, 100 * i++, i);
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) chartApi.undo();`);
-//   chartApi.undo();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) chartApi.undo();`);
-//   chartApi.undo();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) chartApi.redo();`);
-//   chartApi.redo();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.green025HLineNotShared);`);
-
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.green025HLineNotShared);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.green025VLineNotShared);`);
-
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.green025VLineNotShared);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.red010VLineShared);`);
-
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.red010VLineShared);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.red010HLineShared);`);
-
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.red010HLineShared);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.remove(drawings.red010HLineShared.id);`);
-
-//   mainDs.beginTransaction();
-//   mainDs.remove(drawings.red010HLineShared.id);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
-
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.greenLineBoundBoth);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.green0to1LineBoundStart);`);
-//
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.greenLineBoundStart);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-//
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.green0to1LineBoundEnd);`);
-//
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.greenLineBoundEnd);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
-//
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.green025to075Line);`);
-//
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.redLineNoBound);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.undo();`);
+  chartApi.undo();
+}, 100 * i++, i);
 
 setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
+  console.log(`${j}) chartApi.undo();`);
+  chartApi.undo();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.redo();`);
+  chartApi.redo();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.green025HLineNotShared);`);
 
   mainDs.beginTransaction();
-  mainDs.add(drawings.volumeBTCUSDT);
-  mainDs.add(drawings.ohlcvBTCUSDT);
+  mainDs.add(drawings.green025HLineNotShared);
   mainDs.endTransaction();
 }, 100 * i++, i);
 
-i += 50;
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.green025VLineNotShared);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.green025VLineNotShared);
+  mainDs.endTransaction();
+}, 100 * i++, i);
 
 setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
+  console.log(`${j}) mainDs.add(drawings.red010VLineShared);`);
 
-  console.log(`timeAxis.controlMode from ${chartApi.paneModel('main').timeAxis.controlMode.value} to AUTO`);
-  chartApi.paneModel('main').timeAxis.controlMode = ControlMode.AUTO;
-  chartApi.paneModel('second').priceAxis.primaryEntryRef = { ds: chartApi.paneModel('second').dataSource, entryRef: ['main', 'ohlcv1'] };
-  // chartApi.paneModel('main').priceAxis.controlMode = ControlMode.AUTO;
+  mainDs.beginTransaction();
+  mainDs.add(drawings.red010VLineShared);
+  mainDs.endTransaction();
 }, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.red010HLineShared);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.red010HLineShared);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.remove(drawings.red010HLineShared.id);`);
+
+  mainDs.beginTransaction();
+  mainDs.remove(drawings.red010HLineShared.id);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.greenLineBoundBoth);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.green0to1LineBoundStart);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.greenLineBoundStart);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.green0to1LineBoundEnd);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.greenLineBoundEnd);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.green025to075Line);`);
+
+  mainDs.beginTransaction();
+  mainDs.add(drawings.redLineNoBound);
+  mainDs.endTransaction();
+}, 100 * i++, i);
+
+
+
+
+
+
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
+
+//   mainDs.beginTransaction();
+//   mainDs.add(drawings.volumeBTCUSDT);
+//   mainDs.add(drawings.ohlcvBTCUSDT);
+//   mainDs.endTransaction();
+// }, 100 * i++, i);
+
+// i += 50;
+
+// setTimeout((j: number) => {
+//   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
+
+//   console.log(`timeAxis.controlMode from ${chartApi.paneModel('main').timeAxis.controlMode.value} to AUTO`);
+//   chartApi.paneModel('second').priceAxis.primaryEntryRef = { ds: chartApi.paneModel('second').dataSource, entryRef: ['main', 'ohlcv1'] };
+// }, 100 * i++, i);
+
+
+
+
+
 
 // i += 50;
 //

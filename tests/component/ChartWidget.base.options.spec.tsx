@@ -31,7 +31,7 @@ const drawings = {
 test.describe('one pane', () => {
   test('create pane before mount, no drawings', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       chart.createPane(newDataSource({ idHelper }, []));
 
@@ -43,7 +43,7 @@ test.describe('one pane', () => {
 
   test('create pane after mount, no drawings', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
     });
@@ -61,7 +61,7 @@ test.describe('one pane', () => {
 
   test('horizontal line', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
     });
@@ -79,7 +79,7 @@ test.describe('one pane', () => {
 
   test('vertical line', async ({ page }) => {
     await page.evaluate((d) => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
@@ -91,7 +91,7 @@ test.describe('one pane', () => {
 
   test('horizontal and vertical lines, different styles', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
@@ -187,7 +187,7 @@ test.describe('one pane', () => {
 test.describe('two panes', () => {
   test('create panes before mount, no drawings', async ({ page }) => {
     await page.evaluate(async () => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       chart.createPane(newDataSource({ id: 'main', idHelper }, []));
       chart.createPane(newDataSource({ id: 'second', idHelper }, []), { preferredSize: 0.5 });
@@ -204,7 +204,7 @@ test.describe('two panes', () => {
 
   test('create panes, one before and one after mount, no drawings', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       chart.createPane(newDataSource({ id: 'main', idHelper }, []));
 
@@ -228,7 +228,7 @@ test.describe('two panes', () => {
 
   test('create panes after mount, no drawings', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount } = (window as any).__test_context as ChartWidgetTestContext;
       return mount();
     });
@@ -252,7 +252,7 @@ test.describe('two panes', () => {
 
   test('create panes before mount, no drawings, no pref size', async ({ page }) => {
     await page.evaluate(async () => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       chart.createPane(newDataSource({ id: 'main', idHelper }, []));
       chart.createPane(newDataSource({ id: 'second', idHelper }, []));
@@ -269,7 +269,7 @@ test.describe('two panes', () => {
 
   test('create panes, one before and one after mount, no drawings, no pref size', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       chart.createPane(newDataSource({ id: 'main', idHelper }, []));
 
@@ -293,7 +293,7 @@ test.describe('two panes', () => {
 
   test('create panes after mount, no drawings, no pref size', async ({ page }) => {
     await page.evaluate(() => {
-      // eslint-disable-next-line
+       
       const { mount } = (window as any).__test_context as ChartWidgetTestContext;
       return mount();
     });
@@ -319,7 +319,7 @@ test.describe('two panes', () => {
 test.describe('three panes', () => {
   async function installPanesInOneTime(page: Page, [first, second, third]: Partial<PaneOptions<ViewportOptions>>[]) {
     await page.evaluate(([firstOptions, secondOptions, thirdOptions]: Partial<PaneOptions<ViewportOptions>>[]) => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
@@ -330,7 +330,7 @@ test.describe('three panes', () => {
   }
   async function installPanesStepByStep(page: Page, [first, second, third]: Partial<PaneOptions<ViewportOptions>>[]) {
     await page.evaluate((options : Partial<PaneOptions<ViewportOptions>>) => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
@@ -340,7 +340,7 @@ test.describe('three panes', () => {
     await delay(10);
 
     await page.evaluate((options : Partial<PaneOptions<ViewportOptions>>) => {
-      // eslint-disable-next-line
+       
       const { chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
 
       chart.createPane(newDataSource({ id: 'second', idHelper }, []), options);
@@ -349,7 +349,7 @@ test.describe('three panes', () => {
     await delay(10);
 
     await page.evaluate((options : Partial<PaneOptions<ViewportOptions>>) => {
-      // eslint-disable-next-line
+       
       const { chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
 
       chart.createPane(newDataSource({ id: 'third', idHelper }, []), options);
@@ -366,7 +366,7 @@ test.describe('three panes', () => {
 
   test('vertical line (pane: main, shared: none)', async ({ page }) => {
     await page.evaluate((d) => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
@@ -386,7 +386,7 @@ test.describe('three panes', () => {
 
   test('vertical line (pane: main, shared: all)', async ({ page }) => {
     await page.evaluate((d) => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
@@ -406,7 +406,7 @@ test.describe('three panes', () => {
 
   test('vertical line (pane: second, shared: third)', async ({ page }) => {
     await page.evaluate((d) => {
-      // eslint-disable-next-line
+       
       const { mount, chart, idHelper, newDataSource } = (window as any).__test_context as ChartWidgetTestContext;
       mount();
 
