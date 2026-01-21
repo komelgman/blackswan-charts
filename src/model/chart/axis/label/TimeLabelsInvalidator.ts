@@ -51,7 +51,7 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
     const interval = this.selectOptimalInterval(from, to, labelsCount);
     const optimalPeriod = this.selectOptimalPeriod(interval);
     const alignToPeriod = this.selectAlignToPeriod(optimalPeriod);
-    const alignedFrom = alignToPeriod.floor(from) as UTCTimestamp;
+    const alignedFrom = alignToPeriod.floor(from);
 
     if (interval <= dayPeriod.averageBarDuration) {
       for (let time = alignedFrom; time < to; time = time + interval as UTCTimestamp) {
@@ -110,6 +110,10 @@ export default class TimeLabelsInvalidator extends AbstractInvalidator {
   private selectAlignToPeriod(optimalPeriod: TimePeriod): TimePeriod {
     if (optimalPeriod.name === TimePeriods.day) {
       return TIME_PERIODS_MAP.get(TimePeriods.month) as TimePeriod;
+    }
+
+    if (optimalPeriod.averageBarDuration < MS_PER_MINUTE) {
+      return TIME_PERIODS_MAP.get(TimePeriods.m1) as TimePeriod;
     }
 
     if (optimalPeriod.averageBarDuration < MS_PER_HOUR) {

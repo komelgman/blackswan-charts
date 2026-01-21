@@ -34,7 +34,7 @@ export class RegularTimePeriod implements TimePeriod {
 
   public floor(time: UTCTimestamp): UTCTimestamp {
     const remainder = time % this.duration;
-    return (time - remainder) as UTCTimestamp;
+    return (time - remainder) - this.duration as UTCTimestamp;
   }
 
   public ceil(time: UTCTimestamp): UTCTimestamp {
