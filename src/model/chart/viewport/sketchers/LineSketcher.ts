@@ -11,7 +11,6 @@ import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
 import type { Line, Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { LineBound } from '@/model/chart/types';
-import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 
 declare type VisiblePoints = [
   isVisible: boolean,
@@ -201,19 +200,21 @@ export class LineSketcher extends AbstractSketcher<Line> {
           const dy = priceAxis.inverted.value * e.dy;
           ny0 = priceAxis.revert(priceAxis.translate(y0) - dy);
           ny1 = priceAxis.revert(priceAxis.translate(y1) - dy);
-        } else if (lineScale.title === PriceScales.regular.title) {
-          const priceAtMousePos = priceAxis.inverted.value * priceAxis.revert(e.y) as Price;
-          const priceAtOldMousePos = priceAxis.inverted.value * priceAxis.revert(e.y - priceAxis.inverted.value * e.dy) as Price;
-          const dy = lineScale.func.translate(priceAtOldMousePos) - lineScale.func.translate(priceAtMousePos);
-
-          // console.log({ priceAtMousePos, priceAtOldMousePos, dy });
-
-          ny0 = lineScale.func.revert(lineScale.func.translate(y0) - dy);
-          ny1 = lineScale.func.revert(lineScale.func.translate(y1) - dy);
         } else {
-          // tbd
-          ny0 = y0;
-          ny1 = y1;
+          const priceAtMousePos = priceAxis.inverted.value * priceAxis.revert(e.y) as Price;
+          const mouseX = timeAxis.revert(e.x);
+
+          let linePriceAtMouseX = y0;
+          if (x1 !== x0) {
+            const ldy = lineScale.func.translate(y1) - lineScale.func.translate(y0);
+            const ldx = x1 - x0;
+            const dydx = ldy / ldx;
+            linePriceAtMouseX = lineScale.func.revert(lineScale.func.translate(y0) + dydx * (mouseX - x0));
+          }
+
+          const dy = lineScale.func.translate(priceAtMousePos) - lineScale.func.translate(linePriceAtMouseX);
+          ny0 = lineScale.func.revert(lineScale.func.translate(y0) + dy);
+          ny1 = lineScale.func.revert(lineScale.func.translate(y1) + dy);
         }
 
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
