@@ -26,6 +26,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     watch([
       axis.scale,
       axis.range,
+      axis.inverted,
       axis.textStyle,
       computed(() => axis.fraction),
       computed(() => axis.screenSize.main),

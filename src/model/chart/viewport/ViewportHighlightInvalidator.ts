@@ -17,8 +17,7 @@ export default class ViewportHighlightInvalidator {
       return;
     }
 
-    const { utilityCanvasContext, width, height, dpr } = this.layerContext;
-    const inverted = this.viewportModel.priceAxis.inverted.value;
+    const { utilityCanvasContext, dpr } = this.layerContext;
     const { highlighted, selected } = this.viewportModel;
     this.viewportModel.highlighted = undefined;
     this.viewportModel.highlightedHandleId = undefined;
@@ -26,13 +25,6 @@ export default class ViewportHighlightInvalidator {
     const screenPos: Point = { x: pos.x * dpr, y: pos.y * dpr };
 
     utilityCanvasContext.save();
-
-    if (inverted < 0) {
-      utilityCanvasContext.translate(width / 2, height / 2);
-      utilityCanvasContext.rotate(Math.PI);
-      utilityCanvasContext.scale(-1, 1);
-      utilityCanvasContext.translate(-width / 2, -height / 2);
-    }
 
     const { dataSource } = this.viewportModel;
     for (const entry of dataSource.visible(true)) {

@@ -1,6 +1,6 @@
 import { watch, type WatchStopHandle } from 'vue';
 import { makeFont } from '@/model/misc/function.makeFont';
-import type { InvertedValue, PriceAxis } from '@/model/chart/axis/PriceAxis';
+import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventListener,
@@ -49,7 +49,6 @@ export class PriceAxisMarksLayer extends DirectRenderLayer {
   }
 
   protected doRender(): void {
-    const inverted: InvertedValue = this.priceAxis.inverted.value;
     const { textStyle } = this.priceAxis;
     const half = textStyle.fontSize / 2;
     const { height, width } = this.context;
@@ -57,10 +56,6 @@ export class PriceAxisMarksLayer extends DirectRenderLayer {
 
     if (!renderingContext) {
       return;
-    }
-
-    if (inverted < 0) {
-      renderingContext.translate(0, height);
     }
 
     renderingContext.textBaseline = 'middle';
@@ -85,7 +80,7 @@ export class PriceAxisMarksLayer extends DirectRenderLayer {
         continue;
       }
 
-      const y: number = inverted * mark.screenPos;
+      const y: number = mark.screenPos;
 
       renderingContext.beginPath();
       renderingContext.lineWidth = 1;

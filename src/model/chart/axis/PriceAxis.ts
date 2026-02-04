@@ -153,36 +153,46 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
 
   public translate(value: Price): number {
     const [virtualFrom, scaleK] = this.cache;
-    return (this.scale.func.translate(value) - virtualFrom) * scaleK;
+    const translated = (this.scale.func.translate(value) - virtualFrom) * scaleK;
+    return this.inverted.value < 0
+      ? this.screenSize.main - translated
+      : translated;
   }
 
   public translateBatchInPlace(values: any[][], indicies: number[]): void {
     const [virtualFrom, scaleK] = this.cache;
     const scaleFunc = toRaw(this.scale.func);
+    const { main: screenSize } = this.screenSize;
+    const inverted = this.inverted.value < 0;
 
     for (let i = 0; i < values.length; ++i) {
       const value = values[i];
       for (let j = 0; j < indicies.length; j++) {
         const index = indicies[j];
-        value[index] = (scaleFunc.translate(value[index] as Price) - virtualFrom) * scaleK;
+        const translated = (scaleFunc.translate(value[index] as Price) - virtualFrom) * scaleK;
+        value[index] = inverted ? screenSize - translated : translated;
       }
     }
   }
 
   public revert(screenPos: number): Price {
     const [virtualFrom, , unscaleK] = this.cache;
-    return this.scale.func.revert(screenPos * unscaleK + virtualFrom);
+    const pos = this.inverted.value < 0
+      ? this.screenSize.main - screenPos
+      : screenPos;
+    return this.scale.func.revert(pos * unscaleK + virtualFrom);
   }
 
   // shift price value in percent of axis screen size
   public scaledShift(value: Price, shift: number, range: Range<Price> | undefined = undefined): Price {
     const [virtualFrom, scaleK, unscaleK] = this.calcRangeScalingParams(range || this.range);
     const scaleFunc = this.scale.func;
-
     const translated = (scaleFunc.translate(value) - virtualFrom) * scaleK;
-    const shifted = translated + shift * this.screenSize.main;
+    const base = this.inverted.value < 0 ? this.screenSize.main - translated : translated;
+    const shifted = base + shift * this.screenSize.main;
+    const screenPos = this.inverted.value < 0 ? this.screenSize.main - shifted : shifted;
 
-    return scaleFunc.revert(shifted * unscaleK + virtualFrom);
+    return scaleFunc.revert(screenPos * unscaleK + virtualFrom);
   }
 
   public applyPaddingToRange(range: Range<Price>, fromPading: number, toPadding: number): Range<Price> {
@@ -224,11 +234,12 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
 
       const zoomType: ZoomType = screenDelta > 0 ? ZoomType.IN : ZoomType.OUT;
       const delta = virtualSize * zoomType.valueOf();
+      const pivot = this.inverted.value < 0 ? screenSize - screenPivot : screenPivot;
 
       this.noHistoryManagedUpdate({
         range: {
-          from: scalingFunction.revert(virtualFrom + delta * (screenPivot / screenSize)),
-          to: scalingFunction.revert(virtualTo - delta * ((screenSize - screenPivot) / screenSize)),
+          from: scalingFunction.revert(virtualFrom + delta * (pivot / screenSize)),
+          to: scalingFunction.revert(virtualTo - delta * ((screenSize - pivot) / screenSize)),
         },
       });
     });
@@ -237,20 +248,13 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
   private ajustRangeWhenMovedManually(screenDelta: number): void {
     this.updateRange(() => {
       const { main: screenSize } = this.screenSize;
-      const { from, to } = this.range;
-      const { func: scalingFunction } = this.scale;
-
-      const virtualFrom = scalingFunction.translate(from);
-      const virtualTo = scalingFunction.translate(to);
-      const virtualSize = virtualTo - virtualFrom;
-      const unscaleK = virtualSize / screenSize;
-
-      const revert = (screenPos: number): Price => scalingFunction.revert(virtualFrom + unscaleK * screenPos);
+      const top = this.revert(screenDelta);
+      const bottom = this.revert(screenSize + screenDelta);
 
       this.noHistoryManagedUpdate({
         range: {
-          from: revert(this.inverted.value * screenDelta),
-          to: revert(screenSize + this.inverted.value * screenDelta),
+          from: Math.min(top, bottom),
+          to: Math.max(top, bottom),
         },
       });
     });

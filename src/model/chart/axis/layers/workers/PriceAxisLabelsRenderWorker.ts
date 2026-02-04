@@ -8,14 +8,12 @@ import {
   type WorkerMessage,
   type WorkerResponse,
 } from '@/components/layered-canvas/model/canvas-worker/types';
-import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type { Label } from '@/model/chart/axis/label/Label';
 
 export declare type RenderPriceLabelsMessage = WorkerMessage<WorkerRequestType.RENDER, {
   width: number,
   height: number,
   dpr: number,
-  inverted: InvertedValue,
   labels: Label[],
   labelColor: string,
   labelFont: string,
@@ -24,7 +22,7 @@ export declare type RenderPriceLabelsMessage = WorkerMessage<WorkerRequestType.R
 
 const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: RenderPriceLabelsMessage): WorkerResponse => {
   const ctx = worker.state?.ctx;
-  const { width, height, dpr, inverted, labelColor, labelFont, xPos, labels } = message.payload;
+  const { width, height, dpr, labelColor, labelFont, xPos, labels } = message.payload;
 
   if (!ctx) {
     return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
@@ -37,17 +35,13 @@ const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message
   ctx.scale(dpr, dpr);
   ctx.save();
 
-  if (inverted < 0) {
-    ctx.translate(0, height);
-  }
-
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'end';
   ctx.fillStyle = labelColor;
   ctx.font = labelFont;
 
   for (const [yPos, label] of labels) {
-    ctx.fillText(label, xPos, inverted * yPos);
+    ctx.fillText(label, xPos, yPos);
   }
 
   ctx.restore();

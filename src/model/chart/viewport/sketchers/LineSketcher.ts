@@ -196,12 +196,11 @@ export class LineSketcher extends AbstractSketcher<Line> {
         let ny0;
         let ny1;
 
-        if (lineScale.title === priceAxis.scale.title) {
-          const dy = priceAxis.inverted.value * e.dy;
-          ny0 = priceAxis.revert(priceAxis.translate(y0) - dy);
-          ny1 = priceAxis.revert(priceAxis.translate(y1) - dy);
+        if (lineScale.title === priceAxis.scale.title) {          
+          ny0 = priceAxis.revert(priceAxis.translate(y0) - e.dy);
+          ny1 = priceAxis.revert(priceAxis.translate(y1) - e.dy);
         } else {
-          const priceAtMousePos = priceAxis.inverted.value * priceAxis.revert(e.y) as Price;
+          const priceAtMousePos = priceAxis.revert(e.y) as Price;
           const mouseX = timeAxis.revert(e.x);
 
           let linePriceAtMouseX = y0;
@@ -225,14 +224,14 @@ export class LineSketcher extends AbstractSketcher<Line> {
       if (handle === 'lineStart') {
         const [x0, y0, x1, y1] = options.data.def;
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
-        const ny0 = priceAxis.revert(priceAxis.translate(y0) - priceAxis.inverted.value * e.dy);
+        const ny0 = priceAxis.revert(priceAxis.translate(y0) - e.dy);
         update = { data: { def: [nx0, ny0, x1, y1] } };
       }
 
       if (handle === 'lineEnd') {
         const [x0, y0, x1, y1] = options.data.def;
         const nx1 = timeAxis.revert(timeAxis.translate(x1) - e.dx);
-        const ny1 = priceAxis.revert(priceAxis.translate(y1) - priceAxis.inverted.value * e.dy);
+        const ny1 = priceAxis.revert(priceAxis.translate(y1) - e.dy);
         update = { data: { def: [x0, y0, nx1, ny1] } };
       }
 

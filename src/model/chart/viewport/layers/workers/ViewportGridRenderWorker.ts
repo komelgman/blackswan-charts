@@ -10,13 +10,11 @@ import {
 } from '@/components/layered-canvas/model/canvas-worker/types';
 import { drawHorizontalLine, drawVerticalLine } from '@/model/misc/line-functions';
 import type { Label } from '@/model/chart/axis/label/Label';
-import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 
 export declare type RenderViewportGridMessage = WorkerMessage<WorkerRequestType.RENDER, {
   width: number,
   height: number,
   dpr: number,
-  inverted: InvertedValue,
   priceLabels: Label[],
   timeLabels: Label[],
   color: string,
@@ -24,7 +22,7 @@ export declare type RenderViewportGridMessage = WorkerMessage<WorkerRequestType.
 
 const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: RenderViewportGridMessage): WorkerResponse => {
   const ctx = worker.state?.ctx;
-  const { width, height, dpr, inverted, priceLabels, timeLabels, color } = message.payload;
+  const { width, height, dpr, priceLabels, timeLabels, color } = message.payload;
 
   if (!ctx) {
     return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
@@ -37,20 +35,16 @@ const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message
   ctx.scale(dpr, dpr);
   ctx.save();
 
-  if (inverted < 0) {
-    ctx.translate(0, height);
-  }
-
   ctx.lineWidth = 1;
   ctx.strokeStyle = color;
   ctx.beginPath();
 
   for (const [y] of priceLabels) {
-    drawHorizontalLine(ctx, inverted * Math.round(y), 0, width);
+    drawHorizontalLine(ctx, Math.round(y), 0, width);
   }
 
   for (const [x] of timeLabels) {
-    drawVerticalLine(ctx, Math.round(x), 0, inverted * height);
+    drawVerticalLine(ctx, Math.round(x), 0, height);
   }
 
   ctx.scale(1, 1);

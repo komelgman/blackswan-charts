@@ -1,5 +1,4 @@
 import { computed, watch, type WatchStopHandle } from 'vue';
-import type { InvertedValue } from '@/model/chart/axis/PriceAxis';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import {
@@ -60,19 +59,10 @@ export default class ViewportHighlightingLayer extends DirectRenderLayer {
       return;
     }
 
-    const { height, width } = this.context;
     const { renderingContext } = this;
 
     if (!renderingContext) {
       return;
-    }
-
-    const inverted: InvertedValue = this.viewport.priceAxis.inverted.value;
-    if (inverted < 0) {
-      renderingContext.translate(width / 2, height / 2);
-      renderingContext.rotate(Math.PI);
-      renderingContext.scale(-1, 1);
-      renderingContext.translate(-width / 2, -height / 2);
     }
 
     for (const entry of selected) {

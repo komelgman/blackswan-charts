@@ -1,5 +1,5 @@
 import { computed, inject, watch, type ComputedRef, type WatchStopHandle } from 'vue';
-import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
+import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
 import type { RenderViewportGridMessage } from '@/model/chart/viewport/layers/workers/ViewportGridRenderWorker';
@@ -31,7 +31,6 @@ export default class ViewportGridLayer extends WorkerRenderLayer {
 
   protected doRender(): void {
     const { height, width, dpr } = this.context;
-    const inverted: InvertedValue = this.priceAxis.inverted.value;
     const { labels: { value: timeLabels } } = this.timeAxis;
     const { labels: { value: priceLabels } } = this.priceAxis;
 
@@ -41,7 +40,6 @@ export default class ViewportGridLayer extends WorkerRenderLayer {
         width,
         height,
         dpr,
-        inverted,
         timeLabels,
         priceLabels,
         color: this.chartStyle?.value.viewport.gridColor,

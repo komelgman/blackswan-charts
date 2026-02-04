@@ -2,7 +2,7 @@ import { computed, watch, type WatchStopHandle } from 'vue';
 import type { LayerContext } from '@/components/layered-canvas/types';
 import { makeFont } from '@/model/misc/function.makeFont';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
-import type { PriceAxis, InvertedValue } from '@/model/chart/axis/PriceAxis';
+import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
 import type { RenderPriceLabelsMessage } from '@/model/chart/axis/layers/workers/PriceAxisLabelsRenderWorker';
 
@@ -37,7 +37,6 @@ export class PriceAxisLabelsLayer extends WorkerRenderLayer {
   protected doRender(): void {
     const { height, width, dpr } = this.context;
 
-    const inverted: InvertedValue = this.priceAxis.inverted.value;
     const { labels: { value: priceLabels }, textStyle } = this.priceAxis;
     const labelFont = makeFont(textStyle);
 
@@ -47,7 +46,6 @@ export class PriceAxisLabelsLayer extends WorkerRenderLayer {
         width,
         height,
         dpr,
-        inverted,
         labels: priceLabels,
         labelColor: textStyle.color,
         labelFont,

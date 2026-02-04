@@ -77,7 +77,7 @@ export class HLineSketcher extends AbstractSketcher<HLine> {
     return (e: DragMoveEvent) => {
       const { options } = entry.descriptor;
       // only one handle and drag by body equals drag by handles.center
-      const def = priceAxis.revert(priceAxis.translate(options.data.def) - priceAxis.inverted.value * e.dy);
+      const def = priceAxis.revert(priceAxis.translate(options.data.def) - e.dy);
 
       dataSource.update(entry.descriptor.ref, { data: { def } });
     };

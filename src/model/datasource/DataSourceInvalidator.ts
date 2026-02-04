@@ -40,6 +40,7 @@ export default class DataSourceInvalidator {
     this.unwatch = watch([
       priceAxis.scale,
       priceAxis.range,
+      priceAxis.inverted,
       computed(() => priceAxis.screenSize.main),
       timeAxis.range,
       computed(() => timeAxis.screenSize.main),

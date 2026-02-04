@@ -1,5 +1,5 @@
 import { watch, type WatchStopHandle } from 'vue';
-import type { Inverted, InvertedValue } from '@/model/chart/axis/PriceAxis';
+import type { Inverted } from '@/model/chart/axis/PriceAxis';
 import type DataSource from '@/model/datasource/DataSource';
 import {
   type DataSourceChangeEventListener,
@@ -54,19 +54,10 @@ export default class ViewportDataSourceLayer extends DirectRenderLayer {
   }
 
   protected doRender(): void {
-    const inverted: InvertedValue = this.inverted.value;
-    const { height, width } = this.context;
     const { renderingContext } = this;
 
     if (!renderingContext) {
       return;
-    }
-
-    if (inverted < 0) {
-      renderingContext.translate(width / 2, height / 2);
-      renderingContext.rotate(Math.PI);
-      renderingContext.scale(-1, 1);
-      renderingContext.translate(-width / 2, -height / 2);
     }
 
     for (const { drawing } of this.dataSource.visible()) {
