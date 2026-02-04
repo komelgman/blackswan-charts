@@ -1,4 +1,4 @@
- 
+﻿ 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/model/misc/object.clone';
 import DataSource from '@/model/datasource/DataSource';
@@ -379,4 +379,85 @@ describe('DataSource', () => {
     expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
       .toEqual([drawing1.id, drawing2.id, drawing3.id]);
   });
+
+  it('undo/redo add entry', () => {
+    const history: History = new History();
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
+    ds.transactionManager = transactionManager;
+
+    const newId = ds.getNewId('HLine');
+    ds.beginTransaction();
+    ds.add({
+      id: newId,
+      title: 'test hline',
+      type: 'HLine',
+      data: { def: 0, style: { lineWidth: 1, fill: 0, color: '#00AA00' } },
+      locked: false,
+      visible: true,
+    });
+    ds.endTransaction();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id, newId]);
+
+    history.undo();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id]);
+
+    history.redo();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id, newId]);
+  });
+
+  it('undo/redo remove entry preserves order', () => {
+    const history: History = new History();
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
+    ds.transactionManager = transactionManager;
+
+    ds.beginTransaction();
+    ds.remove(drawing2.id);
+    ds.endTransaction();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing3.id]);
+
+    history.undo();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id]);
+
+    history.redo();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing3.id]);
+  });
+
+  it('undo/redo clone entry', () => {
+    const history: History = new History();
+    const transactionManager = new HistoricalTransactionManager(idHelper, history);
+    ds.transactionManager = transactionManager;
+
+    const entry: DataSourceEntry<unknown> = storage.get(drawing1.id);
+
+    ds.beginTransaction();
+    const cloned = ds.clone(entry);
+    ds.endTransaction();
+
+    const clonedRef = cloned.descriptor.ref;
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id, clonedRef]);
+
+    history.undo();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id]);
+
+    history.redo();
+
+    expect(getDrawingReferencesFromIterator(ds.filtered(() => true)))
+      .toEqual([drawing1.id, drawing2.id, drawing3.id, clonedRef]);
+  });
 });
+

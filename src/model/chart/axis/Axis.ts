@@ -210,7 +210,10 @@ export default abstract class Axis<T extends number, Options extends AxisOptions
 
   protected updateRange(updateRangeTrigger: Function): void {
     this.transactionManager.exeucteInTransaction({
-      skipIf: (incident) => (incident as UpdateAxisRange<T>).options?.axis === this,
+      skipIf: (incident) => (
+        incident instanceof UpdateAxisRange
+        && (incident as UpdateAxisRange<T>).options?.axis === this
+      ),
       incident: new UpdateAxisRange({
         axis: this,
         range: this.range,

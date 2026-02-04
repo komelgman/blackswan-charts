@@ -1,4 +1,4 @@
- 
+﻿ 
 import type { MockInstance } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clone } from '@/model/misc/object.clone';
@@ -20,6 +20,7 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
   let ds2: DataSource;
   let ds3: DataSource;
   let idHelper: IdHelper;
+  let history: History;
   let ds1Spy: MockInstance;
   let ds2Spy: MockInstance;
   let ds3Spy: MockInstance;
@@ -103,8 +104,18 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
     return filtered.next().value;
   }
 
+  function hasRef(ds: DataSource, ref: DrawingReference): boolean {
+    for (const entry of ds.filtered(() => true)) {
+      if (isEqualDrawingReference(entry.descriptor.ref, ref)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   beforeEach(async () => {
-    const history: History = new History();
+    history = new History();
     interconnect = new DataSourceInterconnect();
     idHelper = new IdHelper();
     const transactionManager = new HistoricalTransactionManager(idHelper, history);
@@ -575,4 +586,63 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
     expect(toRefsFromEventsMap(ds3Events, DataSourceChangeEventReason.DataInvalid))
       .toEqual([]);
   });
+  
+  it('undo/redo shared add', () => {
+    const newId = ds1.getNewId('HLine');
+    const externalRef: DrawingReference = [ds1.id, newId];
+
+    ds1.beginTransaction();
+    ds1.add({
+      id: newId,
+      title: 'test hline',
+      type: 'HLine',
+      data: { def: 0, style: { lineWidth: 1, fill: 0, color: '#00AA00' } },
+      locked: false,
+      visible: true,
+      shareWith: '*',
+    });
+    ds1.endTransaction();
+
+    expect(hasRef(ds1, newId)).toBe(true);
+    expect(hasRef(ds2, externalRef)).toBe(true);
+    expect(hasRef(ds3, externalRef)).toBe(true);
+
+    history.undo();
+
+    expect(hasRef(ds1, newId)).toBe(false);
+    expect(hasRef(ds2, externalRef)).toBe(false);
+    expect(hasRef(ds3, externalRef)).toBe(false);
+
+    history.redo();
+
+    expect(hasRef(ds1, newId)).toBe(true);
+    expect(hasRef(ds2, externalRef)).toBe(true);
+    expect(hasRef(ds3, externalRef)).toBe(true);
+  });
+
+  it('undo/redo shared remove', () => {
+    const externalRef: DrawingReference = [ds1.id, drawing0.id];
+
+    ds1.beginTransaction();
+    ds1.remove(drawing0.id);
+    ds1.endTransaction();
+
+    expect(hasRef(ds1, drawing0.id)).toBe(false);
+    expect(hasRef(ds2, externalRef)).toBe(false);
+    expect(hasRef(ds3, externalRef)).toBe(false);
+
+    history.undo();
+
+    expect(hasRef(ds1, drawing0.id)).toBe(true);
+    expect(hasRef(ds2, externalRef)).toBe(true);
+    expect(hasRef(ds3, externalRef)).toBe(true);
+
+    history.redo();
+
+    expect(hasRef(ds1, drawing0.id)).toBe(false);
+    expect(hasRef(ds2, externalRef)).toBe(false);
+    expect(hasRef(ds3, externalRef)).toBe(false);
+  });
 });
+
+
