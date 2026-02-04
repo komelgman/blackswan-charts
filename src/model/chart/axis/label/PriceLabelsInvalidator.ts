@@ -43,14 +43,12 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
 
     const { main: screenSize } = this.axis.screenSize;
     const logicLabelSize: LogicSize = this.maxLabelSize;
-    const labelSize = logicLabelSize.main;
-    const labelsCount = screenSize / (3 * labelSize);
-    const step = screenSize / labelsCount;
-    const zeroPos: number = this.axis.translate(0 as Price);
-    const shift = Math.sign(zeroPos) * (zeroPos % step);
+    const targetPx = 3 * logicLabelSize.main;
+    const scaleFunc = toRaw(this.axis.scale.func);
+    const ticks = scaleFunc.getTicks(this.axis.range, targetPx, screenSize);
 
-    for (let pos = shift; pos < screenSize; pos += step) {
-      const labelInfo: LabelOptions<Price> = this.findLabel(this.axis.revert(pos));
+    for (const tick of ticks) {
+      const labelInfo: LabelOptions<Price> = this.findLabel(tick);
       labels.push([this.axis.translate(labelInfo.value), labelInfo.caption]);
     }
 
@@ -65,8 +63,8 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
 
   private findLabel(value: Price): LabelOptions<Price> {
     return this.labelsCache.getValue(value, (price) => {
-      const goodLookingValue = this.nearest(price);
-      const caption = this.getCaption(goodLookingValue);
+      const scaleFunc = toRaw(this.axis.scale.func);
+      const caption = scaleFunc.formatTick(price, this.currentFraction);
 
       let size = -1;
       if (this.context !== undefined) {
@@ -78,24 +76,13 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
       }
 
       return {
-        value: goodLookingValue,
+        value: price,
         caption,
         size: {
           main: this.currentFontSize,
           second: size,
         },
       };
-    });
-  }
-
-  private nearest(value: Price): Price {
-    return Number.parseFloat(value.toPrecision(3)) as Price;
-  }
-
-  private getCaption(value: Price): string {
-    return value.toLocaleString(undefined, {
-      minimumFractionDigits: this.currentFraction,
-      maximumFractionDigits: this.currentFraction,
     });
   }
 }
