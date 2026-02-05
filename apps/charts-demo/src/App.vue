@@ -1,30 +1,43 @@
-<template>
+﻿<template>
   <chart-widget :chart="chartApi"/>
 </template>
 
 <script lang="ts" setup>
 import { isProxy, markRaw } from 'vue';
-import ChartWidget from '@/components/chart/ChartWidget.vue';
-import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
-import { Chart, type ChartOptions } from '@/model/chart/Chart';
-import type { Sketcher } from '@/model/chart/viewport/sketchers';
-import DataSource from '@/model/datasource/DataSource';
-import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
-import type { DrawingOptions, DrawingType } from '@/model/datasource/types';
-import { IdHelper, type IdBuilder } from '@/model/misc/tools';
-import type { Line, OHLCv, OHLCvContentOptions, OHLCvRecord, Price, UTCTimestamp, Range } from '@/model/chart/types';
 import {
+  ChartWidget,
+  PriceScales,
+  Chart,
+  type ChartOptions,
+  type Sketcher,
+  DataSource,
+  DataSourceChangeEventReason,
+  type DataSourceChangeEventsMap,
+  type DrawingOptions,
+  type DrawingType,
+  IdHelper,
+  type IdBuilder,
+  type Line,
+  type OHLCv,
+  type OHLCvContentOptions,
+  type OHLCvRecord,
+  type Price,
+  type UTCTimestamp,
+  type Range,
   LineBound,
   OHLCV_RECORD_CLOSE,
-} from '@/model/chart/types';
-import type { CandlestickPlot, ColumnsVolumeIndicator } from '@/model/chart/viewport/sketchers/renderers';
-import { DataBinding, type ContentProviderFabric } from '@/model/databinding';
-import { OHLCvPipe } from '@/model/databinding/pipes/OHLCvPipe';
-import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import { ControlMode } from '@/model/chart/axis/types';
-import { shadeColor } from '@/model/misc/color';
-import { TIME_PERIODS_MAP, TimePeriods } from '@/model/chart/types/time';
-import { Themes } from '@/model/chart/types/styles';
+  type CandlestickPlot,
+  type ColumnsVolumeIndicator,
+  DataBinding,
+  type ContentProviderFabric,
+  OHLCvPipe,
+  type PriceAxisScale,
+  ControlMode,
+  shadeColor,
+  TIME_PERIODS_MAP,
+  TimePeriods,
+  Themes,
+} from 'blackswan-charts';
 
 /**
  * todo
@@ -37,7 +50,6 @@ import { Themes } from '@/model/chart/types/styles';
  */
 
 function getRandomColor(): string {
-   
   return `#${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`;
 }
 
@@ -523,33 +535,23 @@ setTimeout((j: number) => {
   mainDs.endTransaction();
 }, 100 * i++, i);
 
+setTimeout((j: number) => {
+  console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
 
-
-
-
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
-
-//   mainDs.beginTransaction();
-//   mainDs.add(drawings.volumeBTCUSDT);
-//   mainDs.add(drawings.ohlcvBTCUSDT);
-//   mainDs.endTransaction();
-// }, 100 * i++, i);
+  mainDs.beginTransaction();
+  mainDs.add(drawings.volumeBTCUSDT);
+  mainDs.add(drawings.ohlcvBTCUSDT);
+  mainDs.endTransaction();
+}, 100 * i++, i);
 
 // i += 50;
 
 // setTimeout((j: number) => {
 //   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
-
+//
 //   console.log(`timeAxis.controlMode from ${chartApi.paneModel('main').timeAxis.controlMode.value} to AUTO`);
 //   chartApi.paneModel('second').priceAxis.primaryEntryRef = { ds: chartApi.paneModel('second').dataSource, entryRef: ['main', 'ohlcv1'] };
 // }, 100 * i++, i);
-
-
-
-
-
 
 // i += 50;
 //

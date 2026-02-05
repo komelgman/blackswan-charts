@@ -1,0 +1,33 @@
+{
+  "name": "blackswan-charts",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "resize-observer-polyfill": "^1.5.1"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.24"
+  },
+  "scripts": {
+    "build": "run-s typecheck build-only build:types",
+    "build-only": "vite build",
+    "build:types": "vue-tsc -p tsconfig.build.json",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
+    "test:unit": "vitest --root ./",
+    "test:ct": "playwright test -c playwright-ct.config.ts",
+    "lint": "eslint . --fix"
+  }
+}

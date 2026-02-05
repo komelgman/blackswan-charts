@@ -253,8 +253,8 @@ export class PriceAxis extends Axis<Price, PriceAxisOptions> {
 
       this.noHistoryManagedUpdate({
         range: {
-          from: Math.min(top, bottom),
-          to: Math.max(top, bottom),
+          from: Math.min(top, bottom) as Price,
+          to: Math.max(top, bottom) as Price,
         },
       });
     });

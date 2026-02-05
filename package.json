@@ -1,22 +1,21 @@
 {
-  "name": "blackswan-charts",
-  "type": "module",
-  "version": "0.0.0",
+  "name": "blackswan-charts-workspace",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "run-p typecheck build-only",
-    "preview": "vite preview",
-    "test:unit": "vitest --root ./",
-    "test:e2e": "playwright test",
-    "test:ct": "playwright test -c playwright-ct.config.ts",
-    "build-only": "vite build",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-    "lint": "eslint . --fix"
-  },
-  "dependencies": {
-    "resize-observer-polyfill": "^1.5.1",
-    "vue": "^3.5.24"
+    "dev": "npm -w apps/charts-demo run dev",
+    "build": "npm run build:lib && npm run build:demo",
+    "build:lib": "npm -w packages/charts-lib run build",
+    "build:demo": "npm -w apps/charts-demo run build",
+    "typecheck": "npm -w packages/charts-lib run typecheck && npm -w apps/charts-demo run typecheck",
+    "lint": "eslint . --fix",
+    "test:unit": "npm -w packages/charts-lib run test:unit",
+    "test:ct": "npm -w packages/charts-lib run test:ct",
+    "test:e2e": "npm -w apps/charts-demo run test:e2e"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.28.0",

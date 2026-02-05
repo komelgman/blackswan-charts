@@ -1,8 +1,11 @@
-{
+﻿{
   "files": [],
   "references": [
     {
-      "path": "./tsconfig.base.json"
+      "path": "./packages/charts-lib/tsconfig.json"
+    },
+    {
+      "path": "./apps/charts-demo/tsconfig.json"
     }
   ],
   "compilerOptions": {

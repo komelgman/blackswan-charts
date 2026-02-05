@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/experimental-ct-vue';
+﻿import { defineConfig, devices } from '@playwright/experimental-ct-vue';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import { fileURLToPath, URL } from 'url';

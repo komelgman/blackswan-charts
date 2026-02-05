@@ -1,4 +1,4 @@
-import js from '@eslint/js'
+﻿import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import pluginVue from 'eslint-plugin-vue'
 import vueParser from 'vue-eslint-parser'
@@ -36,11 +36,11 @@ export default [
       '*.sw?',
 
       'test-results/**',
-      'tests/.e2e-report/**',
-      'tests/.component-report/**',
-      'tests/.component-snapshots/**',
-      'tests/component-template/.cache/**',
-
+      'apps/charts-demo/tests/.e2e-report/**',
+      'packages/charts-lib/tests/.component-report/**',
+      'packages/charts-lib/tests/.component-snapshots/**',
+      'packages/charts-lib/tests/component-template/.cache/**',
+   
       '.roo/**',
       '.gitignore',
       'AGENTS.md',

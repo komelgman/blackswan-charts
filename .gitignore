@@ -1,4 +1,4 @@
-# Logs
+﻿# Logs
 logs
 *.log
 npm-debug.log*
@@ -30,11 +30,10 @@ coverage
 
 test-results/
 /test-results/
-/tests/.e2e-report/
-/tests/.component-report/
-/tests/.component-snapshots/
-/tests/component-template/.cache/
+/apps/charts-demo/tests/.e2e-report/
+/packages/charts-lib/tests/.component-report/
+/packages/charts-lib/tests/.component-snapshots/
+/packages/charts-lib/tests/component-template/.cache/
 .roo/*
 .gitignore
-AGENTS.md
 .roomodes
