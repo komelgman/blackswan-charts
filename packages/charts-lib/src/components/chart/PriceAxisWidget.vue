@@ -93,6 +93,6 @@ const cssVars = computed(() => {
   max-width: var(--widgetWidth);
   min-width: var(--widgetWidth);
   cursor: row-resize;
-  background-color: var(--price-axis-background-color, --primary-background-color);
+  background-color: var(--price-axis-background-color, var(--primary-background-color));
 }
 </style>

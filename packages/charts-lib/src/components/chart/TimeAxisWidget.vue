@@ -78,6 +78,6 @@ function onResize(e: ResizeEvent): void {
   width: 100%;
   height: 100%;
   cursor: col-resize;
-  background-color: var(--time-axis-background-color, --primary-background-color);
+  background-color: var(--time-axis-background-color, var(--primary-background-color));
 }
 </style>
