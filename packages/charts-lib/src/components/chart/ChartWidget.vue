@@ -3,6 +3,7 @@
     ref="rootElement"
     :direction="Direction.Vertical"
     :style="cssVars"
+    class="bs-chart"
     @keydown="onKeyDown"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
@@ -86,6 +87,7 @@ import type { Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
+import { getChartCssVars } from '@/model/misc/chart-style.functions';
 
 export interface ChartWidgetSharedState {
   timeWidgetHeight: number;
@@ -207,38 +209,7 @@ function updatePriceAxisWidth(): void {
   chartState.priceWidgetWidth = maxLabelWidth + 2 * PRICE_LABEL_PADDING;
 }
 
-const cssVars = computed(() => {
-  const {
-    backgroundColor,
-    borderColor,
-    hoveredResizeHandleColor,
-    menu: {
-      backgroundColor: menuBackgroundColor,
-      hoveredItemColor: menuBackgroundColorOnHover,
-    },
-    viewport: {
-      backgroundColor: viewportBackgroundColor,
-    },
-    priceAxis: {
-      backgroundColor: priceAxisBackgroundColor,
-    } = {},
-    timeAxis: {
-      backgroundColor: timeAxisBackgroundColor,
-    } = {},
-  } = props.chart.style;
-
-  return {
-    backgroundColor: timeAxisBackgroundColor ?? backgroundColor,
-    '--primary-background-color': backgroundColor,
-    '--viewport-background-color': viewportBackgroundColor,
-    '--price-axis-background-color': priceAxisBackgroundColor,
-    '--time-axis-background-color': timeAxisBackgroundColor,
-    '--border-color': borderColor,
-    '--resize-handle-color-on-hover': hoveredResizeHandleColor,
-    '--menu-background-color': menuBackgroundColor,
-    '--menu-background-color-on-hover': menuBackgroundColorOnHover,
-  };
-});
+const cssVars = computed(() => getChartCssVars(props.chart.style));
 
 const timeLineStyle = computed(() => ({
   maxHeight: `${chartState.timeWidgetHeight}px`,
@@ -254,3 +225,13 @@ const timeLineButtonPaneStyle = computed(() => ({
   width: `${chartState.priceWidgetWidth}px`,
 }));
 </script>
+
+<style scoped>
+.bs-chart {
+  background-color: var(--time-axis-background-color, var(--primary-background-color));
+  color: var(--chart-text-color);
+  font-family: var(--chart-font-family);
+  font-size: var(--chart-font-size);
+  font-style: var(--chart-font-style);
+}
+</style>

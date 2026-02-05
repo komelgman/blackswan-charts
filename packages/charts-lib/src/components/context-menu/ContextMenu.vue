@@ -13,7 +13,6 @@ import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
 import type { MenuItem } from '@/components/context-menu/types';
 import type { EventRemover } from '@/model/misc/document-listeners';
 import { onceDocument } from '@/model/misc/document-listeners';
-import { makeFont } from '@/model/misc/function.makeFont';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { Point } from '@/model/chart/types';
 
@@ -84,11 +83,7 @@ const style = computed(() => {
     return { };
   }
 
-  const { textStyle } = (chartStyle.value!);
-
   return {
-    font: makeFont(textStyle),
-    color: textStyle.color,
     display: visible.value ? 'block' : 'none',
     paddingLeft: '26px',
     top: `${position.value.y}px`,
@@ -124,6 +119,8 @@ $background-color: var(--menu-background-color);
   padding: 4px;
   min-width: 178px;
 
+  color: var(--chart-text-color);
+  font: var(--chart-font);
   background: $background-color;
 }
 </style>

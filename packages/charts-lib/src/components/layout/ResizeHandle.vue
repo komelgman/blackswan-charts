@@ -70,7 +70,7 @@ function onDragEnd(e?: DragEvent): void {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 $resize-bg-color: var(--resize-handle-color-on-hover);
 
 .layout-vertical > {

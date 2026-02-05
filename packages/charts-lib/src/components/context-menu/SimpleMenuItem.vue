@@ -35,7 +35,7 @@ function renderIcon(): VNode | null {
 </script>
 
 <style lang="scss">
-.simple-menu-item {
+.bs-chart .simple-menu-item {
   display: block;
   cursor: pointer;
   padding: 5px;

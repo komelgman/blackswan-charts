@@ -82,7 +82,7 @@ function onZoom(e: ZoomEvent): void {
 const cssVars = computed(() => {
   const cursor: string = viewport.cursor || 'default';
   return {
-    cursor: `${cursor} !important`,
+    '--viewport-cursor': cursor,
   };
 });
 </script>
@@ -92,5 +92,6 @@ const cssVars = computed(() => {
   display: flex;
   flex: 1 1 auto;
   background-color: var(--viewport-background-color, var(--primary-background-color));
+  cursor: var(--viewport-cursor, default);
 }
 </style>

@@ -10,14 +10,15 @@
   >
     <canvas
       ref="utilityCanvas"
-      style="user-select: none;-webkit-tap-highlight-color: transparent;"
+      class="layered-canvas__utility"
     />
 
     <canvas
       ref="nativeLayers"
       v-for="(layer, index) in layers"
       :key="layer.id"
-      :style="`user-select: none;-webkit-tap-highlight-color: transparent;z-index:${index}`"
+      class="layered-canvas__layer"
+      :style="{ '--layer-index': index }"
     />
   </div>
 </template>
@@ -253,6 +254,20 @@ function onDragEnd(e?: DragEvent): void {
   display: grid;
   width: 100%;
   height: 100%;
+
+  .layered-canvas__utility,
+  .layered-canvas__layer {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .layered-canvas__utility {
+    z-index: 0;
+  }
+
+  .layered-canvas__layer {
+    z-index: var(--layer-index);
+  }
 
   canvas {
     width: 100%;

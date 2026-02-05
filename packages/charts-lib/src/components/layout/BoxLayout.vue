@@ -16,7 +16,7 @@ const { direction = Direction.Horizontal } = defineProps<Props>();
 const classnames = computed(() => ['boxlayout', `layout-${direction}`]);
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .boxlayout {
   display: flex;
   flex-wrap: nowrap;
