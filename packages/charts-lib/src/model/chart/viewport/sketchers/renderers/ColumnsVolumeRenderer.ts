@@ -64,13 +64,17 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
     const barSpace: number = timeAxis.translate(timePeriod.barToTime(timeRange.from, 1));
     const barGap = Math.max(1, Math.ceil(0.4 * barSpace));
     const barWidth = barSpace - barGap;
-    const heightFactor = (plotOptions.heightFactor || DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR) * (priceAxis.screenSize.main / maxValue);
+    const { main: screenHeight } = priceAxis.screenSize;
+    const heightFactor = (plotOptions.heightFactor || DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR) * (screenHeight / maxValue);
+    const isInverted = priceAxis.inverted.value > 0;
+    const baseY = isInverted ? 0 : screenHeight;
+    const direction: 1 | -1 = isInverted ? 1 : -1;
     const { style: { bearish: bearishStyle, bullish: bullishStyle } } = plotOptions;
 
     timeAxis.translateBatchInPlace(bars, [OHLCV_BAR_TIMESTAMP]);
 
-    const bearishColumns = new BatchColumnGraphics(barWidth, bearishStyle);
-    const bullishColumns = new BatchColumnGraphics(barWidth, bullishStyle);
+    const bearishColumns = new BatchColumnGraphics(barWidth, bearishStyle, baseY, direction);
+    const bullishColumns = new BatchColumnGraphics(barWidth, bullishStyle, baseY, direction);
     parts.push(bearishColumns, bullishColumns);
 
     for (let i = 0; i < bars.length; ++i) {

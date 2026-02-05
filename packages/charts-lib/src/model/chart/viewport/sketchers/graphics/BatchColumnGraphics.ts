@@ -7,22 +7,30 @@ export interface VolumeColumnGraphicsOptions {
   width: number;
   height: number;
   colors: BarColors;
+  baseY?: number;
+  direction?: 1 | -1;
 }
 
 export default class BatchCandleGraphics implements Graphics {
   private columnPath: Path2D;
   private colors: BarColors;
   private columnWidth: number;
+  private columnBase: number;
+  private columnDirection: 1 | -1;
 
-  constructor(columnWidth: number, colors: BarColors) {
+  constructor(columnWidth: number, colors: BarColors, columnBase: number = 0, columnDirection: 1 | -1 = 1) {
     this.columnWidth = Math.max(1, columnWidth);
     this.colors = colors;
     this.columnPath = new Path2D();
+    this.columnBase = columnBase;
+    this.columnDirection = columnDirection;
   }
 
   public add(x: number, height: number): void {
-    this.columnPath.moveTo(x, 0);
-    this.columnPath.lineTo(x, height);
+    const y0 = this.columnBase;
+    const y1 = this.columnBase + this.columnDirection * height;
+    this.columnPath.moveTo(x, y0);
+    this.columnPath.lineTo(x, y1);
   }
 
   public hitTest(ctx: CanvasRenderingContext, screenPos: Point): boolean {
