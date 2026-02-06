@@ -34,9 +34,7 @@ import type {
   ZoomEvent,
 } from '@/components/layered-canvas/events';
 import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
-import type { EventRemover } from '@/model/misc/document-listeners';
-import { onceDocument, onDocument } from '@/model/misc/document-listeners';
-import type { Point } from '@/model/chart/types';
+import { onceDocument, onDocument, type EventRemover, type Point } from 'blackswan-foundation';
 
 export interface Props {
   options: LayeredCanvasOptions;

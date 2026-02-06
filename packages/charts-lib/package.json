@@ -16,7 +16,8 @@
     "dist"
   ],
   "dependencies": {
-    "resize-observer-polyfill": "^1.5.1"
+    "resize-observer-polyfill": "^1.5.1",
+    "blackswan-foundation": "0.0.0"
   },
   "peerDependencies": {
     "vue": "^3.5.24"

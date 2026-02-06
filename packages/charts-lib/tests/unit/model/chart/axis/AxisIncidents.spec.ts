@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import { UpdateAxisPrimaryEntryRef, UpdateAxisRange } from '@/model/chart/axis/incidents';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper } from '@/model/misc/tools';
+import { IdHelper } from 'blackswan-foundation';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import DataSource from '@/model/datasource/DataSource';
 import type { Price, Range } from '@/model/chart/types';

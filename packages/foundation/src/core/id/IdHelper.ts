@@ -1,4 +1,4 @@
-import { IdBuilder } from '@/model/misc/tools';
+import { IdBuilder } from './IdBuilder';
 
 export class IdHelper extends IdBuilder {
   private readonly idBuilders: Map<string, IdBuilder> = new Map<string, IdBuilder>();

@@ -1,5 +1,4 @@
 import type { PaneDescriptor } from '@/components/layout/types';
-
 import { AbstractHistoricalIncident, type HistoricalIncidentOptions } from '@/model/history';
 
 export interface InvalidatePanesSizesOptions extends HistoricalIncidentOptions {

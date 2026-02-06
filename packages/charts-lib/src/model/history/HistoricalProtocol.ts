@@ -1,5 +1,4 @@
-import type { Predicate } from '@/model/type-defs';
-import type { HasMergeWith } from '@/model/type-defs/optional';
+import { type Predicate, type HasMergeWith } from 'blackswan-foundation';
 import type {
   HistoricalIncident,
   HistoricalIncidentLifeHooks,

@@ -2,14 +2,13 @@ import { nextTick, watch } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PriceAxis, type PriceAxisOptions } from '@/model/chart/axis/PriceAxis';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper } from '@/model/misc/tools';
+import { IdHelper, clone } from 'blackswan-foundation';
 import DataSource from '@/model/datasource/DataSource';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 import type Axis from '@/model/chart/axis/Axis';
 import { ControlMode } from '@/model/chart/axis/types';
 import type { DrawingOptions } from '@/model/datasource/types';
-import { clone } from '@/model/misc/object.clone';
 
 describe('Axis', () => {
   const preferred = {

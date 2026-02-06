@@ -1,4 +1,4 @@
-import { isString } from '@/model/type-defs';
+import { isString } from 'blackswan-foundation';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import {

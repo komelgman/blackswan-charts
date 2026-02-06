@@ -1,14 +1,11 @@
 import { toRaw } from 'vue';
 import type { Chart } from '@/model/chart/Chart';
-import { clone } from '@/model/misc/object.clone';
+import { clone, merge, isString } from 'blackswan-foundation';
 import type { PaneDescriptor } from '@/components/layout/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import { merge } from '@/model/misc/object.merge';
 import type { DrawingOptions } from '@/model/datasource/types';
 import type DataSource from '@/model/datasource/DataSource';
-import { isString } from '@/model/type-defs';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-
 import type { SerializedChart, SerializedPane, SerializedTimeAxis } from '@/model/chart/serialization/types';
 import { Themes, type ChartStyle, type ChartTheme } from '@/model/chart/types/styles';
 

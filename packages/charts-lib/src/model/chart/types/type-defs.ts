@@ -1,12 +1,11 @@
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import type { Nominal } from '@/model/type-defs';
+import type { Nominal } from 'blackswan-foundation';
+export type { Range, Point } from 'blackswan-foundation';
 
 export declare type Price = Nominal<number, 'Price'>;
 export declare type UTCTimestamp = Nominal<number, 'UTCTimestamp'>;
 export declare type Millisecons = Nominal<number, 'Millisecons'>;
 
-export declare type Range<T> = { from: T, to: T };
-export declare type Point = { x: number, y: number };
 export declare type LogicSize = { main: number, second: number };
 
 export declare type LineWidth = 1 | 2 | 3 | 4;

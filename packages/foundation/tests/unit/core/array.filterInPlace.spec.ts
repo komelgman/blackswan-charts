@@ -1,6 +1,6 @@
  
 import { expect, test } from 'vitest';
-import { filterInPlace } from '@/model/misc/array.filterInPlace';
+import { filterInPlace } from 'blackswan-foundation';
 
 test.each([
   { a: [1, 2, 3, 4, 5], p: () => true, ex: [1, 2, 3, 4, 5] },

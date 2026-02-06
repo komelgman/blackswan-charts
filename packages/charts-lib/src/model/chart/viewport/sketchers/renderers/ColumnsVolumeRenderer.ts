@@ -13,7 +13,7 @@ import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/rendere
 import { DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR } from '@/model/chart/viewport/sketchers';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { HasStyle, HasType } from '@/model/type-defs/optional';
+import type { HasStyle, HasType } from 'blackswan-foundation';
 import BatchColumnGraphics from '@/model/chart/viewport/sketchers/graphics/BatchColumnGraphics';
 
 export declare type ColumnsVolumeIndicator = OHLCvPlot<ColumnsVolumeIndicatorOptions>;

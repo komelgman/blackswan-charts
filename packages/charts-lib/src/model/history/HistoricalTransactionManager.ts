@@ -1,4 +1,4 @@
-import type { IdHelper } from '@/model/misc/tools';
+import type { IdHelper } from 'blackswan-foundation';
 import { NonReactive } from '@/model/type-defs/decorators';
 import type { HistoricalIncidentReport, HistoricalProtocolOptions, History } from '@/model/history';
 

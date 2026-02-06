@@ -18,7 +18,9 @@ export default [
       'node_modules/**',
       '.DS_Store',
       'dist/**',
+      '**/dist/**',
       'dist-ssr/**',
+      '**/dist-ssr/**',
       'coverage/**',
       '*.local',
 
@@ -84,6 +86,10 @@ export default [
       'no-restricted-globals': 0,
       'no-unused-expressions': 0,
       'no-restricted-syntax': 0,
+      'padding-line-between-statements': [
+        'error',
+        { blankLine: 'never', prev: 'import', next: 'import' },
+      ],
       'lines-between-class-members': 0,
       'object-curly-newline': 0,
       'semi': 0,

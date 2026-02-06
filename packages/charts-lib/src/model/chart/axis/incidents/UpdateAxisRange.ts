@@ -1,4 +1,4 @@
-import type { HasMergeWith } from '@/model/type-defs/optional';
+import type { HasMergeWith } from 'blackswan-foundation';
 import type Axis from '@/model/chart/axis/Axis';
 import { type AxisOptions } from '@/model/chart/axis/types';
 import {

@@ -4,15 +4,13 @@ import { Chart } from '@/model/chart/Chart';
 import { ChartSerializer } from '@/model/chart/serialization/ChartSerializer';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/types';
-import { IdHelper } from '@/model/misc/tools';
+import { IdHelper, clone, merge } from 'blackswan-foundation';
 import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type { PaneOptions } from '@/components/layout/types';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
-import { clone } from '@/model/misc/object.clone';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
 import { Themes } from '@/model/chart/types/styles';
-import { merge } from '@/model/misc/object.merge';
 
 describe('ChartSerializer', () => {
   const drawing1: DrawingOptions = {

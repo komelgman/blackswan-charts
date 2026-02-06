@@ -10,9 +10,7 @@ import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/types';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
-import { clone } from '@/model/misc/object.clone';
-import { merge } from '@/model/misc/object.merge';
-import { IdHelper } from '@/model/misc/tools';
+import { clone, merge, IdHelper } from 'blackswan-foundation';
 
 describe('ChartDeserializer', () => {
   const drawing1: DrawingOptions = {

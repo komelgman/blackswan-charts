@@ -544,17 +544,11 @@ setTimeout((j: number) => {
   mainDs.endTransaction();
 }, 100 * i++, i);
 
-// i += 50;
+setTimeout((j: number) => {
+  console.log(`${j}) chartApi.paneModel('second').priceAxis.primaryEntryRef`);
+  chartApi.paneModel('second').priceAxis.primaryEntryRef = { ds: chartApi.paneModel('second').dataSource, entryRef: ['main', 'ohlcv1'] };
+}, 100 * i++, i);
 
-// setTimeout((j: number) => {
-//   console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
-//
-//   console.log(`timeAxis.controlMode from ${chartApi.paneModel('main').timeAxis.controlMode.value} to AUTO`);
-//   chartApi.paneModel('second').priceAxis.primaryEntryRef = { ds: chartApi.paneModel('second').dataSource, entryRef: ['main', 'ohlcv1'] };
-// }, 100 * i++, i);
-
-// i += 50;
-//
 // setTimeout((j: number) => {
 //   console.log(`${j}) chartApi.togglePane(mainDs.id);`);
 //   chartApi.togglePane(mainDs.id);

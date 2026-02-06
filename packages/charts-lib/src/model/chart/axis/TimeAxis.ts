@@ -2,9 +2,8 @@ import Axis from '@/model/chart/axis/Axis';
 import { type AxisOptions, ControlMode, ZoomType } from '@/model/chart/axis/types';
 import type { UTCTimestamp, Range } from '@/model/chart/types';
 import type { TextStyle } from '@/model/chart/types/styles';
-import { PostConstruct } from '@/model/type-defs/decorators';
+import { PostConstruct, type Wrapped } from 'blackswan-foundation';
 import type { HistoricalTransactionManager } from '@/model/history';
-import type { Wrapped } from '@/model/type-defs';
 import { UpdateTimeAxisJustfollow } from '@/model/chart/axis/incidents';
 
 export interface TimeAxisOptions extends AxisOptions<UTCTimestamp> {

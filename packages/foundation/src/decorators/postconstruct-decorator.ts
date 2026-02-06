@@ -1,5 +1,5 @@
  
-import type { HasPostConstruct } from '@/model/type-defs/optional';
+import type { HasPostConstruct } from '../types/optional';
 
 type Constructor<T> = new (...args: any[]) => T;
 

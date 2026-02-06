@@ -1,0 +1,13 @@
+{
+  "name": "blackswan-foundation",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "test:unit": "vitest --root ./"
+  }
+}

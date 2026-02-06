@@ -1,8 +1,5 @@
-import type { HasCenterPos, HasCursor } from '@/model/type-defs/optional';
-import { isString } from '@/model/type-defs';
-
+import { isString, type HasCenterPos, type HasCursor, type EntityId } from 'blackswan-foundation';
 import type { DataSourceId } from '@/model/datasource/types';
-import type { EntityId } from '@/model/misc/tools';
 import type { Point, Price, Range, UTCTimestamp } from '@/model/chart/types';
 import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
 

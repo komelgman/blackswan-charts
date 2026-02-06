@@ -1,4 +1,4 @@
-import type { Point } from '@/model/chart/types';
+import type { Point } from 'blackswan-foundation';
 
 export interface GenericMouseEvent extends Point {
   elementHeight: number;

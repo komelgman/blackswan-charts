@@ -2,7 +2,7 @@
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import { ControlMode } from '@/model/chart/axis/types';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper } from '@/model/misc/tools';
+import { IdHelper } from 'blackswan-foundation';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import type { Range, UTCTimestamp } from '@/model/chart/types';
 

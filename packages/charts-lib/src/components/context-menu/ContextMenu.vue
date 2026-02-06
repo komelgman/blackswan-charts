@@ -11,10 +11,9 @@ import { computed, type ComputedRef, inject, nextTick, onUnmounted, ref } from '
 import CheckboxMenuItem from '@/components/context-menu/CheckboxMenuItem.vue';
 import SimpleMenuItem from '@/components/context-menu/SimpleMenuItem.vue';
 import type { MenuItem } from '@/components/context-menu/types';
-import type { EventRemover } from '@/model/misc/document-listeners';
-import { onceDocument } from '@/model/misc/document-listeners';
+import { onceDocument, type EventRemover, type Point } from 'blackswan-foundation';
+
 import type { ChartStyle } from '@/model/chart/types/styles';
-import type { Point } from '@/model/chart/types';
 
 const rootElement = ref<HTMLDivElement>();
 const HIDDEN_POS: Point = { x: -10000, y: 0 };

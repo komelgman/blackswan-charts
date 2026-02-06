@@ -1,7 +1,7 @@
 ﻿ 
 import type { MockInstance } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clone } from '@/model/misc/object.clone';
+import { clone, IdHelper } from 'blackswan-foundation';
 import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';
@@ -12,7 +12,6 @@ import {
   isEqualDrawingReference,
 } from '@/model/datasource/types';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper } from '@/model/misc/tools';
 
 describe('DataSourceSharedEntries | DataSource entries operations', () => {
   let interconnect: DataSourceInterconnect;
@@ -644,5 +643,4 @@ describe('DataSourceSharedEntries | DataSource entries operations', () => {
     expect(hasRef(ds3, externalRef)).toBe(false);
   });
 });
-
 

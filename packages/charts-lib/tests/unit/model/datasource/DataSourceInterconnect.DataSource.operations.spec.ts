@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clone } from '@/model/misc/object.clone';
+import { clone, IdHelper } from 'blackswan-foundation';
 import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper } from '@/model/misc/tools';
 
 describe('DataSourceSharedEntries | DataSource operations', () => {
   let interconnect: DataSourceInterconnect;

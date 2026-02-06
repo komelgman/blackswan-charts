@@ -1,5 +1,5 @@
  
-import { clone } from '@/model/misc/object.clone';
+import { clone } from 'blackswan-foundation';
 import type { OHLCv, OHLCvContentOptions, UTCTimestamp } from '@/model/chart/types';
 import { AbstractDataPipe } from '@/model/databinding';
 

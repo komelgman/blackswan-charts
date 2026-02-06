@@ -1,3 +1,3 @@
-import type { EntityId } from '@/model/misc/tools';
+import type { EntityId } from 'blackswan-foundation';
 
 export declare type DataSourceId = EntityId;

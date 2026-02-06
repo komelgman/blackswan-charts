@@ -1,6 +1,6 @@
 import { computed, markRaw, reactive, watch, type ComputedRef } from 'vue';
 import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
-import { merge } from '@/model/misc/object.merge';
+import { merge, IdHelper, type DeepPartial } from 'blackswan-foundation';
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import AddNewPane from '@/model/chart/incidents/AddNewPane';
 import InvalidatePanesSizes from '@/model/chart/incidents/InvalidatePanesSizes';
@@ -15,14 +15,12 @@ import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/types';
 import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
-import type { DeepPartial } from '@/model/type-defs';
 import {
   HistoricalTransactionManager,
   History,
 } from '@/model/history';
 import { type ChartUserInteractions } from '@/model/chart/user-interactions';
 import { DefaultChartUserInteractions } from '@/model/chart/user-interactions/DefaultChartUserInteractions';
-import { IdHelper } from '@/model/misc/tools';
 import type { Price, Range } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';

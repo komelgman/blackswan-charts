@@ -16,3 +16,6 @@ Using Vue reactivity in the model provides immediate compatibility with Vue adap
 ## Consequences
 - Positive: Model state is directly reactive for Vue components; adapter complexity is reduced.
 - Negative: The model is coupled to Vue and UI-layer types, reducing portability and tightening dependency direction.
+
+## Update (2026-02-06)
+Generic primitives and shared utilities (including Point, Range, type-defs helpers, and document listeners) were moved into the new `packages/foundation` package. This reduces incidental coupling, but the model layer still depends on Vue reactivity and UI-layer types for rendering and interactions.

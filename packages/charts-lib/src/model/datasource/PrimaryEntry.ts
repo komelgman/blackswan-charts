@@ -2,10 +2,9 @@ import { reactive, shallowReactive } from 'vue';
 import type DataSource from '@/model/datasource/DataSource';
 import { isEqualDrawingReference, type DrawingReference } from '@/model/datasource/types/Drawing';
 import type { UTCTimestamp, Range, Price } from '@/model/chart/types';
-import type { Wrapped } from '@/model/type-defs';
+import { deepEqual, type Wrapped } from 'blackswan-foundation';
 import { NonReactive } from '@/model/type-defs/decorators';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
-import { deepEqual } from '@/model/misc/object.deepEqual';
 
 export declare type PrimaryEntryRef = { ds: DataSource, entryRef: DrawingReference };
 

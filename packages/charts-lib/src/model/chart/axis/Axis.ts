@@ -1,16 +1,11 @@
 import { markRaw, reactive, shallowReactive, watch, type WatchHandle } from 'vue';
-import { clone } from '@/model/misc/object.clone';
-import { merge } from '@/model/misc/object.merge';
+import { clone, merge, deepEqual, type EntityId, type Wrapped, type HasPostConstruct } from 'blackswan-foundation';
 import { ControlMode, type AxisOptions } from '@/model/chart/axis/types';
 import { UpdateAxisControlMode, UpdateAxisRange, UpdateAxisPrimaryEntryRef } from '@/model/chart/axis/incidents';
 import type { TextStyle } from '@/model/chart/types/styles';
-import type { EntityId } from '@/model/misc/tools';
 import type { LogicSize, Range } from '@/model/chart/types';
 import type { HistoricalTransactionManager } from '@/model/history';
-import type { Wrapped } from '@/model/type-defs';
 import { PrimaryEntry, type PrimaryEntryRef } from '@/model/datasource/PrimaryEntry';
-import { deepEqual } from '@/model/misc/object.deepEqual';
-import type { HasPostConstruct } from '@/model/type-defs/optional';
 import type { Label } from '@/model/chart/axis/label/Label';
 
 export default abstract class Axis<T extends number, Options extends AxisOptions<T>> implements HasPostConstruct {

@@ -42,7 +42,7 @@ export { OHLCvPipe } from './model/databinding/pipes/OHLCvPipe';
 export * from './model/history';
 
 export * from './model/misc/tools';
-export { shadeColor } from './model/misc/color';
+export { IdBuilder, IdHelper, shadeColor } from 'blackswan-foundation';
 
 export { default as defaultSketchers } from './model/default-config/Sketcher.Defaults';
 export { default as darkChartStyleDefaults } from './model/default-config/ChartStyle.Dark.Defaults';

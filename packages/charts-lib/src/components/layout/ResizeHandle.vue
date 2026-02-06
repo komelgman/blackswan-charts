@@ -4,8 +4,7 @@
 
 <script lang="ts" setup>
 import type { ResizeHandleMoveEvent } from '@/components/layout/events';
-import { onceDocument, onDocument } from '@/model/misc/document-listeners';
-import type { Point } from '@/model/chart/types';
+import { onceDocument, onDocument, type Point } from 'blackswan-foundation';
 
 export interface Props {
   index: number;

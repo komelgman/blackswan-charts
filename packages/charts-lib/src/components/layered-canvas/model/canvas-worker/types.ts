@@ -1,4 +1,4 @@
-import type { HasType } from '@/model/type-defs/optional';
+import type { HasType } from 'blackswan-foundation';
 import type { CanvasWorker } from '@/components/layered-canvas/model/canvas-worker/CanvasWorker';
 
 export enum WorkerRequestType {
