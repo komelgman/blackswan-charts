@@ -19,9 +19,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue';
-import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@/components/layered-canvas/events';
-import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@blackswan/layered-canvas/model';
+import { LayeredCanvas } from '@blackswan/layered-canvas/components';
+import type { LayeredCanvasOptions } from '@blackswan/layered-canvas/model';
 import ViewportDataSourceLayer from '@/model/chart/viewport/layers/ViewportDataSourceLayer';
 import ViewportGridLayer from '@/model/chart/viewport/layers/ViewportGridLayer';
 import ViewportHighlightingLayer from '@/model/chart/viewport/layers/ViewportHighlightingLayer';

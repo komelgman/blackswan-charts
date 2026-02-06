@@ -10,7 +10,7 @@ import type {
   GenericMouseEvent,
   MouseClickEvent,
   ZoomEvent,
-} from '@/components/layered-canvas/events';
+} from '@blackswan/layered-canvas/model';
 
 describe('DefaultChartUserInteractions', () => {
   it('handles undo/redo on Ctrl/Cmd+Z', () => {

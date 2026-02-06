@@ -1,0 +1,17 @@
+{
+  "name": "@blackswan/layout",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./model": "./src/model/index.ts",
+    "./components": "./src/components/index.ts"
+  },
+  "dependencies": {
+    "blackswan-foundation": "0.0.0",
+    "resize-observer-polyfill": "^1.5.1"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.24"
+  }
+}

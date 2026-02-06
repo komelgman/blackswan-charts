@@ -19,3 +19,6 @@ Using Vue reactivity in the model provides immediate compatibility with Vue adap
 
 ## Update (2026-02-06)
 Generic primitives and shared utilities (including Point, Range, type-defs helpers, and document listeners) were moved into the new `packages/foundation` package. This reduces incidental coupling, but the model layer still depends on Vue reactivity and UI-layer types for rendering and interactions.
+
+## Update (2026-02-06)
+layout and layered-canvas were extracted into standalone packages; model now depends on `@blackswan/*/model` instead of importing UI component paths directly.

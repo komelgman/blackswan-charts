@@ -4,10 +4,8 @@ export { default as TimeAxisWidget } from './components/chart/TimeAxisWidget.vue
 export { default as ViewportWidget } from './components/chart/ViewportWidget.vue';
 
 export * from './components/context-menu/types';
-export * from './components/layout/types';
-export * from './components/layout/events';
-export * from './components/layered-canvas/events';
-export * from './components/layered-canvas/types';
+export * from '@blackswan/layout/model';
+export * from '@blackswan/layered-canvas/model';
 
 export { Chart, type ChartOptions, type PaneRegistrationEvent } from './model/chart/Chart';
 export { ChartSerializer } from './model/chart/serialization/ChartSerializer';

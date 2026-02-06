@@ -1,7 +1,7 @@
 ﻿import { describe, expect, it, vi } from 'vitest';
 import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
-import type { PaneDescriptor, PaneSize } from '@/components/layout/types';
-import type { PanesSizeChangedEvent } from '@/components/layout/events';
+import type { PaneDescriptor, PaneSize } from '@blackswan/layout/model';
+import type { PanesSizeChangedEvent } from '@blackswan/layout/model';
 
 describe('PanesSizeChanged', () => {
   it('applies and inverses sizes', () => {

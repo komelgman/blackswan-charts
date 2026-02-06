@@ -1,4 +1,4 @@
-import type { LayerContext } from '@/components/layered-canvas/types';
+import type { LayerContext } from '@blackswan/layered-canvas/model';
 
 export default abstract class AbstractInvalidator {
   public contextValue!: LayerContext;

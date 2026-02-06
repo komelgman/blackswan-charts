@@ -1,4 +1,4 @@
-import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
+import type { CanvasRenderingContext } from '@blackswan/layered-canvas/model';
 import type { BarColors, Point } from '@/model/chart/types';
 import type { Graphics } from '@/model/datasource/types';
 

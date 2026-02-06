@@ -1,4 +1,4 @@
-import type { PaneDescriptor } from '@/components/layout/types';
+import type { PaneDescriptor } from '@blackswan/layout/model';
 import { AbstractHistoricalIncident, type HistoricalIncidentOptions } from '@/model/history';
 
 export interface InvalidatePanesSizesOptions extends HistoricalIncidentOptions {

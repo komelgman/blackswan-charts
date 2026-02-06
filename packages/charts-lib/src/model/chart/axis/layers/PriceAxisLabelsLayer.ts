@@ -1,9 +1,9 @@
 import { computed, watch, type WatchStopHandle } from 'vue';
-import type { LayerContext } from '@/components/layered-canvas/types';
+import type { LayerContext } from '@blackswan/layered-canvas/model';
 import { makeFont } from '@/model/misc/function.makeFont';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
-import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
+import { WorkerRenderLayer } from '@blackswan/layered-canvas/model';
 import type { RenderPriceLabelsMessage } from '@/model/chart/axis/layers/workers/PriceAxisLabelsRenderWorker';
 
 export const PRICE_LABEL_PADDING = 8;

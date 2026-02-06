@@ -1,7 +1,7 @@
 import { setLineStyle } from '@/model/misc/line-functions';
 import type { Graphics } from '@/model/datasource/types';
 import type { LineStyle, Point } from '@/model/chart/types';
-import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
+import type { CanvasRenderingContext } from '@blackswan/layered-canvas/model';
 
 export default abstract class AbstractLineGraphics<GraphicOptions> implements Graphics {
   protected path!: Path2D;

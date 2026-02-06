@@ -1,7 +1,7 @@
 import type { Graphics } from '@/model/datasource/types';
 import type { CandleColors, CandleType, Point } from '@/model/chart/types';
 import type { CandlestickBarStyle } from '@/model/chart/viewport/sketchers/renderers';
-import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
+import type { CanvasRenderingContext } from '@blackswan/layered-canvas/model';
 
 export default class BatchCandleGraphics implements Graphics {
   private readonly barPath: Path2D;

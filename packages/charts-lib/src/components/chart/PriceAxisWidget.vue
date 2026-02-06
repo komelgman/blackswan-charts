@@ -17,9 +17,9 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue';
-import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
-import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@blackswan/layered-canvas/model';
+import { LayeredCanvas } from '@blackswan/layered-canvas/components';
+import type { LayeredCanvasOptions } from '@blackswan/layered-canvas/model';
 import type { ChartWidgetSharedState } from '@/components/chart/ChartWidget.vue';
 import type DataSource from '@/model/datasource/DataSource';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';

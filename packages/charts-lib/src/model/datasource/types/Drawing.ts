@@ -1,7 +1,7 @@
 import { isString, type HasCenterPos, type HasCursor, type EntityId } from 'blackswan-foundation';
 import type { DataSourceId } from '@/model/datasource/types';
 import type { Point, Price, Range, UTCTimestamp } from '@/model/chart/types';
-import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
+import type { CanvasRenderingContext } from '@blackswan/layered-canvas/model';
 
 export declare type DrawingId = EntityId;
 export declare type ExternalDrawingId = [DataSourceId, DrawingId];

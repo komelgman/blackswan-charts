@@ -1,4 +1,4 @@
-import type { DragMoveEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent } from '@blackswan/layered-canvas/model';
 
 export interface DragHandle {
   (e: DragMoveEvent): void;

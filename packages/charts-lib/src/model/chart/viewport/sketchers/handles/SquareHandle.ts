@@ -1,7 +1,7 @@
 import { setLineStyle } from '@/model/misc/line-functions';
 import type { DrawingHandle } from '@/model/datasource/types';
 import type { Point, RectStyle } from '@/model/chart/types';
-import type { CanvasRenderingContext } from '@/components/layered-canvas/types';
+import type { CanvasRenderingContext } from '@blackswan/layered-canvas/model';
 
 export default class SquareHandle implements DrawingHandle {
   private readonly nonLockedCursor: string;

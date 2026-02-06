@@ -16,9 +16,9 @@
 </template>
 
 <script setup lang="ts">
-import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@/components/layered-canvas/events';
-import LayeredCanvas from '@/components/layered-canvas/LayeredCanvas.vue';
-import type { LayeredCanvasOptions } from '@/components/layered-canvas/types';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@blackswan/layered-canvas/model';
+import { LayeredCanvas } from '@blackswan/layered-canvas/components';
+import type { LayeredCanvasOptions } from '@blackswan/layered-canvas/model';
 import { TimeAxisLabelsLayer } from '@/model/chart/axis/layers';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';

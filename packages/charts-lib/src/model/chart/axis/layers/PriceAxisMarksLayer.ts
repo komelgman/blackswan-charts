@@ -10,7 +10,7 @@ import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Predicate } from 'blackswan-foundation';
 import type DataSource from '@/model/datasource/DataSource';
 import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
-import { DirectRenderLayer } from '@/components/layered-canvas/model/DirectRenderLayer';
+import { DirectRenderLayer } from '@blackswan/layered-canvas/model';
 
 export class PriceAxisMarksLayer extends DirectRenderLayer {
   private readonly dataSource: DataSource;

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { PaneOptions } from '@/components/layout/types';
+import type { PaneOptions } from '@blackswan/layout/model';
 import { ControlMode } from '@/model/chart/axis/types';
 import { Chart } from '@/model/chart/Chart';
 import { ChartDeserializer } from '@/model/chart/serialization/ChartDesializer';

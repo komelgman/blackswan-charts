@@ -1,4 +1,4 @@
-import type { LayerContext } from '@/components/layered-canvas/types';
+import type { LayerContext } from '@blackswan/layered-canvas/model';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import { isEqualDrawingReference, type DataSourceEntry } from '@/model/datasource/types';
 import type { Point } from '@/model/chart/types';

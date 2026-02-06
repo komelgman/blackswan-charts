@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/experimental-ct-vue';
 import type { Page } from 'playwright';
-import type { PaneOptions } from '@/components/layout/types';
+import type { PaneOptions } from '@blackswan/layout/model';
 import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type ChartWidgetTestContext from './tools/ChartWidgetTestContext';
 import { delay } from './tools/utils';

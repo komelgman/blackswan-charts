@@ -7,7 +7,7 @@ import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidato
 import { HistoricalTransactionManager, History } from '@/model/history';
 import { IdHelper } from 'blackswan-foundation';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
-import type { LayerContext } from '@/components/layered-canvas/types';
+import type { LayerContext } from '@blackswan/layered-canvas/model';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 
 function createPriceAxis() {

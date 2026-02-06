@@ -1,5 +1,5 @@
 import { toRaw } from 'vue';
-import type { DragMoveEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent } from '@blackswan/layered-canvas/model';
 import { inRange } from 'blackswan-foundation';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';

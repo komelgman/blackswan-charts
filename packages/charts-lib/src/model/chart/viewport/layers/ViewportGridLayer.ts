@@ -1,7 +1,7 @@
 import { computed, inject, watch, type ComputedRef, type WatchStopHandle } from 'vue';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import { WorkerRenderLayer } from '@/components/layered-canvas/model/WorkerRenderLayer';
+import { WorkerRenderLayer } from '@blackswan/layered-canvas/model';
 import type { RenderViewportGridMessage } from '@/model/chart/viewport/layers/workers/ViewportGridRenderWorker';
 import type { ChartStyle } from '@/model/chart/types/styles';
 

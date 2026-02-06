@@ -1,4 +1,4 @@
-import { CanvasWorker } from '@/components/layered-canvas/model/canvas-worker/CanvasWorker';
+import { CanvasWorker } from '@blackswan/layered-canvas/model';
 import {
   initMessageHandler,
   WorkerRequestType,
@@ -7,7 +7,7 @@ import {
   type MessageHandler,
   type WorkerMessage,
   type WorkerResponse,
-} from '@/components/layered-canvas/model/canvas-worker/types';
+} from '@blackswan/layered-canvas/model';
 import { drawHorizontalLine, drawVerticalLine } from '@/model/misc/line-functions';
 import type { Label } from '@/model/chart/axis/label/Label';
 

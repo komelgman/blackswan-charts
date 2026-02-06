@@ -1,4 +1,4 @@
-import type { DragMoveEvent, GenericMouseEvent, MouseClickEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, GenericMouseEvent, MouseClickEvent } from '@blackswan/layered-canvas/model';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';

@@ -1,5 +1,5 @@
 import { computed, markRaw, reactive, watch, type ComputedRef } from 'vue';
-import type { PaneDescriptor, PaneId, PaneOptions } from '@/components/layout/types';
+import type { PaneDescriptor, PaneId, PaneOptions } from '@blackswan/layout/model';
 import { merge, IdHelper, type DeepPartial } from 'blackswan-foundation';
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import AddNewPane from '@/model/chart/incidents/AddNewPane';

@@ -6,7 +6,7 @@ import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/types';
 import { IdHelper, clone, merge } from 'blackswan-foundation';
 import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
-import type { PaneOptions } from '@/components/layout/types';
+import type { PaneOptions } from '@blackswan/layout/model';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';

@@ -5,6 +5,8 @@ blackswan-charts is a Vue + TypeScript monorepo that ships a reusable charting l
 
 ## Repo Map
 - Library source: `frontend/packages/charts-lib/src`
+- Layout package: `frontend/packages/layout/src`
+- Layered-canvas package: `frontend/packages/layered-canvas/src`
 - Library tests: `frontend/packages/charts-lib/tests`
 - Demo app source: `frontend/apps/charts-demo/src`
 - Demo tests: `frontend/apps/charts-demo/tests`
@@ -41,6 +43,9 @@ blackswan-charts is a Vue + TypeScript monorepo that ships a reusable charting l
 - `apps/*` may depend on `packages/*` only. No library code depends on apps.
 - `components/chart` depends on `model` and `components/*`, not the other way around.
 - `model` must not import Vue SFCs or app code. Keep UI-only behavior in `components`.
+
+- `model` may depend on `@blackswan/layout/model` and `@blackswan/layered-canvas/model`, not on any `@blackswan/*/components`.
+- `@blackswan/layout/components` and `@blackswan/layered-canvas/components` may depend only on their own `model` submodule, `blackswan-foundation`, and Vue.
 - Shared event and type contracts must live in `model/type-defs` or a dedicated `model/ui-ports` module, not inside UI components.
 - Public API is defined in `packages/charts-lib/src/index.ts`. Add exports deliberately.
 - Violations of dependency direction are a last resort and require a Decision Record with evidence.

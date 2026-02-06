@@ -13,7 +13,7 @@
     "build:demo": "npm -w apps/charts-demo run build",
     "typecheck": "npm -w packages/charts-lib run typecheck && npm -w apps/charts-demo run typecheck",
     "lint": "eslint . --fix",
-    "test:unit": "npm -w packages/charts-lib run test:unit",
+    "test:unit": "npm -ws --if-present run test:unit",
     "test:ct": "npm -w packages/charts-lib run test:ct",
     "test:e2e": "npm -w apps/charts-demo run test:e2e"
   },

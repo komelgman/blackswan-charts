@@ -3,7 +3,7 @@ import type {
   MouseClickEvent,
   GenericMouseEvent,
   ZoomEvent,
-} from '@/components/layered-canvas/events';
+} from '@blackswan/layered-canvas/model';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type Axis from '@/model/chart/axis/Axis';
 

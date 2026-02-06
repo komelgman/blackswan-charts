@@ -3,7 +3,7 @@ import type { InteractionsHandler } from '@/model/chart/user-interactions/Intera
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { Chart } from '@/model/chart/Chart';
-import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@/components/layered-canvas/events';
+import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@blackswan/layered-canvas/model';
 import { ControlMode } from '@/model/chart/axis/types';
 import type { ContextMenuOptionsProvider } from '@/components/context-menu/types';
 import { PriceAxisContextMenu, TimeAxisContextMenu, ViewportContextMenu } from '@/model/chart/user-interactions/context-menu';
