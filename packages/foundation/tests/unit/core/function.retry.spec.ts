@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest';
-import { retry, RetryError } from 'blackswan-foundation';
+import { retry, RetryError } from '@blackswan/foundation';
 
 test('retry resolves after transient failures', async () => {
   vi.useFakeTimers();

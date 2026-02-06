@@ -34,7 +34,7 @@ import type {
   ZoomEvent,
 } from '../model/events';
 import type { LayeredCanvasOptions } from '../model/types';
-import { onceDocument, onDocument, type EventRemover, type Point } from 'blackswan-foundation';
+import { onceDocument, onDocument, type EventRemover, type Point } from '@blackswan/foundation';
 
 export interface Props {
   options: LayeredCanvasOptions;

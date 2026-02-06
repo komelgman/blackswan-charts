@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chart } from '@/model/chart/Chart';
 import DataSource from '@/model/datasource/DataSource';
-import { IdHelper } from 'blackswan-foundation';
+import { IdHelper } from '@blackswan/foundation';
 import { ControlMode } from '@/model/chart/axis/types';
 
 async function createChartWithTwoPanes() {

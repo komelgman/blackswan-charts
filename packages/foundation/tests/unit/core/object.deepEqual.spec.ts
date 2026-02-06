@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { deepEqual } from 'blackswan-foundation';
+import { deepEqual } from '@blackswan/foundation';
 
 describe('deepEqual', () => {
   test('handles primitives and identity', () => {

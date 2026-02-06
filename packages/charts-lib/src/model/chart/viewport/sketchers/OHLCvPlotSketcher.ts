@@ -6,7 +6,7 @@ import type { TimePeriod } from '@/model/chart/types/time';
 import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
-import { merge, deepEqual, type DeepPartial } from 'blackswan-foundation';
+import { merge, deepEqual, type DeepPartial } from '@blackswan/foundation';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
 import { ControlMode } from '@/model/chart/axis/types';
 

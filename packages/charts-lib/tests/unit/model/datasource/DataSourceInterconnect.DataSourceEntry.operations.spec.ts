@@ -1,7 +1,7 @@
 ﻿ 
 import type { MockInstance } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clone, IdHelper } from 'blackswan-foundation';
+import { clone, IdHelper } from '@blackswan/foundation';
 import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import { DataSourceChangeEventReason, type DataSourceChangeEventsMap } from '@/model/datasource/events';

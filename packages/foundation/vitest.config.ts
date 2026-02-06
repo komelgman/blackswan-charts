@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'url';
 export default defineConfig({
   resolve: {
     alias: [
-      { find: 'blackswan-foundation', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
+      { find: '@blackswan/foundation', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
     ],
   },
   test: {

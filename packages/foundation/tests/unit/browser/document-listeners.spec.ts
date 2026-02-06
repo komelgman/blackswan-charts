@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { expect, test, vi } from 'vitest';
-import { onDocument, onceDocument } from 'blackswan-foundation';
+import { onDocument, onceDocument } from '@blackswan/foundation';
 
 test('onDocument registers and removes listener', () => {
   const handler = vi.fn();

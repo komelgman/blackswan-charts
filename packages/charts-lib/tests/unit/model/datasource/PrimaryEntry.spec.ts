@@ -1,7 +1,7 @@
 import { watch } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import DataSource from '@/model/datasource/DataSource';
-import { IdHelper, clone } from 'blackswan-foundation';
+import { IdHelper, clone } from '@blackswan/foundation';
 import { History, HistoricalTransactionManager } from '@/model/history';
 import type { DataSourceEntry, DrawingOptions } from '@/model/datasource/types';
 import { PrimaryEntry } from '@/model/datasource/PrimaryEntry';

@@ -1,7 +1,7 @@
 import type { Chart } from '@/model/chart/Chart';
 import type DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry } from '@/model/datasource/types';
-import { isString, filterInPlace, retry, type HasType } from 'blackswan-foundation';
+import { isString, filterInPlace, retry, type HasType } from '@blackswan/foundation';
 import {
   DataSourceChangeEventReason,
   type DataSourceChangeEvent,

@@ -1,5 +1,5 @@
 import { markRaw, reactive, shallowReactive, watch, type WatchHandle } from 'vue';
-import { clone, merge, deepEqual, type EntityId, type Wrapped, type HasPostConstruct } from 'blackswan-foundation';
+import { clone, merge, deepEqual, type EntityId, type Wrapped, type HasPostConstruct } from '@blackswan/foundation';
 import { ControlMode, type AxisOptions } from '@/model/chart/axis/types';
 import { UpdateAxisControlMode, UpdateAxisRange, UpdateAxisPrimaryEntryRef } from '@/model/chart/axis/incidents';
 import type { TextStyle } from '@/model/chart/types/styles';

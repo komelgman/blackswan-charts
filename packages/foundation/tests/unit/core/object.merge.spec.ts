@@ -1,6 +1,6 @@
 /* eslint-disable no-sparse-arrays */
 import { describe, expect, it, test } from 'vitest';
-import { merge } from 'blackswan-foundation';
+import { merge } from '@blackswan/foundation';
 
 describe('merge tuples', () => {
   it('should throw error', () => {

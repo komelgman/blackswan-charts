@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Viewport } from '@/model/chart/viewport/Viewport';
 import DataSource from '@/model/datasource/DataSource';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper } from 'blackswan-foundation';
+import { IdHelper } from '@blackswan/foundation';
 import type { DragMoveEvent, GenericMouseEvent, MouseClickEvent } from '@blackswan/layered-canvas/model';
 import type { LayerContext } from '@blackswan/layered-canvas/model';
 import type { DataSourceEntry, DrawingOptions } from '@/model/datasource/types';

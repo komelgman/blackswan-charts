@@ -1,6 +1,6 @@
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import type { Nominal } from 'blackswan-foundation';
-export type { Range, Point } from 'blackswan-foundation';
+import type { Nominal } from '@blackswan/foundation';
+export type { Range, Point } from '@blackswan/foundation';
 
 export declare type Price = Nominal<number, 'Price'>;
 export declare type UTCTimestamp = Nominal<number, 'UTCTimestamp'>;

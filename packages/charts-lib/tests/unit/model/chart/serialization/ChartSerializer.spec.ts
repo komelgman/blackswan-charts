@@ -4,7 +4,7 @@ import { Chart } from '@/model/chart/Chart';
 import { ChartSerializer } from '@/model/chart/serialization/ChartSerializer';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/types';
-import { IdHelper, clone, merge } from 'blackswan-foundation';
+import { IdHelper, clone, merge } from '@blackswan/foundation';
 import type { ViewportOptions } from '@/model/chart/viewport/Viewport';
 import type { PaneOptions } from '@blackswan/layout/model';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';

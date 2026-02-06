@@ -1,4 +1,4 @@
-import { clone, isString } from 'blackswan-foundation';
+import { clone, isString } from '@blackswan/foundation';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';

@@ -2,7 +2,7 @@ import { reactive, shallowReactive } from 'vue';
 import type DataSource from '@/model/datasource/DataSource';
 import { isEqualDrawingReference, type DrawingReference } from '@/model/datasource/types/Drawing';
 import type { UTCTimestamp, Range, Price } from '@/model/chart/types';
-import { deepEqual, type Wrapped } from 'blackswan-foundation';
+import { deepEqual, type Wrapped } from '@blackswan/foundation';
 import { NonReactive } from '@/model/type-defs/decorators';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
 

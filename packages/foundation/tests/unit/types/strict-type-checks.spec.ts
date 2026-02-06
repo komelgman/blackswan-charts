@@ -7,7 +7,7 @@ import {
   isBoolean,
   notNull,
   undefinedIfNull,
-} from 'blackswan-foundation';
+} from '@blackswan/foundation';
 
 test('isEmpty', () => {
   expect(isEmpty(undefined)).toBe(true);

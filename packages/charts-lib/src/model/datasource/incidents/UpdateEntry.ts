@@ -1,4 +1,4 @@
-import { merge, isEmpty, type HasMergeWith, type DeepPartial } from 'blackswan-foundation';
+import { merge, isEmpty, type HasMergeWith, type DeepPartial } from '@blackswan/foundation';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
 import {

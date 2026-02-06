@@ -1,4 +1,4 @@
-import { isString } from 'blackswan-foundation';
+import { isString } from '@blackswan/foundation';
 import type { DataSourceEntry, DrawingReference } from '@/model/datasource/types';
 
 interface StorageEntry {

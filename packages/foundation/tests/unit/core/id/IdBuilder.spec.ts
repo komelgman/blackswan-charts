@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { IdBuilder } from 'blackswan-foundation';
+import { IdBuilder } from '@blackswan/foundation';
 
 test('IdBuilder generates lowercase ids and increments', () => {
   const builder = new IdBuilder();

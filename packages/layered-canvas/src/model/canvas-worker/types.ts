@@ -1,4 +1,4 @@
-import type { HasType } from 'blackswan-foundation';
+import type { HasType } from '@blackswan/foundation';
 import type { CanvasWorker } from './CanvasWorker';
 
 export enum WorkerRequestType {

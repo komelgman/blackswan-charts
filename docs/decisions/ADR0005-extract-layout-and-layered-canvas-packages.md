@@ -8,7 +8,7 @@ Extract `layout` and `layered-canvas` into their own packages:
 - `@blackswan/layout` with `src/model` and `src/components`
 - `@blackswan/layered-canvas` with `src/model` and `src/components`
 
-`charts-lib/model` depends only on `@blackswan/*/model`. Vue components are isolated under `@blackswan/*/components` and may depend only on `blackswan-foundation`, their own `model` module, and Vue.
+`charts-lib/model` depends only on `@blackswan/*/model`. Vue components are isolated under `@blackswan/*/components` and may depend only on `@blackswan/foundation`, their own `model` module, and Vue.
 
 ## Rationale
 This separates engine logic from UI components while preserving existing Vue-based behavior. It removes direct `model -> components` imports and makes the UI packages reusable without entangling them with chart model internals.

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { IdHelper } from 'blackswan-foundation';
+import { IdHelper } from '@blackswan/foundation';
 
 test('IdHelper provides independent builders per group', () => {
   const helper = new IdHelper();

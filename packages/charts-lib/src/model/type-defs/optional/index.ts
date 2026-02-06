@@ -6,4 +6,4 @@ export type {
   HasPostConstruct,
   HasStyle,
   HasType,
-} from 'blackswan-foundation';
+} from '@blackswan/foundation';

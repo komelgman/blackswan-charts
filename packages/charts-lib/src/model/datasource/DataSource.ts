@@ -1,4 +1,4 @@
-import { clone, merge, isString, type DeepPartial, type Predicate, type IdHelper } from 'blackswan-foundation';
+import { clone, merge, isString, type DeepPartial, type Predicate, type IdHelper } from '@blackswan/foundation';
 import { NonReactive } from '@/model/type-defs/decorators';
 import DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';

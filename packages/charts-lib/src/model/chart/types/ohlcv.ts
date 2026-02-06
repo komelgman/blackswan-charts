@@ -1,4 +1,4 @@
-import type { HasType } from 'blackswan-foundation';
+import type { HasType } from '@blackswan/foundation';
 import type { UTCTimestamp, Price, Range } from '@/model/chart/types';
 import type { TimePeriods } from '@/model/chart/types/time';
 import type { ExternalContent } from '@/model/databinding';

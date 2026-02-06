@@ -1,4 +1,4 @@
-import type { Cloneable } from 'blackswan-foundation';
+import type { Cloneable } from '@blackswan/foundation';
 import type { PriceScalingFunction } from '@/model/chart/axis/scaling/PriceScalingFunction';
 import type { Price } from '@/model/chart/types';
 

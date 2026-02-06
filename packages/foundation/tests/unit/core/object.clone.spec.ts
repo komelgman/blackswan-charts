@@ -1,6 +1,6 @@
 /* eslint-disable no-sparse-arrays */
 import { expect, test } from 'vitest';
-import { clone } from 'blackswan-foundation';
+import { clone } from '@blackswan/foundation';
 
 test.each([
   { a: [], ex: [] },

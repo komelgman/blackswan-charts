@@ -1,5 +1,5 @@
 import type { DragMoveEvent } from '@blackswan/layered-canvas/model';
-import { invertColor } from 'blackswan-foundation';
+import { invertColor } from '@blackswan/foundation';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';

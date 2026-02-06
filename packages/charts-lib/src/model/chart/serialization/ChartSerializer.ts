@@ -1,6 +1,6 @@
 import { toRaw } from 'vue';
 import type { Chart } from '@/model/chart/Chart';
-import { clone, merge, isString } from 'blackswan-foundation';
+import { clone, merge, isString } from '@blackswan/foundation';
 import type { PaneDescriptor } from '@blackswan/layout/model';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { DrawingOptions } from '@/model/datasource/types';

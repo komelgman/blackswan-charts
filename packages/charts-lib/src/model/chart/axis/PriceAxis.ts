@@ -1,5 +1,5 @@
 import { computed, reactive, toRaw } from 'vue';
-import { clone, PostConstruct, type EntityId, type Wrapped } from 'blackswan-foundation';
+import { clone, PostConstruct, type EntityId, type Wrapped } from '@blackswan/foundation';
 import Axis from '@/model/chart/axis/Axis';
 import { type AxisOptions, ControlMode, ZoomType } from '@/model/chart/axis/types';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';

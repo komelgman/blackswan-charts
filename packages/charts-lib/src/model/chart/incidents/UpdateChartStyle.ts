@@ -1,4 +1,4 @@
-import { merge, isEmpty, type HasMergeWith, type DeepPartial } from 'blackswan-foundation';
+import { merge, isEmpty, type HasMergeWith, type DeepPartial } from '@blackswan/foundation';
 import { type ChartStyle } from '@/model/chart/types/styles';
 import { AbstractHistoricalIncident, type HistoricalIncidentOptions, type IsEmptyIncident } from '@/model/history';
 

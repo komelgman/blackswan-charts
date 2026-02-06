@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { rgbToHex, hexToRgb, invertColor, shadeColor } from 'blackswan-foundation';
+import { rgbToHex, hexToRgb, invertColor, shadeColor } from '@blackswan/foundation';
 
 describe('color utils', () => {
   test('rgbToHex and hexToRgb roundtrip', () => {

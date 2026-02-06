@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { PostConstruct } from 'blackswan-foundation';
+import { PostConstruct } from '@blackswan/foundation';
 
 test('PostConstruct calls postConstruct after instantiation', () => {
   class Foo {

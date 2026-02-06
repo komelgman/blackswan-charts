@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clone, IdHelper } from 'blackswan-foundation';
+import { clone, IdHelper } from '@blackswan/foundation';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceEntry, DrawingOptions, DrawingReference } from '@/model/datasource/types';
 import { HistoricalTransactionManager, History } from '@/model/history';

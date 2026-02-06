@@ -6,7 +6,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "blackswan-foundation": [
+      "@blackswan/foundation": [
         "./src/index.ts"
       ]
     }

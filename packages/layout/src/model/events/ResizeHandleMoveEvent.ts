@@ -1,4 +1,4 @@
-import type { Point } from 'blackswan-foundation';
+import type { Point } from '@blackswan/foundation';
 
 export default interface ResizeHandleMoveEvent {
   preventDrag: () => void;

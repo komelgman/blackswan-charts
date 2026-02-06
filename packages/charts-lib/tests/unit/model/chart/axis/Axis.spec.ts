@@ -2,7 +2,7 @@ import { nextTick, watch } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PriceAxis, type PriceAxisOptions } from '@/model/chart/axis/PriceAxis';
 import { HistoricalTransactionManager, History } from '@/model/history';
-import { IdHelper, clone } from 'blackswan-foundation';
+import { IdHelper, clone } from '@blackswan/foundation';
 import DataSource from '@/model/datasource/DataSource';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import type { Price, Range, UTCTimestamp } from '@/model/chart/types';

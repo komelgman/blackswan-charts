@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
  
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clone, IdHelper } from 'blackswan-foundation';
+import { clone, IdHelper } from '@blackswan/foundation';
 import DataSource from '@/model/datasource/DataSource';
 import {
   type DataSourceEntry,

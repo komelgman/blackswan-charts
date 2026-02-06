@@ -6,7 +6,7 @@ import {
   type HistoricalIncident,
   type IsEmptyIncident,
 } from '@/model/history';
-import { IdHelper } from 'blackswan-foundation';
+import { IdHelper } from '@blackswan/foundation';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions } from '@/model/datasource/types';
 

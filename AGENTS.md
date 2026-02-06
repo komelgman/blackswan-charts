@@ -45,7 +45,7 @@ blackswan-charts is a Vue + TypeScript monorepo that ships a reusable charting l
 - `model` must not import Vue SFCs or app code. Keep UI-only behavior in `components`.
 
 - `model` may depend on `@blackswan/layout/model` and `@blackswan/layered-canvas/model`, not on any `@blackswan/*/components`.
-- `@blackswan/layout/components` and `@blackswan/layered-canvas/components` may depend only on their own `model` submodule, `blackswan-foundation`, and Vue.
+- `@blackswan/layout/components` and `@blackswan/layered-canvas/components` may depend only on their own `model` submodule, `@blackswan/foundation`, and Vue.
 - Shared event and type contracts must live in `model/type-defs` or a dedicated `model/ui-ports` module, not inside UI components.
 - Public API is defined in `packages/charts-lib/src/index.ts`. Add exports deliberately.
 - Violations of dependency direction are a last resort and require a Decision Record with evidence.

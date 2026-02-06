@@ -1,5 +1,5 @@
 import { Themes, type ChartStyle, type ChartTheme } from '@/model/chart/types/styles';
-import { clone, merge } from 'blackswan-foundation';
+import { clone, merge } from '@blackswan/foundation';
 import lightTheme from '@/model/default-config/ChartStyle.Light.Defaults';
 import darkTheme from '@/model/default-config/ChartStyle.Dark.Defaults';
 import { makeFont } from '@/model/misc/function.makeFont';

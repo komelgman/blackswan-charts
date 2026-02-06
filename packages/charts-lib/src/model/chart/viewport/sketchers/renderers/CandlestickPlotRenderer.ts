@@ -15,7 +15,7 @@ import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { HasType } from 'blackswan-foundation';
+import type { HasType } from '@blackswan/foundation';
 import BatchCandleGraphics from '@/model/chart/viewport/sketchers/graphics/BatchCandleGraphics';
 
 export declare type CandlestickPlot = OHLCvPlot<CandlestickPlotOptions>;
