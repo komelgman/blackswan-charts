@@ -13,7 +13,11 @@
     "build:demo": "npm -w apps/charts-demo run build",
     "typecheck": "npm -w packages/charts-lib run typecheck && npm -w apps/charts-demo run typecheck",
     "lint": "eslint . --fix",
-    "test:unit": "npm -ws --if-present run test:unit",
+    "test:unit": "run-p test:unit:*",
+    "test:unit:charts-lib": "npm -w packages/charts-lib --if-present run test:unit",
+    "test:unit:foundation": "npm -w packages/foundation --if-present run test:unit",
+    "test:unit:layout": "npm -w packages/layout --if-present run test:unit",
+    "test:unit:layered-canvas": "npm -w packages/layered-canvas --if-present run test:unit",
     "test:ct": "npm -w packages/charts-lib run test:ct",
     "test:e2e": "npm -w apps/charts-demo run test:e2e"
   },
