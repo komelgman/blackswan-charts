@@ -3,9 +3,9 @@
 This is a map of the rendering flow and its boundaries. It is not a tutorial.
 
 ## Entry Points
-- Viewport rendering components: `frontend/packages/charts-lib/src/components/chart/ViewportWidget.vue`
-- Price axis rendering components: `frontend/packages/charts-lib/src/components/chart/PriceAxisWidget.vue`
-- Time axis rendering components: `frontend/packages/charts-lib/src/components/chart/TimeAxisWidget.vue`
+- Viewport rendering components: `frontend/packages/charts-lib/src/components/ViewportWidget.vue`
+- Price axis rendering components: `frontend/packages/charts-lib/src/components/PriceAxisWidget.vue`
+- Time axis rendering components: `frontend/packages/charts-lib/src/components/TimeAxisWidget.vue`
 - Layered canvas infrastructure: `frontend/packages/charts-lib/src/components/layered-canvas`
 
 ## Rendering Layers and Responsibilities

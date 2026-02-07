@@ -18,7 +18,7 @@ let $nextTick = (callback: () => void) => callback();
 
 function mount(): Promise<void> {
   return new Promise((resolve) => {
-    import('@/components/chart/ChartWidget.vue').then((module) => {
+    import('@/components/ChartWidget.vue').then((module) => {
       $nextTick = createApp(module.default, { chart }).mount('#root').$nextTick;
       $nextTick(resolve);
     });

@@ -41,7 +41,7 @@ blackswan-charts is a Vue + TypeScript monorepo that ships a reusable charting l
 
 ## Dependency Direction Rules (Mandatory)
 - `apps/*` may depend on `packages/*` only. No library code depends on apps.
-- `components/chart` depends on `model` and `components/*`, not the other way around.
+- `components` depends on `model` and `components/*`, not the other way around.
 - `model` must not import Vue SFCs or app code. Keep UI-only behavior in `components`.
 
 - `model` may depend on `@blackswan/layout/model` and `@blackswan/layered-canvas/model`, not on any `@blackswan/*/components`.
@@ -199,4 +199,3 @@ A change is high quality when:
 
 ## Skills
 Codex skill usage guidance lives in `frontend/SKILLS.md` (infrastructure-level).
-

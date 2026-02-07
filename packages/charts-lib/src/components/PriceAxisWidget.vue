@@ -19,7 +19,7 @@
 import { computed, inject } from 'vue';
 import { LayeredCanvas } from '@blackswan/layered-canvas/components';
 import type { DragMoveEvent, LayeredCanvasOptions, MouseClickEvent, GenericMouseEvent, ResizeEvent, ZoomEvent } from '@blackswan/layered-canvas/model';
-import type { ChartWidgetSharedState } from '@/components/chart/ChartWidget.vue';
+import type { ChartWidgetSharedState } from '@/components/ChartWidget.vue';
 import type DataSource from '@/model/datasource/DataSource';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';

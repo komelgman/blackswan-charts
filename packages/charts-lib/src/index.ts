@@ -1,7 +1,7 @@
-﻿export { default as ChartWidget } from './components/chart/ChartWidget.vue';
-export { default as PriceAxisWidget } from './components/chart/PriceAxisWidget.vue';
-export { default as TimeAxisWidget } from './components/chart/TimeAxisWidget.vue';
-export { default as ViewportWidget } from './components/chart/ViewportWidget.vue';
+﻿export { default as ChartWidget } from './components/ChartWidget.vue';
+export { default as PriceAxisWidget } from './components/PriceAxisWidget.vue';
+export { default as TimeAxisWidget } from './components/TimeAxisWidget.vue';
+export { default as ViewportWidget } from './components/ViewportWidget.vue';
 
 export * from '@blackswan/context-menu/types';
 export * from '@blackswan/layout/model';
@@ -45,3 +45,4 @@ export { IdBuilder, IdHelper, shadeColor } from '@blackswan/foundation';
 export { default as defaultSketchers } from './model/default-config/Sketcher.Defaults';
 export { default as darkChartStyleDefaults } from './model/default-config/ChartStyle.Dark.Defaults';
 export { default as lightChartStyleDefaults } from './model/default-config/ChartStyle.Light.Defaults';
+

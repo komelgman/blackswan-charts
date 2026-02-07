@@ -75,9 +75,9 @@ import {
   watch,
   type WatchStopHandle,
 } from 'vue';
-import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
-import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
-import ViewportWidget from '@/components/chart/ViewportWidget.vue';
+import PriceAxisWidget from '@/components/PriceAxisWidget.vue';
+import TimeAxisWidget from '@/components/TimeAxisWidget.vue';
+import ViewportWidget from '@/components/ViewportWidget.vue';
 import { ContextMenu } from '@blackswan/context-menu/components';
 import { vContextMenuDirective } from '@blackswan/context-menu/model';
 import { BoxLayout, Divider, Multipane } from '@blackswan/layout/components';

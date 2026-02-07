@@ -7,7 +7,7 @@ This is a map of the chart engine lifecycle. It is not a tutorial.
 - Engine orchestrator: `frontend/packages/charts-lib/src/model/chart/Chart.ts`
 - Data source model: `frontend/packages/charts-lib/src/model/datasource/DataSource.ts`
 - Data binding: `frontend/packages/charts-lib/src/model/databinding/DataBinding.ts`
-- UI shell and wiring: `frontend/packages/charts-lib/src/components/chart/ChartWidget.vue`
+- UI shell and wiring: `frontend/packages/charts-lib/src/components/ChartWidget.vue`
 
 ## Lifecycle Phases
 1. Construction
