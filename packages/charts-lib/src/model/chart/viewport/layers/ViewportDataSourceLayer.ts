@@ -6,10 +6,9 @@ import {
   DataSourceChangeEventReason,
   type DataSourceChangeEventsMap,
 } from '@/model/datasource/events';
-import { DirectRenderLayer } from '@blackswan/layered-canvas/model';
+import { type LayerContext, DirectRenderLayer } from '@blackswan/layered-canvas/model';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import DataSourceInvalidator from '@/model/datasource/DataSourceInvalidator';
-import type { LayerContext } from '@blackswan/layered-canvas/model';
 
 export default class ViewportDataSourceLayer extends DirectRenderLayer {
   private readonly dataSource: DataSource;

@@ -1,5 +1,5 @@
-import { CanvasWorker } from '@blackswan/layered-canvas/model';
 import {
+  CanvasWorker,
   initMessageHandler,
   WorkerRequestType,
   WorkerResponseType,

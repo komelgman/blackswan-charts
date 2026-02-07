@@ -1,9 +1,8 @@
 import { computed, watch, type WatchStopHandle } from 'vue';
-import type { LayerContext } from '@blackswan/layered-canvas/model';
+import { type LayerContext, WorkerRenderLayer } from '@blackswan/layered-canvas/model';
 import { makeFont } from '@/model/misc/function.makeFont';
 import TimeLabelsInvalidator from '@/model/chart/axis/label/TimeLabelsInvalidator';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
-import { WorkerRenderLayer } from '@blackswan/layered-canvas/model';
 import type { RenderTimeLabelsMessage } from '@/model/chart/axis/layers/workers/TimeAxisLabelsRenderWorker';
 
 export class TimeAxisLabelsLayer extends WorkerRenderLayer {

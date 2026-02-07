@@ -1,6 +1,5 @@
 import type { HasMergeWith } from '@blackswan/foundation';
-import type { PanesSizeChangedEvent } from '@blackswan/layout/model';
-import type { PaneDescriptor, PaneSize } from '@blackswan/layout/model';
+import type { PaneDescriptor, PaneSize, PanesSizeChangedEvent } from '@blackswan/layout/model';
 import { AbstractHistoricalIncident, type HistoricalIncidentOptions } from '@/model/history';
 
 export interface PanesSizeChangedOptions extends HistoricalIncidentOptions {
