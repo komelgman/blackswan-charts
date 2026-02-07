@@ -1,4 +1,4 @@
-import { isString } from '@blackswan/foundation';
+import { isString, NonReactive } from '@blackswan/foundation';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceSharedEntries from '@/model/datasource/DataSourceSharedEntries';
 import {
@@ -14,8 +14,6 @@ import type {
   DrawingId,
   DrawingReference,
 } from '@/model/datasource/types';
-import { NonReactive } from '@/model/type-defs/decorators';
-
 declare type Action = (dsse: DataSourceSharedEntries, ref: DrawingReference, descriptor: DrawingDescriptor) => void;
 
 @NonReactive

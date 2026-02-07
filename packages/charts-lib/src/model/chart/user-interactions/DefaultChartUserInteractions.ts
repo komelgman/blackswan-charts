@@ -8,7 +8,7 @@ import { ControlMode } from '@/model/chart/axis/types';
 import type { ContextMenuOptionsProvider } from '@/components/context-menu/types';
 import { PriceAxisContextMenu, TimeAxisContextMenu, ViewportContextMenu } from '@/model/chart/user-interactions/context-menu';
 import type { ChartUserInteractions } from '@/model/chart/user-interactions/ChartUserInteractions';
-import { NonReactive } from '@/model/type-defs/decorators';
+import { NonReactive } from '@blackswan/foundation';
 
 @NonReactive
 export class DefaultChartUserInteractions implements ChartUserInteractions {

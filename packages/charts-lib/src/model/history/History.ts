@@ -1,6 +1,6 @@
 import { InitialIncident } from '@/model/history/incidents';
 import { type HistoricalIncidentReport, HistoricalProtocol, HistoricalProtocolSign } from '@/model/history';
-import { NonReactive } from '@/model/type-defs/decorators';
+import { NonReactive } from '@blackswan/foundation';
 
 export interface HistoricalProtocolOptions {
   protocolTitle: string;

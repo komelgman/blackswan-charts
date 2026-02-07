@@ -1,10 +1,8 @@
-import { clone, isString } from '@blackswan/foundation';
+import { clone, isString, NonReactive } from '@blackswan/foundation';
 import type DataSource from '@/model/datasource/DataSource';
 import type DataSourceEntriesStorage from '@/model/datasource/DataSourceEntriesStorage';
 import { DataSourceChangeEventReason } from '@/model/datasource/events';
 import type { DataSourceEntry, DataSourceId, DrawingOptions, DrawingReference } from '@/model/datasource/types';
-import { NonReactive } from '@/model/type-defs/decorators';
-
 @NonReactive
 export default class DataSourceSharedEntries {
   public readonly dataSource: DataSource;
