@@ -1,4 +1,4 @@
-import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/types';
+import type { ContextMenuOptionsProvider, MenuItem } from '@blackswan/context-menu/types';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 
 export class TimeAxisContextMenu implements ContextMenuOptionsProvider {

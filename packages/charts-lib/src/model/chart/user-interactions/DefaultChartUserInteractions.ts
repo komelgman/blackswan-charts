@@ -5,7 +5,7 @@ import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { Chart } from '@/model/chart/Chart';
 import type { DragMoveEvent, MouseClickEvent, GenericMouseEvent, ZoomEvent } from '@blackswan/layered-canvas/model';
 import { ControlMode } from '@/model/chart/axis/types';
-import type { ContextMenuOptionsProvider } from '@/components/context-menu/types';
+import type { ContextMenuOptionsProvider } from '@blackswan/context-menu/types';
 import { PriceAxisContextMenu, TimeAxisContextMenu, ViewportContextMenu } from '@/model/chart/user-interactions/context-menu';
 import type { ChartUserInteractions } from '@/model/chart/user-interactions/ChartUserInteractions';
 import { NonReactive } from '@blackswan/foundation';

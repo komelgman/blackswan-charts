@@ -1,4 +1,4 @@
-import type { ContextMenuOptionsProvider } from '@/components/context-menu/types';
+import type { ContextMenuOptionsProvider } from '@blackswan/context-menu/types';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { InteractionsHandler } from '@/model/chart/user-interactions/InteractionsHandler';

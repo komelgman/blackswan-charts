@@ -78,8 +78,8 @@ import {
 import PriceAxisWidget from '@/components/chart/PriceAxisWidget.vue';
 import TimeAxisWidget from '@/components/chart/TimeAxisWidget.vue';
 import ViewportWidget from '@/components/chart/ViewportWidget.vue';
-import ContextMenu from '@/components/context-menu/ContextMenu.vue';
-import vContextMenuDirective from '@/components/context-menu/model/ContextMenuDirective';
+import { ContextMenu } from '@blackswan/context-menu/components';
+import { vContextMenuDirective } from '@blackswan/context-menu/model';
 import { BoxLayout, Divider, Multipane } from '@blackswan/layout/components';
 import { Direction, type PaneId, type PanesSizeChangedEvent } from '@blackswan/layout/model';
 import type { Chart, PaneRegistrationEvent } from '@/model/chart/Chart';

@@ -1,4 +1,4 @@
-import type { MenuItem } from '@/components/context-menu/types';
+import type { MenuItem } from '@blackswan/context-menu/types';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import type { Viewport } from '@/model/chart/viewport/Viewport';

@@ -1,4 +1,4 @@
-import type { ContextMenuOptionsProvider, MenuItem } from '@/components/context-menu/types';
+import type { ContextMenuOptionsProvider, MenuItem } from '@blackswan/context-menu/types';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 
 export class ViewportContextMenu implements ContextMenuOptionsProvider {

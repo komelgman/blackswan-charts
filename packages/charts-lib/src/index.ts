@@ -3,7 +3,7 @@ export { default as PriceAxisWidget } from './components/chart/PriceAxisWidget.v
 export { default as TimeAxisWidget } from './components/chart/TimeAxisWidget.vue';
 export { default as ViewportWidget } from './components/chart/ViewportWidget.vue';
 
-export * from './components/context-menu/types';
+export * from '@blackswan/context-menu/types';
 export * from '@blackswan/layout/model';
 export * from '@blackswan/layered-canvas/model';
 
