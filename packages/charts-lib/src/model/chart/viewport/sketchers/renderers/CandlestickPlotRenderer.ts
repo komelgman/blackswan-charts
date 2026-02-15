@@ -57,6 +57,12 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
     const barSpace: number = timeAxis.translate(timePeriod.barToTime(timeRange.from, 1) as UTCTimestamp);
     const barGap = Math.max(1, Math.ceil(0.4 * barSpace));
     const barWidth = barSpace - barGap;
+    const isBullish: boolean[] = new Array(bars.length);
+
+    for (let i = 0; i < bars.length; ++i) {
+      const bar = bars[i];
+      isBullish[i] = bar[OHLCV_BAR_OPEN] <= bar[OHLCV_BAR_CLOSE];
+    }
 
     priceAxis.translateBatchInPlace(bars, [OHLCV_BAR_OPEN, OHLCV_BAR_HIGH, OHLCV_BAR_LOW, OHLCV_BAR_CLOSE]);
     timeAxis.translateBatchInPlace(bars, [OHLCV_BAR_TIMESTAMP]);
@@ -68,7 +74,7 @@ export class CandlestickPlotRenderer implements OHLCvPlotRenderer<CandlestickPlo
     for (let i = 0; i < bars.length; ++i) {
       const bar = bars[i];
       const [x, yo, yh, yl, yc] = bar;
-      const candles = yo > yc ? bearishCandles : bullishCandles;
+      const candles = isBullish[i] ? bullishCandles : bearishCandles;
 
       candles.add(x, yo, yh, yl, yc);
     }
