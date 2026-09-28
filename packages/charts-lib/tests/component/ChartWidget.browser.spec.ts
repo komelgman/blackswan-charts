@@ -1,0 +1,81 @@
+import { test, expect } from '@playwright/experimental-ct-vue';
+import type ChartWidgetTestContext from './tools/ChartWidgetTestContext';
+import type { VLine } from '@/model/chart/types';
+import { dragMouseFromTo, invertPriceAxis } from './tools/utils';
+
+declare global { interface Window { __test_context: ChartWidgetTestContext } }
+
+test.use({ viewport: { width: 1280, height: 720 } });
+
+for (const beforeMount of [true, false]) {
+  test(`connects panes ${beforeMount ? 'before' : 'after'} mount and responds to container resize`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.evaluate(async before => {
+      const { mount, chart, idHelper, newDataSource } = window.__test_context;
+      if (!before) await mount();
+      chart.createPane(newDataSource({ id: 'main', idHelper }, []));
+      chart.createPane(newDataSource({ id: 'second', idHelper }, []), { preferredSize: 0.3 });
+      if (before) await mount();
+    }, beforeMount);
+    await expect(page.getByTestId('pane1')).toBeVisible();
+    const ratio = async () => {
+      const a = (await page.getByTestId('pane0').boundingBox())!;
+      const b = (await page.getByTestId('pane1').boundingBox())!;
+      return a.height / b.height;
+    };
+    await expect.poll(ratio).toBeCloseTo(7 / 3, 1);
+    const previous = (await page.getByTestId('pane0').boundingBox())!;
+    await page.setViewportSize({ width: 1000, height: 600 });
+    await expect.poll(async () => (await page.getByTestId('pane0').boundingBox())!.height).toBeLessThan(previous.height);
+    await expect.poll(ratio).toBeCloseTo(7 / 3, 1);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('native canvas hit testing, drag, keyboard undo/redo and menu reach the model', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.evaluate(async () => {
+    const { mount, chart, idHelper, newDataSource } = window.__test_context;
+    chart.createPane(newDataSource({ id: 'main', idHelper }, [{
+      id: 'vline1', type: 'VLine', data: { def: 0, style: { color: '#00AA00', lineWidth: 2, fill: 0 } }, locked: false, visible: true,
+    }]));
+    await mount(); chart.clearHistory();
+  });
+  await expect.poll(() => page.evaluate(() => !!window.__test_context.chart.paneModel('main').dataSource.get('vline1').drawing)).toBe(true);
+  const viewport = page.getByTestId('pane0').locator('.viewport');
+  const bounds = (await viewport.boundingBox())!;
+  const x = bounds.x + bounds.width / 2;
+  const y = bounds.y + 30;
+  await page.mouse.move(x, y);
+  await expect.poll(() => page.evaluate(() => window.__test_context.chart.paneModel('main').highlighted?.descriptor.ref)).toBe('vline1');
+  await dragMouseFromTo(page, x, y, x + 80, y);
+  const value = () => page.evaluate(() =>
+    window.__test_context.chart.paneModel('main').dataSource.get<VLine>('vline1').descriptor.options.data.def);
+  await expect.poll(value).not.toBe(0);
+  const moved = await value();
+  await page.keyboard.press('Control+z');
+  await expect.poll(value).toBe(0);
+  await page.keyboard.press('Control+Shift+z');
+  await expect.poll(value).toBe(moved);
+  await invertPriceAxis(page, 'pane0');
+  await expect.poll(() => page.evaluate(() => window.__test_context.chart.paneModel('main').priceAxis.inverted.value)).toBe(1);
+  expect(errors).toEqual([]);
+});
+
+test('divider drag records dimensions and undo restores them', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { mount, chart, idHelper, newDataSource } = window.__test_context;
+    chart.createPane(newDataSource({ id: 'main', idHelper }, []));
+    chart.createPane(newDataSource({ id: 'second', idHelper }, []));
+    await mount(); chart.clearHistory();
+  });
+  await expect.poll(() => page.evaluate(() => window.__test_context.chart.panes.every(p => (p.size ?? 0) > 100))).toBe(true);
+  const first = (await page.getByTestId('pane0').boundingBox())!;
+  const second = (await page.getByTestId('pane1').boundingBox())!;
+  await dragMouseFromTo(page, first.x + 10, second.y - 1, first.x + 10, second.y + 49);
+  await expect.poll(async () => (await page.getByTestId('pane0').boundingBox())!.height).toBeCloseTo(first.height + 50, 0);
+  await page.evaluate(() => window.__test_context.chart.undo());
+  await expect.poll(async () => (await page.getByTestId('pane0').boundingBox())!.height).toBeCloseTo(first.height, 0);
+});

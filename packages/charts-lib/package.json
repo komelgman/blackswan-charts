@@ -30,8 +30,9 @@
     "build-only": "vite build",
     "build:types": "vue-tsc -p tsconfig.build.json",
     "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-    "test:unit": "vitest --root ./",
+    "test:unit": "vitest run --root ./",
     "test:ct": "playwright test -c playwright-ct.config.ts",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "test:integration": "vitest run tests/integration"
   }
 }

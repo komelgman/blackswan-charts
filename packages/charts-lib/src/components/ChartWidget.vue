@@ -83,7 +83,6 @@ import { vContextMenuDirective } from '@blackswan/context-menu/model';
 import { BoxLayout, Divider, Multipane } from '@blackswan/layout/components';
 import { Direction, type PaneId, type PanesSizeChangedEvent } from '@blackswan/layout/model';
 import type { Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
-import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
 import { getChartCssVars } from '@/model/misc/chart-style.functions';
@@ -166,13 +165,7 @@ function onMouseLeave(): void {
 }
 
 function onPaneSizeChanged(event: PanesSizeChangedEvent): void {
-  props.chart.transactionManager.transact({
-    protocolOptions: { protocolTitle: 'chart-pane-size-changed', timeout: 1000 },
-    incident: new PanesSizeChanged({
-      event,
-    }),
-    immediate: false,
-  }, { signOnClose: false });
+  props.chart.recordPaneResize(event);
 }
 
 function onPaneRegEventListener(event: PaneRegistrationEvent): void {

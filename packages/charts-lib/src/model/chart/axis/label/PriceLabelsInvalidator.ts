@@ -6,6 +6,7 @@ import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { LogicSize, Price, Range } from '@/model/chart/types';
 import { Cache } from '@/model/misc/tools';
 import type { Label } from '@/model/chart/axis/label/Label';
+import type { LayerContext } from '@blackswan/layered-canvas/model';
 
 // todo: refactor code to get more good loocking values
 // const SCALES = [0.05, 0.1, 0.2, 0.25, 0.5, 0.8, 1, 2, 5];
@@ -17,6 +18,7 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
   private currentFontSize: number = 0;
   private currentRange: Range<Price> = { from: 0, to: 0 } as Range<Price>;
   private currentFraction: number = 0;
+  private measuredContext?: LayerContext;
 
   constructor(axis: PriceAxis) {
     super();
@@ -37,7 +39,12 @@ export default class PriceLabelsInvalidator extends AbstractInvalidator {
     const labels: Label[] = [];
 
     const axis = toRaw(this.axis);
-    this.currentFont = makeFont(axis.textStyle);
+    const font = makeFont(axis.textStyle);
+    if (font !== this.currentFont || axis.fraction !== this.currentFraction || this.context !== this.measuredContext) {
+      this.labelsCache.reset();
+    }
+    this.measuredContext = this.context;
+    this.currentFont = font;
     this.currentRange = axis.range;
     this.currentFontSize = axis.textStyle.fontSize;
     this.currentFraction = axis.fraction;

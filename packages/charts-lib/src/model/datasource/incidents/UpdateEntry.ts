@@ -41,8 +41,10 @@ export class UpdateEntry
   }
 
   public mergeWith(op: UpdateEntry): boolean {
-    if (op.marker === undefined || op.marker !== this.marker) {
-      return false; // isn't update incident
+    if (op.marker !== this.marker || op.options.storage !== this.options.storage) {
+      // Local IDs are scoped to a source. Shared projections also keep their own
+      // incidents so that each source receives its invalidation notifications.
+      return false;
     }
 
     const opDescriptor = op.options.storage.get(op.options.ref).descriptor;

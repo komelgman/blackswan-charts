@@ -8,44 +8,19 @@ import {
   type WorkerMessage,
   type WorkerResponse,
 } from '@blackswan/layered-canvas/model';
-import type { Label } from '@/model/chart/axis/label/Label';
+import { renderTimeLabels, type RenderPayload } from '../renderTimeLabels';
 
-export declare type RenderTimeLabelsMessage = WorkerMessage<WorkerRequestType.RENDER, {
-  width: number,
-  height: number,
-  dpr: number,
-  labels: Label[],
-  labelColor: string,
-  labelFont: string,
-  yPos: number,
-}>;
+export declare type RenderTimeLabelsMessage = WorkerMessage<WorkerRequestType.RENDER, RenderPayload>;
 
 const renderMessageHandler: MessageHandler<CanvasWorkerState> = (worker, message: RenderTimeLabelsMessage): WorkerResponse => {
   const ctx = worker.state?.ctx;
-  const { width, height, dpr, labelColor, labelFont, labels } = message.payload;
+
 
   if (!ctx) {
     return { message: { type: WorkerResponseType.SUCCESS, payload: message.type } } as WorkerResponse;
   }
 
-  ctx.canvas.width = Math.floor(width * dpr);
-  ctx.canvas.height = Math.floor(height * dpr);
-
-  ctx.resetTransform();
-  ctx.scale(dpr, dpr);
-  ctx.save();
-
-  ctx.textBaseline = 'middle';
-  ctx.textAlign = 'center';
-  ctx.fillStyle = labelColor;
-  ctx.font = labelFont;
-
-  const y: number = height * 0.5;
-  for (const [x, label] of labels) {
-    ctx.fillText(label, x, y);
-  }
-
-  ctx.restore();
+  renderTimeLabels(ctx, message.payload);
 
   return { message: { type: WorkerResponseType.SUCCESS, payload: { requestType: message.type } } } as WorkerResponse;
 };

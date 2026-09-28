@@ -1,5 +1,6 @@
 ﻿{
   "extends": "./tsconfig.json",
+  "include": ["src", "env.d.ts", "tests/integration", "tests/support", "tests/component/ChartWidget.browser.spec.ts", "tests/unit/model/history/HistoryBoundaries.spec.ts", "../layout/tests"],
   "compilerOptions": {
     "composite": true,
     "lib": [],

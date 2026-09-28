@@ -6,12 +6,12 @@ This is a map of the rendering flow and its boundaries. It is not a tutorial.
 - Viewport rendering components: `frontend/packages/charts-lib/src/components/ViewportWidget.vue`
 - Price axis rendering components: `frontend/packages/charts-lib/src/components/PriceAxisWidget.vue`
 - Time axis rendering components: `frontend/packages/charts-lib/src/components/TimeAxisWidget.vue`
-- Layered canvas infrastructure: `frontend/packages/charts-lib/src/components/layered-canvas`
+- Layered canvas infrastructure: `frontend/packages/layered-canvas/src`
 
 ## Rendering Layers and Responsibilities
 - Viewport layers live in `frontend/packages/charts-lib/src/model/chart/viewport/layers` and render grid, data, and highlighting.
 - Axis label and marks layers live in `frontend/packages/charts-lib/src/model/chart/axis/layers`.
-- Layer workers and canvas workers live under `frontend/packages/charts-lib/src/components/layered-canvas/model`.
+- Layer workers and canvas workers live under `frontend/packages/layered-canvas/src/model`.
 - Sketchers and renderers live in `frontend/packages/charts-lib/src/model/chart/viewport/sketchers` and `frontend/packages/charts-lib/src/model/chart/viewport/sketchers/renderers`.
 
 ## Data and State Inputs
@@ -26,3 +26,10 @@ This is a map of the rendering flow and its boundaries. It is not a tutorial.
 
 ## Hot Path Boundaries
 - Rendering, hit-testing, and invalidation are hot paths. Changes here must follow the Hot Paths policy in `frontend/AGENTS.md`.
+
+## Testable rendering boundaries
+- Axis workers call `axis/layers/renderPriceLabels.ts` and `renderTimeLabels.ts`; grid worker calls `viewport/layers/renderViewportGrid.ts`.
+- Functions accept a native 2D context and existing payload. Worker transport/lifetime remain in entry points; Node tests use the same geometry/style code.
+- `tests/support/RecordingCanvas.ts` records paths, paint state and transforms, and supplies text metrics. It does not rasterize or perform native hit testing.
+- `PriceLabelsInvalidator` caches measurements until font, fraction or context changes. Vue watchers drive invalidation.
+- Data-source tests run actual invalidators/sketchers/layers to detect stale rendering after updates and undo. Browser tests cover native Path2D hit testing and wiring.

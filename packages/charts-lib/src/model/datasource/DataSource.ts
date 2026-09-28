@@ -29,6 +29,10 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   private readonly eventListeners: DataSourceChangeEventListener[] = [];
   private readonly idHelper: IdHelper;
   private historicalTransactionManager: HistoricalTransactionManager | undefined;
+  private readonly historyHooks = {
+    afterInverse: () => this.flush(),
+    afterApply: () => this.flush(),
+  };
 
   public constructor(options: DataSourceOptions, drawings: DrawingOptions[] = []) {
     this.id = options.id ? options.id : options.idHelper.getNewId('datasource');
@@ -142,10 +146,7 @@ export default class DataSource implements Iterable<Readonly<DataSourceEntry>> {
   public beginTransaction(options: HistoricalProtocolOptions | undefined = undefined): void {
     this.transactionManager.openTransaction(options);
     this.transactionManager.exeucteInTransaction({
-      lifeHooks: {
-        afterInverse: () => this.flush(),
-        afterApply: () => this.flush(),
-      },
+      lifeHooks: this.historyHooks,
     });
   }
 

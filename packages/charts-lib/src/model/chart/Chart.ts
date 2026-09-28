@@ -1,5 +1,5 @@
 import { computed, markRaw, reactive, watch, type ComputedRef } from 'vue';
-import type { PaneDescriptor, PaneId, PaneOptions } from '@blackswan/layout/model';
+import type { PaneDescriptor, PaneId, PaneOptions, PanesSizeChangedEvent } from '@blackswan/layout/model';
 import { merge, IdHelper, type DeepPartial } from '@blackswan/foundation';
 import TimeAxis from '@/model/chart/axis/TimeAxis';
 import AddNewPane from '@/model/chart/incidents/AddNewPane';
@@ -7,6 +7,7 @@ import InvalidatePanesSizes from '@/model/chart/incidents/InvalidatePanesSizes';
 import RemovePane from '@/model/chart/incidents/RemovePane';
 import SwapPanes from '@/model/chart/incidents/SwapPanes';
 import TogglePane from '@/model/chart/incidents/TogglePane';
+import PanesSizeChanged from '@/model/chart/incidents/PanesSizeChanged';
 import UpdateChartStyle from '@/model/chart/incidents/UpdateChartStyle';
 import { Themes, type ChartStyle, type ChartTheme } from '@/model/chart/types/styles';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
@@ -216,6 +217,14 @@ export class Chart {
 
   public clearHistory(): void {
     this.history.clear();
+  }
+
+  public recordPaneResize(event: PanesSizeChangedEvent): void {
+    this.transactionManager.transact({
+      protocolOptions: { protocolTitle: 'chart-pane-size-changed', timeout: 1000 },
+      incident: new PanesSizeChanged({ event }),
+      immediate: false,
+    }, { signOnClose: false });
   }
 
   public get isCanRedo(): boolean {

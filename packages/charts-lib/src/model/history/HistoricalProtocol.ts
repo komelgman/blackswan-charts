@@ -28,10 +28,7 @@ export class HistoricalProtocol {
   public next?: HistoricalProtocol = undefined;
   public prev?: HistoricalProtocol;
 
-  private beforeApply?: () => void;
-  private afterApply?: () => void;
-  private beforeInverse?: () => void;
-  private afterInverse?: () => void;
+  private readonly lifeHooks = new Set<HistoricalIncidentLifeHooks>();
 
   constructor(title: string, base: HistoricalProtocol | undefined = undefined) {
     const current = this.newTimelineFrom(base);
@@ -43,11 +40,7 @@ export class HistoricalProtocol {
   }
 
   public setLifeHooks(hooks: HistoricalIncidentLifeHooks): HistoricalProtocol {
-    this.beforeInverse = hooks.beforeInverse;
-    this.afterInverse = hooks.afterInverse;
-
-    this.beforeApply = hooks.beforeApply;
-    this.afterApply = hooks.afterApply;
+    this.lifeHooks.add(hooks);
 
     return this;
   }
@@ -83,31 +76,23 @@ export class HistoricalProtocol {
   }
 
   public apply(): void {
-    if (this.beforeApply) {
-      this.beforeApply();
-    }
+    for (const hooks of this.lifeHooks) hooks.beforeApply?.();
 
     for (const incident of this.incidents) {
       incident.apply();
     }
 
-    if (this.afterApply) {
-      this.afterApply();
-    }
+    for (const hooks of this.lifeHooks) hooks.afterApply?.();
   }
 
   public inverse(): void {
-    if (this.beforeInverse) {
-      this.beforeInverse();
-    }
+    for (const hooks of this.lifeHooks) hooks.beforeInverse?.();
 
     for (let i = this.incidents.length - 1; i >= 0; i -= 1) {
       this.incidents[i].inverse();
     }
 
-    if (this.afterInverse) {
-      this.afterInverse();
-    }
+    for (const hooks of this.lifeHooks) hooks.afterInverse?.();
   }
 
   public trySign(): void {

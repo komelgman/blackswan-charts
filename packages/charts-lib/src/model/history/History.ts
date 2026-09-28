@@ -9,14 +9,12 @@ export interface HistoricalProtocolOptions {
 
 @NonReactive
 export class History {
-  private currentProtocolValue: HistoricalProtocol;
+  private currentProtocolValue!: HistoricalProtocol;
   private lastProtocolTitle: string | undefined;
   private lastTimeWhenProtocolWasUsed!: number;
 
   constructor() {
-    this.currentProtocolValue = new HistoricalProtocol('big-boom');
-    this.currentProtocolValue.addIncident(new InitialIncident());
-    this.currentProtocolValue.trySign();
+    this.clear();
   }
 
   private set currentProtocol(value: HistoricalProtocol) {
@@ -77,12 +75,12 @@ export class History {
   }
 
   public clear(): void {
-    while (this.isCanUndo) {
-      const tmp = this.currentProtocol;
-      this.currentProtocol = tmp.prev as HistoricalProtocol;
-      this.currentProtocol.next = undefined;
-      tmp.prev = undefined;
-    }
+    // Clearing history establishes a new baseline without applying or undoing changes.
+    this.currentProtocolValue = new HistoricalProtocol('big-boom');
+    this.currentProtocolValue.addIncident(new InitialIncident());
+    this.currentProtocolValue.trySign();
+    this.lastProtocolTitle = undefined;
+    this.lastTimeWhenProtocolWasUsed = 0;
   }
 
   public addReport(report: HistoricalIncidentReport): void {

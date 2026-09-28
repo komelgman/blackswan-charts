@@ -35,3 +35,10 @@ UI components remove listeners on unmount; data bindings should call `unbind` wh
 - Pane lifecycle events: `Chart.addPaneRegistrationEventListener` in `frontend/packages/charts-lib/src/model/chart/Chart.ts`
 - Data source change events: `DataSource.addChangeEventListener` in `frontend/packages/charts-lib/src/model/datasource/DataSource.ts`
 - Content updates: `DataBinding` in `frontend/packages/charts-lib/src/model/databinding/DataBinding.ts`
+
+## Browser-free boundaries
+- `packages/layout/src/model/pane-layout.ts` owns allocation and divider resize; Multipane measures/applies DOM sizes.
+- `Chart.recordPaneResize` records already-applied dimensions with timed grouping. ChartWidget delegates its resize event.
+- Historical protocols retain hooks for every participating source; each source flushes queued notifications after apply/inverse. Repeated registration is deduplicated.
+- `History.clear` establishes a signed baseline and clears both directions without applying incidents.
+- `tests/support/chartHarness.ts` owns its effect scope and pane listeners. Node integrations use real Chart/viewport/source objects; TESTING.md documents oracle limits.
