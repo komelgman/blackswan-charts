@@ -8,6 +8,52 @@ declare global { interface Window { __test_context: ChartWidgetTestContext } }
 
 test.use({ viewport: { width: 1280, height: 720 } });
 
+for (const widget of ['viewport', 'priceline', 'timeline']) {
+  test(`wheel over ${widget} zooms locally without scrolling or notifying the page`, async ({ page }) => {
+    await page.evaluate(async () => {
+      document.documentElement.style.cssText = 'height: auto; overflow: auto';
+      document.body.style.cssText = 'height: 2000px; overflow: visible';
+      document.getElementById('root')!.style.cssText = 'height: 400px; width: 900px; margin: 150px 100px';
+      document.addEventListener('wheel', event => {
+        requestAnimationFrame(() => { document.body.dataset.wheelPrevented = String(event.defaultPrevented); });
+      }, { capture: true });
+      document.body.addEventListener('wheel', () => { document.body.dataset.wheelBubbled = 'true'; });
+      const { chart, newDataSource, idHelper, mount } = window.__test_context;
+      chart.createPane(newDataSource({ id: 'main', idHelper }, []), {
+        priceAxis: { range: { from: 100 as Price, to: 200 as Price } },
+      });
+      await mount();
+      window.scrollTo(0, 80);
+    });
+    await expect.poll(() => page.evaluate(() => window.__test_context.chart.paneModel('main').priceAxis.labels.value.length)).toBeGreaterThan(0);
+    const axisRange = () => page.evaluate(target => {
+      const { chart } = window.__test_context;
+      return target === 'priceline' ? chart.paneModel('main').priceAxis.range.from : chart.timeAxis.range.from;
+    }, widget);
+    const rangeBefore = await axisRange();
+    const scrollBefore = await page.evaluate(() => window.scrollY);
+    await page.locator(`.${widget}`).hover();
+    await page.mouse.wheel(0, 120);
+    await expect.poll(axisRange).not.toBe(rangeBefore);
+    await expect(page.locator('body')).toHaveAttribute('data-wheel-prevented', 'true');
+    expect(await page.locator('body').getAttribute('data-wheel-bubbled')).toBeNull();
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+
+    // Rapid events skipped by zoom throttling must still be consumed.
+    const consumed = await page.locator(`.${widget} canvas`).first().evaluate(canvas =>
+      Array.from({ length: 5 }, () => {
+        const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: -120 });
+        canvas.dispatchEvent(event);
+        return event.defaultPrevented;
+      }));
+    expect(consumed).toEqual([true, true, true, true, true]);
+    expect(await page.locator('body').getAttribute('data-wheel-bubbled')).toBeNull();
+    await page.mouse.move(20, 600);
+    await page.mouse.wheel(0, 120);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(scrollBefore);
+  });
+}
+
 test('restoring panes with the same IDs reconnects price labels and drawing layers through undo and redo', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));

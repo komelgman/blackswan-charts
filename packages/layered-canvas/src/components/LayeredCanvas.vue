@@ -4,7 +4,7 @@
     class="layered-canvas"
     @mousedown.left="onDragStart"
     @dblclick.left="onMouseLeftBtnDoubleClick"
-    @wheel.passive="onWheel"
+    @wheel.stop.prevent="onWheel"
     @mousemove="onMouseMove"
     @click.left="onMouseLeftBtnClick"
   >
