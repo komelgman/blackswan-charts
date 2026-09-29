@@ -239,4 +239,9 @@ const timeLineButtonPaneStyle = computed(() => ({
   font-size: var(--chart-font-size);
   font-style: var(--chart-font-style);
 }
+
+/* Hover focuses the chart for shortcuts; keep the focus ring for keyboard navigation. */
+.bs-chart:hover {
+  outline: none;
+}
 </style>

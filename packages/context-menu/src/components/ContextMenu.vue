@@ -115,5 +115,11 @@ $background-color: var(--menu-background-color);
   color: var(--chart-text-color);
   font: var(--chart-font);
   background: $background-color;
+
+  > ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
 }
 </style>
