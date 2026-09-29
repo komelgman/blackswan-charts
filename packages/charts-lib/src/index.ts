@@ -1,4 +1,4 @@
-﻿export { default as ChartWidget } from './components/ChartWidget.vue';
+export { default as ChartWidget } from './components/ChartWidget.vue';
 export { default as PriceAxisWidget } from './components/PriceAxisWidget.vue';
 export { default as TimeAxisWidget } from './components/TimeAxisWidget.vue';
 export { default as ViewportWidget } from './components/ViewportWidget.vue';
@@ -49,3 +49,9 @@ export { default as defaultSketchers } from './model/default-config/Sketcher.Def
 export { default as darkChartStyleDefaults } from './model/default-config/ChartStyle.Dark.Defaults';
 export { default as lightChartStyleDefaults } from './model/default-config/ChartStyle.Light.Defaults';
 
+
+export type { DrawingProjection, AxisProjection } from './model/chart/drawing/DrawingProjection';
+export type { DrawingBehavior, DrawingDrag } from './model/chart/drawing/DrawingBehavior';
+export { moveLine, moveHLine, moveVLine } from './model/chart/drawing/line-behaviors';
+export { type Channel, moveChannel } from './model/chart/drawing/channel';
+export { ChannelSketcher } from './model/chart/viewport/sketchers/ChannelSketcher';

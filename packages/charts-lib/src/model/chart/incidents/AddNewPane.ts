@@ -1,3 +1,4 @@
+import type { DrawingBehavior } from '@/model/chart/drawing/DrawingBehavior';
 import type { PaneDescriptor, PaneOptions } from '@blackswan/layout/model';
 import { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
@@ -12,6 +13,7 @@ import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;
   sketchers: Map<DrawingType, Sketcher>;
+  drawingBehaviors?: ReadonlyMap<DrawingType, DrawingBehavior>;
   paneOptions: PaneOptions<ViewportOptions>;
   style: ChartStyle;
   timeAxis: TimeAxis;
@@ -44,7 +46,7 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
 
     this.paneDescriptor = {
       id: dataSource.id,
-      model: new Viewport(dataSource, timeAxis, priceAxis, sketchers),
+      model: new Viewport(dataSource, timeAxis, priceAxis, sketchers, options.drawingBehaviors),
       preferredSize: paneOptions.preferredSize,
       minSize: paneOptions.minSize,
       maxSize: paneOptions.maxSize,

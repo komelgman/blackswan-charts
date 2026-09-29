@@ -16,3 +16,4 @@ This log tracks trivial decisions recorded via inline `DECISION:` comments. Non-
 | 2026-02-06 | Trivial | DataBinding updates content without history and ignores shared events; content key drives shared subscriptions. | frontend/packages/charts-lib/src/model/databinding/DataBinding.ts | - |
 | 2026-09-28 | ADR | Browser-free layout/render contracts and generated history tests; fast-check test dependency. | packages/layout; packages/charts-lib; tests | [ADR0006](ADR0006-browser-free-testing.md) |
 | 2026-09-28 | ADR | Extensible price scale registry, tick/format contracts, stable mixed-scale drag and first-visible percentage reference. | packages/charts-lib/src/model/chart | [ADR0007](ADR0007-price-scale-contracts.md) |
+| 2026-09-29 | ADR | Separate drawing editing from projection/rendering; channel extension and reproducible public-API gallery. | packages/charts-lib; apps/charts-demo | [ADR0008](ADR0008-drawing-behaviors-and-gallery.md) |

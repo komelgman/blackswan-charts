@@ -15,6 +15,18 @@ export default defineConfig(({ command }) => {
 
   return {
     plugins: [
+      {
+        name: 'source-library-styles',
+        enforce: 'pre',
+        // Development imports source SFCs, which already inject their styles.
+        // Avoid resolving a dist stylesheet before the first library build.
+        resolveId(id) {
+          if (isServe && id === 'blackswan-charts/style.css') return '\0source-library-style.css';
+        },
+        load(id) {
+          if (id === '\0source-library-style.css') return '/* Styles come from source Vue components. */';
+        },
+      },
       vue(),
       vueJsx({
         babelPlugins: [
@@ -29,7 +41,7 @@ export default defineConfig(({ command }) => {
         ? [
           { find: '@', replacement: libSrc },
           { find: '@demo', replacement: demoSrc },
-          { find: 'blackswan-charts', replacement: libIndex },
+          { find: /^blackswan-charts$/, replacement: libIndex },
         ]
         : [
           { find: '@', replacement: demoSrc },

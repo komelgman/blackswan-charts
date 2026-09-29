@@ -105,7 +105,7 @@ export default class DataSourceInvalidator {
         console.warn(`unknown drawing type ${drawingType}`);
         continue;
       }
-      if (sketcher.invalidate(entry, viewport)) {
+      if (sketcher.invalidate(entry, viewport.projection)) {
         invalidated.push(entry);
       }
     }

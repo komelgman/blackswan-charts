@@ -1,17 +1,9 @@
-import type { MenuItem } from '@blackswan/context-menu/types';
 import type { ChartStyle } from '@/model/chart/types/styles';
-import type { DragHandle } from '@/model/chart/viewport/DragHandle';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
+import type { DrawingProjection } from '@/model/chart/drawing/DrawingProjection';
+import type { DataSourceEntry } from '@/model/datasource/types';
 
+/** Builds only display caches. Editing and menus have separate contracts. */
 export interface Sketcher<T = any> {
-  invalidate(entry: DataSourceEntry<T>, viewport: Viewport): boolean;
-
+  invalidate(entry: DataSourceEntry<T>, projection: DrawingProjection): boolean;
   setChartStyle(chartStyle: ChartStyle): void;
-
-  contextmenu(entry: DataSourceEntry<T>): MenuItem[];
-
-  dragHandle(entry: DataSourceEntry<T>, viewport: Viewport, handle?: HandleId): DragHandle | undefined;
-
-  // todo editdialog
 }

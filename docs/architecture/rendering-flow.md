@@ -35,3 +35,4 @@ This is a map of the rendering flow and its boundaries. It is not a tutorial.
 - Data-source tests run actual invalidators/sketchers/layers to detect stale rendering after updates and undo. Browser tests cover native Path2D hit testing and wiring.
 
 - Price scales now own tick values and caption formatting; labels/marks share the formatter. See [price-scales.md](price-scales.md).
+- Sketchers receive `DrawingProjection` instead of a viewport and update only display caches. Line/channel geometry is shared under `model/chart/drawing`; graphics render and hit-test those paths. Edit behaviors are independent of this flow. See [drawing-contracts.md](drawing-contracts.md).

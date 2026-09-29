@@ -1,15 +1,13 @@
-import type { DragMoveEvent } from '@blackswan/layered-canvas/model';
 import { invertColor } from '@blackswan/foundation';
-import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
 import SquareHandle from '@/model/chart/viewport/sketchers/handles/SquareHandle';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
+import type { DrawingProjection } from '@/model/chart/drawing/DrawingProjection';
+import type { DataSourceEntry } from '@/model/datasource/types';
 import type { HLine } from '@/model/chart/types';
 
 export class HLineSketcher extends AbstractSketcher<HLine> {
-  protected draw(entry: DataSourceEntry<HLine>, viewport: Viewport): void {
+  protected draw(entry: DataSourceEntry<HLine>, viewport: DrawingProjection): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
@@ -59,24 +57,4 @@ export class HLineSketcher extends AbstractSketcher<HLine> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public dragHandle(entry: DataSourceEntry<HLine>, viewport: Viewport, handle?: HandleId): DragHandle | undefined {
-    if (entry === undefined
-      || entry.descriptor.options.type !== 'HLine'
-      || entry.descriptor.options.locked
-      || entry.drawing === undefined
-    ) {
-      console.warn('IllegalState: object can\'t be dragged by this sketcher dragHandle');
-      return undefined;
-    }
-
-    const { dataSource, priceAxis } = viewport;
-    return (e: DragMoveEvent) => {
-      const { options } = entry.descriptor;
-      // only one handle and drag by body equals drag by handles.center
-      const def = priceAxis.revert(priceAxis.translate(options.data.def) - e.dy);
-
-      dataSource.update(entry.descriptor.ref, { data: { def } });
-    };
-  }
 }

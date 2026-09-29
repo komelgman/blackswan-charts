@@ -1,3 +1,4 @@
+import type { DrawingBehavior } from '@/model/chart/drawing/DrawingBehavior';
 import { effectScope, nextTick, watch } from 'vue';
 import { IdHelper } from '@blackswan/foundation';
 import { layoutPanes, resizePanes } from '@blackswan/layout/model';
@@ -12,7 +13,12 @@ import ViewportDataSourceLayer from '@/model/chart/viewport/layers/ViewportDataS
 import type { Viewport } from '@/model/chart/viewport/Viewport';
 import { RecordingCanvas } from '@tests/support/RecordingCanvas';
 
-export function createChartHarness({ render = true, priceScales }: { render?: boolean; priceScales?: Record<string, PriceAxisScale> } = {}) {
+export function createChartHarness({ render = true, priceScales, drawingBehaviors, sketchers }: {
+  render?: boolean;
+  priceScales?: Record<string, PriceAxisScale>;
+  drawingBehaviors?: Map<DrawingType, DrawingBehavior>;
+  sketchers?: Map<DrawingType, Sketcher>;
+} = {}) {
   const scope = effectScope();
   const canvases = new Map<string, RecordingCanvas>();
   const layers = new Map<string, ViewportDataSourceLayer>();
@@ -20,8 +26,10 @@ export function createChartHarness({ render = true, priceScales }: { render?: bo
     theme: Themes.DARK,
     sketchers: new Map<DrawingType, Sketcher>([
       ['HLine', new HLineSketcher()], ['VLine', new VLineSketcher()], ['Line', new LineSketcher()],
+      ...sketchers ?? [],
     ]),
     priceScales,
+    drawingBehaviors,
   }))!;
   const width = 800;
   const height = 600;

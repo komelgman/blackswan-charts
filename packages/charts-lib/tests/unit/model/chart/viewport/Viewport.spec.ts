@@ -5,12 +5,12 @@ import { HistoricalTransactionManager, History } from '@/model/history';
 import { IdHelper } from '@blackswan/foundation';
 import type { DragMoveEvent, GenericMouseEvent, LayerContext, MouseClickEvent } from '@blackswan/layered-canvas/model';
 import type { DataSourceEntry, DrawingOptions } from '@/model/datasource/types';
-import type { DragHandle } from '@/model/chart/viewport/DragHandle';
+import type { DrawingBehavior } from '@/model/chart/drawing/DrawingBehavior';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 
-type DragHandleSpy = ReturnType<typeof vi.fn<DragHandle>>;
+type DragHandleSpy = ReturnType<typeof vi.fn<DrawingBehavior>>;
 
 function createDataSource() {
   const history = new History();
@@ -30,7 +30,7 @@ function addEntry(ds: DataSource, drawing: DrawingOptions): DataSourceEntry {
   return ds.get(drawing.id);
 }
 
-function createViewport(ds: DataSource, sketcher: Sketcher, overrides?: Partial<{
+function createViewport(ds: DataSource, sketcher: Sketcher & { behavior?: DrawingBehavior }, overrides?: Partial<{
   timeAxis: TimeAxis;
   priceAxis: PriceAxis;
 }>) {
@@ -47,17 +47,17 @@ function createViewport(ds: DataSource, sketcher: Sketcher, overrides?: Partial<
 
   const sketchers = new Map([[ 'line', sketcher ]]);
 
-  return { viewport: new Viewport(ds, timeAxis, priceAxis, sketchers), timeAxis, priceAxis };
+  const behaviors = new Map(sketcher.behavior ? [['line', sketcher.behavior]] : []);
+  return { viewport: new Viewport(ds, timeAxis, priceAxis, sketchers, behaviors), timeAxis, priceAxis };
 }
 
 describe('Viewport selection and dragging', () => {
   it('updateSelection clears without ctrl and toggles with ctrl', () => {
     const { ds } = createDataSource();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => undefined,
+
     };
     const { viewport } = createViewport(ds, sketcher);
 
@@ -79,11 +79,10 @@ describe('Viewport selection and dragging', () => {
   it('startDragging clones selection with ctrl when entry is draggable', () => {
     const { ds } = createDataSource();
     const dragHandleSpy: DragHandleSpy = vi.fn();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => dragHandleSpy,
+      behavior: dragHandleSpy,
     };
     const { viewport } = createViewport(ds, sketcher);
 
@@ -109,11 +108,10 @@ describe('Viewport selection and dragging', () => {
 
   it('startDragging opens move transaction when selection is not draggable', () => {
     const { ds, manager } = createDataSource();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => undefined,
+
     };
     const { viewport } = createViewport(ds, sketcher);
 
@@ -138,11 +136,10 @@ describe('Viewport selection and dragging', () => {
   it('drag moves selected entries and flushes datasource when drag handle exists', () => {
     const { ds } = createDataSource();
     const dragHandleSpy: DragHandleSpy = vi.fn();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => dragHandleSpy,
+      behavior: dragHandleSpy,
     };
     const { viewport } = createViewport(ds, sketcher);
 
@@ -168,11 +165,10 @@ describe('Viewport selection and dragging', () => {
 
   it('drag pans axes when selection is not draggable', () => {
     const { ds } = createDataSource();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => undefined,
+
     };
 
     const timeAxis = { move: vi.fn() } as unknown as TimeAxis;
@@ -197,11 +193,10 @@ describe('Viewport selection and dragging', () => {
   it('endDragging closes correct transaction', () => {
     const { ds, manager } = createDataSource();
     const dragHandleSpy: DragHandleSpy = vi.fn();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => dragHandleSpy,
+      behavior: dragHandleSpy,
     };
     const { viewport } = createViewport(ds, sketcher);
 
@@ -229,11 +224,10 @@ describe('Viewport selection and dragging', () => {
 
   it('removed entries are cleared from selection/highlight', () => {
     const { ds } = createDataSource();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => undefined,
+
     };
     const { viewport } = createViewport(ds, sketcher);
 
@@ -273,11 +267,10 @@ describe('ViewportHighlightInvalidator', () => {
 
   it('prioritizes handle hit for selected entries', () => {
     const { ds } = createDataSource();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => undefined,
+
     };
     const { viewport } = createViewport(ds, sketcher);
     viewport.highlightInvalidator.layerContext = createLayerContext();
@@ -310,11 +303,10 @@ describe('ViewportHighlightInvalidator', () => {
 
   it('falls back to body hit when no handle is hit', () => {
     const { ds } = createDataSource();
-    const sketcher: Sketcher = {
+    const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
       setChartStyle: () => {},
-      contextmenu: () => [],
-      dragHandle: () => undefined,
+
     };
     const { viewport } = createViewport(ds, sketcher);
     viewport.highlightInvalidator.layerContext = createLayerContext();

@@ -50,6 +50,24 @@ export default [
     ],
   },
 
+  {
+    files: [
+      'packages/charts-lib/src/model/chart/drawing/**/*.ts',
+      'packages/charts-lib/src/model/chart/viewport/sketchers/**/*.ts',
+    ],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: [
+            '@/model/chart/viewport/Viewport', '@/model/datasource/DataSource',
+            '@/model/history', '@/model/history/**', '@blackswan/context-menu/**',
+          ],
+          message: 'Drawing geometry/rendering must use projection contracts; source mutations belong to interaction orchestration.',
+        }],
+      }],
+    },
+  },
+
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/essential'],

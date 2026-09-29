@@ -45,3 +45,4 @@ UI components remove listeners on unmount; data bindings should call `unbind` wh
 
 - Chart owns a per-instance price scale registry and starts/stops each pane's VisiblePriceReference with registration. First-visible OHLCv close is derived without a renderer; see [price-scales.md](price-scales.md).
 - Drawing persistence uses the shared `HasScale` contract: serialization stores a scale ID, and deserialization resolves all scale references before changing chart state, independently of the drawing type.
+- Chart owns render and edit registries. Viewport gestures apply `DrawingBehavior` patches through the data source transaction; editing does not require a graphical cache. See [drawing-contracts.md](drawing-contracts.md).

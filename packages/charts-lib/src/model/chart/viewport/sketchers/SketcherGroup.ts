@@ -1,8 +1,6 @@
-import type { MenuItem } from '@blackswan/context-menu/types';
 import type { ChartStyle } from '@/model/chart/types/styles';
-import type { DragHandle } from '@/model/chart/viewport/DragHandle';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
+import type { DrawingProjection } from '@/model/chart/drawing/DrawingProjection';
+import type { DataSourceEntry } from '@/model/datasource/types';
 import type { Sketcher } from '@/model/chart/viewport/sketchers/Sketcher';
 
 export declare type EntitySubtypeResolver = (entry: DataSourceEntry) => string | undefined;
@@ -42,7 +40,7 @@ export class SketcherGroup<T = any> implements Sketcher<T> {
     return sketcher;
   }
 
-  invalidate(entry: DataSourceEntry<T>, viewport: Viewport): boolean {
+  invalidate(entry: DataSourceEntry<T>, viewport: DrawingProjection): boolean {
     return this.getSubtypeSketcher(entry).invalidate(entry, viewport);
   }
 
@@ -51,14 +49,4 @@ export class SketcherGroup<T = any> implements Sketcher<T> {
       sketcher.setChartStyle(chartStyle);
     });
   }
-
-  contextmenu(entry: DataSourceEntry<T>): MenuItem[] {
-    return this.getSubtypeSketcher(entry).contextmenu(entry);
-  }
-
-  dragHandle(entry: DataSourceEntry<T>, viewport: Viewport, handle?: HandleId): DragHandle | undefined {
-    return this.getSubtypeSketcher(entry).dragHandle(entry, viewport, handle);
-  }
-
-  // todo editdialog
 }

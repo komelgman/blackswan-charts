@@ -1,13 +1,11 @@
-import type { Viewport } from '@/model/chart/viewport/Viewport';
+import type { DrawingProjection } from '@/model/chart/drawing/DrawingProjection';
 import type { DataSourceEntry, Drawing } from '@/model/datasource/types';
-import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, OHLCvContentOptions, Price } from '@/model/chart/types';
+import type { OHLCv, OHLCvPlot, UTCTimestamp, Range, OHLCvBar, OHLCvPlotOptions, Price } from '@/model/chart/types';
 import { OHLCV_RECORD_CLOSE, OHLCV_RECORD_HIGH, OHLCV_RECORD_LOW, OHLCV_RECORD_OPEN, OHLCV_RECORD_VOLUME } from '@/model/chart/types';
 import type { TimePeriod } from '@/model/chart/types/time';
 import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
-import { merge, deepEqual, type DeepPartial } from '@blackswan/foundation';
-import { DataSourceChangeEventReason } from '@/model/datasource/events';
 import { ControlMode } from '@/model/chart/axis/types';
 
 export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketcher<OHLCvPlot<O>> {
@@ -18,53 +16,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     this.renderer = renderer;
   }
 
-  public invalidate(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): boolean {
-    this.invalidateOHLCvContentOptions(entry, viewport);
-
-    return super.invalidate(entry, viewport);
-  }
-
-  protected invalidateOHLCvContentOptions(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
-    const optionsUpdate = this.getContentOptionsUpdate(entry, viewport);
-    const { dataSource } = viewport;
-
-    if (!deepEqual(optionsUpdate, {})) {
-      dataSource.noHistoryManagedEntriesProcess(
-        [entry.descriptor.ref],
-        (e: DataSourceEntry<OHLCvPlot<any>>) => {
-          const contentOptions = e.descriptor.options.data?.contentOptions;
-          if (contentOptions) {
-            merge(contentOptions, optionsUpdate);
-          }
-        },
-        DataSourceChangeEventReason.DataInvalid,
-      );
-    }
-  }
-
-  protected getContentOptionsUpdate(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): DeepPartial<OHLCvContentOptions> {
-    const { timeAxis } = viewport;
-    const { content: ohlc, contentOptions: options } = entry.descriptor.options.data;
-
-    if (!ohlc || !options) {
-      return {};
-    }
-
-    const timeRangeFrom = timeAxis.range.from;
-    const timeRangeTo = timeAxis.range.to;
-    const result = {};
-    if (timeRangeFrom < ohlc.loaded.from && ohlc.loaded.from > ohlc.available.from) {
-      // todo: set requested range to entry
-    }
-
-    if (timeRangeTo > ohlc.loaded.to && ohlc.loaded.to < ohlc.available.to) {
-      // todo: set requested range to entry
-    }
-
-    return result;
-  }
-
-  protected draw(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
+  protected draw(entry: DataSourceEntry<OHLCvPlot<O>>, viewport: DrawingProjection): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
@@ -105,7 +57,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     this.renderBarsToEntry(bars, entry, viewport);
   }
 
-  protected updatePrefferedRanges(ohlc: OHLCv, timePeriod: TimePeriod, entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
+  protected updatePrefferedRanges(ohlc: OHLCv, timePeriod: TimePeriod, entry: DataSourceEntry<OHLCvPlot<O>>, viewport: DrawingProjection): void {
     const { drawing } = entry;
     if (!drawing) {
       throw new Error('IllegalState: drawing should be initalised');
@@ -161,7 +113,7 @@ export class OHLCvPlotSketcher<O extends OHLCvPlotOptions> extends AbstractSketc
     drawing.preferred = { timeAxis: timeRange, priceAxis: priceRange };
   }
 
-  protected renderBarsToEntry(bars: OHLCvBar[], entry: DataSourceEntry<OHLCvPlot<O>>, viewport: Viewport): void {
+  protected renderBarsToEntry(bars: OHLCvBar[], entry: DataSourceEntry<OHLCvPlot<O>>, viewport: DrawingProjection): void {
     this.renderer.renderBarsToEntry(bars, entry, viewport);
   }
 

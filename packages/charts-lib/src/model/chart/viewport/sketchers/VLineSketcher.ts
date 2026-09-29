@@ -1,15 +1,13 @@
-import type { DragMoveEvent } from '@blackswan/layered-canvas/model';
 import { invertColor } from '@blackswan/foundation';
-import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import { AbstractSketcher } from '@/model/chart/viewport/sketchers';
 import LineGraphics from '@/model/chart/viewport/sketchers/graphics/LineGraphics';
 import SquareHandle from '@/model/chart/viewport/sketchers/handles/SquareHandle';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
-import type { DataSourceEntry, HandleId } from '@/model/datasource/types';
+import type { DrawingProjection } from '@/model/chart/drawing/DrawingProjection';
+import type { DataSourceEntry } from '@/model/datasource/types';
 import type { VLine } from '@/model/chart/types';
 
 export class VLineSketcher extends AbstractSketcher<VLine> {
-  protected draw(entry: DataSourceEntry<VLine>, viewport: Viewport): void {
+  protected draw(entry: DataSourceEntry<VLine>, viewport: DrawingProjection): void {
     if (this.chartStyle === undefined) {
       throw new Error('Illegal state: this.chartStyle === undefined');
     }
@@ -58,24 +56,4 @@ export class VLineSketcher extends AbstractSketcher<VLine> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public dragHandle(entry: DataSourceEntry<VLine>, viewport: Viewport, handle?: HandleId): DragHandle | undefined {
-    if (entry === undefined
-      || entry.descriptor.options.type !== 'VLine'
-      || entry.descriptor.options.locked
-      || entry.drawing === undefined
-    ) {
-      console.warn('IllegalState: object can\'t be dragged by this sketcher dragHandle');
-      return undefined;
-    }
-
-    return (e: DragMoveEvent) => {
-      const { dataSource, timeAxis } = viewport;
-      const { options, ref } = entry.descriptor;
-      // only one handle and drag by body equals drag by handles.center
-      const def = timeAxis.revert(timeAxis.translate(options.data.def) - e.dx);
-
-      dataSource.update(ref, { data: { def } });
-    };
-  }
 }

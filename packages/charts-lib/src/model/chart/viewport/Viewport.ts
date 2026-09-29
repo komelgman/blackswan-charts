@@ -1,3 +1,6 @@
+import { createDrawingProjection, type DrawingProjection } from '@/model/chart/drawing/DrawingProjection';
+import type { DrawingBehavior } from '@/model/chart/drawing/DrawingBehavior';
+import defaultBehaviors from '@/model/default-config/DrawingBehavior.Defaults';
 import type { DragMoveEvent, GenericMouseEvent, MouseClickEvent } from '@blackswan/layered-canvas/model';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
@@ -30,6 +33,7 @@ export interface ViewportOptions {
 
 export class Viewport {
   private readonly sketchers!: Map<DrawingType, Sketcher>;
+  private readonly drawingBehaviors: ReadonlyMap<DrawingType, DrawingBehavior>;
   private dataSourceChangeEventListener: DataSourceChangeEventListener = (events: DataSourceChangeEventsMap): void => {
     const removedEntriesEvents = events.get(DataSourceChangeEventReason.RemoveEntry) || [];
     if (removedEntriesEvents.length > 0) {
@@ -40,6 +44,7 @@ export class Viewport {
   public readonly timeAxis: TimeAxis;
   public readonly priceAxis: PriceAxis;
   public readonly dataSource: DataSource;
+  public readonly projection: DrawingProjection;
   public readonly highlightInvalidator: ViewportHighlightInvalidator;
   public readonly priceReference: VisiblePriceReference;
 
@@ -54,11 +59,14 @@ export class Viewport {
     timeAxis: TimeAxis,
     priceAxis: PriceAxis,
     sketchers: Map<DrawingType, Sketcher>,
+    drawingBehaviors: ReadonlyMap<DrawingType, DrawingBehavior> = defaultBehaviors,
   ) {
     this.dataSource = dataSource;
     this.timeAxis = timeAxis;
     this.priceAxis = priceAxis;
     this.sketchers = sketchers;
+    this.drawingBehaviors = drawingBehaviors;
+    this.projection = createDrawingProjection(this);
     this.highlightInvalidator = new ViewportHighlightInvalidator(this);
     this.priceReference = new VisiblePriceReference(priceAxis, timeAxis);
   }
@@ -147,8 +155,7 @@ export class Viewport {
     for (const entry of selected) {
       if (
         !entry.descriptor.options.locked
-        && entry.drawing !== undefined
-        && Object.keys(entry.drawing.handles).length > 0
+        && this.drawingBehaviors.has(entry.descriptor.options.type)
       ) {
         return true;
       }
@@ -204,16 +211,14 @@ export class Viewport {
 
     // case when we drag some handle
     if (highlighted !== undefined && !highlighted.descriptor.options.locked && highlightedHandleId !== undefined) {
-      const sketcher: Sketcher = this.getSketcher(highlighted.descriptor.options.type);
-      return sketcher.dragHandle(highlighted, this, highlightedHandleId);
+      return this.createDrawingDrag(highlighted, highlightedHandleId);
     }
 
     // case when we drag several (mb one) element by body picking
     const dragHandles: DragHandle[] = [];
     for (const entry of selected) {
       if (!entry.descriptor.options.locked) {
-        const sketcher: Sketcher = this.getSketcher(entry.descriptor.options.type);
-        const dragHandle: DragHandle | undefined = sketcher.dragHandle(entry, this);
+        const dragHandle = this.createDrawingDrag(entry);
         if (dragHandle !== undefined) {
           dragHandles.push(dragHandle);
         }
@@ -228,6 +233,17 @@ export class Viewport {
     }
 
     return result;
+  }
+
+  private createDrawingDrag(entry: DataSourceEntry, handle?: HandleId): DragHandle | undefined {
+    const behavior = this.drawingBehaviors.get(entry.descriptor.options.type);
+    if (!behavior || entry.descriptor.options.locked) return undefined;
+    return event => {
+      const { options, ref } = entry.descriptor;
+      if (options.locked) return;
+      const patch = behavior(options.data, this.projection, event, handle);
+      if (patch) this.dataSource.update(ref, { data: patch });
+    };
   }
 
   private updateSelectionForRemovedEntries(removedEntriesEvents: DataSourceChangeEvent[]): void {

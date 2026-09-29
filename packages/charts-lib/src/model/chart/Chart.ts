@@ -1,3 +1,5 @@
+import type { DrawingBehavior } from '@/model/chart/drawing/DrawingBehavior';
+import defaultBehaviors from '@/model/default-config/DrawingBehavior.Defaults';
 import { computed, markRaw, reactive, watch, type ComputedRef } from 'vue';
 import type { PaneDescriptor, PaneId, PaneOptions, PanesSizeChangedEvent } from '@blackswan/layout/model';
 import { merge, IdHelper, type DeepPartial } from '@blackswan/foundation';
@@ -15,7 +17,7 @@ import { Viewport, type ViewportOptions } from '@/model/chart/viewport/Viewport'
 import DataSource from '@/model/datasource/DataSource';
 import DataSourceInterconnect from '@/model/datasource/DataSourceInterconnect';
 import type { DrawingType } from '@/model/datasource/types';
-import sketcherDefaults from '@/model/default-config/Sketcher.Defaults';
+import { createDefaultSketchers } from '@/model/default-config/Sketcher.Defaults';
 import {
   HistoricalTransactionManager,
   History,
@@ -32,6 +34,7 @@ export interface ChartOptions {
   theme: ChartTheme;
   sketchers: Map<DrawingType, Sketcher>;
   userInteractions: ChartUserInteractions;
+  drawingBehaviors?: Map<DrawingType, DrawingBehavior>;
   priceScales?: Record<string, PriceAxisScale>;
 }
 
@@ -45,6 +48,7 @@ declare type PaneRegistrationEventListener = (e: PaneRegistrationEvent) => void;
 export class Chart {
   private readonly visiblePanes: ComputedRef<PaneDescriptor<Viewport>[]>;
   private readonly paneRegEventListeners: PaneRegistrationEventListener[];
+  private readonly drawingBehaviors: Map<DrawingType, DrawingBehavior>;
   private readonly sketchers: Map<DrawingType, Sketcher>;
   private readonly history: History;
   private readonly dataSourceInterconnect: DataSourceInterconnect;
@@ -57,6 +61,7 @@ export class Chart {
   public readonly userInteractions: ChartUserInteractions;
 
   constructor(idHelper?: IdHelper, chartOptions?: Partial<ChartOptions>) {
+    this.drawingBehaviors = new Map([...defaultBehaviors, ...chartOptions?.drawingBehaviors ?? []]);
     this.priceScales = Object.freeze({ ...PriceScales, ...chartOptions?.priceScales });
     for (const [id, scale] of Object.entries(this.priceScales)) {
       if (id !== scale.id) throw new Error(`Price scale key ${id} does not match ID ${scale.id}`);
@@ -145,6 +150,7 @@ export class Chart {
         style: this.style,
         timeAxis: this.timeAxis,
         sketchers: this.sketchers,
+        drawingBehaviors: this.drawingBehaviors,
         priceScales: this.priceScales,
         afterApply: () => this.installPane(dataSource.id),
         beforeInverse: () => this.uninstallPane(dataSource.id),
@@ -260,7 +266,7 @@ export class Chart {
   }
 
   private createSketchers(style: ChartStyle, sketchers?: Map<DrawingType, Sketcher>): Map<DrawingType, Sketcher> {
-    const result: Map<DrawingType, Sketcher> = new Map(sketcherDefaults);
+    const result: Map<DrawingType, Sketcher> = createDefaultSketchers();
 
     if (sketchers) {
       sketchers.forEach((value, key) => result.set(key, value));

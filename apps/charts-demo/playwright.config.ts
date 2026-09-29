@@ -10,6 +10,7 @@ import { devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+const port = Number(process.env.PLAYWRIGHT_PORT ?? 5173);
 const config: PlaywrightTestConfig = {
   testDir: './tests/e2e',
   /* Maximum time one test can run for. */
@@ -37,7 +38,7 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:5173',
+    baseURL: `http://localhost:${port}`,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -66,8 +67,8 @@ const config: PlaywrightTestConfig = {
      * Use the preview server on CI for more realistic testing.
     Playwright will re-use the local server if there is already a dev-server running.
      */
-    command: process.env.CI ? 'vite preview --port 5173' : 'vite dev',
-    port: 5173,
+    command: process.env.CI ? `vite preview --port ${port}` : `vite dev --port ${port}`,
+    port,
     reuseExistingServer: !process.env.CI,
   },
 };

@@ -1,601 +1,139 @@
-﻿<template>
-  <chart-widget :chart="chartApi"/>
-</template>
-
-<script lang="ts" setup>
-import { isProxy, markRaw } from 'vue';
-import {
-  ChartWidget,
-  PriceScales,
-  Chart,
-  type ChartOptions,
-  type Sketcher,
-  DataSource,
-  DataSourceChangeEventReason,
-  type DataSourceChangeEventsMap,
-  type DrawingOptions,
-  type DrawingType,
-  IdHelper,
-  type IdBuilder,
-  type Line,
-  type OHLCv,
-  type OHLCvContentOptions,
-  type OHLCvRecord,
-  type Price,
-  type UTCTimestamp,
-  type Range,
-  LineBound,
-  OHLCV_RECORD_CLOSE,
-  type CandlestickPlot,
-  type ColumnsVolumeIndicator,
-  DataBinding,
-  type ContentProviderFabric,
-  OHLCvPipe,
-  type PriceAxisScale,
-  ControlMode,
-  shadeColor,
-  TIME_PERIODS_MAP,
-  TimePeriods,
-  Themes,
-} from 'blackswan-charts';
-
-/**
- * todo
- * ?need check, that is actually needed!
- * Separate line bounds and line definition, snap definition to high timeframe, to eliminate rounding issues
- *
- * Time axis marks
- * Price axis marks
- * Moving lines in scale that's different to line scale (mouse point should keep on line)
- */
-
-function getRandomColor(): string {
-  return `#${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`;
-}
-
-function getLineWidth(): number {
-  return Math.floor(Math.random() * 5) + 1;
-}
-
-function getFill(): number {
-  return Math.floor(Math.random() * 5);
-}
-
-function getScale(): PriceAxisScale {
-  return [PriceScales.regular, PriceScales.log10][Math.floor(Math.random() * 2)];
-}
-
-function getLineBound(): LineBound {
-  return [LineBound.NoBound, LineBound.Both, LineBound.BoundEnd, LineBound.BoundStart][Math.floor(Math.random() * 4)];
-}
-
-const tp = TIME_PERIODS_MAP.get(TimePeriods.h1);
-if (!tp) {
-  throw new Error('Oops');
-}
-const m1Duration: number = tp.averageBarDuration;
-
-function getRandomVLine(idBuilder: IdBuilder) {
-  return {
-    id: idBuilder.getNewId('VLine'),
-    title: 'vline',
-    type: 'VLine',
-    data: {
-      def: Math.random() * 10 * m1Duration - 5 * m1Duration,
-      style: {
-        lineWidth: getLineWidth(),
-        fill: getFill(),
-        color: getRandomColor(),
-      },
-    },
-    locked: false,
-    visible: true,
-    shareWith: '*',
-  };
-}
-
-function getRandomHLine(idBuilder: IdBuilder) {
-  return {
-    id: idBuilder.getNewId('HLine'),
-    title: 'hline',
-    type: 'HLine',
-    data: {
-      def: Math.random() * 1 - 0.5,
-      style: {
-        lineWidth: getLineWidth(),
-        fill: getFill(),
-        color: getRandomColor(),
-      },
-    },
-    locked: false,
-    visible: true,
-  };
-}
-
-const EPOCH_START = new Date('1970-01-01').getTime();
-
-function getRandomLine(idBuilder: IdBuilder) {
-  return {
-    id: idBuilder.getNewId('Line'),
-    title: 'line',
-    type: 'Line',
-    data: {
-      def: [
-        EPOCH_START + Math.random() * 100 * m1Duration - 50 * m1Duration,
-        Math.random() * 5 - 10,
-        EPOCH_START + Math.random() * 100 * m1Duration - 50 * m1Duration,
-        Math.random() * 5 - 10,
-      ],
-      boundType: getLineBound(),
-      scale: getScale(),
-      style: {
-        lineWidth: getLineWidth(),
-        fill: getFill(),
-        color: getRandomColor(),
-      },
-    },
-    locked: false,
-    visible: true,
-    shareWith: '*' as const,
-  };
-}
-
-function getRandomDrawing(idBuilder: IdBuilder): any {
-  return [getRandomLine, getRandomVLine, getRandomHLine][Math.floor(Math.random() * 3)](idBuilder);
-}
-
-const idHelper: IdHelper = new IdHelper();
-const randomLinesCount = 0;
-const randomDrawings = new Array(randomLinesCount).fill(null).map(() => getRandomDrawing(idHelper.forGroup('test')));
-const mainDs = new DataSource({ id: 'main', idHelper }, randomDrawings);
-const chartOptions: Partial<ChartOptions> = {
-  sketchers: new Map<DrawingType, Sketcher>([]),
-  theme: Themes.SYSTEM,
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { examples } from '@demo/gallery/examples';
+import ExampleView from '@demo/gallery/ExampleView.vue';
+import ChartThumbnail from '@demo/gallery/ChartThumbnail.vue';
+import '@demo/gallery/gallery.css';
+const route = ref(location.hash.slice(1));
+const category = ref('All examples');
+const query = ref('');
+const version = ref(0);
+const current = computed(() => examples.find((example) => route.value === `/examples/${example.id}`));
+const invalidRoute = computed(() => route.value !== '' && route.value !== '/' && !current.value);
+const filtered = computed(() =>
+  examples.filter(
+    (example) =>
+      (category.value === 'All examples' || example.category === category.value) &&
+      `${example.title} ${example.description} ${example.tags.join(' ')}`.toLowerCase().includes(query.value.toLowerCase()),
+  ),
+);
+const onRoute = () => {
+  route.value = location.hash.slice(1);
+  version.value = 0;
+  window.scrollTo(0, 0);
 };
-const chartApi = new Chart(idHelper, chartOptions);
-
-const drawings = {
-  ohlcvBTCUSDT: {
-    id: 'ohlcv1',
-    title: 'BTCUSDT',
-    type: 'OHLCv',
-    data: {
-      contentOptions: {
-        type: 'OHLCvContentOptions',
-        symbol: 'BTCUSDT',
-        provider: 'BINANCE',
-        step: TimePeriods.h1,
-      },
-      plotOptions: {
-        type: 'CandlestickPlot',
-        barStyle: {
-          showBody: true,
-          showBorder: true,
-          showWick: true,
-          bearish: {
-            wick: '#EF5350',
-            body: '#EF5350',
-            border: '#EF5350',
-          },
-          bullish: {
-            wick: '#26A29A',
-            body: '#26A29A',
-            border: '#26A29A',
-          },
-        },
-      },
-    },
-    locked: false,
-    visible: true,
-    shareWith: '*',
-  } as DrawingOptions<CandlestickPlot>,
-
-  volumeBTCUSDT: {
-    id: 'ohlcv2',
-    title: 'BTCUSDT Volume',
-    type: 'OHLCv',
-    data: {
-      contentOptions: {
-        type: 'OHLCvContentOptions',
-        symbol: 'BTCUSDT',
-        provider: 'BINANCE',
-        step: TimePeriods.h1,
-      },
-      plotOptions: {
-        type: 'VolumeIndicator',
-        style: {
-          type: 'Columns',
-          bearish: {
-            body: shadeColor('#EF5350', 1.3),
-            border: shadeColor('#EF5350', 1.5),
-          },
-          bullish: {
-            body: shadeColor('#26A29A', 1.3),
-            border: shadeColor('#26A29A', 1.5),
-          },
-        },
-      },
-    },
-    locked: false,
-    visible: true,
-    shareWith: '*',
-  } as DrawingOptions<ColumnsVolumeIndicator>,
-
-  redLineNoBound: {
-    id: 'line1',
-    title: 'line1',
-    type: 'Line',
-    data: {
-      def: [-1 * 10 * m1Duration, -0.25, 1 * 10 * m1Duration, 0.75],
-      boundType: LineBound.NoBound,
-      scale: PriceScales.log10,
-      style: { lineWidth: 2, fill: 1, color: '#AA0000' },
-    } as Line,
-    locked: false,
-    visible: true,
-    shareWith: '*' as const,
+onMounted(() => window.addEventListener('hashchange', onRoute));
+onUnmounted(() => window.removeEventListener('hashchange', onRoute));
+watch(
+  current,
+  (value) => {
+    document.title = `${value?.title ?? 'Gallery'} · Blackswan Charts`;
   },
-
-  greenLineBoundBoth: {
-    id: 'line2',
-    title: 'line2',
-    type: 'Line',
-    data: {
-      def: [0, 0.75, 0.75 * 10 * m1Duration, 0.75],
-      boundType: LineBound.Both,
-      scale: PriceScales.regular,
-      style: { lineWidth: 2, fill: 1, color: '#00AA00' },
-    } as Line,
-    locked: false,
-    visible: true,
-    shareWith: '*' as const,
-  },
-
-  greenLineBoundStart: {
-    id: 'line3',
-    title: 'line3',
-    type: 'Line',
-    data: {
-      def: [(0 + 0.25) * 10 * m1Duration, 0, (0.75 + 0.25) * 10 * m1Duration, 0.75],
-      boundType: LineBound.BoundStart,
-      scale: PriceScales.regular,
-      style: { lineWidth: 2, fill: 1, color: '#00AA00' },
-    } as Line,
-    locked: false,
-    visible: true,
-    shareWith: '*' as const,
-  },
-
-  greenLineBoundEnd: {
-    id: 'line4',
-    title: 'line4',
-    type: 'Line',
-    data: {
-      def: [(0 + 0.5) * 10 * m1Duration, 0, (0.75 + 0.5) * 10 * m1Duration, 0.75],
-      boundType: LineBound.BoundEnd,
-      scale: PriceScales.regular,
-      style: { lineWidth: 2, fill: 1, color: '#00AA00' },
-    } as Line,
-    locked: false,
-    visible: true,
-    shareWith: '*' as const,
-  },
-
-  green025VLineNotShared: {
-    id: 'vline1',
-    title: 'vline1',
-    type: 'VLine',
-    data: { def: -0.25 * 10 * m1Duration, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
-    locked: false,
-    visible: true,
-  },
-
-  green025HLineNotShared: {
-    id: 'hline1',
-    title: 'hline1',
-    type: 'HLine',
-    data: { def: -0.25, style: { lineWidth: 2, fill: 1, color: '#00AA00' } },
-    locked: false,
-    visible: true,
-  },
-
-  red010VLineShared: {
-    id: 'vline2',
-    title: 'vline2',
-    type: 'VLine',
-    data: { def: -0.1 * 10 * m1Duration, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-    shareWith: '*' as const,
-    locked: false,
-    visible: true,
-  },
-
-  red010HLineShared: {
-    id: 'hline2',
-    title: 'hline2',
-    type: 'HLine',
-    data: { def: -0.1, style: { lineWidth: 2, fill: 1, color: '#AA0000' } },
-    shareWith: '*' as const,
-    locked: false,
-    visible: true,
-  },
-};
-
-const valuesCount = 500_000;
-const timePeriod = m1Duration;
-const firstBarTime = Math.floor((Date.now() - valuesCount * timePeriod) / timePeriod) * timePeriod;
-
-const fabric: ContentProviderFabric<OHLCvContentOptions, OHLCv> = (ck: string, co: OHLCvContentOptions, callback: (ck: string, c: OHLCv) => void) => {
-  const content: OHLCv = markRaw({
-    available: {
-      from: firstBarTime as UTCTimestamp,
-      to: firstBarTime + (valuesCount - 1) * timePeriod as UTCTimestamp,
-    },
-    loaded: {
-      from: firstBarTime as UTCTimestamp,
-      to: firstBarTime + (valuesCount - 1) * timePeriod as UTCTimestamp,
-    },
-    step: TimePeriods.h1,
-    values: new Array<[Price, Price, Price, Price, number]>(valuesCount),
-  });
-
-  let contentOptions = co;
-  function getOHLCvRecord(prev: OHLCvRecord | undefined): OHLCvRecord {
-    const prevValue = prev ? prev[OHLCV_RECORD_CLOSE] : Math.random() * 2 - 1;
-    const sign = Math.sign((Math.random() - 0.5));
-    const o = prevValue as Price;
-    const c = o + sign * Math.random() * 4 as Price;
-    const t1 = o + sign * (c - o) * Math.random() * 0.5;
-    const t2 = c + sign * (c - o) * Math.random() * 0.5;
-    const t3 = o - sign * (c - o) * Math.random() * 0.5;
-    const t4 = c - sign * (c - o) * Math.random() * 0.5;
-    const v = Math.random() * 1000 + 10;
-
-    return [o, Math.max(t1, t2, t3, t4) as Price, Math.min(t1, t2, t3, t4) as Price, c, v];
-  }
-
-  const contentValues = content.values;
-  for (let i = 0; i < valuesCount; ++i) {
-    contentValues[i] = getOHLCvRecord(i === 0 ? undefined : contentValues[i - 1]);
-  }
-
-  const process = () => {
-    const contentTp = TIME_PERIODS_MAP.get(content.step);
-    if (!contentTp) {
-      throw new Error('Oops');
-    }
-    // add new
-    content.available.to = (content.available.to + contentTp.getBarDuration(content.available.to)) as UTCTimestamp;
-    content.loaded.to = (content.loaded.to + contentTp.getBarDuration(content.loaded.to)) as UTCTimestamp;
-    contentValues.push(getOHLCvRecord(contentValues[contentValues.length - 1]));
-
-    // update last
-    // values.splice(-1, 1, [lastBar[OHLCV_RECORD_OPEN], h, l, c, lastBar[OHLCV_RECORD_VOLUME]] as OHLCvRecord);
-
-    // replace all
-    // values.splice(0, values.length, newItems);
-
-    callback(ck, content);
-  };
-
-  const intervalId = setInterval(process, 1000);
-
-  return {
-    options: contentOptions,
-    content,
-    stop: () => {
-      clearInterval(intervalId);
-    },
-    updateContentOptions: (newContentOptions: OHLCvContentOptions) => {
-      console.log(newContentOptions);
-      contentOptions = newContentOptions;
-    },
-  };
-};
-
-const binding = new DataBinding(chartApi, new OHLCvPipe(fabric));
-
-mainDs.addChangeEventListener((e) => {
-  const events = e.get(DataSourceChangeEventReason.DataInvalid) || [];
-  for (const event of events) {
-    console.log(event);
-  }
-});
-
-chartApi.createPane(mainDs, {
-  priceAxis: {
-    primaryEntry: drawings.ohlcvBTCUSDT.id,
-    controlMode: ControlMode.AUTO,
-    priority: 1,
-  },
-});
-
-mainDs.addChangeEventListener((events: DataSourceChangeEventsMap) => {
-  for (const [reason, reasonEvents] of events) {
-    for (const dataSourceChangeEvent of reasonEvents) {
-      if (isProxy(dataSourceChangeEvent.entry.descriptor.options)) {
-        console.warn(reason, dataSourceChangeEvent);
-      }
-    }
-  }
-});
-
-let i = 0;
-
-chartApi.timeAxis.range = {
-  from: (EPOCH_START - 50 * m1Duration) as UTCTimestamp,
-  to: (EPOCH_START + 50 * m1Duration) as UTCTimestamp,
-};
-
-chartApi.paneModel('main').priceAxis.range = {
-  from: -50 as Price,
-  to: 50 as Price,
-};
-
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.clearHistory();`);
-  chartApi.clearHistory();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.createPane(~second);`);
-  const dataSource: DataSource = new DataSource({ id: 'second', idHelper });
-  chartApi.createPane(dataSource, {
-    preferredSize: 0.3,
-    priceAxis: {
-      range: { from: -50, to: 50 } as Range<Price>,
-      scale: 'log10',
-    },
-  });
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.undo();`);
-  chartApi.undo();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.undo();`);
-  chartApi.undo();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.redo();`);
-  chartApi.redo();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.green025HLineNotShared);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.green025HLineNotShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.green025VLineNotShared);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.green025VLineNotShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.red010VLineShared);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.red010VLineShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.red010HLineShared);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.red010HLineShared);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.remove(drawings.red010HLineShared.id);`);
-
-  mainDs.beginTransaction();
-  mainDs.remove(drawings.red010HLineShared.id);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.greenLineBoundBoth);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.greenLineBoundBoth);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.green0to1LineBoundStart);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.greenLineBoundStart);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.green0to1LineBoundEnd);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.greenLineBoundEnd);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.green025to075Line);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.redLineNoBound);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) mainDs.add(drawings.ohlcvBTCUSDT);`);
-
-  mainDs.beginTransaction();
-  mainDs.add(drawings.volumeBTCUSDT);
-  mainDs.add(drawings.ohlcvBTCUSDT);
-  mainDs.endTransaction();
-}, 100 * i++, i);
-
-setTimeout((j: number) => {
-  console.log(`${j}) chartApi.paneModel('second').priceAxis.primaryEntryRef`);
-  chartApi.paneModel('second').priceAxis.primaryEntryRef = { ds: chartApi.paneModel('second').dataSource, entryRef: ['main', 'ohlcv1'] };
-}, 100 * i++, i);
-
-// setTimeout((j: number) => {
-//   console.log(`${j}) chartApi.togglePane(mainDs.id);`);
-//   chartApi.togglePane(mainDs.id);
-// }, 100 * i++, i);
-//
-// i += 50;
-//
-// setTimeout((j: number) => {
-//   console.log(`${j}) chartApi.togglePane(mainDs.id);`);
-//   chartApi.togglePane(mainDs.id);
-// }, 100 * i++, i);
-
-// ---------------------------------------------------------------------------------------------
-// setTimeout(() => {
-//   chartApi.updateStyle({ text: { fontSize: 20, fontStyle: 'italic' } });
-// }, 1000);
-
+  { immediate: true },
+);
 </script>
 
-<style lang="scss">
-* {
-  box-sizing: border-box;
-  min-width: 0;
-  min-height: 0;
-}
-
-html, body {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-body, dir, h1, h2, h3, h4, h5, h6, html, li, menu, ol, p, ul {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: Trebuchet MS, roboto, ubuntu, sans-serif;
-  font-size: 14px;
-}
-
-/* app styles */
-.wrapper {
-  height: 100%;
-  width: 100%;
-}
-</style>
+<template>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="#/" aria-label="Blackswan gallery"
+        ><svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M5 24c12 4 20-2 17-9-1-3-6-4-4-8 1-2 4-2 7-1l-3 3c-3-1-3 1-1 2 8 5 5 16-7 17Z" fill="currentColor" /></svg
+        >BLACKSWAN<span>CHARTS</span></a
+      >
+      <a href="#/" class="header-link">Example gallery <span>↗</span></a>
+    </header>
+    <main>
+      <template v-if="current">
+        <a class="back-link" href="#/">← All examples</a>
+        <header class="detail-heading">
+          <div>
+            <span class="eyebrow">{{ current.category }} / {{ current.id }}</span>
+            <h1>{{ current.title }}</h1>
+            <p>{{ current.description }}</p>
+          </div>
+          <div class="tag-list">
+            <span v-for="tag in current.tags" :key="tag">{{ tag }}</span>
+          </div>
+        </header>
+        <ExampleView :key="current.id + version" :example="current" @reset="version++" />
+        <nav class="more-examples" aria-label="More examples">
+          <span class="eyebrow">KEEP EXPLORING</span>
+          <a
+            v-for="example in examples.filter((item) => item.id !== current?.id).slice(0, 3)"
+            :key="example.id"
+            :href="`#/examples/${example.id}`"
+            >{{ example.title }} <span>↗</span></a
+          >
+        </nav>
+      </template>
+      <div v-else-if="invalidRoute" class="empty-state">
+        <h1>Example not found.</h1>
+        <a href="#/">Return to the gallery →</a>
+      </div>
+      <template v-else>
+        <section class="gallery-intro">
+          <div>
+            <span class="eyebrow">THE EXAMPLE COLLECTION / 01—07</span>
+            <h1>Charts with<br /><em>room to explore.</em></h1>
+          </div>
+          <div class="intro-aside">
+            <span class="intro-rule" />
+            <p>A canvas for market data.<br />Explore scales, drawing tools and connected views. Open an example. Make a move.</p>
+            <a href="#/examples/candles">Start with price & volume <span>↗</span></a>
+          </div>
+        </section>
+        <div class="gallery-controls">
+          <div class="category-list" aria-label="Categories">
+            <button
+              v-for="name in ['All examples', 'Market', 'Composition', 'Interaction']"
+              :key="name"
+              :class="{ active: category === name }"
+              :aria-pressed="category === name"
+              @click="category = name"
+            >
+              {{ name }}
+            </button>
+          </div>
+          <label class="search-field"
+            ><span>⌕</span><input v-model="query" type="search" placeholder="Find an example" aria-label="Find an example"
+          /></label>
+        </div>
+        <div class="collection-meta">
+          <span>{{ filtered.length }} EXAMPLES</span><span>LIVE CHARTS · SOURCE INCLUDED</span>
+        </div>
+        <section class="example-grid" aria-label="Chart examples">
+          <a v-for="example in filtered" :key="example.id" class="example-card" :href="`#/examples/${example.id}`">
+            <div class="card-preview">
+              <span class="card-number">{{ String(examples.indexOf(example) + 1).padStart(2, '0') }}</span>
+              <ChartThumbnail :kind="example.id" /><span class="preview-open">Explore ↗</span>
+            </div>
+            <div class="card-caption">
+              <span class="eyebrow">{{ example.category }}</span>
+              <h2>{{ example.title }}<span>↗</span></h2>
+              <p>{{ example.description }}</p>
+            </div>
+          </a>
+        </section>
+        <div v-if="!filtered.length" class="empty-state">
+          <h2>No examples found.</h2>
+          <button
+            @click="
+              query = '';
+              category = 'All examples';
+            "
+          >
+            Clear filters
+          </button>
+        </div>
+        <aside class="gallery-footnote">
+          <span>BUILT TO BE EXPLORED</span>
+          <p>Every example uses fixed, synthetic data. No account, connection or market feed required.</p>
+        </aside>
+      </template>
+    </main>
+    <footer class="site-footer">
+      <span>BLACKSWAN CHARTS</span><span>Data. Geometry. Possibility.</span><a href="#/">Back to collection ↑</a>
+    </footer>
+  </div>
+</template>

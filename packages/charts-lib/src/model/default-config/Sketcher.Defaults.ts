@@ -1,4 +1,4 @@
- 
+import { ChannelSketcher } from '@/model/chart/viewport/sketchers/ChannelSketcher';
 import {
   HLineSketcher,
   LineSketcher,
@@ -10,22 +10,28 @@ import {
   VLineSketcher,
   type Sketcher,
 } from '@/model/chart/viewport/sketchers';
-import {
-  CandlestickPlotRenderer,
-  ColumnsVolumeRenderer,
-} from '@/model/chart/viewport/sketchers/renderers';
+import { CandlestickPlotRenderer, ColumnsVolumeRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import type { DrawingType } from '@/model/datasource/types';
 
-export default new Map<DrawingType, Sketcher>([
-  [
-    'OHLCv', new SketcherGroup(subtypeFromPlotOptionsType)
-      .addSubtype('CandlestickPlot', new OHLCvPlotSketcher(new CandlestickPlotRenderer()))
-      .addSubtype(
-        'VolumeIndicator', new SketcherGroup(subtypeFromPlotOptionsStyleType)
-          .addSubtype('Columns', new OHLCvVolumeSketcher(new ColumnsVolumeRenderer())),
-      ),
-  ],
-  ['Line', new LineSketcher()],
-  ['HLine', new HLineSketcher()],
-  ['VLine', new VLineSketcher()],
-]);
+export function createDefaultSketchers(): Map<DrawingType, Sketcher> {
+  return new Map<DrawingType, Sketcher>([
+    [
+      'OHLCv',
+      new SketcherGroup(subtypeFromPlotOptionsType)
+        .addSubtype('CandlestickPlot', new OHLCvPlotSketcher(new CandlestickPlotRenderer()))
+        .addSubtype(
+          'VolumeIndicator',
+          new SketcherGroup(subtypeFromPlotOptionsStyleType).addSubtype(
+            'Columns',
+            new OHLCvVolumeSketcher(new ColumnsVolumeRenderer()),
+          ),
+        ),
+    ],
+    ['Line', new LineSketcher()],
+    ['HLine', new HLineSketcher()],
+    ['VLine', new VLineSketcher()],
+    ['Channel', new ChannelSketcher()],
+  ]);
+}
+
+export default createDefaultSketchers();

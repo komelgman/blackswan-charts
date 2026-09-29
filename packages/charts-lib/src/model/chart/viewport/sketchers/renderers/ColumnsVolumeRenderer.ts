@@ -12,7 +12,7 @@ import { TIME_PERIODS_MAP } from '@/model/chart/types/time';
 import type { OHLCvPlotRenderer } from '@/model/chart/viewport/sketchers/renderers';
 import { DEFAULT_VOLUME_INDICATOR_HEIGHT_FACTOR } from '@/model/chart/viewport/sketchers';
 import type { DataSourceEntry } from '@/model/datasource/types';
-import type { Viewport } from '@/model/chart/viewport/Viewport';
+import type { DrawingProjection } from '@/model/chart/drawing/DrawingProjection';
 import type { HasStyle, HasType } from '@blackswan/foundation';
 import BatchColumnGraphics from '@/model/chart/viewport/sketchers/graphics/BatchColumnGraphics';
 
@@ -30,7 +30,7 @@ export class ColumnsVolumeRenderer implements OHLCvPlotRenderer<ColumnsVolumeInd
     return this.constructor.name;
   }
 
-  renderBarsToEntry(bars: OHLCvBar[], entry: DataSourceEntry<ColumnsVolumeIndicator>, viewport: Viewport): void {
+  renderBarsToEntry(bars: OHLCvBar[], entry: DataSourceEntry<ColumnsVolumeIndicator>, viewport: DrawingProjection): void {
     const { descriptor, drawing } = entry;
     const { priceAxis, timeAxis } = viewport;
     const { range: timeRange } = timeAxis;
