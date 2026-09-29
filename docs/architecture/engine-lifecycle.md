@@ -16,6 +16,7 @@ Create `Chart` and one or more `DataSource` instances. The chart sets up history
 `Chart.createPane` constructs pane options, assigns the data source transaction manager, applies incidents, and fires pane registration events.
 3. UI Wiring
 `ChartWidget` renders viewports and axes, wires interaction handlers, and listens for pane registration to manage shared UI state.
+Its pane content is keyed by viewport model identity. Restore and undo/redo can replace a model while retaining the same pane ID; in that case widgets must unmount and recreate their canvas layers and listeners for the new model. Reordering existing models retains their widget instances.
 4. Data Binding
 `DataBinding` subscribes to chart panes and data source events, maps content options to content keys, and updates entry content.
 5. Interaction Loop

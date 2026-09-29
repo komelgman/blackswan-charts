@@ -8,6 +8,52 @@ declare global { interface Window { __test_context: ChartWidgetTestContext } }
 
 test.use({ viewport: { width: 1280, height: 720 } });
 
+test('restoring panes with the same IDs reconnects price labels and drawing layers through undo and redo', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const saved = await page.evaluate(async () => {
+    const { chart, newDataSource, idHelper, mount, serialize } = window.__test_context;
+    chart.createPane(newDataSource({ id: 'main', idHelper }, [{
+      id: 'HLine1', type: 'HLine', visible: true, locked: false,
+      data: { def: 120, style: { color: '#00AA00', lineWidth: 2, fill: 0 } },
+    }]), { priceAxis: { range: { from: 80 as Price, to: 175 as Price } } });
+    const initial = JSON.stringify(serialize());
+    await mount(); chart.clearHistory();
+    return initial;
+  });
+  const axisWidth = () => page.locator('.priceline').evaluate(node => node.clientWidth);
+  await expect.poll(axisWidth).toBeGreaterThan(20);
+  const initialWidth = await axisWidth();
+
+  async function expectConnected() {
+    await expect.poll(() => page.evaluate(() => {
+      const viewport = window.__test_context.chart.paneModel('main');
+      return viewport.priceAxis.contentWidth.value > 0
+        && viewport.priceAxis.labels.value.length > 5
+        && !!viewport.dataSource.get('HLine1').drawing;
+    })).toBe(true);
+    await expect.poll(axisWidth).toBe(initialWidth);
+    const bounds = (await page.locator('.viewport').boundingBox())!;
+    const y = await page.evaluate(() => window.__test_context.chart.paneModel('main').priceAxis.translate(120 as Price));
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + y + 30);
+    await expect.poll(async () => {
+      await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + y);
+      return page.evaluate(() => window.__test_context.chart.paneModel('main').highlighted?.descriptor.ref);
+    }).toBe('HLine1');
+  }
+
+  await expectConnected();
+  for (let repeat = 0; repeat < 2; repeat++) {
+    await page.evaluate(data => window.__test_context.restore(JSON.parse(data)), saved);
+    await expectConnected();
+    await page.evaluate(() => window.__test_context.chart.undo());
+    await expectConnected();
+    await page.evaluate(() => window.__test_context.chart.redo());
+    await expectConnected();
+  }
+  expect(errors).toEqual([]);
+});
+
 test('native wheel zoom keeps log labels attached to prices around the cursor', async ({ page }) => {
   await page.evaluate(async () => {
     const { chart, idHelper, newDataSource, mount } = window.__test_context;

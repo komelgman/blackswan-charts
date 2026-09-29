@@ -70,10 +70,18 @@ test('history survives restore and scale changes are undoable', async ({ page })
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/#/examples/history');
+  const axisWidth = () => page.locator('.priceline').evaluate(node => node.clientWidth);
+  await expect.poll(axisWidth).toBeGreaterThan(20);
+  const initialWidth = await axisWidth();
   await page.getByRole('button', { name: 'Move level +5' }).click();
   await page.getByRole('button', { name: 'Restore saved chart' }).click();
+  await expect.poll(axisWidth).toBe(initialWidth);
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect.poll(axisWidth).toBe(initialWidth);
   await expect(page.getByRole('button', { name: 'Redo', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect.poll(axisWidth).toBe(initialWidth);
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await page.getByRole('button', { name: 'Move level +5' }).click();
   await expect(page.getByRole('button', { name: 'Redo', exact: true })).toBeDisabled();
   await page.goto('/#/examples/scales');

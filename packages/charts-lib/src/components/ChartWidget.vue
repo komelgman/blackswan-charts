@@ -19,7 +19,7 @@
       style="height: 100%"
     >
       <template v-slot:default="props">
-        <box-layout>
+        <box-layout :key="getViewportKey(props.model)">
           <viewport-widget
             :viewport="props.model"
             :interactions-handler="viewportInteractionsHandler"
@@ -83,6 +83,7 @@ import { vContextMenuDirective } from '@blackswan/context-menu/model';
 import { BoxLayout, Divider, Multipane } from '@blackswan/layout/components';
 import { Direction, type PaneId, type PanesSizeChangedEvent } from '@blackswan/layout/model';
 import type { Chart, PaneRegistrationEvent } from '@/model/chart/Chart';
+import type { Viewport } from '@/model/chart/viewport/Viewport';
 import type { ChartStyle } from '@/model/chart/types/styles';
 import { PRICE_LABEL_PADDING } from '@/model/chart/axis/layers/PriceAxisLabelsLayer';
 import { getChartCssVars } from '@/model/misc/chart-style.functions';
@@ -112,6 +113,7 @@ const chartState = reactive<ChartWidgetSharedState>({
 provide('chartState', chartState);
 
 const unwatchers = new Map<PaneId, WatchStopHandle[]>();
+const viewportKeys = new WeakMap<Viewport, symbol>();
 let unwatch: WatchStopHandle;
 
 onMounted(() => {
@@ -166,6 +168,17 @@ function onMouseLeave(): void {
 
 function onPaneSizeChanged(event: PanesSizeChangedEvent): void {
   props.chart.recordPaneResize(event);
+}
+
+function getViewportKey(viewport: Viewport): symbol {
+  // Restore and undo can replace the model while retaining its pane ID.
+  // Canvas layers and listeners belong to that model's widget lifetime.
+  let key = viewportKeys.get(viewport);
+  if (key === undefined) {
+    key = Symbol();
+    viewportKeys.set(viewport, key);
+  }
+  return key;
 }
 
 function onPaneRegEventListener(event: PaneRegistrationEvent): void {
