@@ -3,29 +3,29 @@
 This is a map of the rendering flow and its boundaries. It is not a tutorial.
 
 ## Entry Points
-- Viewport rendering components: `frontend/packages/charts-lib/src/components/ViewportWidget.vue`
-- Price axis rendering components: `frontend/packages/charts-lib/src/components/PriceAxisWidget.vue`
-- Time axis rendering components: `frontend/packages/charts-lib/src/components/TimeAxisWidget.vue`
-- Layered canvas infrastructure: `frontend/packages/layered-canvas/src`
+- Viewport rendering components: `packages/charts-lib/src/components/ViewportWidget.vue`
+- Price axis rendering components: `packages/charts-lib/src/components/PriceAxisWidget.vue`
+- Time axis rendering components: `packages/charts-lib/src/components/TimeAxisWidget.vue`
+- Layered canvas infrastructure: `packages/layered-canvas/src`
 
 ## Rendering Layers and Responsibilities
-- Viewport layers live in `frontend/packages/charts-lib/src/model/chart/viewport/layers` and render grid, data, and highlighting.
-- Axis label and marks layers live in `frontend/packages/charts-lib/src/model/chart/axis/layers`.
-- Layer workers and canvas workers live under `frontend/packages/layered-canvas/src/model`.
-- Sketchers and renderers live in `frontend/packages/charts-lib/src/model/chart/viewport/sketchers` and `frontend/packages/charts-lib/src/model/chart/viewport/sketchers/renderers`.
+- Viewport layers live in `packages/charts-lib/src/model/chart/viewport/layers` and render grid, data, and highlighting.
+- Axis label and marks layers live in `packages/charts-lib/src/model/chart/axis/layers`.
+- Layer workers and canvas workers live under `packages/layered-canvas/src/model`.
+- Sketchers and renderers live in `packages/charts-lib/src/model/chart/viewport/sketchers` and `packages/charts-lib/src/model/chart/viewport/sketchers/renderers`.
 
 ## Data and State Inputs
-- Viewport model: `frontend/packages/charts-lib/src/model/chart/viewport/Viewport.ts`
-- Price axis model: `frontend/packages/charts-lib/src/model/chart/axis/PriceAxis.ts`
-- Time axis model: `frontend/packages/charts-lib/src/model/chart/axis/TimeAxis.ts`
-- Data source entries: `frontend/packages/charts-lib/src/model/datasource/DataSource.ts`
+- Viewport model: `packages/charts-lib/src/model/chart/viewport/Viewport.ts`
+- Price axis model: `packages/charts-lib/src/model/chart/axis/PriceAxis.ts`
+- Time axis model: `packages/charts-lib/src/model/chart/axis/TimeAxis.ts`
+- Data source entries: `packages/charts-lib/src/model/datasource/DataSource.ts`
 
 ## Invalidations and Re-render Triggers
-- Viewport highlighting invalidation: `frontend/packages/charts-lib/src/model/chart/viewport/ViewportHighlightInvalidator.ts`
-- Axis label invalidation and workers: `frontend/packages/charts-lib/src/model/chart/axis/label` and `frontend/packages/charts-lib/src/model/chart/axis/layers/workers`
+- Viewport highlighting invalidation: `packages/charts-lib/src/model/chart/viewport/ViewportHighlightInvalidator.ts`
+- Axis label invalidation and workers: `packages/charts-lib/src/model/chart/axis/label` and `packages/charts-lib/src/model/chart/axis/layers/workers`
 
 ## Hot Path Boundaries
-- Rendering, hit-testing, and invalidation are hot paths. Changes here must follow the Hot Paths policy in `frontend/AGENTS.md`.
+- Rendering, hit-testing, and invalidation are hot paths. Follow the [hot-path guidance](../../AGENTS.md#hot-paths).
 
 ## Testable rendering boundaries
 - Axis workers call `axis/layers/renderPriceLabels.ts` and `renderTimeLabels.ts`; grid worker calls `viewport/layers/renderViewportGrid.ts`.

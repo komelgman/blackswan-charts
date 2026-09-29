@@ -3,11 +3,11 @@
 This is a map of the chart engine lifecycle. It is not a tutorial.
 
 ## Primary Entry Points
-- Public API exports: `frontend/packages/charts-lib/src/index.ts`
-- Engine orchestrator: `frontend/packages/charts-lib/src/model/chart/Chart.ts`
-- Data source model: `frontend/packages/charts-lib/src/model/datasource/DataSource.ts`
-- Data binding: `frontend/packages/charts-lib/src/model/databinding/DataBinding.ts`
-- UI shell and wiring: `frontend/packages/charts-lib/src/components/ChartWidget.vue`
+- Public API exports: `packages/charts-lib/src/index.ts`
+- Engine orchestrator: `packages/charts-lib/src/model/chart/Chart.ts`
+- Data source model: `packages/charts-lib/src/model/datasource/DataSource.ts`
+- Data binding: `packages/charts-lib/src/model/databinding/DataBinding.ts`
+- UI shell and wiring: `packages/charts-lib/src/components/ChartWidget.vue`
 
 ## Lifecycle Phases
 1. Construction
@@ -32,9 +32,9 @@ UI components remove listeners on unmount; data bindings should call `unbind` wh
 - UI components translate input and render state but do not own domain rules.
 
 ## Common Debug Anchors
-- Pane lifecycle events: `Chart.addPaneRegistrationEventListener` in `frontend/packages/charts-lib/src/model/chart/Chart.ts`
-- Data source change events: `DataSource.addChangeEventListener` in `frontend/packages/charts-lib/src/model/datasource/DataSource.ts`
-- Content updates: `DataBinding` in `frontend/packages/charts-lib/src/model/databinding/DataBinding.ts`
+- Pane lifecycle events: `Chart.addPaneRegistrationEventListener` in `packages/charts-lib/src/model/chart/Chart.ts`
+- Data source change events: `DataSource.addChangeEventListener` in `packages/charts-lib/src/model/datasource/DataSource.ts`
+- Content updates: `DataBinding` in `packages/charts-lib/src/model/databinding/DataBinding.ts`
 
 ## Browser-free boundaries
 - `packages/layout/src/model/pane-layout.ts` owns allocation and divider resize; Multipane measures/applies DOM sizes.
