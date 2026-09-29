@@ -5,6 +5,9 @@
       "path": "./packages/charts-lib/tsconfig.json"
     },
     {
+      "path": "./packages/charts-lib/tests/tsconfig.json"
+    },
+    {
       "path": "./apps/charts-demo/tsconfig.json"
     }
   ],

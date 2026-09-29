@@ -16,6 +16,32 @@ function createPriceAxis() {
 }
 
 describe('PriceAxis math', () => {
+  it('preserves endpoints when the inverse multiplier underflows', () => {
+    const { axis } = createPriceAxis();
+    axis.noHistoryManagedUpdate({ scale: 'regular', inverted: true,
+      range: { from: 0 as Price, to: 1e-322 as Price }, screenSize: { main: 2000, second: 0 } });
+    expect(axis.revert(0)).toBe(0);
+    expect(axis.revert(2000)).toBe(1e-322);
+    expect(axis.translate(1e-322 as Price)).toBe(2000);
+  });
+
+  it.each(['regular', 'log10', 'percentage'].flatMap(scale => [false, true].flatMap(inverted =>
+    [[0, 100], [1e-298, 1.0000001e-298], [1e300, 2e300]].map(([from, to]) => ({ scale, inverted, from, to })),
+  )))('projects, shifts and pads extreme ranges: $scale inverted=$inverted $from … $to', ({ scale, inverted, from, to }) => {
+    const { axis } = createPriceAxis();
+    axis.noHistoryManagedUpdate({ scale, inverted, range: { from: from as Price, to: to as Price },
+      screenSize: { main: 2000, second: 0 } });
+    const price = axis.revert(500);
+    expect(Math.abs(axis.translate(price) - 500)).toBeLessThan(0.001);
+    const batch = [[price]];
+    axis.translateBatchInPlace(batch, [0]);
+    expect(batch[0][0]).toBe(axis.translate(price));
+    expect(Math.abs(axis.translate(axis.scaledShift(price, 0.1)) - 700)).toBeLessThan(0.001);
+    const padded = axis.applyPaddingToRange(axis.range, -0.1, 0.1);
+    expect(Math.abs(axis.translate(padded.from) - (inverted ? -250 : 2250))).toBeLessThan(0.001);
+    expect(Math.abs(axis.translate(padded.to) - (inverted ? 2250 : -250))).toBeLessThan(0.001);
+  });
+
   it('translate/revert round trip for both inverted states', () => {
     const { axis } = createPriceAxis();
     axis.noHistoryManagedUpdate({

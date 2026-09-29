@@ -31,5 +31,7 @@ This is a map of the rendering flow and its boundaries. It is not a tutorial.
 - Axis workers call `axis/layers/renderPriceLabels.ts` and `renderTimeLabels.ts`; grid worker calls `viewport/layers/renderViewportGrid.ts`.
 - Functions accept a native 2D context and existing payload. Worker transport/lifetime remain in entry points; Node tests use the same geometry/style code.
 - `tests/support/RecordingCanvas.ts` records paths, paint state and transforms, and supplies text metrics. It does not rasterize or perform native hit testing.
-- `PriceLabelsInvalidator` caches measurements until font, fraction or context changes. Vue watchers drive invalidation.
+- `PriceLabelsInvalidator` projects scale-provided ticks, removes collisions, and caches caption widths by font/context. Vue watchers drive invalidation.
 - Data-source tests run actual invalidators/sketchers/layers to detect stale rendering after updates and undo. Browser tests cover native Path2D hit testing and wiring.
+
+- Price scales now own tick values and caption formatting; labels/marks share the formatter. See [price-scales.md](price-scales.md).

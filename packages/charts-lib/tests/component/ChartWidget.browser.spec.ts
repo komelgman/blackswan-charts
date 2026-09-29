@@ -1,11 +1,44 @@
 import { test, expect } from '@playwright/experimental-ct-vue';
-import type ChartWidgetTestContext from './tools/ChartWidgetTestContext';
+import type ChartWidgetTestContext from '@tests/component/tools/ChartWidgetTestContext';
 import type { VLine } from '@/model/chart/types';
-import { dragMouseFromTo, invertPriceAxis } from './tools/utils';
+import type { Line, Price } from '@/model/chart/types';
+import { dragMouseFromTo, invertPriceAxis } from '@tests/component/tools/utils';
 
 declare global { interface Window { __test_context: ChartWidgetTestContext } }
 
 test.use({ viewport: { width: 1280, height: 720 } });
+
+test('native wheel zoom keeps log labels attached to prices around the cursor', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { chart, idHelper, newDataSource, mount } = window.__test_context;
+    chart.createPane(newDataSource({ id: 'main', idHelper }, []),
+      { priceAxis: { scale: 'log10', range: { from: 1000 as Price, to: 12000 as Price } } });
+    await mount();
+  });
+  await expect.poll(() => page.evaluate(() => window.__test_context.chart.paneModel('main').priceAxis.labels.value.length))
+    .toBeGreaterThan(5);
+  const bounds = (await page.getByTestId('pane0').locator('.priceline').boundingBox())!;
+  const pivot = Math.floor(bounds.height / 4);
+  const before = await page.evaluate(screenPivot => {
+    const axis = window.__test_context.chart.paneModel('main').priceAxis;
+    return { anchor: axis.revert(screenPivot), labels: axis.labels.value };
+  }, pivot);
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + pivot);
+  for (let i = 0; i < 3; i++) {
+    const from = await page.evaluate(() => window.__test_context.chart.paneModel('main').priceAxis.range.from);
+    await page.mouse.wheel(0, -120);
+    await expect.poll(() => page.evaluate(() => window.__test_context.chart.paneModel('main').priceAxis.range.from)).not.toBe(from);
+  }
+  await expect.poll(() => page.evaluate(initial => {
+    const axis = window.__test_context.chart.paneModel('main').priceAxis;
+    return initial.labels.filter(([, caption]) => {
+      const position = axis.translate(Number(caption) as Price);
+      return position >= axis.textStyle.fontSize / 2 && position <= axis.screenSize.main - axis.textStyle.fontSize / 2;
+    }).every(([, caption]) => axis.labels.value.some(([, current]) => current === caption));
+  }, before)).toBe(true);
+  const anchorPosition = await page.evaluate(initial => window.__test_context.chart.paneModel('main').priceAxis.translate(initial.anchor), before);
+  expect(anchorPosition).toBeCloseTo(pivot, 1);
+});
 
 for (const beforeMount of [true, false]) {
   test(`connects panes ${beforeMount ? 'before' : 'after'} mount and responds to container resize`, async ({ page }) => {
@@ -78,4 +111,30 @@ test('divider drag records dimensions and undo restores them', async ({ page }) 
   await expect.poll(async () => (await page.getByTestId('pane0').boundingBox())!.height).toBeCloseTo(first.height + 50, 0);
   await page.evaluate(() => window.__test_context.chart.undo());
   await expect.poll(async () => (await page.getByTestId('pane0').boundingBox())!.height).toBeCloseTo(first.height, 0);
+});
+
+test('drags a regular line on a log axis through native pointer events', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.evaluate(async () => {
+    const { chart, newDataSource, idHelper, mount } = window.__test_context;
+    chart.createPane(newDataSource({ id: 'main', idHelper }, [{ id: 'Line1', type: 'Line', visible: true, locked: false,
+      data: { def: [-0.5, 100, 0.5, 200], boundType: 3, scale: chart.priceScales.regular,
+        style: { lineWidth: 2, color: '#00AA00', fill: 0 } } }]),
+    { priceAxis: { scale: 'log10', range: { from: 10 as Price, to: 1000 as Price } } });
+    await mount(); chart.clearHistory();
+  });
+  await expect.poll(() => page.evaluate(() => !!window.__test_context.chart.paneModel('main').dataSource.get('Line1').drawing)).toBe(true);
+  const bounds = (await page.getByTestId('pane0').locator('.viewport').boundingBox())!;
+  const y = await page.evaluate(() => window.__test_context.chart.paneModel('main').priceAxis.translate(150 as Price));
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + y);
+  await expect.poll(() => page.evaluate(() => window.__test_context.chart.paneModel('main').highlighted?.descriptor.ref)).toBe('Line1');
+  await dragMouseFromTo(page, bounds.x + bounds.width / 2, bounds.y + y, bounds.x + bounds.width / 2 + 60, bounds.y + y);
+  const def = () => page.evaluate(() => window.__test_context.chart.paneModel('main').dataSource.get<Line>('Line1').descriptor.options.data.def);
+  await expect.poll(async () => (await def())[0]).toBeGreaterThan(-0.5);
+  expect((await def())[1]).toBeCloseTo(100, 8);
+  expect((await def())[3]).toBeCloseTo(200, 8);
+  await page.keyboard.press('Control+z');
+  await expect.poll(def).toEqual([-0.5, 100, 0.5, 200]);
+  expect(errors).toEqual([]);
 });

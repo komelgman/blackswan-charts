@@ -4,8 +4,8 @@ import type { DrawingOptions } from '@/model/datasource/types';
 import { renderPriceLabels } from '@/model/chart/axis/layers/renderPriceLabels';
 import { renderTimeLabels } from '@/model/chart/axis/layers/renderTimeLabels';
 import { renderViewportGrid } from '@/model/chart/viewport/layers/renderViewportGrid';
-import { createChartHarness } from '../support/chartHarness';
-import { RecordingCanvas, RecordingPath } from '../support/RecordingCanvas';
+import { createChartHarness } from '@tests/support/chartHarness';
+import { RecordingCanvas, RecordingPath } from '@tests/support/RecordingCanvas';
 
 describe('drawing contracts without pixels or system fonts', () => {
   let h: ReturnType<typeof createChartHarness>;

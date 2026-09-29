@@ -19,7 +19,7 @@ Run `npm install`, then `npm test` (alias: `npm run test:node`). All Node suites
 | Labels, grid, DPR | Actual worker drawing functions run against `RecordingCanvas`; `AxisTextMetrics.spec.ts` checks remeasurement with supplied metrics. |
 | Long actions/undo/redo sequence | `ChartHistory.spec.ts` checks semantic state, each intermediate undo/redo and geometry. Includes pan, resize, shared drag, clone, inversion, scale, zoom, pane visibility/order/removal and styles. |
 | Mutual effects of actions | `GeneratedHistory.spec.ts` compares every executed command with an independent snapshot oracle and tests 144 ordered action pairs. |
-| Native hit testing and events | Four Playwright component tests retain real Canvas hit testing, drag, keyboard shortcuts, menu, resize and mount wiring. No PNG assertions. |
+| Native hit testing and events | Six Playwright component tests retain real Canvas hit testing, drag, wheel zoom, keyboard shortcuts, menu, resize and mount wiring. No PNG assertions. |
 
 `chartHarness` uses real objects and Vue effect scopes, fixed dimensions (800x600), a recording Canvas/Path2D and controlled timers. It installs/removes viewport listeners and real invalidation/render layers. It does not emulate native hit testing, rasterization, workers or CSS. Unsupported Canvas methods fail explicitly. Explicit geometry/style expectations validate rendering; undo frame comparisons supplement the independent state oracle.
 
@@ -47,10 +47,20 @@ Model scope excludes live content binding, dynamic `shareWith` changes (producti
 
 Install Chromium once: `npx playwright install chromium`.
 
-- `npm run test:ct`: four component adapter checks, no screenshot/font baselines.
+- `npm run test:ct`: six component adapter checks, no screenshot/font baselines.
 - `npm run build` then `npm run test:e2e`: demo smoke; CI previews the built application.
-- `npm run typecheck`: production plus new integration/support/component and layout test types.
+- `npm run typecheck`: production plus all charts-lib unit/integration/support/component and layout test types.
 
 CT template: `packages/charts-lib/tests/component-template`, exposing `window.__test_context`. Poll observable conditions; Vue nextTick does not guarantee workers finished. Old PNG baselines remain historical artifacts; no active test reads them. Optional visual tests should validate an explicit visual contract, not gate functional tests.
 
 Reports/caches: `packages/charts-lib/tests/.component-report`, `packages/charts-lib/tests/component-template/.cache`, `apps/charts-demo/tests/.e2e-report`.
+
+`packages/charts-lib/tests/tsconfig.json` owns the whole test directory for editor discovery; `tsconfig.vitest.json` extends it for CLI checks. Both inherit explicit `moduleResolution: bundler` from the workspace base, which resolves package subpath exports such as `@blackswan/layered-canvas/model`. Production imports use `@/…`; test helpers use `@tests/…`. The aliases are shared by TypeScript, Vite/Vitest and Playwright CT. Tests outside a configured project previously fell back to editor defaults and could report TS2307 even when the narrower CLI check passed.
+
+## Scale contracts
+
+`ScaleInteractions.spec.ts` covers ordinary/log axis and drawing combinations, inversion, body/handle drags, undo/redo, tiny values, and 200 generated label ranges. `PercentageScale.spec.ts` checks first-visible-close rebasing, data updates, registration/menu, JSON and history. A browser case verifies mixed-scale dragging with native pointer events. See [price-scales.md](docs/architecture/price-scales.md) for extension contracts.
+
+`PriceLabelDensity.spec.ts` checks density, maximum uncovered distance, gap uniformity (largest/smallest at most 1.5 with numerical tolerance), non-overlap, edge clipping and caption/coordinate agreement without rendering. It covers ordinary/log/percentage scales, signed and zero-crossing ranges, very small/large and narrow prices, inversion, fonts and pane heights, including collapse/reopen. Systematic magnitudes span 1e-300..1e300; 1000 generated combinations span base exponents -280..280 with seed `20260928`. Fixed regressions include the single `500` label in 300..800, uneven decimal transitions, rounding failures and missing ticks near spacing thresholds. Inversion/pan tests check grid stability. Failures print a minimized counterexample and replay path. Extreme-range projection, batch coordinates, shifts and padding are also covered in `PriceAxis.spec.ts`.
+
+`PriceLabelZoom.spec.ts` checks repeated wheel-sized zoom increments in both directions, three cursor positions, both axis orientations, signed/tiny/large ranges, and grouped undo/redo. The cursor price stays fixed; retained labels move according to the viewport transform; price levels change at density thresholds rather than every event. A native browser wheel case verifies the actual event coordinates and reactive label update.

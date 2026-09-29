@@ -63,7 +63,7 @@ function createEntry(heightFactor?: number): DataSourceEntry<ColumnsVolumeIndica
     values: [],
   };
 
-  const plotOptions = {
+  const plotOptions: ColumnsVolumeIndicator['plotOptions'] = {
     type: 'VolumeIndicator',
     style: {
       type: 'Columns',

@@ -2,6 +2,7 @@
   "extends": "@vue/tsconfig/tsconfig.json",
   "compilerOptions": {
     "strict": true,
+    "moduleResolution": "bundler",
     "composite": true,
     "lib": ["esnext", "DOM", "DOM.Iterable"],
     "experimentalDecorators": true,

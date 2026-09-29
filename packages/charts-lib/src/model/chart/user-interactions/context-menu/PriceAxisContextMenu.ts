@@ -2,7 +2,6 @@ import { reactive, watch } from 'vue';
 import type { ContextMenuOptionsProvider, MenuItem } from '@blackswan/context-menu/types';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
-import { PriceScales } from '@/model/chart/axis/scaling/PriceAxisScale';
 
 export class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private readonly axis: PriceAxis;
@@ -24,8 +23,6 @@ export class PriceAxisContextMenu implements ContextMenuOptionsProvider {
   private createMenu(): MenuItem[] {
     const { axis } = this;
     const isInverted: boolean = this.axis.inverted.value === 1;
-    const isRegularScale: boolean = axis.scale.id === 'regular';
-    const isLog10Scale: boolean = axis.scale.id === 'log10';
 
     return [
       {
@@ -34,18 +31,12 @@ export class PriceAxisContextMenu implements ContextMenuOptionsProvider {
         checked: isInverted,
         onclick: this.updateInvertedHandler.bind(this),
       },
-      {
+      ...Object.values(axis.availableScales).map((scale): MenuItem => ({
         type: 'checkbox',
-        title: 'Scale - Regular',
-        checked: isRegularScale,
-        onclick: () => this.updateScaleHandler(PriceScales.regular),
-      },
-      {
-        type: 'checkbox',
-        title: 'Scale - Log(10)',
-        checked: isLog10Scale,
-        onclick: () => this.updateScaleHandler(PriceScales.log10),
-      },
+        title: `Scale - ${scale.title}`,
+        checked: axis.scale.id === scale.id,
+        onclick: () => this.updateScaleHandler(scale),
+      })),
     ];
   }
 

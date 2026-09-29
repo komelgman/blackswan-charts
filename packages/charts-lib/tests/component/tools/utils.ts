@@ -1,5 +1,5 @@
 import type { Page } from 'playwright';
-import type ChartWidgetTestContext from './ChartWidgetTestContext';
+import type ChartWidgetTestContext from '@tests/component/tools/ChartWidgetTestContext';
 
 export declare type BoundRect = { x: number, y: number, height: number, width: number };
 

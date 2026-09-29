@@ -26,7 +26,7 @@ describe('DefaultChartUserInteractions', () => {
       shiftKey: false,
       code: 'KeyZ',
       preventDefault: vi.fn(),
-    } as KeyboardEvent;
+    } as unknown as KeyboardEvent;
 
     interactions.onKeyDown(undoEvent);
 
@@ -39,7 +39,7 @@ describe('DefaultChartUserInteractions', () => {
       shiftKey: true,
       code: 'KeyZ',
       preventDefault: vi.fn(),
-    } as KeyboardEvent;
+    } as unknown as KeyboardEvent;
 
     interactions.onKeyDown(redoEvent);
 

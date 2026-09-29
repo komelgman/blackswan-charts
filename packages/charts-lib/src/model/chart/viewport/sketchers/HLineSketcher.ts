@@ -18,7 +18,7 @@ export class HLineSketcher extends AbstractSketcher<HLine> {
     const { data: line, locked } = descriptor.options;
     const { priceAxis } = viewport;
     const { main: width } = viewport.timeAxis.screenSize;
-    const { fraction, range } = priceAxis;
+    const { range } = priceAxis;
 
     descriptor.visibleInViewport = line.def >= range.from && line.def <= range.to;
     descriptor.valid = descriptor.visibleInViewport;
@@ -38,10 +38,7 @@ export class HLineSketcher extends AbstractSketcher<HLine> {
       (drawing.handles.center as SquareHandle).invalidate(width / 2, y, locked);
     }
 
-    const markText = line.def.toLocaleString(undefined, {
-      minimumFractionDigits: fraction,
-      maximumFractionDigits: fraction,
-    });
+    const markText = priceAxis.formatPrice(line.def);
 
     if (priceMark === undefined) {
       entry.mark = {

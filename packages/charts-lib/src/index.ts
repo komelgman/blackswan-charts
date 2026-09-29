@@ -18,6 +18,9 @@ export { default as TimeAxis } from './model/chart/axis/TimeAxis';
 export * from './model/chart/axis/types';
 export type { default as PriceAxisScale } from './model/chart/axis/scaling/PriceAxisScale';
 export { PriceScales } from './model/chart/axis/scaling/PriceAxisScale';
+export type { PriceScaleContext } from './model/chart/axis/scaling/PriceAxisScale';
+export type { PriceScalingFunction } from './model/chart/axis/scaling/PriceScalingFunction';
+export { linearPriceTicks, logarithmicPriceTicks, nicePriceStep, formatPriceNumber } from './model/chart/axis/scaling/price-ticks';
 
 export * from './model/chart/types';
 export * from './model/chart/types/styles';

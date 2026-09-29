@@ -1,7 +1,7 @@
 import { expect } from 'vitest';
 import type { AsyncCommand } from 'fast-check';
 import type { Price, UTCTimestamp } from '@/model/chart/types';
-import type { createChartHarness } from './chartHarness';
+import type { createChartHarness } from '@tests/support/chartHarness';
 
 type Drawing = { id: string; value: number; shared: boolean };
 type Pane = { id: string; visible: boolean; inverted: number; scale: string; range: [number, number]; drawings: Drawing[] };

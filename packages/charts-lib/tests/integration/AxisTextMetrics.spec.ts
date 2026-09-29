@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { effectScope, type EffectScope } from 'vue';
 import type { LayerContext } from '@blackswan/layered-canvas/model';
 import PriceLabelsInvalidator from '@/model/chart/axis/label/PriceLabelsInvalidator';
-import { createChartHarness } from '../support/chartHarness';
-import { RecordingCanvas } from '../support/RecordingCanvas';
+import { createChartHarness } from '@tests/support/chartHarness';
+import { RecordingCanvas } from '@tests/support/RecordingCanvas';
 
 describe('axis layout with supplied text metrics', () => {
   let h: ReturnType<typeof createChartHarness>;
@@ -28,10 +28,11 @@ describe('axis layout with supplied text metrics', () => {
     expect(initial).toBeGreaterThan(0);
     h.chart.updateStyle({ textStyle: { fontSize: axis.textStyle.fontSize * 2 } });
     await h.settle();
-    expect(axis.contentWidth.value).toBe(initial * 2);
+    const largeFontWidth = Math.max(...axis.labels.value.map(([, caption]) => caption.length)) * axis.textStyle.fontSize;
+    expect(axis.contentWidth.value).toBe(largeFontWidth);
     expect(axis.labels.value.length).toBeLessThan(count);
     invalidator.context = context(3);
-    expect(axis.contentWidth.value).toBe(initial * 6);
+    expect(axis.contentWidth.value).toBe(largeFontWidth * 3);
     h.chart.undo(); await h.settle();
     expect(axis.contentWidth.value).toBe(initial * 3);
     expect(axis.labels.value.length).toBe(count);

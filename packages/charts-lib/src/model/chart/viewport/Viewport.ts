@@ -15,6 +15,7 @@ import {
 import type { DataSourceEntry, DrawingReference, DrawingType, HandleId } from '@/model/datasource/types';
 import type { Price, Range } from '@/model/chart/types';
 import type { ControlMode } from '@/model/chart/axis/types';
+import { VisiblePriceReference } from '@/model/chart/axis/scaling/VisiblePriceReference';
 
 export interface ViewportOptions {
   priceAxis: {
@@ -40,6 +41,7 @@ export class Viewport {
   public readonly priceAxis: PriceAxis;
   public readonly dataSource: DataSource;
   public readonly highlightInvalidator: ViewportHighlightInvalidator;
+  public readonly priceReference: VisiblePriceReference;
 
   public readonly selected: Set<DataSourceEntry> = new Set();
   public highlighted: DataSourceEntry | undefined;
@@ -58,6 +60,7 @@ export class Viewport {
     this.priceAxis = priceAxis;
     this.sketchers = sketchers;
     this.highlightInvalidator = new ViewportHighlightInvalidator(this);
+    this.priceReference = new VisiblePriceReference(priceAxis, timeAxis);
   }
 
   public installListeners(): void {

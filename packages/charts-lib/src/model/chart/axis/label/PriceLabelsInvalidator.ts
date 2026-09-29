@@ -1,109 +1,64 @@
-import { computed, toRaw, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { makeFont } from '@/model/misc/function.makeFont';
 import AbstractInvalidator from '@/model/chart/axis/label/AbstractInvalidator';
-import type { LabelOptions } from '@/model/chart/axis/label/LabelOptions';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
-import type { LogicSize, Price, Range } from '@/model/chart/types';
-import { Cache } from '@/model/misc/tools';
 import type { Label } from '@/model/chart/axis/label/Label';
-import type { LayerContext } from '@blackswan/layered-canvas/model';
+import { nicePriceStep } from '@/model/chart/axis/scaling/price-ticks';
 
-// todo: refactor code to get more good loocking values
-// const SCALES = [0.05, 0.1, 0.2, 0.25, 0.5, 0.8, 1, 2, 5];
+/** Scales choose values/formatting; the axis adapter enforces pixel spacing. */
 export default class PriceLabelsInvalidator extends AbstractInvalidator {
-  public readonly axis: PriceAxis;
-
-  private readonly labelsCache: Cache<Price, LabelOptions<Price>> = new Cache();
-  private currentFont: string = '';
-  private currentFontSize: number = 0;
-  private currentRange: Range<Price> = { from: 0, to: 0 } as Range<Price>;
-  private currentFraction: number = 0;
-  private measuredContext?: LayerContext;
-
-  constructor(axis: PriceAxis) {
+  private readonly widths = new Map<string, number>();
+  private measuredWith?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+  private font = '';
+  public constructor(public readonly axis: PriceAxis) {
     super();
-
-    this.axis = axis;
-
     watch([
-      axis.scale,
-      axis.range,
-      axis.inverted,
-      axis.textStyle,
-      computed(() => axis.fraction),
+      axis.scale, axis.range, axis.inverted, axis.textStyle, axis.referencePrice,
       computed(() => axis.screenSize.main),
-    ], this.invalidate.bind(this));
+    ], () => this.invalidate());
   }
 
   public invalidate(): void {
+    const { axis } = this;
+    const size = axis.screenSize.main;
+    const spacing = Math.max(1, axis.textStyle.fontSize * 3);
+    const halfLabel = axis.textStyle.fontSize / 2;
+    const count = Math.floor(size / spacing);
     const labels: Label[] = [];
-
-    const axis = toRaw(this.axis);
-    const font = makeFont(axis.textStyle);
-    if (font !== this.currentFont || axis.fraction !== this.currentFraction || this.context !== this.measuredContext) {
-      this.labelsCache.reset();
+    // Even a one-label panel needs interior candidates: both endpoints may be clipped.
+    const values = count < 1 ? [] : axis.tickValues(Math.max(3, count));
+    const sorted = values.map(value => ({ value, position: axis.translate(value) }))
+      .filter(tick => Number.isFinite(tick.position) && tick.position >= halfLabel && tick.position <= size - halfLabel)
+      .sort((a, b) => a.position - b.position);
+    const step = values.length > 1
+      ? Math.min(...values.slice(1).map((value, i) => Math.abs(value - values[i])).filter(delta => delta > 0))
+      : nicePriceStep(axis.range.to - axis.range.from, count);
+    const captions = new Set<string>();
+    for (const tick of sorted) {
+      const caption = axis.formatPrice(tick.value, step);
+      // A subpixel rounding error must not remove every other otherwise uniform tick.
+      if (captions.has(caption) || (labels.length && tick.position - labels[labels.length - 1][0] < spacing - 0.01)) continue;
+      labels.push([tick.position, caption]);
+      captions.add(caption);
     }
-    this.measuredContext = this.context;
-    this.currentFont = font;
-    this.currentRange = axis.range;
-    this.currentFontSize = axis.textStyle.fontSize;
-    this.currentFraction = axis.fraction;
-
-    const { main: screenSize } = this.axis.screenSize;
-    const logicLabelSize: LogicSize = this.maxLabelSize;
-    const labelSize = logicLabelSize.main;
-    const labelsCount = screenSize / (3 * labelSize);
-    const step = screenSize / labelsCount;
-    const zeroPos: number = this.axis.translate(0 as Price);
-    const shift = Math.sign(zeroPos) * (zeroPos % step);
-
-    for (let pos = shift; pos < screenSize; pos += step) {
-      const labelInfo: LabelOptions<Price> = this.findLabel(this.axis.revert(pos));
-      labels.push([this.axis.translate(labelInfo.value), labelInfo.caption]);
-    }
-
-    this.axis.noHistoryManagedUpdate({ contentWidth: logicLabelSize.second, labels });
-  }
-
-  private get maxLabelSize(): LogicSize {
-    const range = this.currentRange;
-    const v = Math.abs(range.from) < Math.abs(range.to) ? range.to : range.from;
-    return this.findLabel(v).size;
-  }
-
-  private findLabel(value: Price): LabelOptions<Price> {
-    return this.labelsCache.getValue(value, (price) => {
-      const goodLookingValue = this.nearest(price);
-      const caption = this.getCaption(goodLookingValue);
-
-      let size = -1;
-      if (this.context !== undefined) {
-        const { utilityCanvasContext: utilityContext } = this.context;
-        utilityContext.save();
-        utilityContext.font = this.currentFont;
-        size = utilityContext.measureText(caption).width;
-        utilityContext.restore();
+    let contentWidth = 0;
+    const ctx = this.context?.utilityCanvasContext;
+    if (ctx) {
+      const font = makeFont(axis.textStyle);
+      if (ctx !== this.measuredWith || font !== this.font) this.widths.clear();
+      this.measuredWith = ctx; this.font = font;
+      ctx.save(); ctx.font = font;
+      for (const [, caption] of labels) {
+        let width = this.widths.get(caption);
+        if (width === undefined) {
+          width = ctx.measureText(caption).width;
+          if (this.widths.size >= 256) this.widths.clear();
+          this.widths.set(caption, width);
+        }
+        contentWidth = Math.max(contentWidth, width);
       }
-
-      return {
-        value: goodLookingValue,
-        caption,
-        size: {
-          main: this.currentFontSize,
-          second: size,
-        },
-      };
-    });
-  }
-
-  private nearest(value: Price): Price {
-    return Number.parseFloat(value.toPrecision(3)) as Price;
-  }
-
-  private getCaption(value: Price): string {
-    return value.toLocaleString(undefined, {
-      minimumFractionDigits: this.currentFraction,
-      maximumFractionDigits: this.currentFraction,
-    });
+      ctx.restore();
+    }
+    axis.noHistoryManagedUpdate({ labels, contentWidth });
   }
 }

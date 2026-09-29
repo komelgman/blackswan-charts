@@ -53,7 +53,7 @@ export class LineSketcher extends AbstractSketcher<Line> {
     const vpX1 = timeAxis.translate(x1);
     const vpY1 = priceAxis.translate(y1);
 
-    const isDrawAsStrightLine = priceScale.title === line.scale.title || lineFunc === undefined;
+    const isDrawAsStrightLine = priceScale.func === line.scale.func || lineFunc === undefined;
     if (isDrawAsStrightLine) {
       const isNeedToCreateLine = drawing === undefined || (drawing.parts[0] as AbstractLineGraphics<any>).type !== LineGraphics.TYPE;
       if (isNeedToCreateLine) {
@@ -189,32 +189,20 @@ export class LineSketcher extends AbstractSketcher<Line> {
       let update;
 
       if (handle === undefined) {
-        // todo: still work bad
-        const lineScale = (options.data as Line).scale;
+        const lineScale = (options.data as Line).scale.func;
         const [x0, y0, x1, y1] = options.data.def;
-
-        let ny0;
-        let ny1;
-
-        if (lineScale.title === priceAxis.scale.title) {          
-          ny0 = priceAxis.revert(priceAxis.translate(y0) - e.dy);
-          ny1 = priceAxis.revert(priceAxis.translate(y1) - e.dy);
-        } else {
-          const priceAtMousePos = priceAxis.revert(e.y) as Price;
-          const mouseX = timeAxis.revert(e.x);
-
-          let linePriceAtMouseX = y0;
-          if (x1 !== x0) {
-            const ldy = lineScale.func.translate(y1) - lineScale.func.translate(y0);
-            const ldx = x1 - x0;
-            const dydx = ldy / ldx;
-            linePriceAtMouseX = lineScale.func.revert(lineScale.func.translate(y0) + dydx * (mouseX - x0));
-          }
-
-          const dy = lineScale.func.translate(priceAtMousePos) - lineScale.func.translate(linePriceAtMouseX);
-          ny0 = lineScale.func.revert(lineScale.func.translate(y0) + dy);
-          ny1 = lineScale.func.revert(lineScale.func.translate(y1) + dy);
-        }
+        // Drag events carry previous-minus-current deltas. Evaluate the grabbed
+        // point BEFORE moving horizontally, then shift it by the screen delta.
+        // This preserves the line's slope in its own scale and the grab offset.
+        const previousX = timeAxis.revert(e.x + e.dx);
+        const anchor = x0 === x1
+          ? priceAxis.revert(e.y + e.dy)
+          : lineScale.revert(lineScale.translate(y0)
+            + (lineScale.translate(y1) - lineScale.translate(y0)) * (previousX - x0) / (x1 - x0));
+        const shiftedAnchor = priceAxis.revert(priceAxis.translate(anchor) - e.dy);
+        const delta = lineScale.translate(shiftedAnchor) - lineScale.translate(anchor);
+        const ny0 = lineScale.revert(lineScale.translate(y0) + delta);
+        const ny1 = lineScale.revert(lineScale.translate(y1) + delta);
 
         const nx0 = timeAxis.revert(timeAxis.translate(x0) - e.dx);
         const nx1 = timeAxis.revert(timeAxis.translate(x1) - e.dx);

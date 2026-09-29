@@ -7,6 +7,7 @@ import { type ViewportOptions, Viewport } from '@/model/chart/viewport/Viewport'
 import type DataSource from '@/model/datasource/DataSource';
 import type { DrawingType } from '@/model/datasource/types';
 import { AbstractHistoricalIncident, type HistoricalIncidentOptions } from '@/model/history';
+import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 
 export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   dataSource: DataSource;
@@ -15,6 +16,7 @@ export interface AddNewPaneOptions extends HistoricalIncidentOptions {
   style: ChartStyle;
   timeAxis: TimeAxis;
   panes: PaneDescriptor<Viewport>[];
+  priceScales?: Readonly<Record<string, PriceAxisScale>>;
 }
 
 export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOptions> {
@@ -31,6 +33,7 @@ export default class AddNewPane extends AbstractHistoricalIncident<AddNewPaneOpt
       dataSource.transactionManager,
       style.textStyle,
       priority || Number.MIN_VALUE,
+      options.priceScales,
     );
 
     priceAxis.noHistoryManagedUpdate({ ...paneOptions.priceAxis });

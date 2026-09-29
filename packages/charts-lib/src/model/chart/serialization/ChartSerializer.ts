@@ -8,6 +8,7 @@ import type DataSource from '@/model/datasource/DataSource';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { SerializedChart, SerializedPane, SerializedTimeAxis } from '@/model/chart/serialization/types';
 import { Themes, type ChartStyle, type ChartTheme } from '@/model/chart/types/styles';
+import { hasScale } from '@/model/chart/types/HasScale';
 
 export class ChartSerializer {
   public serialize(chart: Chart): SerializedChart {
@@ -60,7 +61,10 @@ export class ChartSerializer {
     const result: DrawingOptions<any>[] = [];
 
     for (const { descriptor: { options } } of dataSource.filtered((entry) => isString(entry.descriptor.ref))) {
-      result.push(options);
+      const data: unknown = options.data;
+      if (hasScale(data)) {
+        result.push({ ...options, data: { ...data, scale: { id: data.scale.id } } });
+      } else result.push(options);
     }
 
     return result;

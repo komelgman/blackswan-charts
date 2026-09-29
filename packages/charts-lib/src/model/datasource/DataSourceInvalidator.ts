@@ -41,6 +41,7 @@ export default class DataSourceInvalidator {
       priceAxis.scale,
       priceAxis.range,
       priceAxis.inverted,
+      priceAxis.referencePrice,
       computed(() => priceAxis.screenSize.main),
       timeAxis.range,
       computed(() => timeAxis.screenSize.main),

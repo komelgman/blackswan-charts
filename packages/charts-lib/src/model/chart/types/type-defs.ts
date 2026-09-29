@@ -1,4 +1,4 @@
-import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
+import type { HasScale } from '@/model/chart/types/HasScale';
 import type { Nominal } from '@blackswan/foundation';
 export type { Range, Point } from '@blackswan/foundation';
 
@@ -43,9 +43,8 @@ interface AbstractLine<D> {
 
 export declare type HLine = AbstractLine<Price>;
 export declare type VLine = AbstractLine<UTCTimestamp>;
-export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Price]> & {
+export declare type Line = AbstractLine<[UTCTimestamp, Price, UTCTimestamp, Price]> & HasScale & {
   boundType: LineBound;
-  scale: PriceAxisScale;
 };
 
 export interface BarColors {

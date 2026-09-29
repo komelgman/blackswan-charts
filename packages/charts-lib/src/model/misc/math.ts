@@ -6,11 +6,11 @@ const C = 1 / Math.log(10);
 
 export default {
   log10(x: number): number {
-    return Math.sign(x) * Math.log10(1 + Math.abs(x / C));
+    return Math.sign(x) * Math.log1p(Math.abs(x / C)) / Math.LN10;
   },
 
   exp10(x: number): number {
-    return Math.sign(x) * C * (-1 + 10 ** Math.abs(x));
+    return Math.sign(x) * C * Math.expm1(Math.abs(x) * Math.LN10);
   },
 
   ln(x: number): number {

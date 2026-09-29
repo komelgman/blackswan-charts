@@ -42,3 +42,6 @@ UI components remove listeners on unmount; data bindings should call `unbind` wh
 - Historical protocols retain hooks for every participating source; each source flushes queued notifications after apply/inverse. Repeated registration is deduplicated.
 - `History.clear` establishes a signed baseline and clears both directions without applying incidents.
 - `tests/support/chartHarness.ts` owns its effect scope and pane listeners. Node integrations use real Chart/viewport/source objects; TESTING.md documents oracle limits.
+
+- Chart owns a per-instance price scale registry and starts/stops each pane's VisiblePriceReference with registration. First-visible OHLCv close is derived without a renderer; see [price-scales.md](price-scales.md).
+- Drawing persistence uses the shared `HasScale` contract: serialization stores a scale ID, and deserialization resolves all scale references before changing chart state, independently of the drawing type.

@@ -6,18 +6,22 @@ import { Chart } from '@/model/chart/Chart';
 import { Themes } from '@/model/chart/types/styles';
 import DataSource from '@/model/datasource/DataSource';
 import type { DrawingOptions, DrawingReference, DrawingType } from '@/model/datasource/types';
-import { HLineSketcher, VLineSketcher, type Sketcher } from '@/model/chart/viewport/sketchers';
+import { HLineSketcher, VLineSketcher, LineSketcher, type Sketcher } from '@/model/chart/viewport/sketchers';
+import type PriceAxisScale from '@/model/chart/axis/scaling/PriceAxisScale';
 import ViewportDataSourceLayer from '@/model/chart/viewport/layers/ViewportDataSourceLayer';
 import type { Viewport } from '@/model/chart/viewport/Viewport';
-import { RecordingCanvas } from './RecordingCanvas';
+import { RecordingCanvas } from '@tests/support/RecordingCanvas';
 
-export function createChartHarness({ render = true } = {}) {
+export function createChartHarness({ render = true, priceScales }: { render?: boolean; priceScales?: Record<string, PriceAxisScale> } = {}) {
   const scope = effectScope();
   const canvases = new Map<string, RecordingCanvas>();
   const layers = new Map<string, ViewportDataSourceLayer>();
   const chart = scope.run(() => new Chart(new IdHelper(), {
     theme: Themes.DARK,
-    sketchers: new Map<DrawingType, Sketcher>([['HLine', new HLineSketcher()], ['VLine', new VLineSketcher()]]),
+    sketchers: new Map<DrawingType, Sketcher>([
+      ['HLine', new HLineSketcher()], ['VLine', new VLineSketcher()], ['Line', new LineSketcher()],
+    ]),
+    priceScales,
   }))!;
   const width = 800;
   const height = 600;
@@ -87,6 +91,7 @@ export function createChartHarness({ render = true } = {}) {
   }
   function dispose() {
     for (const pane of chart.panes) {
+      pane.model.priceReference.stop();
       layers.get(pane.id)?.destroy();
       pane.model.uninstallListeners();
     }

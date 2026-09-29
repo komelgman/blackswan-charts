@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
-import { createChartHarness } from '../support/chartHarness';
-import { assertModel, HistoryCommand, initialModel, type Action } from '../support/historyModel';
+import { createChartHarness } from '@tests/support/chartHarness';
+import { assertModel, HistoryCommand, initialModel, type Action } from '@tests/support/historyModel';
 
 const actions: Action[] = ['add', 'update', 'remove', 'addPane', 'removePane', 'toggle', 'swap',
   'invert', 'scale', 'priceRange', 'timeRange', 'undo', 'redo', 'clear', 'batch'];

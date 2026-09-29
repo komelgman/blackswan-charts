@@ -84,7 +84,7 @@ function createEntry(): DataSourceEntry<CandlestickPlot> {
     values: [],
   };
 
-  const plotOptions = {
+  const plotOptions: CandlestickPlot['plotOptions'] = {
     type: 'CandlestickPlot',
     barStyle: {
       showBody: true,

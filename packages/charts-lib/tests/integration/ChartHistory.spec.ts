@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DrawingOptions } from '@/model/datasource/types';
 import type { Price, UTCTimestamp } from '@/model/chart/types';
-import { createChartHarness, observeChart } from '../support/chartHarness';
-import { RecordingPath } from '../support/RecordingCanvas';
+import { createChartHarness, observeChart } from '@tests/support/chartHarness';
+import { RecordingPath } from '@tests/support/RecordingCanvas';
 
 const line = (id: string, type: 'HLine' | 'VLine', shared = false): DrawingOptions => ({
   id, type, data: { def: -0.25, style: { color: '#00AA00', lineWidth: 2, fill: 1 } },

@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["../src", "../env.d.ts", "**/*.ts", "**/*.vue"],
+  "exclude": ["component-template/.cache", ".component-report"],
+  "compilerOptions": {
+    "types": ["node", "jsdom"]
+  }
+}

@@ -26,11 +26,13 @@ import type { Price, Range } from '@/model/chart/types';
 import { ControlMode } from '@/model/chart/axis/types';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 import { getThemeStyle } from '@/model/misc/chart-style.functions';
+import { PriceScales, type default as PriceAxisScale } from '@/model/chart/axis/scaling/PriceAxisScale';
 
 export interface ChartOptions {
   theme: ChartTheme;
   sketchers: Map<DrawingType, Sketcher>;
   userInteractions: ChartUserInteractions;
+  priceScales?: Record<string, PriceAxisScale>;
 }
 
 export interface PaneRegistrationEvent {
@@ -51,9 +53,14 @@ export class Chart {
   public readonly timeAxis: TimeAxis;
   public readonly style: ChartStyle;
   public readonly panes: PaneDescriptor<Viewport>[];
+  public readonly priceScales: Readonly<Record<string, PriceAxisScale>>;
   public readonly userInteractions: ChartUserInteractions;
 
   constructor(idHelper?: IdHelper, chartOptions?: Partial<ChartOptions>) {
+    this.priceScales = Object.freeze({ ...PriceScales, ...chartOptions?.priceScales });
+    for (const [id, scale] of Object.entries(this.priceScales)) {
+      if (id !== scale.id) throw new Error(`Price scale key ${id} does not match ID ${scale.id}`);
+    }
     const chartStyle = getThemeStyle(chartOptions?.theme);
     this.idHelper = idHelper || new IdHelper();
     this.paneRegEventListeners = [];
@@ -123,6 +130,10 @@ export class Chart {
       merge(paneOptions, options);
     }
 
+    if (!Object.prototype.hasOwnProperty.call(this.priceScales, paneOptions.priceAxis.scale)) {
+      throw new Error(`Unknown price scale: ${paneOptions.priceAxis.scale}`);
+    }
+
     dataSource.transactionManager = this.transactionManager;
 
     this.transactionManager.openTransaction({ protocolTitle: 'chart-controller-create-pane' });
@@ -134,6 +145,7 @@ export class Chart {
         style: this.style,
         timeAxis: this.timeAxis,
         sketchers: this.sketchers,
+        priceScales: this.priceScales,
         afterApply: () => this.installPane(dataSource.id),
         beforeInverse: () => this.uninstallPane(dataSource.id),
       }),
@@ -275,9 +287,11 @@ export class Chart {
 
     const { dataSource } = pane.model;
     this.dataSourceInterconnect.addDataSource(dataSource);
+    pane.model.priceReference.start();
   }
 
   private uninstallPane(paneId: PaneId): void {
+    this.paneModel(paneId).priceReference.stop();
     this.dataSourceInterconnect.removeDataSource(paneId);
 
     this.firePaneRegistrationEvent({

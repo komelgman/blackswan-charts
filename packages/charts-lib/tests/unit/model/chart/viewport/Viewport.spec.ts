@@ -5,11 +5,12 @@ import { HistoricalTransactionManager, History } from '@/model/history';
 import { IdHelper } from '@blackswan/foundation';
 import type { DragMoveEvent, GenericMouseEvent, LayerContext, MouseClickEvent } from '@blackswan/layered-canvas/model';
 import type { DataSourceEntry, DrawingOptions } from '@/model/datasource/types';
+import type { DragHandle } from '@/model/chart/viewport/DragHandle';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 import type TimeAxis from '@/model/chart/axis/TimeAxis';
 import type { PriceAxis } from '@/model/chart/axis/PriceAxis';
 
-type DragHandleSpy = ReturnType<typeof vi.fn>;
+type DragHandleSpy = ReturnType<typeof vi.fn<DragHandle>>;
 
 function createDataSource() {
   const history = new History();

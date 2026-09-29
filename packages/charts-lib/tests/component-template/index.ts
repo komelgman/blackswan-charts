@@ -3,7 +3,7 @@ import { Chart, type ChartOptions } from '@/model/chart/Chart';
 import DataSource from '@/model/datasource/DataSource';
 import type { DataSourceOptions, DrawingOptions, DrawingType } from '@/model/datasource/types';
 import { IdHelper } from '@blackswan/foundation';
-import type ChartWidgetTestContext from '../component/tools/ChartWidgetTestContext';
+import type ChartWidgetTestContext from '@tests/component/tools/ChartWidgetTestContext';
 import { Themes } from '@/model/chart/types/styles';
 import type { Sketcher } from '@/model/chart/viewport/sketchers';
 
