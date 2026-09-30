@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { ChartWidget } from 'blackswan-charts';
 import type { Example } from '@demo/gallery/examples';
 import sceneCode from '@demo/gallery/scene?raw';
@@ -48,7 +48,9 @@ async function copy() {
     copied.value = false;
   }
 }
+onMounted(() => scene.start?.());
 onUnmounted(() => {
+  scene.dispose?.();
   scene.chart.panes.forEach((pane) => pane.model.priceReference.stop());
 });
 </script>
@@ -68,6 +70,7 @@ onUnmounted(() => {
     <div class="chart-host" @mouseup.capture="refresh" @wheel.passive="refresh" @keydown.capture="refresh">
       <ChartWidget :chart="scene.chart" />
     </div>
+    <p v-if="scene.status" class="stage-note"><output data-testid="stream-status" aria-live="off">{{ scene.status }}</output></p>
     <p class="stage-note"><span>TRY IT</span> {{ scene.note }}</p>
   </section>
   <section class="source-section" aria-label="Example source code">
@@ -77,6 +80,9 @@ onUnmounted(() => {
       <p>The code running above. The setup and fixed sample data are included.</p>
       <p class="source-hint">
         Render the returned chart with <code>&lt;ChartWidget :chart="scene.chart" /&gt;</code> in a sized container.
+      </p>
+      <p v-if="scene.start || scene.dispose" class="source-hint">
+        Call <code>scene.start?.()</code> on mount and <code>scene.dispose?.()</code> on unmount.
       </p>
     </div>
     <div class="code-panel">

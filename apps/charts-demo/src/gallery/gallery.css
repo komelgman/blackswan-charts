@@ -203,26 +203,21 @@ p {
   overflow: hidden;
 }
 .chart-thumbnail {
+  display: block;
   width: 100%;
   height: auto;
   transition: transform 0.3s;
 }
-.thumbnail-grid {
-  fill: none;
-  stroke: #25353c;
-  stroke-width: 0.6;
-}
-.chart-thumbnail text {
-  fill: #88a19b;
-  font: 11px monospace;
-}
 .card-number {
+  z-index: 1;
   position: absolute;
   top: 14px;
   left: 16px;
   color: #69827e;
   font-size: 9px;
   letter-spacing: 0.1em;
+  background: #111c22;
+  padding: 2px 4px;
 }
 .preview-open {
   position: absolute;

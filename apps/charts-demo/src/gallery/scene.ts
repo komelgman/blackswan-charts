@@ -10,6 +10,7 @@ import {
   type DrawingOptions,
   type Line,
   type Price,
+  type OHLCv,
 } from 'blackswan-charts';
 import { marketData, time } from '@demo/gallery/data';
 
@@ -21,17 +22,20 @@ export interface ExampleScene {
   chart: Chart;
   actions?: ExampleAction[];
   note: string;
+  readonly status?: string;
+  start?(): void;
+  dispose?(): void;
 }
 export const lineStyle = { color: '#e2b77c', lineWidth: 2 as const, fill: 0 };
 
-export function marketPane(chart: Chart, id: string, scale = 'regular', volume = false): DataSource {
+export function marketPane(chart: Chart, id: string, scale = 'regular', volume = false, content: OHLCv = marketData()): DataSource {
   const candles: DrawingOptions<CandlestickPlot> = {
     id: 'OHLCv1',
     type: 'OHLCv',
     locked: true,
     visible: true,
     data: {
-      content: marketData(),
+      content,
       plotOptions: {
         type: 'CandlestickPlot',
         barStyle: {
@@ -52,7 +56,7 @@ export function marketPane(chart: Chart, id: string, scale = 'regular', volume =
       locked: true,
       visible: true,
       data: {
-        content: marketData(),
+        content,
         plotOptions: {
           type: 'VolumeIndicator',
           heightFactor: 0.17,
@@ -74,14 +78,14 @@ export function marketPane(chart: Chart, id: string, scale = 'regular', volume =
   return source;
 }
 
-export function marketScene(volume = false) {
+export function marketScene(volume = false, content: OHLCv = marketData()) {
   const chart = new Chart(undefined, { theme: Themes.DARK });
   chart.updateStyle({
     backgroundColor: '#111c22',
     borderColor: '#26343b',
     viewport: { backgroundColor: '#111c22', gridColor: '#223138' },
   });
-  const source = marketPane(chart, 'main', 'regular', volume);
+  const source = marketPane(chart, 'main', 'regular', volume, content);
   chart.timeAxis.range = { from: time(-4), to: time(125) };
   chart.clearHistory();
   return { chart, source };

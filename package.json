@@ -15,6 +15,7 @@
     "lint": "eslint . --fix",
     "test:unit": "run-p test:unit:*",
     "test:unit:charts-lib": "npm -w packages/charts-lib --if-present run test:unit",
+    "test:unit:demo": "npm -w apps/charts-demo run test:unit",
     "test:unit:foundation": "npm -w packages/foundation --if-present run test:unit",
     "test:unit:layout": "npm -w packages/layout --if-present run test:unit",
     "test:unit:layered-canvas": "npm -w packages/layered-canvas --if-present run test:unit",

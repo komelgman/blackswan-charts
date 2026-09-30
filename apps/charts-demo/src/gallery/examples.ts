@@ -8,6 +8,8 @@ import drawings from '@demo/gallery/examples/drawings';
 import drawingsCode from '@demo/gallery/examples/drawings?raw';
 import shared from '@demo/gallery/examples/shared';
 import sharedCode from '@demo/gallery/examples/shared?raw';
+import streaming from '@demo/gallery/examples/streaming';
+import streamingCode from '@demo/gallery/examples/streaming?raw';
 import history from '@demo/gallery/examples/history';
 import historyCode from '@demo/gallery/examples/history?raw';
 import channel from '@demo/gallery/examples/channel';
@@ -36,7 +38,7 @@ export const examples: Example[] = [
     id: 'panes',
     title: 'One timeline. Two views.',
     category: 'Composition',
-    description: 'Independent price axes, a shared timeline, and a movable divider.',
+    description: 'Two different markets, independent price axes, and one shared timeline.',
     tags: ['Panes', 'Layout'],
     create: panes,
     code: panesCode,
@@ -54,7 +56,7 @@ export const examples: Example[] = [
     id: 'drawings',
     title: 'Draw on the data',
     category: 'Interaction',
-    description: 'Lines, levels and time markers that stay connected to their coordinates.',
+    description: 'Solid, dashed and dotted drawings, with handles and scale-aware geometry.',
     tags: ['Handles', 'Editing'],
     create: drawings,
     code: drawingsCode,
@@ -63,19 +65,19 @@ export const examples: Example[] = [
     id: 'shared',
     title: 'Connected by design',
     category: 'Composition',
-    description: 'Edit one drawing across multiple panes without copying its state.',
+    description: 'Shared and local levels, time markers and diagonals across two different markets.',
     tags: ['Sources', 'Sharing'],
     create: shared,
     code: sharedCode,
   },
   {
-    id: 'history',
-    title: 'Every move, reversible',
-    category: 'Interaction',
-    description: 'Step back, step forward, and restore a saved chart.',
-    tags: ['Undo / redo', 'JSON'],
-    create: history,
-    code: historyCode,
+    id: 'streaming',
+    title: 'One bar at a time',
+    category: 'Market',
+    description: 'Watch new candles arrive. Pause, step forward, or follow the latest price.',
+    tags: ['Live data', 'OHLCv'],
+    create: streaming,
+    code: streamingCode,
   },
   {
     id: 'channel',
@@ -87,3 +89,10 @@ export const examples: Example[] = [
     code: channelCode,
   },
 ];
+
+// Keep existing links to the previous sixth example working.
+export const historyExample: Example = {
+  id: 'history', title: 'Every move, reversible', category: 'Interaction',
+  description: 'Step back, step forward, and restore a saved chart.',
+  tags: ['Undo / redo', 'JSON'], create: history, code: historyCode,
+};

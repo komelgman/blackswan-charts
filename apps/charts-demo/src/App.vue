@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { examples } from '@demo/gallery/examples';
+import { examples, historyExample } from '@demo/gallery/examples';
 import ExampleView from '@demo/gallery/ExampleView.vue';
 import ChartThumbnail from '@demo/gallery/ChartThumbnail.vue';
 import '@demo/gallery/gallery.css';
@@ -8,7 +8,7 @@ const route = ref(location.hash.slice(1));
 const category = ref('All examples');
 const query = ref('');
 const version = ref(0);
-const current = computed(() => examples.find((example) => route.value === `/examples/${example.id}`));
+const current = computed(() => [...examples, historyExample].find((example) => route.value === `/examples/${example.id}`));
 const invalidRoute = computed(() => route.value !== '' && route.value !== '/' && !current.value);
 const filtered = computed(() =>
   examples.filter(
@@ -128,7 +128,7 @@ watch(
         </div>
         <aside class="gallery-footnote">
           <span>BUILT TO BE EXPLORED</span>
-          <p>Every example uses fixed, synthetic data. No account, connection or market feed required.</p>
+          <p>Every example uses reproducible, synthetic data. No account, connection or market feed required.</p>
         </aside>
       </template>
     </main>

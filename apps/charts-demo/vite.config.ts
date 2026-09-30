@@ -1,4 +1,4 @@
-﻿import { defineConfig } from 'vite';
+﻿import { defineConfig } from 'vitest/config';
 import { fileURLToPath, URL } from 'url';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
@@ -14,6 +14,8 @@ export default defineConfig(({ command }) => {
   const isServe = command === 'serve';
 
   return {
+    base: process.env.DEMO_BASE_PATH || '/',
+    test: { environment: 'node', include: ['tests/unit/**/*.spec.ts'] },
     plugins: [
       {
         name: 'source-library-styles',

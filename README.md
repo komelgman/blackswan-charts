@@ -2,6 +2,8 @@
 
 An interactive Vue/TypeScript chart library with market data, drawing tools, multiple panes, extensible price scales and undo/redo.
 
+**[Explore the live demo →](https://komelgman.github.io/blackswan-charts/)**
+
 ## Explore the gallery
 
 ```sh
@@ -9,9 +11,19 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The gallery has seven standalone examples: price/volume, panes, scales, drawing tools, shared drawings, history/persistence and a parallel channel. Each example has a permanent hash link, reset and the actual source code. All data is synthetic and deterministic; no API credentials are required.
+Open the local URL printed by Vite. The gallery has seven standalone examples: price/volume, two different markets, scales, line styles, shared/local drawings, streaming candles and a parallel channel. Each example has a permanent hash link, reset and the actual source code. All data is synthetic and deterministic; no API credentials are required. The previous history/persistence example remains accessible at `/#/examples/history`.
 
 Example: `/#/examples/channel`. Example factories live in `apps/charts-demo/src/gallery/examples`; add their metadata to `gallery/examples.ts`. Keep examples on the public `blackswan-charts` API and put engine behavior tests in the library, rather than making the gallery a functional test oracle.
+
+The streaming example appends a candle and volume bar every second, retains at most 240 bars, and supports pause, manual stepping and follow mode. Feed updates bypass user-edit history. `ExampleView` starts scenes on mount and disposes them on reset or navigation; timers must be released in `dispose`.
+
+Card previews are actual chart captures, not separate hand-drawn illustrations. To refresh them after changing examples, build and start a preview, then run `npm -w apps/charts-demo run thumbnails -- http://127.0.0.1:5180` (substitute your preview URL) and `npm run build:demo`. The generator writes `apps/charts-demo/public/gallery/*.png`; these are display assets, never screenshot-test expectations.
+
+## Publish the demo
+
+[GitHub Pages](https://komelgman.github.io/blackswan-charts/) is updated by [the Pages workflow](.github/workflows/pages.yml) on every push to `master`; it can also be run manually from Actions. The workflow installs locked dependencies, runs Node tests, builds the library and demo, and checks the production build in Chromium before publishing `apps/charts-demo/dist`. Generated build output is not committed.
+
+The workflow gets the site's base path from GitHub Pages and passes it as `DEMO_BASE_PATH` to both Vite and the browser tests. Local development defaults to `/`. For a local Pages-style build, set `DEMO_BASE_PATH=/blackswan-charts/` in your shell before running `npm run build`; keep the same variable when starting the preview or browser tests. Hash routes work without server rewrites. In a fork, enable **Settings → Pages → Source → GitHub Actions** and update the demo links in this README.
 
 ## Packages
 
