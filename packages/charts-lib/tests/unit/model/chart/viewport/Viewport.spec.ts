@@ -252,7 +252,7 @@ describe('Viewport selection and dragging', () => {
 });
 
 describe('ViewportHighlightInvalidator', () => {
-  function createLayerContext(): LayerContext {
+  function createLayerContext(dpr = 1): LayerContext {
     return {
       mainCanvas: {} as HTMLCanvasElement,
       utilityCanvasContext: {
@@ -261,11 +261,11 @@ describe('ViewportHighlightInvalidator', () => {
       } as unknown as CanvasRenderingContext2D,
       width: 100,
       height: 100,
-      dpr: 1,
+      dpr,
     };
   }
 
-  it('prioritizes handle hit for selected entries', () => {
+  it.each([1, 1.25, 2, 3])('prioritizes handle hit in CSS coordinates at DPR %s', dpr => {
     const { ds } = createDataSource();
     const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
@@ -273,7 +273,7 @@ describe('ViewportHighlightInvalidator', () => {
 
     };
     const { viewport } = createViewport(ds, sketcher);
-    viewport.highlightInvalidator.layerContext = createLayerContext();
+    viewport.highlightInvalidator.layerContext = createLayerContext(dpr);
 
     const entry = addEntry(ds, { id: 'line1', data: {}, type: 'line', locked: false, visible: true });
     entry.descriptor.visibleInViewport = true;
@@ -281,7 +281,7 @@ describe('ViewportHighlightInvalidator', () => {
       handles: {
         h1: {
           render: () => {},
-          hitTest: () => true,
+          hitTest: (_, pos) => pos.x === 10 && pos.y === 10,
           cursor: 'grab',
           cx: 0,
           cy: 0,
@@ -301,7 +301,7 @@ describe('ViewportHighlightInvalidator', () => {
     expect(viewport.cursor).toBe('grab');
   });
 
-  it('falls back to body hit when no handle is hit', () => {
+  it.each([1, 1.25, 2, 3])('falls back to body hit in CSS coordinates at DPR %s', dpr => {
     const { ds } = createDataSource();
     const sketcher: Sketcher & { behavior?: DrawingBehavior } = {
       invalidate: () => true,
@@ -309,7 +309,7 @@ describe('ViewportHighlightInvalidator', () => {
 
     };
     const { viewport } = createViewport(ds, sketcher);
-    viewport.highlightInvalidator.layerContext = createLayerContext();
+    viewport.highlightInvalidator.layerContext = createLayerContext(dpr);
 
     const entry = addEntry(ds, { id: 'line1', data: {}, type: 'line', locked: false, visible: true });
     entry.descriptor.visibleInViewport = true;
@@ -323,7 +323,7 @@ describe('ViewportHighlightInvalidator', () => {
         },
       },
       parts: [
-        { render: () => {}, hitTest: () => true },
+        { render: () => {}, hitTest: (_, pos) => pos.x === 10 && pos.y === 10 },
       ],
     };
 

@@ -1,4 +1,4 @@
-import { ControlMode, LineFillStyle, LineBound, PriceScales, type Price } from 'blackswan-charts';
+import { LineFillStyle, LineBound, PriceScales, type Price } from 'blackswan-charts';
 import { marketData, time } from '@demo/gallery/data';
 import { marketPane, marketScene, type ExampleScene } from '@demo/gallery/scene';
 export default function create(): ExampleScene {
@@ -6,7 +6,7 @@ export default function create(): ExampleScene {
   const lineStyle = { color: '#e2b77c', lineWidth: 2 as const, fill: LineFillStyle.Solid };
   const line = { scale: PriceScales.regular, boundType: LineBound.Both, style: lineStyle };
   source.beginTransaction();
-  const comparison = marketPane(chart, 'comparison', 'regular', false, marketData('falling'));
+  const comparison = marketPane(chart, 'comparison', marketData('falling'));
   source.add({
     id: 'HLine1',
     type: 'HLine',
@@ -43,9 +43,6 @@ export default function create(): ExampleScene {
   chart.clearHistory();
   return {
     chart,
-    start() {
-      chart.timeAxis.noHistoryManagedUpdate({ controlMode: ControlMode.MANUAL, range: { from: time(-4), to: time(125) } });
-    },
     note: 'Amber level, time marker and diagonal are shared: drag any of them in either market. '
       + 'Blue lines belong only to the top pane; coral lines only to the bottom. Undo reverses the edit in both views.',
   };

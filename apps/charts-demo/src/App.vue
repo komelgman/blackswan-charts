@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { examples, historyExample, repositoryUrl } from '@demo/gallery/examples';
+import { examples, repositoryUrl } from '@demo/gallery/examples';
 import ExampleView from '@demo/gallery/ExampleView.vue';
 import ChartThumbnail from '@demo/gallery/ChartThumbnail.vue';
 import '@demo/gallery/gallery.css';
@@ -8,7 +8,7 @@ const route = ref(location.hash.slice(1));
 const category = ref('All examples');
 const query = ref('');
 const version = ref(0);
-const current = computed(() => [...examples, historyExample].find((example) => route.value === `/examples/${example.id}`));
+const current = computed(() => examples.find((example) => route.value === `/examples/${example.id}`));
 const invalidRoute = computed(() => route.value !== '' && route.value !== '/' && !current.value);
 const filtered = computed(() =>
   examples.filter(
@@ -74,13 +74,13 @@ watch(
       <template v-else>
         <section class="gallery-intro">
           <div>
-            <span class="eyebrow">THE EXAMPLE COLLECTION / 01—07</span>
+            <span class="eyebrow">THE EXAMPLE COLLECTION / 01—{{ String(examples.length).padStart(2, '0') }}</span>
             <h1>Charts with<br /><em>room to explore.</em></h1>
           </div>
           <div class="intro-aside">
             <span class="intro-rule" />
             <p>A canvas for market data.<br />Explore scales, drawing tools and connected views. Open an example. Make a move.</p>
-            <a href="#/examples/candles">Start with price & volume <span>↗</span></a>
+            <a href="#/examples/basic">Start with your first chart <span>↗</span></a>
           </div>
         </section>
         <div class="gallery-controls">

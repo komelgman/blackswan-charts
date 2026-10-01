@@ -1,3 +1,5 @@
+import basic from '@demo/gallery/examples/basic';
+import basicCode from '@demo/gallery/examples/basic?raw';
 import candles from '@demo/gallery/examples/candles';
 import candlesCode from '@demo/gallery/examples/candles?raw';
 import panes from '@demo/gallery/examples/panes';
@@ -14,7 +16,9 @@ import history from '@demo/gallery/examples/history';
 import historyCode from '@demo/gallery/examples/history?raw';
 import channel from '@demo/gallery/examples/channel';
 import channelCode from '@demo/gallery/examples/channel?raw';
-import type { ExampleScene } from '@demo/gallery/scene';
+import events from '@demo/gallery/examples/events';
+import eventsCode from '@demo/gallery/examples/events?raw';
+import type { ExampleScene } from '@demo/gallery/types';
 export const repositoryUrl = 'https://github.com/komelgman/blackswan-charts';
 export const gallerySourceUrl = `${repositoryUrl}/blob/master/apps/charts-demo/src/gallery`;
 export interface Example {
@@ -23,78 +27,89 @@ export interface Example {
   category: string;
   description: string;
   tags: string[];
+  learning: string;
   create(): ExampleScene;
   code: string;
 }
 export const examples: Example[] = [
   {
-    id: 'candles',
-    title: 'Price & volume',
-    category: 'Market',
-    description: 'A familiar market view, built from two complementary layers.',
-    tags: ['OHLCv', 'Volume'],
-    create: candles,
-    code: candlesCode,
+    id: 'basic', title: 'Your first chart', category: 'Market',
+    description: 'A data source, a pane and one Vue widget. Start here.',
+    tags: ['Getting started', 'Vue'],
+    learning: 'Example creates the chart directly, including the required candle colors. Vue shows how to mount the widget; Data'
+      + ' supplies the sample prices.',
+    create: basic, code: basicCode,
   },
   {
-    id: 'panes',
-    title: 'One timeline. Two views.',
-    category: 'Composition',
+    id: 'candles', title: 'Price & volume', category: 'Market',
+    description: 'Add a volume layer to the same prices, using the built-in chart theme.',
+    tags: ['OHLCv', 'Volume'],
+    learning: 'Two OHLCv entries share the same content: candles and volume. The price axis follows the candles; volume has its'
+      + ' own height inside the pane.',
+    create: candles, code: candlesCode,
+  },
+  {
+    id: 'streaming', title: 'One bar at a time', category: 'Market',
+    description: 'Append live data, preserve your zoom, and follow the latest bar.',
+    tags: ['Live data', 'Auto fit'],
+    learning: 'Update the source without user-edit history. AUTO and justFollow handle the axes; mount starts the timer and'
+      + ' unmount stops it.',
+    create: streaming, code: streamingCode,
+  },
+  {
+    id: 'scales', title: 'A different perspective', category: 'Market',
+    description: 'Compare linear, log and percentage scales across a wide price range.',
+    tags: ['Scales', 'Percentage'],
+    learning: 'Change the price axis scale without changing the prices. AUTO fits the visible bars; percentage uses the first'
+      + ' visible close as its reference.',
+    create: scales, code: scalesCode,
+  },
+  {
+    id: 'panes', title: 'One timeline. Two views.', category: 'Composition',
     description: 'Two different markets, independent price axes, and one shared timeline.',
     tags: ['Panes', 'Layout'],
-    create: panes,
-    code: panesCode,
+    learning: 'Add another source and pane to the same chart. Time is shared automatically, while each price axis fits its own'
+      + ' primary entry.',
+    create: panes, code: panesCode,
   },
   {
-    id: 'scales',
-    title: 'A different perspective',
-    category: 'Market',
-    description: 'Explore the same prices through linear, log and percentage scales.',
-    tags: ['Scales', 'Zoom'],
-    create: scales,
-    code: scalesCode,
-  },
-  {
-    id: 'drawings',
-    title: 'Draw on the data',
-    category: 'Interaction',
+    id: 'drawings', title: 'Draw on the data', category: 'Interaction',
     description: 'Solid, dashed and dotted drawings, with handles and scale-aware geometry.',
     tags: ['Handles', 'Editing'],
-    create: drawings,
-    code: drawingsCode,
+    learning: 'Add horizontal, vertical and inclined lines in one transaction. Their coordinates stay in the data domain; the'
+      + ' library handles dragging, copying and undo.',
+    create: drawings, code: drawingsCode,
   },
   {
-    id: 'shared',
-    title: 'Connected by design',
-    category: 'Composition',
+    id: 'channel', title: 'Room for a trend', category: 'Interaction',
+    description: 'A built-in parallel channel with editable slope and width.',
+    tags: ['Channel', 'Geometry'],
+    learning: 'Channel uses the built-in drawing type. Endpoints set its baseline; offset sets its width. No custom renderer or'
+      + ' behavior registration is needed.',
+    create: channel, code: channelCode,
+  },
+  {
+    id: 'shared', title: 'Connected by design', category: 'Composition',
     description: 'Shared and local levels, time markers and diagonals across two different markets.',
     tags: ['Sources', 'Sharing'],
-    create: shared,
-    code: sharedCode,
+    learning: 'shareWith projects an owned drawing into other panes. Local drawings stay independent, even when they have the same'
+      + ' local ID in different sources.',
+    create: shared, code: sharedCode,
   },
   {
-    id: 'streaming',
-    title: 'One bar at a time',
-    category: 'Market',
-    description: 'Watch new candles arrive. Pause, step forward, or follow the latest price.',
-    tags: ['Live data', 'OHLCv'],
-    create: streaming,
-    code: streamingCode,
+    id: 'events', title: 'Every object has a story', category: 'Interaction',
+    description: 'Click a drawing to see its identity, type and event in a floating tooltip.',
+    tags: ['Events', 'Tooltip'],
+    learning: 'Wrap the public viewport handlers and keep their default behavior. The highlighted entry identifies the object;'
+      + ' Vue displays a tooltip. Empty clicks, dragging and zoom dismiss it.',
+    create: events, code: eventsCode,
   },
   {
-    id: 'channel',
-    title: 'Room for a trend',
-    category: 'Interaction',
-    description: 'A parallel channel with independently editable slope and width.',
-    tags: ['Channel', 'Extension'],
-    create: channel,
-    code: channelCode,
+    id: 'history', title: 'Every move, reversible', category: 'Interaction',
+    description: 'Group edits, undo and redo, then save and restore the chart as JSON.',
+    tags: ['Transactions', 'JSON'],
+    learning: 'A transaction groups edits into one undo step. Serialize and restore the chart through the public API; restoring is'
+      + ' also undoable.',
+    create: history, code: historyCode,
   },
 ];
-
-// Keep existing links to the previous sixth example working.
-export const historyExample: Example = {
-  id: 'history', title: 'Every move, reversible', category: 'Interaction',
-  description: 'Step back, step forward, and restore a saved chart.',
-  tags: ['Undo / redo', 'JSON'], create: history, code: historyCode,
-};

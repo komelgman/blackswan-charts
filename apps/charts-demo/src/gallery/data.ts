@@ -4,7 +4,7 @@ export const HOUR = 3_600_000;
 export const START = Date.UTC(2026, 0, 5);
 export const time = (bar: number) => (START + bar * HOUR) as UTCTimestamp;
 
-export type MarketSeries = 'rising' | 'falling';
+export type MarketSeries = 'rising' | 'falling' | 'wide';
 
 function closePrice(i: number, series: MarketSeries): number {
   return series === 'rising'
@@ -14,6 +14,11 @@ function closePrice(i: number, series: MarketSeries): number {
 
 /** Deterministic bars can be generated individually for the live-feed example. */
 export function marketBar(i: number, series: MarketSeries = 'rising'): OHLCvRecord {
+  if (series === 'wide') {
+    const [open, high, low, close, volume] = marketBar(i);
+    const expand = (price: Price) => (20 * 40 ** ((price - 100) / 50)) as Price;
+    return [expand(open), expand(high), expand(low), expand(close), volume];
+  }
   const close = closePrice(i, series);
   const open = i === 0 ? close : closePrice(i - 1, series);
   return [

@@ -3,24 +3,28 @@ import { marketScene, type ExampleScene } from '@demo/gallery/scene';
 export default function create(): ExampleScene {
   const { chart, source } = marketScene();
   source.beginTransaction();
-  source.add({
-    id: 'HLine1', type: 'HLine', visible: true, locked: false,
-    data: { def: 120 as Price, style: { color: '#e2b77c', lineWidth: 2, fill: LineFillStyle.Solid } },
-  });
+  for (const [index, price] of [120, 135].entries()) {
+    source.add({
+      id: `HLine${index + 1}`, type: 'HLine', visible: true, locked: false,
+      data: { def: price as Price, style: { color: '#e2b77c', lineWidth: 2, fill: LineFillStyle.Solid } },
+    });
+  }
   source.endTransaction();
   chart.clearHistory();
   const initial = JSON.stringify(new ChartSerializer().serialize(chart));
   return {
     chart,
-    note: 'Move the level, undo, redo, or restore the saved chart. Restore itself is also one undoable action.',
+    note: 'Move both levels in one transaction, then undo them together. Restore the saved JSON chart; restoring is also undoable.',
     actions: [
       {
-        label: 'Move level +5',
+        label: 'Move levels +5',
         run() {
           const ds = chart.paneModel('main').dataSource;
-          const price = ds.get<HLine>('HLine1').descriptor.options.data.def;
           ds.beginTransaction();
-          ds.update('HLine1', { data: { def: price + 5 } });
+          for (const id of ['HLine1', 'HLine2']) {
+            const price = ds.get<HLine>(id).descriptor.options.data.def;
+            ds.update(id, { data: { def: price + 5 } });
+          }
           ds.endTransaction();
         },
       },

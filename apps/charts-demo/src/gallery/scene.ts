@@ -6,25 +6,12 @@ import {
   type CandlestickPlot,
   type ColumnsVolumeIndicator,
   type DrawingOptions,
-  type Price,
   type OHLCv,
 } from 'blackswan-charts';
-import { marketData, time } from '@demo/gallery/data';
+import { HOUR, marketData } from '@demo/gallery/data';
+export type { ExampleAction, ExampleScene } from '@demo/gallery/types';
 
-export interface ExampleAction {
-  label: string;
-  run(): void;
-}
-export interface ExampleScene {
-  chart: Chart;
-  actions?: ExampleAction[];
-  note: string;
-  readonly status?: string;
-  start?(): void;
-  dispose?(): void;
-}
-
-export function marketPane(chart: Chart, id: string, scale = 'regular', volume = false, content: OHLCv = marketData()): DataSource {
+export function marketPane(chart: Chart, id: string, content: OHLCv = marketData(), volume = false): DataSource {
   const candles: DrawingOptions<CandlestickPlot> = {
     id: 'OHLCv1',
     type: 'OHLCv',
@@ -55,7 +42,6 @@ export function marketPane(chart: Chart, id: string, scale = 'regular', volume =
         content,
         plotOptions: {
           type: 'VolumeIndicator',
-          heightFactor: 0.17,
           style: {
             type: 'Columns',
             bullish: { body: '#285b56', border: '#285b56' },
@@ -69,20 +55,20 @@ export function marketPane(chart: Chart, id: string, scale = 'regular', volume =
   drawings.push(candles);
   const source = new DataSource({ id, idHelper: chart.idHelper }, drawings);
   chart.createPane(source, {
-    priceAxis: { primaryEntry: 'OHLCv1', scale, controlMode: ControlMode.MANUAL, range: { from: 80 as Price, to: 175 as Price } },
+    priceAxis: { primaryEntry: 'OHLCv1', controlMode: ControlMode.AUTO },
   });
   return source;
 }
 
 export function marketScene(volume = false, content: OHLCv = marketData()) {
   const chart = new Chart(undefined, { theme: Themes.DARK });
-  chart.updateStyle({
-    backgroundColor: '#111c22',
-    borderColor: '#26343b',
-    viewport: { backgroundColor: '#111c22', gridColor: '#223138' },
+  const source = marketPane(chart, 'main', content, volume);
+  // AUTO follows new bars; justfollow preserves this initial window when it does.
+  chart.timeAxis.noHistoryManagedUpdate({
+    range: { from: content.loaded.from, to: (content.loaded.to + 20 * HOUR) as typeof content.loaded.to },
+    controlMode: ControlMode.AUTO,
+    justfollow: true,
   });
-  const source = marketPane(chart, 'main', 'regular', volume, content);
-  chart.timeAxis.range = { from: time(-4), to: time(125) };
   chart.clearHistory();
   return { chart, source };
 }

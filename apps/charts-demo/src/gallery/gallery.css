@@ -380,6 +380,7 @@ p {
   margin: 0 7px;
 }
 .chart-host {
+  position: relative;
   height: 480px;
   min-height: 300px;
   width: 100%;
@@ -459,6 +460,10 @@ p {
   display: flex;
   align-items: center;
   margin-left: auto;
+}
+.code-toolbar [role='tablist'] {
+  display: flex;
+  flex-wrap: wrap;
 }
 .code-toolbar button,
 .code-actions a {

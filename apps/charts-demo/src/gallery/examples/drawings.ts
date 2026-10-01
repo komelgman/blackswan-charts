@@ -1,20 +1,12 @@
-import { LineFillStyle, LineBound, PriceScales, type OHLCvRecord, type Price } from 'blackswan-charts';
+import { LineFillStyle, LineBound, PriceScales, type Price } from 'blackswan-charts';
 import { marketData, time } from '@demo/gallery/data';
 import { marketScene, type ExampleScene } from '@demo/gallery/scene';
 export default function create(): ExampleScene {
-  const { chart, source } = marketScene();
+  const { chart, source } = marketScene(false, marketData('wide'));
   const lineStyle = { color: '#e2b77c', lineWidth: 2 as const, fill: LineFillStyle.Solid };
   const line = { scale: PriceScales.regular, boundType: LineBound.Both, style: lineStyle };
   const axis = chart.paneModel('main').priceAxis;
-  axis.range = { from: 10 as Price, to: 1400 as Price };
-  // Spread the synthetic prices across orders of magnitude to expose log curvature.
-  const expandPrice = (price: Price) => (20 * 40 ** ((price - 100) / 50)) as Price;
-  const content = marketData();
-  content.values = content.values.map(([open, high, low, close, volume]): OHLCvRecord => [
-    expandPrice(open), expandPrice(high), expandPrice(low), expandPrice(close), volume,
-  ]);
   source.beginTransaction();
-  source.update('OHLCv1', { data: { content } });
   source.add({
     id: 'Line1', type: 'Line', visible: true, locked: false,
     data: { ...line, def: [time(10), 20 as Price, time(110), 1000 as Price] },

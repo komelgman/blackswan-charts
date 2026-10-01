@@ -17,12 +17,12 @@ export default class ViewportHighlightInvalidator {
       return;
     }
 
-    const { utilityCanvasContext, dpr } = this.layerContext;
+    const { utilityCanvasContext } = this.layerContext;
     const { highlighted, selected } = this.viewportModel;
     this.viewportModel.highlighted = undefined;
     this.viewportModel.highlightedHandleId = undefined;
     this.viewportModel.cursor = undefined;
-    const screenPos: Point = { x: pos.x * dpr, y: pos.y * dpr };
+    // Paths and the unscaled utility context use CSS pixels; only render layers apply DPR.
 
     utilityCanvasContext.save();
 
@@ -35,7 +35,7 @@ export default class ViewportHighlightInvalidator {
       if (selected.has(entry as DataSourceEntry)
         || (highlighted !== undefined && isEqualDrawingReference(entry.descriptor.ref, highlighted.descriptor.ref))) {
         for (const [handleId, graphics] of Object.entries(entry.drawing.handles)) {
-          if (graphics.hitTest(utilityCanvasContext, screenPos)) {
+          if (graphics.hitTest(utilityCanvasContext, pos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;
             this.viewportModel.highlightedHandleId = handleId;
             this.viewportModel.cursor = graphics.cursor || 'pointer';
@@ -46,7 +46,7 @@ export default class ViewportHighlightInvalidator {
 
       if (this.viewportModel.highlighted === undefined) {
         for (const graphics of entry.drawing.parts) {
-          if (graphics.hitTest(utilityCanvasContext, screenPos)) {
+          if (graphics.hitTest(utilityCanvasContext, pos)) {
             this.viewportModel.highlighted = entry as DataSourceEntry;
             this.viewportModel.cursor = 'pointer';
             break;

@@ -1,18 +1,40 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { ChartWidget } from 'blackswan-charts';
+import { computed, nextTick, ref, watch } from 'vue';
+import ChartEmbed from '@demo/gallery/ChartEmbed.vue';
+import ObjectEventChart from '@demo/gallery/ObjectEventChart.vue';
+import integrationCode from '@demo/gallery/ChartEmbed.vue?raw';
+import eventsIntegrationCode from '@demo/gallery/ObjectEventChart.vue?raw';
+import tooltipCode from '@demo/gallery/ObjectEventTooltip.vue?raw';
+import typesCode from '@demo/gallery/types?raw';
 import { gallerySourceUrl, type Example } from '@demo/gallery/examples';
 import sceneCode from '@demo/gallery/scene?raw';
 import dataCode from '@demo/gallery/data?raw';
 const props = defineProps<{ example: Example }>();
 const emit = defineEmits<{ reset: [] }>();
 const scene = props.example.create();
-const tab = ref('Example');
+type SourceTab = 'Example' | 'Vue' | 'Setup' | 'Data' | 'Tooltip' | 'Types';
+const tab = ref<SourceTab>('Example');
+const tabs = computed<SourceTab[]>(() => {
+  if (props.example.id === 'basic') return ['Example', 'Vue', 'Data', 'Types'];
+  return props.example.id === 'events'
+    ? ['Example', 'Vue', 'Tooltip', 'Setup', 'Data', 'Types']
+    : ['Example', 'Vue', 'Setup', 'Data', 'Types'];
+});
 const copied = ref(false);
 const revision = ref(0);
-const code = computed(() => (tab.value === 'Example' ? props.example.code : tab.value === 'Setup' ? sceneCode : dataCode));
+const code = computed(() => ({
+  Example: props.example.code,
+  Vue: props.example.id === 'events' ? eventsIntegrationCode : integrationCode,
+  Setup: sceneCode, Data: dataCode, Tooltip: tooltipCode, Types: typesCode,
+})[tab.value]);
 const exampleSourceUrl = `${gallerySourceUrl}/examples/${props.example.id}.ts`;
-const sourceUrl = computed(() => tab.value === 'Example' ? exampleSourceUrl : `${gallerySourceUrl}/${tab.value === 'Setup' ? 'scene' : 'data'}.ts`);
+const sourceUrl = computed(() => {
+  if (tab.value === 'Example') return exampleSourceUrl;
+  if (tab.value === 'Vue') return `${gallerySourceUrl}/${props.example.id === 'events' ? 'ObjectEventChart' : 'ChartEmbed'}.vue`;
+  if (tab.value === 'Tooltip') return `${gallerySourceUrl}/ObjectEventTooltip.vue`;
+  if (tab.value === 'Types') return `${gallerySourceUrl}/types.ts`;
+  return `${gallerySourceUrl}/${tab.value === 'Setup' ? 'scene' : 'data'}.ts`;
+});
 const canUndo = computed(() => {
   void revision.value;
   return scene.chart.isCanUndo;
@@ -50,11 +72,6 @@ async function copy() {
     copied.value = false;
   }
 }
-onMounted(() => scene.start?.());
-onUnmounted(() => {
-  scene.dispose?.();
-  scene.chart.panes.forEach((pane) => pane.model.priceReference.stop());
-});
 </script>
 
 <template>
@@ -70,7 +87,8 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="chart-host" @mouseup.capture="refresh" @wheel.passive="refresh" @keydown.capture="refresh">
-      <ChartWidget :chart="scene.chart" />
+      <ObjectEventChart v-if="example.id === 'events'" :scene="scene" />
+      <ChartEmbed v-else :scene="scene" />
     </div>
     <p v-if="scene.status" class="stage-note"><output data-testid="stream-status" aria-live="off">{{ scene.status }}</output></p>
     <p class="stage-note"><span>TRY IT</span> {{ scene.note }}</p>
@@ -80,24 +98,25 @@ onUnmounted(() => {
       <span class="eyebrow">BEHIND THE CHART</span>
       <h2>Make it yours.</h2>
       <p>
-        Example contains this chart's drawings and interactions.
-        Setup creates the shared chart and panes; Data generates the sample prices.
+        {{ example.learning }}
       </p>
       <a class="source-link" :href="exampleSourceUrl" target="_blank" rel="noopener noreferrer">
         View example on GitHub <span aria-hidden="true">↗</span>
       </a>
       <p class="source-hint">
-        Render the returned chart with <code>&lt;ChartWidget :chart="scene.chart" /&gt;</code> in a sized container.
+        Create the scene once in Vue setup. Render <code>&lt;ChartWidget :chart="scene.chart" /&gt;</code>
+        inside a container with an explicit height. The Vue tab shows the component used above.
       </p>
-      <p v-if="scene.start || scene.dispose" class="source-hint">
-        Call <code>scene.start?.()</code> on mount and <code>scene.dispose?.()</code> on unmount.
+      <p class="source-hint">
+        {{ example.id === 'basic' ? 'This example creates the chart directly.' : 'Setup contains the shared chart and pane creation.' }}
+        Chart appearance comes from the theme. Plot colors and drawing styles are currently required by the API.
       </p>
     </div>
     <div class="code-panel">
       <div class="code-toolbar">
         <div role="tablist" aria-label="Source files">
           <button
-            v-for="name in ['Example', 'Setup', 'Data']"
+            v-for="name in tabs"
             :key="name"
             role="tab"
             :aria-selected="tab === name"

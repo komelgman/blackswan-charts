@@ -11,13 +11,30 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The gallery has seven standalone examples: price/volume, two different markets, scales, line styles, shared/local drawings, streaming candles and a parallel channel. Each example has a permanent hash link, reset and the actual source code. All data is synthetic and deterministic; no API credentials are required. The previous history/persistence example remains accessible at `/#/examples/history`.
+Open the local URL printed by Vite. The gallery has ten standalone examples, ordered from first integration to interaction and persistence. Each example has a permanent hash link, reset and the actual source code. All data is synthetic and deterministic; no API credentials are required.
 
 Example: `/#/examples/channel`. Example factories live in `apps/charts-demo/src/gallery/examples`; add their metadata to `gallery/examples.ts`. Keep examples on the public `blackswan-charts` API and put engine behavior tests in the library, rather than making the gallery a functional test oracle.
 
-The header links to the GitHub project, and each example links to its source. The source tabs also link to their corresponding files: Example contains the drawing geometry, styles and interactions for that chart; Setup contains only shared chart/pane creation; Data contains synthetic prices. Keep example-specific drawing helpers out of the shared setup.
+The header links to the GitHub project, and each example links to its source. The source tabs link to their corresponding files: Example is the scene factory, Vue is the actual mounting component (including stylesheet and lifecycle), Setup contains shared chart/pane creation, Data contains synthetic prices, and Types contains the scene contracts. The first example creates its chart directly and does not need Setup. Events shows its actual mounting component with the tooltip, plus the tooltip source. Keep example-specific drawing helpers out of the shared setup.
 
-The streaming example appends a candle and volume bar every second, retains at most 240 bars, and supports pause, manual stepping and follow mode. Feed updates bypass user-edit history. `ExampleView` starts scenes on mount and disposes them on reset or navigation; timers must be released in `dispose`.
+The streaming example appends a candle and volume bar every second, retains at most 240 bars, and supports pause, manual stepping and follow mode. Feed updates bypass user-edit history. Time uses AUTO with justFollow, so incoming bars preserve the zoom window; panning switches to MANUAL and the Follow button reflects the axis state. Price uses AUTO and fits visible prices with native scale-aware padding. The Vue components start scenes on mount and dispose them on reset or navigation; timers must be released in `dispose`.
+
+| Example | What to learn |
+| --- | --- |
+| [First chart](https://komelgman.github.io/blackswan-charts/#/examples/basic) | Chart → DataSource → pane → ChartWidget; required plot settings and container size. |
+| Price & volume | Two plots using the same data; volume layer and primary price entry. |
+| Streaming | External data updates, automatic fitting, native follow, timer lifecycle and no-history updates. |
+| Scales | Linear, logarithmic and first-visible-price percentage scales with the same broad price series. |
+| Panes | Independent sources/prices, shared time axis and resizing. |
+| Drawings | Horizontal/vertical/inclined lines, dash styles, handles, copying and undo. |
+| Channel | Built-in compound drawing with baseline and width handles; no extension registration. |
+| Shared drawings | Owned/shared/local identities across two markets. |
+| Object events | Public interaction handlers, selection, click/double-click and a Vue tooltip. |
+| History & JSON | Two edits in one transaction, undo/redo, save and undoable restore. |
+
+Chart/grid/text/menu/handle appearance comes from the built-in theme. Do not repeat those settings in the common setup. Current plot and drawing contracts still require explicit `barStyle`/`style`; theme defaults do not supply them. Keep style variation only where it teaches a feature or distinguishes ownership. OHLCv records are `[open, high, low, close, volume]`; `loaded`/`available` ranges use millisecond timestamps and `step` describes bar duration. Synthetic generation lives in Data so it does not obscure chart setup.
+
+The gallery teaches integration and supported public features. A custom renderer/behavior or provider binding should be a separate advanced recipe, with its own working implementation; the built-in channel must not be presented as a custom extension.
 
 Card previews are actual chart captures, not separate hand-drawn illustrations. To refresh them after changing examples, build and start a preview, then run `npm -w apps/charts-demo run thumbnails -- http://127.0.0.1:5180` (substitute your preview URL) and `npm run build:demo`. The generator writes `apps/charts-demo/public/gallery/*.png`; these are display assets, never screenshot-test expectations.
 
