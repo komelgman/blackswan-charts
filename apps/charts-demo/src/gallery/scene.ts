@@ -3,12 +3,9 @@ import {
   DataSource,
   Themes,
   ControlMode,
-  PriceScales,
-  LineBound,
   type CandlestickPlot,
   type ColumnsVolumeIndicator,
   type DrawingOptions,
-  type Line,
   type Price,
   type OHLCv,
 } from 'blackswan-charts';
@@ -26,7 +23,6 @@ export interface ExampleScene {
   start?(): void;
   dispose?(): void;
 }
-export const lineStyle = { color: '#e2b77c', lineWidth: 2 as const, fill: 0 };
 
 export function marketPane(chart: Chart, id: string, scale = 'regular', volume = false, content: OHLCv = marketData()): DataSource {
   const candles: DrawingOptions<CandlestickPlot> = {
@@ -89,17 +85,4 @@ export function marketScene(volume = false, content: OHLCv = marketData()) {
   chart.timeAxis.range = { from: time(-4), to: time(125) };
   chart.clearHistory();
   return { chart, source };
-}
-
-export function trend(): Line {
-  return {
-    def: [time(20), 102 as Price, time(95), 142 as Price],
-    scale: PriceScales.regular,
-    boundType: LineBound.Both,
-    style: { ...lineStyle },
-  };
-}
-
-export function addTrend(source: DataSource): void {
-  source.add({ id: 'Line1', type: 'Line', data: trend(), visible: true, locked: false });
 }

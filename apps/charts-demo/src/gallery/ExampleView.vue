@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { ChartWidget } from 'blackswan-charts';
-import type { Example } from '@demo/gallery/examples';
+import { gallerySourceUrl, type Example } from '@demo/gallery/examples';
 import sceneCode from '@demo/gallery/scene?raw';
 import dataCode from '@demo/gallery/data?raw';
 const props = defineProps<{ example: Example }>();
@@ -11,6 +11,8 @@ const tab = ref('Example');
 const copied = ref(false);
 const revision = ref(0);
 const code = computed(() => (tab.value === 'Example' ? props.example.code : tab.value === 'Setup' ? sceneCode : dataCode));
+const exampleSourceUrl = `${gallerySourceUrl}/examples/${props.example.id}.ts`;
+const sourceUrl = computed(() => tab.value === 'Example' ? exampleSourceUrl : `${gallerySourceUrl}/${tab.value === 'Setup' ? 'scene' : 'data'}.ts`);
 const canUndo = computed(() => {
   void revision.value;
   return scene.chart.isCanUndo;
@@ -77,7 +79,13 @@ onUnmounted(() => {
     <div class="source-intro">
       <span class="eyebrow">BEHIND THE CHART</span>
       <h2>Make it yours.</h2>
-      <p>The code running above. The setup and fixed sample data are included.</p>
+      <p>
+        Example contains this chart's drawings and interactions.
+        Setup creates the shared chart and panes; Data generates the sample prices.
+      </p>
+      <a class="source-link" :href="exampleSourceUrl" target="_blank" rel="noopener noreferrer">
+        View example on GitHub <span aria-hidden="true">↗</span>
+      </a>
       <p class="source-hint">
         Render the returned chart with <code>&lt;ChartWidget :chart="scene.chart" /&gt;</code> in a sized container.
       </p>
@@ -101,7 +109,12 @@ onUnmounted(() => {
             {{ name }}
           </button>
         </div>
-        <button @click="copy">{{ copied ? 'Copied ✓' : 'Copy code' }}</button>
+        <div class="code-actions">
+          <a :href="sourceUrl" :aria-label="`Open ${tab} source on GitHub`" target="_blank" rel="noopener noreferrer">
+            GitHub <span aria-hidden="true">↗</span>
+          </a>
+          <button @click="copy">{{ copied ? 'Copied ✓' : 'Copy code' }}</button>
+        </div>
       </div>
       <pre role="tabpanel" :aria-label="tab + ' source'" tabindex="0"><code>{{ code }}</code></pre>
     </div>

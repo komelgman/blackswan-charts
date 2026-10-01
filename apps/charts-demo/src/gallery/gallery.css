@@ -425,6 +425,18 @@ p {
 .source-hint {
   margin-top: 20px;
 }
+.source-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--accent);
+  font-size: 12px;
+}
+.source-link:hover,
+.header-link:hover,
+.code-actions a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .source-hint code {
   font-size: 11px;
   overflow-wrap: anywhere;
@@ -437,11 +449,19 @@ p {
 }
 .code-toolbar {
   display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
   padding: 8px;
 }
-.code-toolbar button {
+.code-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+.code-toolbar button,
+.code-actions a {
   background: transparent;
   color: var(--muted);
   font-size: 11px;

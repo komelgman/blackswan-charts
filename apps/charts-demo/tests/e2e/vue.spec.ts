@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test('gallery filters examples and keeps deep links navigable', async ({ page }) => {
   await page.goto('./');
   await expect(page.getByRole('heading', { name: 'Charts with room to explore.' })).toBeVisible();
+  await expect(page.locator('.site-header').getByRole('link', { name: 'GitHub', exact: true })).toHaveAttribute('href', 'https://github.com/komelgman/blackswan-charts');
   await expect(page.locator('.example-card')).toHaveCount(7);
   // Previews must load beneath the deployment base path, including lazy images.
   for (const preview of await page.locator('.chart-thumbnail').all()) {
@@ -24,7 +25,7 @@ test('gallery filters examples and keeps deep links navigable', async ({ page })
   await expect(page.locator('.example-card')).toHaveCount(7);
 });
 
-for (const id of ['candles', 'panes', 'scales', 'drawings', 'shared', 'streaming', 'channel']) {
+for (const id of ['candles', 'panes', 'scales', 'drawings', 'shared', 'streaming', 'channel', 'history']) {
   test(`opens ${id} directly, renders bounded canvases and shows its actual source`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -35,10 +36,17 @@ for (const id of ['candles', 'panes', 'scales', 'drawings', 'shared', 'streaming
       node.clientHeight > 100 && node.clientHeight < 600 && node.clientWidth > 200,
     ))).toBe(true);
     await expect(page.getByRole('tabpanel')).toContainText('export default function create');
+    const sourceRoot = 'https://github.com/komelgman/blackswan-charts/blob/master/apps/charts-demo/src/gallery';
+    await expect(page.getByRole('link', { name: 'View example on GitHub' })).toHaveAttribute('href', `${sourceRoot}/examples/${id}.ts`);
+    await expect(page.getByRole('link', { name: 'Open Example source on GitHub' })).toHaveAttribute('href', `${sourceRoot}/examples/${id}.ts`);
     await page.getByRole('tab', { name: 'Setup', exact: true }).click();
     await expect(page.getByRole('tabpanel')).toContainText('new Chart');
+    await expect(page.getByRole('tabpanel')).not.toContainText('trend');
+    await expect(page.getByRole('tabpanel')).not.toContainText('lineStyle');
+    await expect(page.getByRole('link', { name: 'Open Setup source on GitHub' })).toHaveAttribute('href', `${sourceRoot}/scene.ts`);
     await page.getByRole('tab', { name: 'Data', exact: true }).click();
     await expect(page.getByRole('tabpanel')).toContainText('function marketData');
+    await expect(page.getByRole('link', { name: 'Open Data source on GitHub' })).toHaveAttribute('href', `${sourceRoot}/data.ts`);
     await page.getByRole('button', { name: 'Reset ↺' }).click();
     await expect(page.locator('.chart-host canvas').first()).toBeVisible();
     await page.getByRole('link', { name: '← All examples' }).click();

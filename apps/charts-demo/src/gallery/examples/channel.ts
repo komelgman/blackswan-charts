@@ -1,9 +1,16 @@
-import { type Channel } from 'blackswan-charts';
-import { trend, marketScene, type ExampleScene } from '@demo/gallery/scene';
+import { LineBound, LineFillStyle, PriceScales, type Channel, type Price } from 'blackswan-charts';
+import { time } from '@demo/gallery/data';
+import { marketScene, type ExampleScene } from '@demo/gallery/scene';
 export default function create(): ExampleScene {
   const { chart, source } = marketScene();
   source.beginTransaction();
-  const data: Channel = { ...trend(), offset: 18 };
+  const data: Channel = {
+    def: [time(20), 102 as Price, time(95), 142 as Price],
+    scale: PriceScales.regular,
+    boundType: LineBound.Both,
+    style: { color: '#e2b77c', lineWidth: 2, fill: LineFillStyle.Solid },
+    offset: 18,
+  };
   source.add({ id: 'Channel1', type: 'Channel', visible: true, locked: false, data });
   source.endTransaction();
   chart.clearHistory();

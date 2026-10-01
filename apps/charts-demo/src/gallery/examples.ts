@@ -15,6 +15,8 @@ import historyCode from '@demo/gallery/examples/history?raw';
 import channel from '@demo/gallery/examples/channel';
 import channelCode from '@demo/gallery/examples/channel?raw';
 import type { ExampleScene } from '@demo/gallery/scene';
+export const repositoryUrl = 'https://github.com/komelgman/blackswan-charts';
+export const gallerySourceUrl = `${repositoryUrl}/blob/master/apps/charts-demo/src/gallery`;
 export interface Example {
   id: string;
   title: string;

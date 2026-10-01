@@ -15,6 +15,8 @@ Open the local URL printed by Vite. The gallery has seven standalone examples: p
 
 Example: `/#/examples/channel`. Example factories live in `apps/charts-demo/src/gallery/examples`; add their metadata to `gallery/examples.ts`. Keep examples on the public `blackswan-charts` API and put engine behavior tests in the library, rather than making the gallery a functional test oracle.
 
+The header links to the GitHub project, and each example links to its source. The source tabs also link to their corresponding files: Example contains the drawing geometry, styles and interactions for that chart; Setup contains only shared chart/pane creation; Data contains synthetic prices. Keep example-specific drawing helpers out of the shared setup.
+
 The streaming example appends a candle and volume bar every second, retains at most 240 bars, and supports pause, manual stepping and follow mode. Feed updates bypass user-edit history. `ExampleView` starts scenes on mount and disposes them on reset or navigation; timers must be released in `dispose`.
 
 Card previews are actual chart captures, not separate hand-drawn illustrations. To refresh them after changing examples, build and start a preview, then run `npm -w apps/charts-demo run thumbnails -- http://127.0.0.1:5180` (substitute your preview URL) and `npm run build:demo`. The generator writes `apps/charts-demo/public/gallery/*.png`; these are display assets, never screenshot-test expectations.

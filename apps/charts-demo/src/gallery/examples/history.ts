@@ -1,9 +1,12 @@
-import { ChartSerializer, ChartDeserializer, type HLine, type Price } from 'blackswan-charts';
-import { lineStyle, marketScene, type ExampleScene } from '@demo/gallery/scene';
+import { ChartSerializer, ChartDeserializer, LineFillStyle, type HLine, type Price } from 'blackswan-charts';
+import { marketScene, type ExampleScene } from '@demo/gallery/scene';
 export default function create(): ExampleScene {
   const { chart, source } = marketScene();
   source.beginTransaction();
-  source.add({ id: 'HLine1', type: 'HLine', visible: true, locked: false, data: { def: 120 as Price, style: lineStyle } });
+  source.add({
+    id: 'HLine1', type: 'HLine', visible: true, locked: false,
+    data: { def: 120 as Price, style: { color: '#e2b77c', lineWidth: 2, fill: LineFillStyle.Solid } },
+  });
   source.endTransaction();
   chart.clearHistory();
   const initial = JSON.stringify(new ChartSerializer().serialize(chart));

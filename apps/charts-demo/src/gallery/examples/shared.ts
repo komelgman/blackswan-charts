@@ -1,8 +1,10 @@
-import { ControlMode, LineFillStyle, type Price } from 'blackswan-charts';
+import { ControlMode, LineFillStyle, LineBound, PriceScales, type Price } from 'blackswan-charts';
 import { marketData, time } from '@demo/gallery/data';
-import { lineStyle, trend, marketPane, marketScene, type ExampleScene } from '@demo/gallery/scene';
+import { marketPane, marketScene, type ExampleScene } from '@demo/gallery/scene';
 export default function create(): ExampleScene {
   const { chart, source } = marketScene();
+  const lineStyle = { color: '#e2b77c', lineWidth: 2 as const, fill: LineFillStyle.Solid };
+  const line = { scale: PriceScales.regular, boundType: LineBound.Both, style: lineStyle };
   source.beginTransaction();
   const comparison = marketPane(chart, 'comparison', 'regular', false, marketData('falling'));
   source.add({
@@ -19,7 +21,7 @@ export default function create(): ExampleScene {
   });
   source.add({
     id: 'Line1', type: 'Line', visible: true, locked: false, shareWith: '*',
-    data: { ...trend(), style: { ...lineStyle, fill: LineFillStyle.Dashed } },
+    data: { ...line, def: [time(20), 102 as Price, time(95), 142 as Price], style: { ...lineStyle, fill: LineFillStyle.Dashed } },
   });
   source.add({
     id: 'VLine2', type: 'VLine', visible: true, locked: false,
@@ -27,7 +29,7 @@ export default function create(): ExampleScene {
   });
   source.add({
     id: 'Line2', type: 'Line', visible: true, locked: false,
-    data: { ...trend(), def: [time(12), 160 as Price, time(54), 135 as Price], style: { ...lineStyle, color: '#8faee0' } },
+    data: { ...line, def: [time(12), 160 as Price, time(54), 135 as Price], style: { ...lineStyle, color: '#8faee0' } },
   });
   comparison.add({
     id: 'VLine2', type: 'VLine', visible: true, locked: false,
@@ -35,7 +37,7 @@ export default function create(): ExampleScene {
   });
   comparison.add({
     id: 'Line2', type: 'Line', visible: true, locked: false,
-    data: { ...trend(), def: [time(45), 154 as Price, time(110), 104 as Price], style: { ...lineStyle, color: '#d68078' } },
+    data: { ...line, def: [time(45), 154 as Price, time(110), 104 as Price], style: { ...lineStyle, color: '#d68078' } },
   });
   source.endTransaction();
   chart.clearHistory();

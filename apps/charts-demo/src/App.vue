@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { examples, historyExample } from '@demo/gallery/examples';
+import { examples, historyExample, repositoryUrl } from '@demo/gallery/examples';
 import ExampleView from '@demo/gallery/ExampleView.vue';
 import ChartThumbnail from '@demo/gallery/ChartThumbnail.vue';
 import '@demo/gallery/gallery.css';
@@ -41,7 +41,7 @@ watch(
           <path d="M5 24c12 4 20-2 17-9-1-3-6-4-4-8 1-2 4-2 7-1l-3 3c-3-1-3 1-1 2 8 5 5 16-7 17Z" fill="currentColor" /></svg
         >BLACKSWAN<span>CHARTS</span></a
       >
-      <a href="#/" class="header-link">Example gallery <span>↗</span></a>
+      <a :href="repositoryUrl" class="header-link" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
     </header>
     <main>
       <template v-if="current">
