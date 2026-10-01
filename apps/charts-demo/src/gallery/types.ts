@@ -18,6 +18,7 @@ export interface ObjectEventDetails {
 export interface ExampleScene {
   chart: Chart;
   actions?: ExampleAction[];
+  legend?: { label: string; color: string; dashed?: boolean }[];
   note: string;
   readonly status?: string;
   readonly objectEvent?: ObjectEventDetails;

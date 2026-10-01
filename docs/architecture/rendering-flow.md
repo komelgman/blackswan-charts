@@ -34,6 +34,7 @@ This is a map of the rendering flow and its boundaries. It is not a tutorial.
 - `PriceLabelsInvalidator` projects scale-provided ticks, removes collisions, and caches caption widths by font/context. Vue watchers drive invalidation.
 - Data-source tests run actual invalidators/sketchers/layers to detect stale rendering after updates and undo. Browser tests cover native Path2D hit testing and wiring.
 - Drawing paths, mouse positions and the unscaled utility canvas use CSS pixels for hit testing. DPR applies only to render layers; multiplying hit positions by DPR displaces body/handle selection on high-density displays.
+- Pane layout also uses CSS pixels: DOM measurements, minimum/maximum sizes, divider deltas and current sizes share the same units. The adapter must not apply DPR to them. Saved pane preferences are fractions of the container, independent of pixel density.
 
 - Price scales now own tick values and caption formatting; labels/marks share the formatter. See [price-scales.md](price-scales.md).
 - Sketchers receive `DrawingProjection` instead of a viewport and update only display caches. Line/channel geometry is shared under `model/chart/drawing`; graphics render and hit-test those paths. Edit behaviors are independent of this flow. See [drawing-contracts.md](drawing-contracts.md).

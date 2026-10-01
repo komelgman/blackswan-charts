@@ -6,6 +6,8 @@ import panes from '@demo/gallery/examples/panes';
 import panesCode from '@demo/gallery/examples/panes?raw';
 import scales from '@demo/gallery/examples/scales';
 import scalesCode from '@demo/gallery/examples/scales?raw';
+import percentage from '@demo/gallery/examples/percentage';
+import percentageCode from '@demo/gallery/examples/percentage?raw';
 import drawings from '@demo/gallery/examples/drawings';
 import drawingsCode from '@demo/gallery/examples/drawings?raw';
 import shared from '@demo/gallery/examples/shared';
@@ -58,11 +60,19 @@ export const examples: Example[] = [
   },
   {
     id: 'scales', title: 'A different perspective', category: 'Market',
-    description: 'Compare linear, log and percentage scales across a wide price range.',
+    description: 'Two trends with the same endpoints, built in different price spaces. Change the axis and watch them curve.',
     tags: ['Scales', 'Percentage'],
-    learning: 'Change the price axis scale without changing the prices. AUTO fits the visible bars; percentage uses the first'
-      + ' visible close as its reference.',
+    learning: 'A drawing has its own scale, independent of the price axis. The two trends share endpoints but interpolate'
+      + ' prices differently. Switching the axis reprojects their geometry without changing either drawing.',
     create: scales, code: scalesCode,
+  },
+  {
+    id: 'percentage', title: 'One reference. Three markets.', category: 'Market',
+    description: 'Three price sources share one percentage base: the first visible price of the primary market.',
+    tags: ['Percentage', 'Primary source'],
+    learning: 'Point every price axis at the primary series. Its first visible close sets the same 0% in all panes; the other'
+      + ' series keep their own prices. Panning changes the common reference without rewriting the data.',
+    create: percentage, code: percentageCode,
   },
   {
     id: 'panes', title: 'One timeline. Two views.', category: 'Composition',

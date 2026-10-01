@@ -103,12 +103,12 @@ function invalidate(): void {
 function adjustPanesSizes(): void {
   valid = true;
   const result = layoutPanes(props.items, getSize(rootElement.value?.$el), getBordersSize());
-  layout.minSize = result.minSize === undefined ? undefined : result.minSize * getDPR();
-  layout.maxSize = result.maxSize === undefined ? undefined : result.maxSize * getDPR();
+  layout.minSize = result.minSize;
+  layout.maxSize = result.maxSize;
 }
 
 function onResizeHandleMove(e: ResizeHandleMoveEvent): void {
-  const delta = (props.direction === Direction.Vertical ? e.dy : e.dx) * getDPR();
+  const delta = props.direction === Direction.Vertical ? e.dy : e.dx;
   const result = resizePanes(visibleItems.value, e.index, delta, getSize(rootElement.value?.$el), getBordersSize());
   const elements = paneElementsGetSortedByIndex();
   visibleItems.value.forEach((item, index) => setSize(elements[index], item.size as number));
@@ -128,17 +128,14 @@ function getBordersSize(): number {
   return bordersSize;
 }
 
-function getDPR(): number {
-  return window.devicePixelRatio || 1;
-}
-
 function getSize(el: HTMLElement | undefined): number {
   if (el === undefined) {
     return 0;
   }
 
+  // Pane sizes and pointer deltas are CSS pixels; DPR belongs to canvas rendering.
   const rect: DOMRect = el.getBoundingClientRect();
-  return (props.direction === Direction.Horizontal ? rect.width : rect.height) * getDPR();
+  return props.direction === Direction.Horizontal ? rect.width : rect.height;
 }
 
 function setSize(el: HTMLElement | undefined, size: number): void {
@@ -147,9 +144,9 @@ function setSize(el: HTMLElement | undefined, size: number): void {
   }
 
   if (props.direction === Direction.Horizontal) {
-    el.style.width = `${size / getDPR()}px`;
+    el.style.width = `${size}px`;
   } else {
-    el.style.height = `${size / getDPR()}px`;
+    el.style.height = `${size}px`;
   }
 }
 </script>

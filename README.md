@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The gallery has ten standalone examples, ordered from first integration to interaction and persistence. Each example has a permanent hash link, reset and the actual source code. All data is synthetic and deterministic; no API credentials are required.
+Open the local URL printed by Vite. The gallery has eleven standalone examples, ordered from first integration to interaction and persistence. Each example has a permanent hash link, reset and the actual source code. All data is synthetic and deterministic; no API credentials are required.
 
 Example: `/#/examples/channel`. Example factories live in `apps/charts-demo/src/gallery/examples`; add their metadata to `gallery/examples.ts`. Keep examples on the public `blackswan-charts` API and put engine behavior tests in the library, rather than making the gallery a functional test oracle.
 
@@ -24,7 +24,8 @@ The streaming example appends a candle and volume bar every second, retains at m
 | [First chart](https://komelgman.github.io/blackswan-charts/#/examples/basic) | Chart → DataSource → pane → ChartWidget; required plot settings and container size. |
 | Price & volume | Two plots using the same data; volume layer and primary price entry. |
 | Streaming | External data updates, automatic fitting, native follow, timer lifecycle and no-history updates. |
-| Scales | Linear, logarithmic and first-visible-price percentage scales with the same broad price series. |
+| Scales | Two trends with equal endpoints, interpolated in linear/log price spaces and reprojected when the axis changes. |
+| Percentage | Three sources and one primary series: its first visible close sets a common 0% and AUTO range in all panes. |
 | Panes | Independent sources/prices, shared time axis and resizing. |
 | Drawings | Horizontal/vertical/inclined lines, dash styles, handles, copying and undo. |
 | Channel | Built-in compound drawing with baseline and width handles; no extension registration. |

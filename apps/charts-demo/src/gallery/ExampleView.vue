@@ -90,7 +90,13 @@ async function copy() {
       <ObjectEventChart v-if="example.id === 'events'" :scene="scene" />
       <ChartEmbed v-else :scene="scene" />
     </div>
-    <p v-if="scene.status" class="stage-note"><output data-testid="stream-status" aria-live="off">{{ scene.status }}</output></p>
+    <ul v-if="scene.legend" class="chart-legend" aria-label="Chart series">
+      <li v-for="item in scene.legend" :key="item.label">
+        <i :style="{ borderColor: item.color, borderTopStyle: item.dashed ? 'dashed' : 'solid' }" aria-hidden="true" />
+        {{ item.label }}
+      </li>
+    </ul>
+    <p v-if="scene.status" class="stage-note"><output data-testid="scene-status" aria-live="off">{{ scene.status }}</output></p>
     <p class="stage-note"><span>TRY IT</span> {{ scene.note }}</p>
   </section>
   <section class="source-section" aria-label="Example source code">

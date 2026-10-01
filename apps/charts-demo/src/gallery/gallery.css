@@ -393,6 +393,26 @@ p {
   height: 100%;
   width: 100%;
 }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 0;
+  padding: 12px 18px;
+  border-top: 1px solid #26343b;
+  list-style: none;
+  font-size: 11px;
+  color: #c8d9d1;
+}
+.chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.chart-legend i {
+  width: 24px;
+  border-top-width: 2px;
+}
 .stage-note {
   font-size: 11px;
   line-height: 1.65;
