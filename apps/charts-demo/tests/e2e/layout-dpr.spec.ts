@@ -12,24 +12,24 @@ async function expectPanesInsideChart(page: Page) {
       timelineInside: timeline.bottom <= bounds.bottom + 1,
       fillsHeight: Math.abs(timeline.bottom - bounds.bottom) < 1,
     };
-  })).toEqual({ count: 3, contained: true, minimumSize: true, timelineInside: true, fillsHeight: true });
+  })).toEqual({ count: 2, contained: true, minimumSize: true, timelineInside: true, fillsHeight: true });
 }
 
 async function paneHeights(page: Page) {
   const heights = await page.locator('.viewport').evaluateAll(panes => panes.map(pane => pane.getBoundingClientRect().height));
-  expect(heights).toHaveLength(3);
-  return heights as [number, number, number];
+  expect(heights).toHaveLength(2);
+  return heights as [number, number];
 }
 
 test.describe('pane layout at high pixel density', () => {
   test.use({ deviceScaleFactor: 2 });
 
   for (const width of [802, 390]) {
-    test(`fits three panes and their timeline before and after resize at ${width}px`, async ({ page }) => {
+    test(`fits two panes and their timeline before and after resize at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 1100 });
       const errors: string[] = [];
       page.on('pageerror', error => errors.push(error.message));
-      await page.goto('./#/examples/percentage');
+      await page.goto('./#/examples/panes');
       const host = page.locator('.chart-host');
       await host.evaluate((element, viewportWidth) => {
         const chartElement = element as HTMLElement;
@@ -52,7 +52,6 @@ test.describe('pane layout at high pixel density', () => {
       await expect.poll(async () => Math.abs((await paneHeights(page))[0] - before[0] - 24)).toBeLessThan(1);
       const changed = await paneHeights(page);
       expect(changed[1]).toBeCloseTo(before[1] - 24, 0);
-      expect(changed[2]).toBeCloseTo(before[2], 0);
       await expectPanesInsideChart(page);
 
       const undo = page.getByRole('button', { name: 'Undo', exact: true });
@@ -64,7 +63,8 @@ test.describe('pane layout at high pixel density', () => {
       await redo.click();
       await expect.poll(async () => (await paneHeights(page)).every((height, index) => Math.abs(height - changed[index]!) < 1)).toBe(true);
 
-      await host.evaluate(element => { (element as HTMLElement).style.height = '460px'; });
+      // Both 100px minima fit in CSS space; multiplying them by DPR would overflow.
+      await host.evaluate(element => { (element as HTMLElement).style.height = '360px'; });
       await expectPanesInsideChart(page);
       await undo.click();
       await expectPanesInsideChart(page);

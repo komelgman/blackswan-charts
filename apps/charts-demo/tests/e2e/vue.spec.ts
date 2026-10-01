@@ -31,7 +31,7 @@ for (const id of ['basic', 'candles', 'panes', 'scales', 'percentage', 'drawings
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`./#/examples/${id}`);
     await expect(page.locator('.chart-host canvas').first()).toBeVisible();
-    await expect(page.locator('.viewport')).toHaveCount(id === 'percentage' ? 3 : ['panes', 'shared'].includes(id) ? 2 : 1);
+    await expect(page.locator('.viewport')).toHaveCount(['panes', 'shared'].includes(id) ? 2 : 1);
     await expect.poll(() => page.locator('.viewport').evaluateAll(nodes => nodes.every(node =>
       node.clientHeight > 100 && node.clientHeight < 600 && node.clientWidth > 200,
     ))).toBe(true);
@@ -50,7 +50,7 @@ for (const id of ['basic', 'candles', 'panes', 'scales', 'percentage', 'drawings
       await expect(page.getByRole('tabpanel')).toContainText('event.drawingId');
       await expect(page.getByRole('link', { name: 'Open Tooltip source on GitHub' })).toHaveAttribute('href', `${sourceRoot}/ObjectEventTooltip.vue`);
     }
-    if (id === 'basic') {
+    if (id === 'basic' || id === 'percentage') {
       await expect(page.getByRole('tab', { name: 'Setup', exact: true })).toHaveCount(0);
     } else {
       await page.getByRole('tab', { name: 'Setup', exact: true }).click();
@@ -72,14 +72,16 @@ for (const id of ['basic', 'candles', 'panes', 'scales', 'percentage', 'drawings
   });
 }
 
-test('percentage panes share a moving primary reference and undo restores it', async ({ page }) => {
+test('percentage series occupy one viewport and undo restores their primary reference', async ({ page }) => {
   await page.goto('./#/examples/percentage');
   const status = page.getByTestId('scene-status');
   await expect(status).toContainText('primary first visible close');
+  await expect(page.locator('.viewport')).toHaveCount(1);
+  await expect(page.locator('.priceline')).toHaveCount(1);
   await expect(page.getByRole('list', { name: 'Chart series' }).getByRole('listitem')).toHaveCount(3);
   await expect.poll(() => page.locator('.priceline').evaluateAll(nodes => nodes.every(node => node.clientWidth > 20))).toBe(true);
   const initial = await status.innerText();
-  const viewport = page.locator('.viewport').first();
+  const viewport = page.locator('.viewport');
   const bounds = (await viewport.boundingBox())!;
   const x = bounds.x + bounds.width / 2;
   const y = bounds.y + bounds.height / 2;

@@ -68,10 +68,10 @@ export const examples: Example[] = [
   },
   {
     id: 'percentage', title: 'One reference. Three markets.', category: 'Market',
-    description: 'Three price sources share one percentage base: the first visible price of the primary market.',
+    description: 'Three markets in one viewport, measured from the first visible price of the primary series.',
     tags: ['Percentage', 'Primary source'],
-    learning: 'Point every price axis at the primary series. Its first visible close sets the same 0% in all panes; the other'
-      + ' series keep their own prices. Panning changes the common reference without rewriting the data.',
+    learning: 'Add three independent price series to one pane and choose its primary entry. The primary first visible close'
+      + ' sets the shared 0%; panning changes this reference without rewriting any series.',
     create: percentage, code: percentageCode,
   },
   {

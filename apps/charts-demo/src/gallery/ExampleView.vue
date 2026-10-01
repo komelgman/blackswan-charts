@@ -12,10 +12,11 @@ import dataCode from '@demo/gallery/data?raw';
 const props = defineProps<{ example: Example }>();
 const emit = defineEmits<{ reset: [] }>();
 const scene = props.example.create();
+const createsChartDirectly = props.example.id === 'basic' || props.example.id === 'percentage';
 type SourceTab = 'Example' | 'Vue' | 'Setup' | 'Data' | 'Tooltip' | 'Types';
 const tab = ref<SourceTab>('Example');
 const tabs = computed<SourceTab[]>(() => {
-  if (props.example.id === 'basic') return ['Example', 'Vue', 'Data', 'Types'];
+  if (createsChartDirectly) return ['Example', 'Vue', 'Data', 'Types'];
   return props.example.id === 'events'
     ? ['Example', 'Vue', 'Tooltip', 'Setup', 'Data', 'Types']
     : ['Example', 'Vue', 'Setup', 'Data', 'Types'];
@@ -114,7 +115,7 @@ async function copy() {
         inside a container with an explicit height. The Vue tab shows the component used above.
       </p>
       <p class="source-hint">
-        {{ example.id === 'basic' ? 'This example creates the chart directly.' : 'Setup contains the shared chart and pane creation.' }}
+        {{ createsChartDirectly ? 'This example creates the chart directly.' : 'Setup contains the shared chart and pane creation.' }}
         Chart appearance comes from the theme. Plot colors and drawing styles are currently required by the API.
       </p>
     </div>

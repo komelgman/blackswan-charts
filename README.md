@@ -25,7 +25,7 @@ The streaming example appends a candle and volume bar every second, retains at m
 | Price & volume | Two plots using the same data; volume layer and primary price entry. |
 | Streaming | External data updates, automatic fitting, native follow, timer lifecycle and no-history updates. |
 | Scales | Two trends with equal endpoints, interpolated in linear/log price spaces and reprojected when the axis changes. |
-| Percentage | Three sources and one primary series: its first visible close sets a common 0% and AUTO range in all panes. |
+| Percentage | Three independent market series in one viewport; the primary series supplies the shared 0% and AUTO range. |
 | Panes | Independent sources/prices, shared time axis and resizing. |
 | Drawings | Horizontal/vertical/inclined lines, dash styles, handles, copying and undo. |
 | Channel | Built-in compound drawing with baseline and width handles; no extension registration. |
